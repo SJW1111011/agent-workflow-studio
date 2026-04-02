@@ -1,0 +1,30 @@
+{
+  "name": "agent-workflow-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first workflow OS and project control plane for Codex and Claude Code.",
+  "type": "commonjs",
+  "bin": {
+    "agent-workflow": "./src/cli.js"
+  },
+  "scripts": {
+    "cli": "node src/cli.js",
+    "init": "node src/cli.js init",
+    "scan": "node src/cli.js scan",
+    "adapter:list": "node src/cli.js adapter:list",
+    "recipe:list": "node src/cli.js recipe:list",
+    "task:new": "node src/cli.js task:new",
+    "task:list": "node src/cli.js task:list",
+    "prompt:compile": "node src/cli.js prompt:compile",
+    "run:prepare": "node src/cli.js run:prepare",
+    "checkpoint": "node src/cli.js checkpoint",
+    "run:add": "node src/cli.js run:add",
+    "validate": "node src/cli.js validate",
+    "dashboard": "node src/server.js",
+    "smoke": "node scripts/smoke-test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
+

@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Agent Workflow Studio</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Local-first control plane</p>
+          <h1>Agent Workflow Studio</h1>
+          <p class="lede">
+            Turn tasks into prompts, prompts into evidence, and evidence into resumable project memory.
+          </p>
+        </div>
+        <div class="hero-meta">
+          <div class="badge">Codex + Claude Code</div>
+          <div class="badge" id="workspace-root">Loading root...</div>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="stats" id="stats"></section>
+
+        <section class="panel panel-wide">
+          <div class="panel-head">
+            <h2>Adapters</h2>
+            <p>The runtime contracts that bridge workflow state into Codex and Claude Code sessions.</p>
+          </div>
+          <div class="list" id="adapters"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Recipes</h2>
+            <p>Structured task intents that keep prompts and task records aligned.</p>
+          </div>
+          <div class="list" id="recipes"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Schema</h2>
+            <p>Structural checks for workflow trustworthiness.</p>
+          </div>
+          <div class="list" id="validation"></div>
+        </section>
+
+        <section class="panel panel-wide">
+          <div class="panel-head">
+            <h2>Tasks</h2>
+            <p>What the agents are supposed to do and whether there is enough evidence behind each task.</p>
+          </div>
+          <div class="task-grid" id="tasks"></div>
+        </section>
+
+        <section class="panel panel-wide">
+          <div class="panel-head">
+            <h2>Task Actions</h2>
+            <p>Create tasks, update selected task metadata, and record new run evidence without leaving the dashboard.</p>
+          </div>
+          <div class="action-grid">
+            <form class="form-card" id="task-create-form">
+              <h3>Create Task</h3>
+              <label>
+                <span>Task ID</span>
+                <input type="text" name="taskId" placeholder="T-002" required>
+              </label>
+              <label>
+                <span>Title</span>
+                <input type="text" name="title" placeholder="Implement dashboard mutation flow" required>
+              </label>
+              <label>
+                <span>Priority</span>
+                <select name="priority" id="create-priority">
+                  <option value="P1">P1</option>
+                  <option value="P2" selected>P2</option>
+                  <option value="P3">P3</option>
+                  <option value="P0">P0</option>
+                </select>
+              </label>
+              <label>
+                <span>Recipe</span>
+                <select name="recipeId" id="create-recipe"></select>
+              </label>
+              <button type="submit">Create Task</button>
+            </form>
+
+            <form class="form-card" id="task-update-form">
+              <h3>Selected Task</h3>
+              <label>
+                <span>Task ID</span>
+                <input type="text" name="taskId" id="selected-task-id" readonly>
+              </label>
+              <label>
+                <span>Title</span>
+                <input type="text" name="title" id="selected-task-title" placeholder="Select a task first">
+              </label>
+              <label>
+                <span>Status</span>
+                <select name="status" id="selected-task-status">
+                  <option value="todo">todo</option>
+                  <option value="in_progress">in_progress</option>
+                  <option value="blocked">blocked</option>
+                  <option value="done">done</option>
+                </select>
+              </label>
+              <label>
+                <span>Priority</span>
+                <select name="priority" id="selected-task-priority">
+                  <option value="P0">P0</option>
+                  <option value="P1">P1</option>
+                  <option value="P2">P2</option>
+                  <option value="P3">P3</option>
+                </select>
+              </label>
+              <label>
+                <span>Recipe</span>
+                <select name="recipeId" id="selected-task-recipe"></select>
+              </label>
+              <button type="submit">Save Task Meta</button>
+            </form>
+
+            <form class="form-card" id="run-create-form">
+              <h3>Record Run</h3>
+              <label>
+                <span>Task ID</span>
+                <input type="text" name="taskId" id="run-task-id" readonly>
+              </label>
+              <label>
+                <span>Agent</span>
+                <select name="agent" id="run-agent">
+                  <option value="codex">codex</option>
+                  <option value="claude-code">claude-code</option>
+                  <option value="manual">manual</option>
+                </select>
+              </label>
+              <label>
+                <span>Status</span>
+                <select name="status" id="run-status">
+                  <option value="passed">passed</option>
+                  <option value="draft">draft</option>
+                  <option value="failed">failed</option>
+                </select>
+              </label>
+              <label>
+                <span>Summary</span>
+                <textarea name="summary" id="run-summary" rows="5" placeholder="What happened in this run?"></textarea>
+              </label>
+              <button type="submit">Record Run Evidence</button>
+            </form>
+
+            <form class="form-card form-card-wide" id="document-editor-form">
+              <div class="editor-head">
+                <div>
+                  <h3>Edit Task Docs</h3>
+                  <p class="subtle">Local-only markdown editing for `task.md`, `context.md`, and `verification.md`.</p>
+                </div>
+                <button type="submit">Save Document</button>
+              </div>
+              <div class="editor-meta">
+                <label>
+                  <span>Task ID</span>
+                  <input type="text" name="taskId" id="document-task-id" readonly>
+                </label>
+                <label>
+                  <span>Document</span>
+                  <select name="documentName" id="document-name">
+                    <option value="task.md">task.md</option>
+                    <option value="context.md">context.md</option>
+                    <option value="verification.md">verification.md</option>
+                  </select>
+                </label>
+              </div>
+              <label>
+                <span>Content</span>
+                <textarea name="content" id="document-content" rows="14" placeholder="Select a task to edit its markdown bundle."></textarea>
+              </label>
+              <p class="subtle" id="document-sync-note">Select a task to edit its markdown bundle.</p>
+            </form>
+          </div>
+          <div class="action-status" id="action-status">Ready.</div>
+        </section>
+
+        <section class="panel panel-wide">
+          <div class="panel-head">
+            <h2>Task Detail</h2>
+            <p>Live detail view for the selected task, including recipe, generated files, evidence, and task-level schema issues.</p>
+          </div>
+          <div id="task-detail"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Memory</h2>
+            <p>Stable docs that future agents should trust.</p>
+          </div>
+          <div class="list" id="memory"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Verify</h2>
+            <p>What has evidence and what still needs proof.</p>
+          </div>
+          <div class="list" id="verification"></div>
+        </section>
+
+        <section class="panel panel-wide">
+          <div class="panel-head">
+            <h2>Risk Queue</h2>
+            <p>Things you should not ignore before trusting the current state.</p>
+          </div>
+          <div class="list" id="risks"></div>
+        </section>
+
+        <section class="panel panel-wide">
+          <div class="panel-head">
+            <h2>Recent Runs</h2>
+            <p>Execution evidence recorded by the workflow layer.</p>
+          </div>
+          <div class="list" id="runs"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
+

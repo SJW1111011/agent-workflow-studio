@@ -1,0 +1,195 @@
+#!/usr/bin/env node
+
+const path = require("path");
+const { buildCheckpoint } = require("./lib/checkpoint");
+const { listAdapters, normalizeAdapterId } = require("./lib/adapters");
+const { buildOverview } = require("./lib/overview");
+const { compilePrompt } = require("./lib/prompt-compiler");
+const { listRecipes } = require("./lib/recipes");
+const { prepareRun } = require("./lib/run-preparer");
+const { scanWorkspace } = require("./lib/scanner");
+const { validateWorkspace } = require("./lib/schema-validator");
+const { createTask, listTasks, recordRun } = require("./lib/task-service");
+const { ensureWorkflowScaffold, resolveWorkspaceRoot } = require("./lib/workspace");
+
+function main() {
+  const { command, positionals, options } = parseCommand(process.argv.slice(2));
+  const workspaceRoot = resolveWorkspaceRoot(options.root);
+
+  try {
+    switch (command) {
+      case "init": {
+        ensureWorkflowScaffold(workspaceRoot);
+        print(`Initialized workflow scaffold at ${path.join(workspaceRoot, ".agent-workflow")}`);
+        break;
+      }
+      case "scan": {
+        const profile = scanWorkspace(workspaceRoot);
+        print(`Scanned ${workspaceRoot}`);
+        print(`Detected ${profile.topLevelDirectories.length} top-level directories and ${profile.docs.length} docs.`);
+        break;
+      }
+      case "adapter:list": {
+        ensureWorkflowScaffold(workspaceRoot);
+        const adapters = listAdapters(workspaceRoot);
+        adapters.forEach((adapter) => {
+          const status = adapter.exists ? "ready" : "missing";
+          const runner = adapter.config && Array.isArray(adapter.config.runnerCommand)
+            ? adapter.config.runnerCommand.join(" ")
+            : "";
+          print(`${adapter.adapterId} | ${status} | ${runner}`);
+        });
+        break;
+      }
+      case "recipe:list": {
+        ensureWorkflowScaffold(workspaceRoot);
+        const recipes = listRecipes(workspaceRoot);
+        recipes.forEach((recipe) => {
+          print(`${recipe.id} | ${recipe.name} | ${recipe.summary}`);
+        });
+        break;
+      }
+      case "task:new": {
+        const [taskId, ...titleParts] = positionals;
+        const title = titleParts.join(" ").trim();
+        assert(taskId && title, "Usage: task:new <taskId> <title> [--priority P1] [--recipe feature] [--root path]");
+        const task = createTask(workspaceRoot, taskId, title, {
+          priority: options.priority,
+          recipe: options.recipe,
+        });
+        print(`Created task ${task.id} at ${path.join(workspaceRoot, ".agent-workflow", "tasks", task.id)}`);
+        break;
+      }
+      case "task:list": {
+        const tasks = listTasks(workspaceRoot);
+        tasks.forEach((task) => {
+          print(`${task.id} | ${task.priority} | ${task.status} | recipe=${task.recipeId || "feature"} | runs=${task.runCount} | ${task.title}`);
+        });
+        if (tasks.length === 0) {
+          print("No tasks found.");
+        }
+        break;
+      }
+      case "prompt:compile": {
+        const [taskId] = positionals;
+        const agent = normalizePromptAgent(options.agent || "codex");
+        assert(taskId, "Usage: prompt:compile <taskId> [--agent codex|claude] [--root path]");
+        const result = compilePrompt(workspaceRoot, taskId, agent);
+        print(`Compiled ${agent} prompt at ${result.outputPath}`);
+        break;
+      }
+      case "run:prepare": {
+        const [taskId] = positionals;
+        const adapterId = normalizeAdapterId(options.agent || options.adapter || "codex");
+        assert(taskId, "Usage: run:prepare <taskId> [--agent codex|claude] [--root path]");
+        const result = prepareRun(workspaceRoot, taskId, adapterId);
+        print(`Prepared ${adapterId} launch pack at ${result.launchPackPath}`);
+        print(`Prepared ${adapterId} run request at ${result.runRequestPath}`);
+        break;
+      }
+      case "checkpoint": {
+        const [taskId] = positionals;
+        assert(taskId, "Usage: checkpoint <taskId> [--root path]");
+        const checkpoint = buildCheckpoint(workspaceRoot, taskId);
+        print(`Checkpoint updated for ${taskId} with ${checkpoint.runCount} recorded run(s).`);
+        break;
+      }
+      case "run:add": {
+        const [taskId, ...summaryParts] = positionals;
+        const summary = summaryParts.join(" ").trim();
+        const status = options.status || "draft";
+        const agent = normalizeAdapterId(options.agent || "manual");
+        assert(taskId && summary, "Usage: run:add <taskId> <summary> [--status passed|failed|draft] [--root path]");
+        const run = recordRun(workspaceRoot, taskId, summary, status, agent);
+        print(`Recorded run ${run.id} for ${taskId} with status ${run.status}.`);
+        break;
+      }
+      case "overview": {
+        const overview = buildOverview(workspaceRoot);
+        print(JSON.stringify(overview, null, 2));
+        break;
+      }
+      case "validate": {
+        const report = validateWorkspace(workspaceRoot);
+        print(`ok=${report.ok} errors=${report.errorCount} warnings=${report.warningCount}`);
+        report.issues.forEach((item) => {
+          print(`${item.level.toUpperCase()} | ${item.code} | ${item.target} | ${item.message}`);
+        });
+        break;
+      }
+      case "help":
+      case undefined: {
+        printUsage();
+        break;
+      }
+      default:
+        throw new Error(`Unknown command: ${command}`);
+    }
+  } catch (error) {
+    console.error(error.message);
+    process.exitCode = 1;
+  }
+}
+
+function parseCommand(argv) {
+  const options = {};
+  const positionals = [];
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const value = argv[index];
+    if (value.startsWith("--")) {
+      const key = value.slice(2);
+      const nextValue = argv[index + 1];
+      if (nextValue && !nextValue.startsWith("--")) {
+        options[key] = nextValue;
+        index += 1;
+      } else {
+        options[key] = true;
+      }
+      continue;
+    }
+    positionals.push(value);
+  }
+
+  return {
+    command: positionals.shift(),
+    positionals,
+    options,
+  };
+}
+
+function normalizePromptAgent(agent) {
+  return normalizeAdapterId(agent) === "claude-code" ? "claude" : "codex";
+}
+
+function assert(condition, message) {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
+function print(message) {
+  process.stdout.write(`${message}\n`);
+}
+
+function printUsage() {
+  print(`Agent Workflow Studio CLI
+
+Commands:
+  init [--root path]
+  scan [--root path]
+  adapter:list [--root path]
+  recipe:list [--root path]
+  task:new <taskId> <title> [--priority P1] [--recipe feature] [--root path]
+  task:list [--root path]
+  prompt:compile <taskId> [--agent codex|claude] [--root path]
+  run:prepare <taskId> [--agent codex|claude] [--root path]
+  run:add <taskId> <summary> [--status passed|failed|draft] [--root path]
+  checkpoint <taskId> [--root path]
+  overview [--root path]
+  validate [--root path]
+`);
+}
+
+main();
+

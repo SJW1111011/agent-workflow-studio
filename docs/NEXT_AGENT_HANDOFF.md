@@ -1,0 +1,202 @@
+# Next Agent Handoff
+
+This document is the restart point for the next agent that takes over `agent-workflow-studio`.
+
+## Mission
+
+Continue building `agent-workflow-studio` as a local-first workflow OS and project control plane for Codex and Claude Code.
+
+The product direction is already chosen:
+
+- tasks should compile into strong prompts
+- runs should leave evidence
+- evidence should refresh docs and checkpoints
+- long jobs should survive context compaction and handoff
+
+## Current status
+
+As of 2026-04-02, the project already has a working MVP foundation:
+
+- workflow scaffold generation under `.agent-workflow/`
+- repository scanning and project profile generation
+- task creation with recipe support
+- Codex / Claude Code adapter contracts
+- prompt compilation
+- run preparation handoff packs
+- run evidence recording
+- checkpoint generation
+- recipe registry
+- schema validation
+- local dashboard
+- dashboard write actions for task creation, task metadata updates, markdown task doc edits, and run evidence creation
+
+## Important constraint
+
+If this project is still nested inside the original repository when you read this:
+
+- do not modify files outside `agent-workflow-studio`
+- do not touch unrelated files in the parent repo
+- especially do not touch the parent repo's dirty data files
+
+Once this folder is moved into its own location, keep that same discipline inside the new repo.
+
+## What has been implemented
+
+### Core CLI
+
+Files:
+
+- `src/cli.js`
+- `src/lib/workspace.js`
+- `src/lib/scanner.js`
+- `src/lib/task-service.js`
+- `src/lib/task-documents.js`
+- `src/lib/prompt-compiler.js`
+- `src/lib/run-preparer.js`
+- `src/lib/checkpoint.js`
+- `src/lib/adapters.js`
+- `src/lib/recipes.js`
+- `src/lib/schema-validator.js`
+- `src/lib/overview.js`
+
+Supported commands:
+
+- `init`
+- `scan`
+- `adapter:list`
+- `recipe:list`
+- `task:new`
+- `task:list`
+- `prompt:compile`
+- `run:prepare`
+- `run:add`
+- `checkpoint`
+- `overview`
+- `validate`
+
+### Dashboard
+
+Files:
+
+- `src/server.js`
+- `dashboard/index.html`
+- `dashboard/styles.css`
+- `dashboard/app.js`
+
+Current dashboard capabilities:
+
+- show overview stats
+- show adapters
+- show recipes
+- show schema summary
+- show tasks
+- show task detail
+- show memory / risks / verification / recent runs
+- create tasks
+- update selected task metadata
+- edit `task.md`, `context.md`, and `verification.md`
+- record run evidence
+
+### Documentation
+
+Start here:
+
+- `README.md`
+- `docs/PRD.md`
+- `docs/ARCHITECTURE.md`
+- `docs/ADAPTERS.md`
+- `docs/RECIPES_AND_SCHEMA.md`
+- `docs/ROADMAP.md`
+- `docs/RELOCATABLE_DESIGN.md`
+
+## What was validated locally
+
+Verified on 2026-04-02:
+
+- `npm run smoke`
+
+The smoke test currently covers:
+
+- CLI initialization
+- repository scan
+- adapter listing
+- recipe listing
+- task creation with recipe
+- prompt compilation
+- run preparation
+- run evidence recording
+- checkpoint generation
+- schema validation
+- local server startup
+- overview API
+- task detail API
+- dashboard write APIs for creating tasks, updating tasks, editing task docs, and recording runs
+
+## Why moving the folder should be safe
+
+This project was deliberately built to be relocatable:
+
+- generated workflow files do not persist absolute machine paths
+- the CLI resolves the target repository from `--root` or `process.cwd()`
+- the local server resolves dashboard assets relative to `src/server.js`
+- the dashboard reads live state from the chosen target repository at runtime
+
+After moving the project, the first verification step should be:
+
+```bash
+npm run smoke
+```
+
+## Highest-priority next steps
+
+Recommended next sequence:
+
+1. Add better freshness detection for memory docs and task docs.
+2. Add diff-aware verification gates.
+3. Harden task-level guardrails so metadata-managed markdown blocks stay stable during richer edits.
+4. Write the `run:execute` local executor design first, keeping the contract-first adapter layer intact.
+5. Only after the design is stable, add `run:execute` to launch local Codex / Claude Code runners.
+
+## What not to do next
+
+- do not rush into full process orchestration before the workflow model is stable
+- do not build a cloud sync layer yet
+- do not turn this into a generic chat shell
+- do not hard-code absolute paths or machine-specific runner behavior
+
+## Recommended immediate task for the next agent
+
+Suggested first task:
+
+Design `run:execute` without implementing the executor yet.
+
+Expected shape:
+
+- keep `.agent-workflow/adapters/*.json` as the source of truth
+- treat `run-request.<adapter>.json` as the executable handoff contract
+- avoid hard-coding machine paths or shell behavior into the core workflow model
+- define how execution evidence should flow back into `runs/*.json`, `verification.md`, and checkpoints
+
+## Useful commands
+
+```bash
+npm run smoke
+npm run dashboard -- --root ../some-target-repo --port 4173
+npm run init -- --root ../some-target-repo
+npm run scan -- --root ../some-target-repo
+npm run task:new -- T-001 "Example task" --priority P1 --recipe feature --root ../some-target-repo
+npm run validate -- --root ../some-target-repo
+```
+
+## Final note for the next agent
+
+This project is no longer at the blank-scaffold stage.
+
+It already has:
+
+- a strong local-first direction
+- a working schema
+- a functioning dashboard
+- a tested mutation flow
+
+So the next work should preserve coherence, not just add features.
