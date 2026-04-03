@@ -132,3 +132,20 @@ See `docs/RECIPES_AND_SCHEMA.md`.
 4. Add GitHub issue and PR linking.
 5. Add multi-agent run orchestration and resume bundles.
 
+## Contributing
+
+If you want to help shape this into a serious open source workflow layer, start here:
+
+- read `CONTRIBUTING.md`
+- keep changes local-first, relocatable, and schema-aware
+- run `npm run smoke` before opening a PR
+
+## Community
+
+- `CODE_OF_CONDUCT.md` defines how we collaborate
+- issues and PRs should stay focused on strong prompts, evidence quality, checkpoints, and agent handoff durability
+
+## License
+
+Released under the MIT License. See `LICENSE`.
+
