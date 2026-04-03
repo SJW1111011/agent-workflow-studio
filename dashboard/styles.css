@@ -371,6 +371,54 @@ h1 {
   line-height: 1.5;
 }
 
+.run-item {
+  display: grid;
+  gap: 10px;
+}
+
+.run-meta {
+  display: grid;
+  gap: 4px;
+}
+
+.run-error {
+  color: var(--risk);
+}
+
+.log-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.log-button {
+  padding: 8px 12px;
+  border: 1px solid rgba(24, 34, 29, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.92);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.log-button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.run-log-panel {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(24, 34, 29, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 249, 242, 0.85);
+}
+
+.run-log-panel.hidden {
+  display: none;
+}
+
 .detail-pre {
   margin: 0;
   max-height: 280px;

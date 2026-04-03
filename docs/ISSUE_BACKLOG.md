@@ -71,6 +71,11 @@ Acceptance criteria:
 - avoid relying on absolute paths or external services
 - document the heuristic limits clearly
 
+Status:
+
+- first timestamp-based freshness heuristics are now implemented
+- next iteration should become more diff-aware and less purely time-based
+
 Non-goals:
 
 - full semantic diffing

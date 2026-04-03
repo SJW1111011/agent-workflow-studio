@@ -110,6 +110,13 @@ main().catch((error) => {
   runNodeExpectFailure(cliPath, ["run:execute", "T-003", "--agent", "codex", "--timeout-ms", "50", "--root", tempRoot]);
   runNode(cliPath, ["validate", "--root", tempRoot]);
 
+  const staleAt = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+  const architectureMemoryPath = path.join(tempRoot, ".agent-workflow", "memory", "architecture.md");
+  const t003ContextPath = path.join(tempRoot, ".agent-workflow", "tasks", "T-003", "context.md");
+  fs.writeFileSync(architectureMemoryPath, "# Architecture Memory\n\nStable notes without template markers.\n", "utf8");
+  fs.utimesSync(architectureMemoryPath, staleAt, staleAt);
+  fs.utimesSync(t003ContextPath, staleAt, staleAt);
+
   assertExists(path.join(tempRoot, ".agent-workflow", "adapters", "codex.json"));
   assertExists(path.join(tempRoot, ".agent-workflow", "recipes", "index.json"));
   assertExists(path.join(tempRoot, ".agent-workflow", "project-profile.json"));
@@ -163,6 +170,14 @@ main().catch((error) => {
     if (!overview.initialized || overview.tasks.length !== 2) {
       throw new Error("Unexpected overview payload.");
     }
+    const staleMemoryDoc = (overview.memory || []).find((item) => item.name === "architecture.md");
+    if (!staleMemoryDoc || staleMemoryDoc.freshnessStatus !== "stale") {
+      throw new Error("Overview did not expose stale memory freshness.");
+    }
+    const staleTask = (overview.tasks || []).find((task) => task.id === "T-003");
+    if (!staleTask || staleTask.freshnessStatus !== "stale") {
+      throw new Error("Overview did not expose stale task freshness.");
+    }
 
     await requestJson(`http://127.0.0.1:${port}/api/tasks`, "POST", {
       taskId: "T-002",
@@ -197,6 +212,20 @@ Ship a dashboard markdown editor.
     const detail = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-001`);
     if (!detail.meta || detail.meta.recipeId !== "feature") {
       throw new Error("Task detail payload is missing recipe information.");
+    }
+    const stdoutLog = await fetchJson(
+      `http://127.0.0.1:${port}/api/tasks/T-001/runs/${encodeURIComponent(executorRun.id)}/logs/stdout`
+    );
+    if (!stdoutLog.content.includes("stdout T-001 codex") || stdoutLog.stream !== "stdout") {
+      throw new Error("Run log API did not return the expected stdout content.");
+    }
+    const detail3 = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-003`);
+    if (!detail3.freshness || !detail3.freshness.summary || detail3.freshness.summary.status !== "stale") {
+      throw new Error("Task detail did not expose stale freshness summary.");
+    }
+    const staleContext = (detail3.freshness.docs || []).find((doc) => doc.name === "context.md");
+    if (!staleContext || staleContext.status !== "stale") {
+      throw new Error("Task detail did not expose stale context freshness.");
     }
 
     const detail2 = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-002`);

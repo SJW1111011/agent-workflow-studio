@@ -1,13 +1,11 @@
-const fs = require("fs");
-const path = require("path");
-const { fileExists, readText } = require("./fs-utils");
+const { fileExists } = require("./fs-utils");
 const { listAdapters } = require("./adapters");
+const { buildTaskFreshness, loadMemoryFreshness } = require("./freshness");
 const { listRecipes } = require("./recipes");
 const { validateWorkspace } = require("./schema-validator");
 const { listRuns, listTasks } = require("./task-service");
 const {
   ensureWorkflowScaffold,
-  memoryRoot,
   projectConfigPath,
   projectProfilePath,
   readProjectConfig,
@@ -52,7 +50,7 @@ function buildOverview(workspaceRoot) {
   const recipes = listRecipes(workspaceRoot);
   const tasks = listTasks(workspaceRoot).map((task) => enrichTask(workspaceRoot, task));
   const runs = tasks.flatMap((task) => listRuns(workspaceRoot, task.id));
-  const memory = loadMemory(workspaceRoot);
+  const memory = loadMemoryFreshness(workspaceRoot, MEMORY_PLACEHOLDERS);
   const validation = validateWorkspace(workspaceRoot);
   const risks = deriveOverviewRisks(workspaceRoot, tasks, memory, validation);
   const verification = deriveVerification(tasks);
@@ -91,6 +89,7 @@ function enrichTask(workspaceRoot, task) {
   const files = taskFiles(workspaceRoot, task.id);
   const runs = listRuns(workspaceRoot, task.id);
   const latestRun = runs[runs.length - 1] || null;
+  const freshness = buildTaskFreshness(workspaceRoot, task, runs);
 
   return {
     ...task,
@@ -98,30 +97,9 @@ function enrichTask(workspaceRoot, task) {
     hasClaudePrompt: fileExists(files.promptClaude),
     latestRunStatus: latestRun ? latestRun.status : "none",
     latestRunSummary: latestRun ? latestRun.summary : "No runs yet",
+    freshnessStatus: freshness.summary.status,
+    staleDocCount: freshness.summary.staleCount,
   };
-}
-
-function loadMemory(workspaceRoot) {
-  const root = memoryRoot(workspaceRoot);
-  if (!fs.existsSync(root)) {
-    return [];
-  }
-
-  return fs
-    .readdirSync(root, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
-    .map((entry) => {
-      const absolutePath = path.join(root, entry.name);
-      const content = readText(absolutePath, "");
-      const placeholder = MEMORY_PLACEHOLDERS.some((marker) => content.includes(marker));
-      return {
-        name: entry.name,
-        relativePath: path.join(".agent-workflow", "memory", entry.name).replace(/\\/g, "/"),
-        placeholder,
-        size: content.length,
-      };
-    })
-    .sort((left, right) => left.name.localeCompare(right.name));
 }
 
 function deriveOverviewRisks(workspaceRoot, tasks, memory, validation) {
@@ -140,6 +118,15 @@ function deriveOverviewRisks(workspaceRoot, tasks, memory, validation) {
       risks.push({
         level: "medium",
         message: `Memory doc still looks like a placeholder: ${item.relativePath}`,
+      });
+    });
+
+  memory
+    .filter((item) => item.freshnessStatus === "stale")
+    .forEach((item) => {
+      risks.push({
+        level: "medium",
+        message: `Memory doc may be stale: ${item.relativePath}`,
       });
     });
 
@@ -162,6 +149,13 @@ function deriveOverviewRisks(workspaceRoot, tasks, memory, validation) {
       risks.push({
         level: "high",
         message: `${task.id} has a failed latest run.`,
+      });
+    }
+
+    if (task.freshnessStatus === "stale") {
+      risks.push({
+        level: "medium",
+        message: `${task.id} has stale task docs that may need refresh.`,
       });
     }
   });

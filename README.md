@@ -43,7 +43,7 @@ The current foundation includes:
 - `run:add`: append execution evidence to a task
 - `checkpoint`: build a resumable checkpoint for the current task
 - `validate`: run schema checks on project, adapters, tasks, and recorded runs
-- `dashboard`: open a local control plane for tasks, memory freshness, risks, verification gaps, metadata edits, run evidence, and markdown task doc edits
+- `dashboard`: open a local control plane for tasks, memory freshness, task doc freshness, risks, verification gaps, metadata edits, run evidence, executor state, and markdown task doc edits
 
 ## Layout
 
@@ -120,6 +120,7 @@ There is now a first CLI-only `run:execute` pass for adapters that explicitly sw
 - `stdioMode: inherit` and `stdioMode: pipe` are supported
 - capture mode can persist stdout and stderr logs under the task run ledger
 - execution can record timeout and interruption metadata
+- the dashboard task detail can inspect executor metadata and local run logs through local-only APIs
 
 See `docs/ADAPTERS.md`.
 
@@ -133,6 +134,7 @@ The workflow layer now treats recipes as first-class metadata instead of loose m
 - Tasks can declare a `recipeId`
 - Validation checks look for missing or malformed project, task, adapter, and run records
 - The dashboard surfaces both repository-wide and task-level schema issues
+- The dashboard applies lightweight freshness heuristics to memory docs and task markdown bundles
 - The dashboard can create tasks, update selected task metadata, edit `task.md` / `context.md` / `verification.md`, and record run evidence through local-only API endpoints
 
 See `docs/RECIPES_AND_SCHEMA.md`.

@@ -62,6 +62,7 @@ The local HTTP server exposes:
 - `GET /api/overview`
 - `GET /api/tasks`
 - `GET /api/tasks/:taskId`
+- `GET /api/tasks/:taskId/runs/:runId/logs/:stream`
 - `GET /api/recipes`
 - `GET /api/runs`
 - `GET /api/validate`
@@ -84,6 +85,7 @@ The dashboard renders:
 - task creation and task metadata editing forms
 - lightweight markdown editing for `task.md`, `context.md`, and `verification.md`
 - run evidence recording form
+- executor run metadata and task-local log inspection
 - memory freshness view
 - risk queue
 - verification summary
@@ -138,13 +140,15 @@ The first dashboard pass computes risks from simple heuristics:
 - workflow not initialized
 - project profile missing
 - memory docs still contain placeholders
+- memory docs older than the current freshness threshold
 - task has no compiled prompt
 - task has no run evidence
 - latest run failed
+- task docs older than recent workflow activity or the current freshness threshold
 
 Later versions can add:
 
-- stale docs based on changed files
+- diff-aware stale docs based on changed files
 - diff-aware verification gaps
 - contract mismatches
 - fake implementation heuristics

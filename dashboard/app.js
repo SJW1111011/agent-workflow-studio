@@ -67,6 +67,12 @@ async function loadTaskDetail(taskId) {
   return fetchJson(`/api/tasks/${encodeURIComponent(taskId)}`);
 }
 
+async function loadRunLog(taskId, runId, stream) {
+  return fetchJson(
+    `/api/tasks/${encodeURIComponent(taskId)}/runs/${encodeURIComponent(runId)}/logs/${encodeURIComponent(stream)}`
+  );
+}
+
 function renderStats(stats) {
   const container = document.getElementById("stats");
   const entries = [
@@ -100,6 +106,7 @@ function renderTasks(tasks) {
         <div class="tag-row">
           <span class="tag">${task.hasCodexPrompt ? "Codex prompt" : "No Codex prompt"}</span>
           <span class="tag">${task.hasClaudePrompt ? "Claude prompt" : "No Claude prompt"}</span>
+          <span class="tag ${task.freshnessStatus === "stale" ? "warn" : ""}">${escapeHtml(task.freshnessStatus === "stale" ? `Docs stale (${task.staleDocCount || 0})` : "Docs fresh")}</span>
           <span class="tag ${task.latestRunStatus === "failed" ? "warn" : ""}">${escapeHtml(task.latestRunStatus)}</span>
         </div>
       </article>
@@ -218,17 +225,11 @@ function renderTaskDetail(detail) {
 
   const runItems = (detail.runs || []).length
     ? (detail.runs || [])
-        .map(
-          (run) => `
-            <article class="list-item">
-              <h3>${escapeHtml(run.agent || "manual")} - ${escapeHtml(run.status)}</h3>
-              <p>${escapeHtml(run.summary)}</p>
-              <p class="subtle">${escapeHtml(run.createdAt)}</p>
-            </article>
-          `
-        )
+        .map((run) => renderTaskRun(run, detail.meta.id))
         .join("")
     : '<div class="empty">No runs recorded yet.</div>';
+
+  const freshnessItems = renderTaskFreshness(detail.freshness);
 
   container.innerHTML = `
     <div class="detail-grid">
@@ -271,9 +272,15 @@ function renderTaskDetail(detail) {
         <h3>Schema Issues</h3>
         <div class="list">${schemaIssues}</div>
       </article>
+
+      <article class="detail-card">
+        <h3>Freshness</h3>
+        <div class="list">${freshnessItems}</div>
+      </article>
     </div>
   `;
 
+  bindRunLogButtons(detail.meta.id);
   populateTaskForms(detail);
 }
 
@@ -285,9 +292,11 @@ function renderMemory(memory) {
       <article class="list-item">
         <h3>${escapeHtml(item.name)}</h3>
         <p class="subtle">${escapeHtml(item.relativePath)}</p>
+        <p class="subtle">${escapeHtml(item.freshnessReason || "")}</p>
         <div class="tag-row">
-          <span class="tag ${item.placeholder ? "warn" : ""}">${item.placeholder ? "Placeholder" : "Ready"}</span>
+          <span class="tag ${item.placeholder || item.freshnessStatus === "stale" ? "warn" : ""}">${escapeHtml(item.freshnessStatus || (item.placeholder ? "placeholder" : "fresh"))}</span>
           <span class="tag">${item.size} chars</span>
+          <span class="tag">${escapeHtml(formatTimestampLabel(item.modifiedAt))}</span>
         </div>
       </article>
     `
@@ -332,9 +341,49 @@ function renderRuns(runs) {
         <h3>${escapeHtml(run.taskId)} - ${escapeHtml(run.status)}</h3>
         <p>${escapeHtml(run.summary)}</p>
         <p class="subtle">${escapeHtml(run.agent || "manual")} | ${escapeHtml(run.createdAt)}</p>
+        <div class="tag-row">
+          <span class="tag">${escapeHtml(run.source || "manual")}</span>
+          ${run.exitCode === undefined || run.exitCode === null ? "" : `<span class="tag">exit ${escapeHtml(run.exitCode)}</span>`}
+          ${run.timedOut ? '<span class="tag warn">timed out</span>' : ""}
+        </div>
       </article>
     `
   );
+}
+
+function renderTaskFreshness(freshness) {
+  if (!freshness || !Array.isArray(freshness.docs) || freshness.docs.length === 0) {
+    return '<div class="empty">No freshness data available.</div>';
+  }
+
+  const summary = freshness.summary || {};
+  const items = freshness.docs
+    .map(
+      (doc) => `
+        <article class="list-item">
+          <h3>${escapeHtml(doc.name)}</h3>
+          <p>${escapeHtml(doc.reason || "No freshness note available.")}</p>
+          <p class="subtle">${escapeHtml(doc.relativePath || "Unknown path")}</p>
+          <div class="tag-row">
+            <span class="tag ${doc.status !== "fresh" ? "warn" : ""}">${escapeHtml(doc.status || "unknown")}</span>
+            <span class="tag">${escapeHtml(formatTimestampLabel(doc.modifiedAt))}</span>
+          </div>
+        </article>
+      `
+    )
+    .join("");
+
+  return `
+    <article class="list-item">
+      <h3>${escapeHtml(summary.status === "stale" ? "Needs refresh" : "Looks current")}</h3>
+      <p>${escapeHtml(summary.message || "No summary available.")}</p>
+      <div class="tag-row">
+        <span class="tag ${summary.status === "stale" ? "warn" : ""}">${escapeHtml(summary.status || "unknown")}</span>
+        <span class="tag">${escapeHtml(`${summary.staleCount || 0} stale doc(s)`)}</span>
+      </div>
+    </article>
+    ${items}
+  `;
 }
 
 function renderCollection(id, items, renderItem) {
@@ -354,6 +403,19 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function formatTimestampLabel(value) {
+  if (!value) {
+    return "No timestamp";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return `Updated ${date.toLocaleString()}`;
 }
 
 function getEditableDocumentConfig(documentName) {
@@ -419,6 +481,105 @@ function populateTaskForms(detail) {
   });
 
   populateDocumentEditor(detail);
+}
+
+function renderTaskRun(run, taskId) {
+  const tags = [
+    createTag(run.status, run.status === "failed"),
+    createTag(run.source || "manual", run.source === "executor" ? false : false),
+    run.adapterId ? createTag(run.adapterId, false) : "",
+    run.exitCode === undefined || run.exitCode === null ? "" : createTag(`exit ${run.exitCode}`, run.status === "failed"),
+    run.timedOut ? createTag("timed out", true) : "",
+    run.interrupted ? createTag("interrupted", true) : "",
+  ]
+    .filter(Boolean)
+    .join("");
+
+  const metaLines = [
+    run.createdAt ? `<p class="subtle">Started ${escapeHtml(run.createdAt)}</p>` : "",
+    run.completedAt ? `<p class="subtle">Completed ${escapeHtml(run.completedAt)}</p>` : "",
+    run.durationMs !== undefined ? `<p class="subtle">Duration ${escapeHtml(run.durationMs)} ms</p>` : "",
+    run.timeoutMs !== undefined ? `<p class="subtle">Timeout ${escapeHtml(run.timeoutMs)} ms</p>` : "",
+    run.interruptionSignal ? `<p class="subtle">Interrupted by ${escapeHtml(run.interruptionSignal)}</p>` : "",
+    run.terminationSignal ? `<p class="subtle">Termination signal ${escapeHtml(run.terminationSignal)}</p>` : "",
+    run.stdoutFile ? `<p class="subtle">stdout: ${escapeHtml(run.stdoutFile)}</p>` : "",
+    run.stderrFile ? `<p class="subtle">stderr: ${escapeHtml(run.stderrFile)}</p>` : "",
+    run.errorMessage ? `<p class="subtle run-error">${escapeHtml(run.errorMessage)}</p>` : "",
+  ]
+    .filter(Boolean)
+    .join("");
+
+  const logActions = [
+    run.stdoutFile
+      ? `<button type="button" class="log-button" data-task-id="${escapeHtml(taskId)}" data-run-id="${escapeHtml(run.id)}" data-stream="stdout">View stdout</button>`
+      : "",
+    run.stderrFile
+      ? `<button type="button" class="log-button" data-task-id="${escapeHtml(taskId)}" data-run-id="${escapeHtml(run.id)}" data-stream="stderr">View stderr</button>`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("");
+
+  return `
+    <article class="list-item run-item">
+      <h3>${escapeHtml(run.agent || "manual")} - ${escapeHtml(run.status)}</h3>
+      <p>${escapeHtml(run.summary || "No summary recorded.")}</p>
+      <div class="tag-row">${tags}</div>
+      <div class="run-meta">${metaLines}</div>
+      ${
+        logActions
+          ? `<div class="log-actions">${logActions}</div><div class="run-log-panel hidden" id="${getRunLogPanelId(run.id)}"></div>`
+          : ""
+      }
+    </article>
+  `;
+}
+
+function createTag(label, warn) {
+  return `<span class="tag ${warn ? "warn" : ""}">${escapeHtml(label)}</span>`;
+}
+
+function getRunLogPanelId(runId) {
+  return `run-log-${String(runId).replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
+
+function bindRunLogButtons(taskId) {
+  document.querySelectorAll("[data-stream][data-run-id]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const runId = button.getAttribute("data-run-id");
+      const stream = button.getAttribute("data-stream");
+      const panel = document.getElementById(getRunLogPanelId(runId));
+      if (!panel) {
+        return;
+      }
+
+      if (button.dataset.loaded === stream && !panel.classList.contains("hidden")) {
+        panel.classList.add("hidden");
+        button.textContent = stream === "stdout" ? "View stdout" : "View stderr";
+        return;
+      }
+
+      try {
+        button.disabled = true;
+        button.textContent = `Loading ${stream}...`;
+        const log = await loadRunLog(taskId, runId, stream);
+        panel.classList.remove("hidden");
+        panel.innerHTML = `
+          <p class="subtle">Log path: ${escapeHtml(log.path)}</p>
+          ${log.truncated ? `<p class="subtle">Showing last ${escapeHtml(log.content.length)} of ${escapeHtml(log.size)} chars.</p>` : ""}
+          <pre class="detail-pre">${escapeHtml(log.content || "(empty log)")}</pre>
+        `;
+        button.dataset.loaded = stream;
+        button.textContent = stream === "stdout" ? "Hide stdout" : "Hide stderr";
+      } catch (error) {
+        panel.classList.remove("hidden");
+        panel.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+        button.textContent = stream === "stdout" ? "Retry stdout" : "Retry stderr";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
 }
 
 function setActionStatus(message, tone) {

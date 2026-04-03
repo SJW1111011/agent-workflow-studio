@@ -7,7 +7,7 @@ const { buildOverview } = require("./lib/overview");
 const { listRecipes } = require("./lib/recipes");
 const { validateWorkspace } = require("./lib/schema-validator");
 const { saveTaskDocument } = require("./lib/task-documents");
-const { createTask, getTaskDetail, recordRun, updateTaskMeta } = require("./lib/task-service");
+const { createTask, getRunLog, getTaskDetail, recordRun, updateTaskMeta } = require("./lib/task-service");
 const { resolveWorkspaceRoot } = require("./lib/workspace");
 
 const MIME_TYPES = {
@@ -86,6 +86,15 @@ function main() {
           return sendJson(response, 200, buildTaskResponse(workspaceRoot, documentRoute.taskId));
         }
 
+        const runLogRoute = parseTaskRunLogRoute(requestUrl.pathname);
+        if (runLogRoute && request.method === "GET") {
+          return sendJson(
+            response,
+            200,
+            getRunLog(workspaceRoot, runLogRoute.taskId, runLogRoute.runId, runLogRoute.stream)
+          );
+        }
+
         if (requestUrl.pathname.startsWith("/api/tasks/") && request.method === "GET") {
           const taskId = decodeURIComponent(requestUrl.pathname.slice("/api/tasks/".length));
           const detail = buildTaskResponse(workspaceRoot, taskId);
@@ -115,6 +124,8 @@ function main() {
             ? 400
             : error.message.includes("does not exist yet.")
               ? 404
+              : error.message.includes("does not exist for task") || error.message.includes("has no ") || error.message.includes("Log file is missing")
+                ? 404
               : error.message.startsWith("Unsupported ") || error.message.startsWith("Unknown recipe:")
                 ? 400
                 : 500;
@@ -226,6 +237,19 @@ function parseTaskDocumentRoute(pathname) {
   return {
     taskId: decodeURIComponent(matched[1]),
     documentName: decodeURIComponent(matched[2]),
+  };
+}
+
+function parseTaskRunLogRoute(pathname) {
+  const matched = pathname.match(/^\/api\/tasks\/([^/]+)\/runs\/([^/]+)\/logs\/([^/]+)$/);
+  if (!matched) {
+    return null;
+  }
+
+  return {
+    taskId: decodeURIComponent(matched[1]),
+    runId: decodeURIComponent(matched[2]),
+    stream: decodeURIComponent(matched[3]),
   };
 }
 

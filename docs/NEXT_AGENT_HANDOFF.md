@@ -30,6 +30,7 @@ As of 2026-04-03, the project already has a working MVP foundation:
 - recipe registry
 - schema validation
 - local dashboard
+- lightweight freshness detection for memory docs and task markdown bundles
 - dashboard write actions for task creation, task metadata updates, markdown task doc edits, and run evidence creation
 
 ## Important constraint
@@ -95,6 +96,8 @@ Current dashboard capabilities:
 - show tasks
 - show task detail
 - show memory / risks / verification / recent runs
+- show memory and task doc freshness
+- inspect executor metadata and local stdout/stderr logs in task detail
 - create tasks
 - update selected task metadata
 - edit `task.md`, `context.md`, and `verification.md`
@@ -136,6 +139,7 @@ The smoke test currently covers:
 - dashboard write APIs for creating tasks, updating tasks, editing task docs, and recording runs
 - CLI executor path for `run:execute`, including run ledger + verification/checkpoint refresh
 - executor capture mode and timeout path
+- overview and task detail freshness heuristics for memory/task docs
 
 ## Why moving the folder should be safe
 
@@ -156,10 +160,10 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Add better freshness detection for memory docs and task docs.
-2. Add diff-aware verification gates.
-3. Harden task-level guardrails so metadata-managed markdown blocks stay stable during richer edits.
-4. Surface executor state more clearly in the dashboard and task detail flows.
+1. Add diff-aware verification gates.
+2. Harden task-level guardrails so metadata-managed markdown blocks stay stable during richer edits.
+3. Surface executor state even more clearly in the dashboard and task detail flows.
+4. Add richer freshness heuristics based on repository changes instead of only timestamps.
 5. Only after the local executor is stable, extend dashboard-triggered execution.
 
 ## What not to do next
@@ -173,12 +177,12 @@ Recommended next sequence:
 
 Suggested first task:
 
-Add freshness and verification hardening on top of the new executor pass.
+Add diff-aware verification gates on top of the current freshness heuristics.
 
 Expected shape:
 
-- surface stale memory docs and stale task docs in overview risks
 - tie changed work more explicitly to verification expectations
+- build on top of the current timestamp-based freshness heuristics
 - keep the executor contract stable while improving trust signals
 
 ## Useful commands

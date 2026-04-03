@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { appendText, fileExists, readJson, writeFile, writeJson } = require("./fs-utils");
+const { buildTaskFreshness } = require("./freshness");
 const { getRecipe, normalizeRecipeId } = require("./recipes");
 const {
   renderCheckpointSkeleton,
@@ -100,6 +101,7 @@ function getTaskDetail(workspaceRoot, taskId) {
 
   const meta = readJson(files.meta, {});
   const recipe = getRecipe(workspaceRoot, meta.recipeId);
+  const runs = listRuns(workspaceRoot, taskId);
   return {
     meta,
     recipe: recipe
@@ -114,7 +116,8 @@ function getTaskDetail(workspaceRoot, taskId) {
     contextText: safeRead(files.context),
     verificationText: safeRead(files.verification),
     checkpointText: safeRead(files.checkpoint),
-    runs: listRuns(workspaceRoot, taskId),
+    runs,
+    freshness: buildTaskFreshness(workspaceRoot, meta, runs),
     generatedFiles: [
       describeFile("prompt.codex.md", files.promptCodex),
       describeFile("prompt.claude.md", files.promptClaude),
@@ -191,6 +194,7 @@ function recordRun(workspaceRoot, taskId, summary, status = "draft", agent = "ma
 module.exports = {
   createRunRecord,
   createTask,
+  getRunLog,
   getTaskDetail,
   listRuns,
   listTasks,
@@ -288,5 +292,46 @@ function renderVerificationEvidence(run) {
     .map(([label, value]) => `- ${label}: ${value}`);
 
   return `\n## Evidence ${timestamp}\n\n${lines.join("\n")}\n`;
+}
+
+function getRunLog(workspaceRoot, taskId, runId, streamName, maxChars = 12000) {
+  const files = taskFiles(workspaceRoot, taskId);
+  if (!fileExists(files.meta)) {
+    throw new Error(`Task ${taskId} does not exist yet.`);
+  }
+
+  const run = listRuns(workspaceRoot, taskId).find((item) => item.id === runId);
+  if (!run) {
+    throw new Error(`Run ${runId} does not exist for task ${taskId}.`);
+  }
+
+  const fieldName = streamName === "stderr" ? "stderrFile" : streamName === "stdout" ? "stdoutFile" : null;
+  if (!fieldName) {
+    throw new Error(`Unsupported log stream: ${streamName}`);
+  }
+
+  if (!isNonEmptyString(run[fieldName])) {
+    throw new Error(`Run ${runId} has no ${streamName} log.`);
+  }
+
+  const absolutePath = path.resolve(workspaceRoot, run[fieldName]);
+  const allowedRoot = path.resolve(files.runs);
+  const normalizedAllowedRoot = `${allowedRoot}${path.sep}`;
+  if ((absolutePath !== allowedRoot && !absolutePath.startsWith(normalizedAllowedRoot)) || !fileExists(absolutePath)) {
+    throw new Error(`Log file is missing for run ${runId} (${streamName}).`);
+  }
+
+  const content = fs.readFileSync(absolutePath, "utf8");
+  const limit = Number.isInteger(maxChars) && maxChars > 0 ? maxChars : 12000;
+  const truncated = content.length > limit;
+
+  return {
+    runId,
+    stream: streamName,
+    path: run[fieldName],
+    size: content.length,
+    truncated,
+    content: truncated ? content.slice(-limit) : content,
+  };
 }
 
