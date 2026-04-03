@@ -104,6 +104,12 @@ function validateAdapters(workspaceRoot, issues) {
       issues.push(issue("error", "adapter.successExitCodes", `Adapter ${adapter.adapterId} must use numeric successExitCodes`, adapter.adapterPath));
     }
     if (
+      config.timeoutMs !== undefined &&
+      (!Number.isInteger(config.timeoutMs) || config.timeoutMs <= 0)
+    ) {
+      issues.push(issue("error", "adapter.timeoutMs", `Adapter ${adapter.adapterId} must use a positive integer timeoutMs when present`, adapter.adapterPath));
+    }
+    if (
       config.envAllowlist !== undefined &&
       (!Array.isArray(config.envAllowlist) || !config.envAllowlist.every((value) => isNonEmptyString(value)))
     ) {
@@ -154,6 +160,27 @@ function validateTasks(workspaceRoot, issues) {
       }
       if (run.runRequestFile !== undefined && !isNonEmptyString(run.runRequestFile)) {
         issues.push(issue("warning", "run.runRequestFile", `Task ${task.id} has a run with invalid runRequestFile`, runPath));
+      }
+      if (run.stdoutFile !== undefined && !isNonEmptyString(run.stdoutFile)) {
+        issues.push(issue("warning", "run.stdoutFile", `Task ${task.id} has a run with invalid stdoutFile`, runPath));
+      }
+      if (run.stderrFile !== undefined && !isNonEmptyString(run.stderrFile)) {
+        issues.push(issue("warning", "run.stderrFile", `Task ${task.id} has a run with invalid stderrFile`, runPath));
+      }
+      if (run.timedOut !== undefined && typeof run.timedOut !== "boolean") {
+        issues.push(issue("warning", "run.timedOut", `Task ${task.id} has a run with invalid timedOut flag`, runPath));
+      }
+      if (run.timeoutMs !== undefined && (!Number.isInteger(run.timeoutMs) || run.timeoutMs <= 0)) {
+        issues.push(issue("warning", "run.timeoutMs", `Task ${task.id} has a run with invalid timeoutMs`, runPath));
+      }
+      if (run.interrupted !== undefined && typeof run.interrupted !== "boolean") {
+        issues.push(issue("warning", "run.interrupted", `Task ${task.id} has a run with invalid interrupted flag`, runPath));
+      }
+      if (run.interruptionSignal !== undefined && !isNonEmptyString(run.interruptionSignal)) {
+        issues.push(issue("warning", "run.interruptionSignal", `Task ${task.id} has a run with invalid interruptionSignal`, runPath));
+      }
+      if (run.terminationSignal !== undefined && !isNonEmptyString(run.terminationSignal)) {
+        issues.push(issue("warning", "run.terminationSignal", `Task ${task.id} has a run with invalid terminationSignal`, runPath));
       }
     });
   });

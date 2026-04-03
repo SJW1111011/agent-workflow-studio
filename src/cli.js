@@ -91,11 +91,16 @@ function main() {
       case "run:execute": {
         const [taskId] = positionals;
         const adapterId = normalizeAdapterId(options.agent || options.adapter || "codex");
-        assert(taskId, "Usage: run:execute <taskId> [--agent codex|claude] [--root path]");
-        executeRun(workspaceRoot, taskId, adapterId)
+        assert(taskId, "Usage: run:execute <taskId> [--agent codex|claude] [--timeout-ms 300000] [--root path]");
+        executeRun(workspaceRoot, taskId, adapterId, {
+          timeoutMs: options["timeout-ms"],
+        })
           .then((result) => {
             print(`Executed ${adapterId} for ${taskId} with status ${result.run.status}.`);
             print(`Recorded run ${result.run.id}.`);
+            if (result.run.status !== "passed") {
+              process.exitCode = 1;
+            }
           })
           .catch((error) => {
             console.error(error.message);
@@ -200,7 +205,7 @@ Commands:
   task:list [--root path]
   prompt:compile <taskId> [--agent codex|claude] [--root path]
   run:prepare <taskId> [--agent codex|claude] [--root path]
-  run:execute <taskId> [--agent codex|claude] [--root path]
+  run:execute <taskId> [--agent codex|claude] [--timeout-ms 300000] [--root path]
   run:add <taskId> <summary> [--status passed|failed|draft] [--root path]
   checkpoint <taskId> [--root path]
   overview [--root path]

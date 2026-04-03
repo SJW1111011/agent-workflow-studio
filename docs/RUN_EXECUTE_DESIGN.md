@@ -8,8 +8,9 @@ Status on 2026-04-03:
 
 - Phase A is now implemented in CLI-only form
 - the first implementation supports `commandMode: exec`
-- the first implementation currently supports `stdioMode: inherit`
-- richer stdout/stderr capture remains future work
+- the first implementation supports both `stdioMode: inherit` and `stdioMode: pipe`
+- stdout/stderr capture, timeout metadata, and interruption metadata are now implemented
+- dashboard-triggered execution and transcript linking remain future work
 
 ## Why this exists
 
@@ -169,6 +170,10 @@ Suggested additive fields:
 - `durationMs`
 - `exitCode`
 - `timedOut`
+- `timeoutMs`
+- `interrupted`
+- `interruptionSignal`
+- `terminationSignal`
 - `promptFile`
 - `runRequestFile`
 - `launchPackFile`
@@ -329,15 +334,16 @@ Later, the dashboard can call into the same local execution service, but the cor
 
 ### Phase B: better capture and safety
 
-- optional stdout and stderr log capture
+- stdout and stderr log capture
 - timeout support
+- interruption metadata
 - richer adapter config validation
 - clearer failure summaries in dashboard views
 
 ### Phase C: richer resume support
 
 - transcript linking where supported
-- interruption and resume metadata
+- resume metadata beyond first-pass interruption records
 - dashboard-triggered execution built on the same executor module
 
 ## What this design deliberately avoids

@@ -4,36 +4,36 @@ This file captures the first public issue drafts for the repository.
 
 It exists so the work can stay structured even when issue creation is done later by hand or through another tool.
 
-## 1. Harden `run:execute` after the first CLI-only pass
+## 1. Surface executor state more clearly in the dashboard
 
 Suggested labels:
 
-- `design`
 - `executor`
-- `architecture`
+- `dashboard`
+- `ux`
 
 Title:
 
-`Harden run:execute with capture, timeout handling, and clearer executor evidence`
+`Surface executor status, logs, and failure signals more clearly in the dashboard`
 
 Problem:
 
-The project now has a first CLI-only `run:execute` pass for adapters that opt into `commandMode: exec`, but it is intentionally minimal. It still needs stronger capture and failure-handling before it becomes a more complete local executor.
+The project now has a CLI-only `run:execute` path with stdout/stderr capture and timeout metadata, but the dashboard does not yet present that evidence well. Runs are persisted, yet the operator still has to inspect raw files to quickly understand what happened.
 
 Why it matters:
 
 - automation is a core product goal
 - execution should still leave durable evidence
-- handoff contracts should remain inspectable and portable
-- future executor improvements should not require rewriting the workflow model
+- failed runs should be easier to triage
+- operators should be able to inspect executor evidence without dropping out of the control plane
 
 Acceptance criteria:
 
-- add optional stdout and stderr capture without breaking relocatability
-- add timeout and interruption metadata
-- keep direct process spawning and avoid shell-built command strings
-- extend run evidence so failures are easier to triage in the dashboard later
-- keep adapter config as the only vendor-specific launch layer
+- show executor-specific fields such as exit code, timeout, interruption signal, and log paths in task detail
+- distinguish manual evidence from executor evidence in the dashboard
+- keep the underlying contract-first executor model unchanged
+- avoid turning the dashboard into a terminal emulator
+- document the UI behavior clearly
 
 Non-goals:
 

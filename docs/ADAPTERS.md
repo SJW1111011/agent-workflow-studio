@@ -66,8 +66,10 @@ That remains true even after adding `run:execute`:
 - `argvTemplate`: adapter-owned argument template for executable mode
 - `commandMode`: `manual` or `exec`
 - `cwdMode`: runtime working directory hint for executable mode
-- `stdioMode`: first pass supports `inherit`
+- `stdioMode`: `inherit` or `pipe`
 - `successExitCodes`: which exit codes count as pass
+- `timeoutMs`: optional adapter-level timeout
+- `envAllowlist`: optional environment keys to forward
 - `capabilities`: lightweight feature flags for the adapter
 
 ## Next step
@@ -78,12 +80,13 @@ The first local executor pass now supports:
 - direct process spawning from adapter config
 - run evidence written back into `runs/*.json`
 - automatic refresh of `verification.md` and `checkpoint.md`
+- stdout and stderr capture in `pipe` mode
+- timeout and interruption metadata in the run ledger
 
 The next implementation layer can add:
 
-- richer stdout and stderr capture
-- timeout and interruption handling
 - clearer executor state in the dashboard
 - session transcript linking
+- richer resume and interruption recovery flows
 
 The current recommended boundary for that work is documented in `docs/RUN_EXECUTE_DESIGN.md`.

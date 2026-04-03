@@ -42,20 +42,41 @@ async function main() {
     `const fs = require("fs");
 const path = require("path");
 
-const promptPath = process.argv[2];
-const runRequestPath = process.argv[3];
+async function main() {
+  const promptPath = process.argv[2];
+  const runRequestPath = process.argv[3];
+  const extras = process.argv.slice(4);
 
-if (!promptPath || !runRequestPath) {
-  console.error("missing args");
-  process.exit(2);
+  if (!promptPath || !runRequestPath) {
+    console.error("missing args");
+    process.exit(2);
+  }
+
+  let sleepMs = 0;
+  for (let index = 0; index < extras.length; index += 1) {
+    if (extras[index] === "--sleep-ms") {
+      sleepMs = Number(extras[index + 1] || 0);
+      index += 1;
+    }
+  }
+
+  const prompt = fs.readFileSync(promptPath, "utf8");
+  const runRequest = JSON.parse(fs.readFileSync(runRequestPath, "utf8"));
+  const markerPath = path.join(process.cwd(), \`\${runRequest.taskId}.marker.txt\`);
+
+  fs.writeFileSync(markerPath, prompt.includes(\`# \${runRequest.taskId} Prompt\`) ? "executor-ok\\n" : "executor-bad\\n", "utf8");
+  console.log("stdout", runRequest.taskId, runRequest.adapterId);
+  console.error("stderr", runRequest.taskId, runRequest.adapterId);
+
+  if (sleepMs > 0) {
+    await new Promise((resolve) => setTimeout(resolve, sleepMs));
+  }
 }
 
-const prompt = fs.readFileSync(promptPath, "utf8");
-const runRequest = JSON.parse(fs.readFileSync(runRequestPath, "utf8"));
-const markerPath = path.join(process.cwd(), "executor-marker.txt");
-
-fs.writeFileSync(markerPath, prompt.includes("# T-001 Prompt") ? "executor-ok\\n" : "executor-bad\\n", "utf8");
-console.log("executed", runRequest.taskId, runRequest.adapterId);
+main().catch((error) => {
+  console.error(error.message);
+  process.exit(1);
+});
 `,
     "utf8"
   );
@@ -65,6 +86,7 @@ console.log("executed", runRequest.taskId, runRequest.adapterId);
   runNode(cliPath, ["adapter:list", "--root", tempRoot]);
   runNode(cliPath, ["recipe:list", "--root", tempRoot]);
   runNode(cliPath, ["task:new", "T-001", "Build scanner foundation", "--priority", "P1", "--recipe", "feature", "--root", tempRoot]);
+  runNode(cliPath, ["task:new", "T-003", "Validate executor timeout handling", "--priority", "P2", "--recipe", "feature", "--root", tempRoot]);
   runNode(cliPath, ["prompt:compile", "T-001", "--agent", "codex", "--root", tempRoot]);
   runNode(cliPath, ["run:prepare", "T-001", "--agent", "codex", "--root", tempRoot]);
   runNode(cliPath, ["run:add", "T-001", "Smoke run completed.", "--status", "passed", "--agent", "codex", "--root", tempRoot]);
@@ -74,15 +96,18 @@ console.log("executed", runRequest.taskId, runRequest.adapterId);
   const codexAdapterPath = path.join(tempRoot, ".agent-workflow", "adapters", "codex.json");
   const codexAdapter = JSON.parse(fs.readFileSync(codexAdapterPath, "utf8"));
   codexAdapter.commandMode = "exec";
-  codexAdapter.runnerCommand = ["node"];
+  codexAdapter.runnerCommand = [process.execPath];
   codexAdapter.argvTemplate = ["fake-runner.js", "{promptFile}", "{runRequestFile}"];
   codexAdapter.cwdMode = "workspaceRoot";
-  codexAdapter.stdioMode = "inherit";
+  codexAdapter.stdioMode = "pipe";
   codexAdapter.successExitCodes = [0];
   codexAdapter.envAllowlist = [];
   fs.writeFileSync(codexAdapterPath, `${JSON.stringify(codexAdapter, null, 2)}\n`, "utf8");
 
   runNode(cliPath, ["run:execute", "T-001", "--agent", "codex", "--root", tempRoot]);
+  codexAdapter.argvTemplate = ["fake-runner.js", "{promptFile}", "{runRequestFile}", "--sleep-ms", "250"];
+  fs.writeFileSync(codexAdapterPath, `${JSON.stringify(codexAdapter, null, 2)}\n`, "utf8");
+  runNodeExpectFailure(cliPath, ["run:execute", "T-003", "--agent", "codex", "--timeout-ms", "50", "--root", tempRoot]);
   runNode(cliPath, ["validate", "--root", tempRoot]);
 
   assertExists(path.join(tempRoot, ".agent-workflow", "adapters", "codex.json"));
@@ -92,18 +117,38 @@ console.log("executed", runRequest.taskId, runRequest.adapterId);
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "run-request.codex.json"));
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "launch.codex.md"));
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "checkpoint.md"));
-  assertExists(path.join(tempRoot, "executor-marker.txt"));
+  assertExists(path.join(tempRoot, "T-001.marker.txt"));
+  assertExists(path.join(tempRoot, "T-003.marker.txt"));
 
   const t001Runs = loadRunRecords(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "runs"));
   const executorRun = t001Runs.find((run) => run.source === "executor");
   if (!executorRun || executorRun.status !== "passed") {
     throw new Error("run:execute did not persist a passed executor run.");
   }
-  if (!fs.readFileSync(path.join(tempRoot, "executor-marker.txt"), "utf8").includes("executor-ok")) {
+  assertExists(path.join(tempRoot, executorRun.stdoutFile));
+  assertExists(path.join(tempRoot, executorRun.stderrFile));
+  if (!fs.readFileSync(path.join(tempRoot, executorRun.stdoutFile), "utf8").includes("stdout T-001 codex")) {
+    throw new Error("Executor stdout capture did not persist expected content.");
+  }
+  if (!fs.readFileSync(path.join(tempRoot, executorRun.stderrFile), "utf8").includes("stderr T-001 codex")) {
+    throw new Error("Executor stderr capture did not persist expected content.");
+  }
+  if (!fs.readFileSync(path.join(tempRoot, "T-001.marker.txt"), "utf8").includes("executor-ok")) {
     throw new Error("Fake executor did not observe the prepared prompt.");
   }
   if (!fs.readFileSync(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "verification.md"), "utf8").includes("Source: executor")) {
     throw new Error("Executor evidence was not appended to verification.md.");
+  }
+
+  const t003Runs = loadRunRecords(path.join(tempRoot, ".agent-workflow", "tasks", "T-003", "runs"));
+  const timedOutRun = t003Runs.find((run) => run.source === "executor");
+  if (!timedOutRun || timedOutRun.status !== "failed" || timedOutRun.timedOut !== true) {
+    throw new Error("Timed out executor run did not persist timeout metadata.");
+  }
+  assertExists(path.join(tempRoot, timedOutRun.stdoutFile));
+  assertExists(path.join(tempRoot, timedOutRun.stderrFile));
+  if (!fs.readFileSync(path.join(tempRoot, ".agent-workflow", "tasks", "T-003", "verification.md"), "utf8").includes("Timed out: true")) {
+    throw new Error("Timeout evidence was not appended to verification.md.");
   }
 
   const port = 4317;
@@ -115,7 +160,7 @@ console.log("executed", runRequest.taskId, runRequest.adapterId);
   try {
     await wait(800);
     const overview = await fetchJson(`http://127.0.0.1:${port}/api/overview`);
-    if (!overview.initialized || overview.tasks.length !== 1) {
+    if (!overview.initialized || overview.tasks.length !== 2) {
       throw new Error("Unexpected overview payload.");
     }
 
@@ -172,7 +217,7 @@ Ship a dashboard markdown editor.
     }
 
     const overview2 = await fetchJson(`http://127.0.0.1:${port}/api/overview`);
-    if (overview2.tasks.length !== 2) {
+    if (overview2.tasks.length !== 3) {
       throw new Error("Overview did not reflect created task.");
     }
   } finally {
@@ -187,6 +232,21 @@ function runNode(scriptPath, args) {
   execFileSync(process.execPath, [scriptPath, ...args], {
     stdio: "ignore",
   });
+}
+
+function runNodeExpectFailure(scriptPath, args) {
+  try {
+    execFileSync(process.execPath, [scriptPath, ...args], {
+      stdio: "ignore",
+    });
+  } catch (error) {
+    if (error.status && error.status !== 0) {
+      return;
+    }
+    throw error;
+  }
+
+  throw new Error(`Expected command to fail: ${[scriptPath, ...args].join(" ")}`);
 }
 
 function assertExists(filePath) {

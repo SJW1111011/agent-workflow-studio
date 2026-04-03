@@ -15,7 +15,7 @@ The product direction is already chosen:
 
 ## Current status
 
-As of 2026-04-02, the project already has a working MVP foundation:
+As of 2026-04-03, the project already has a working MVP foundation:
 
 - workflow scaffold generation under `.agent-workflow/`
 - repository scanning and project profile generation
@@ -24,6 +24,7 @@ As of 2026-04-02, the project already has a working MVP foundation:
 - prompt compilation
 - run preparation handoff packs
 - CLI-only `run:execute` for adapters that opt into `commandMode: exec`
+- stdout/stderr capture plus timeout/interruption metadata for `run:execute`
 - run evidence recording
 - checkpoint generation
 - recipe registry
@@ -134,6 +135,7 @@ The smoke test currently covers:
 - task detail API
 - dashboard write APIs for creating tasks, updating tasks, editing task docs, and recording runs
 - CLI executor path for `run:execute`, including run ledger + verification/checkpoint refresh
+- executor capture mode and timeout path
 
 ## Why moving the folder should be safe
 
@@ -157,7 +159,7 @@ Recommended next sequence:
 1. Add better freshness detection for memory docs and task docs.
 2. Add diff-aware verification gates.
 3. Harden task-level guardrails so metadata-managed markdown blocks stay stable during richer edits.
-4. Add richer executor capture such as stdout/stderr logs, timeout handling, and interruption metadata.
+4. Surface executor state more clearly in the dashboard and task detail flows.
 5. Only after the local executor is stable, extend dashboard-triggered execution.
 
 ## What not to do next

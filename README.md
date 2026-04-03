@@ -81,6 +81,7 @@ npm run recipe:list -- --root ../some-repo
 npm run task:new -- T-001 "Build the scanner" --priority P1 --recipe feature --root ../some-repo
 npm run prompt:compile -- T-001 --agent codex --root ../some-repo
 npm run run:prepare -- T-001 --agent codex --root ../some-repo
+npm run run:execute -- T-001 --agent codex --root ../some-repo
 npm run run:add -- T-001 "Initial scanner pass completed." --status passed --root ../some-repo
 npm run checkpoint -- T-001 --root ../some-repo
 npm run validate -- --root ../some-repo
@@ -116,7 +117,9 @@ There is now a first CLI-only `run:execute` pass for adapters that explicitly sw
 - built-in adapters still default to `manual`
 - the first executable pass keeps the contract-first structure
 - execution writes evidence back into `runs/*.json`, `verification.md`, and `checkpoint.md`
-- `stdioMode: inherit` is supported in the first pass; richer capture remains future work
+- `stdioMode: inherit` and `stdioMode: pipe` are supported
+- capture mode can persist stdout and stderr logs under the task run ledger
+- execution can record timeout and interruption metadata
 
 See `docs/ADAPTERS.md`.
 
@@ -136,8 +139,8 @@ See `docs/RECIPES_AND_SCHEMA.md`.
 
 ## Suggested next build steps
 
-1. Harden the new `run:execute` path with richer capture, timeout handling, and interruption metadata.
-2. Add richer freshness detection, diff-aware verification gates, and checkpoint refresh rules.
+1. Add richer freshness detection, diff-aware verification gates, and checkpoint refresh rules.
+2. Surface executor state more clearly in the dashboard and task detail flows.
 3. Add repository-aware recipe customization and stronger task editing guardrails.
 4. Add GitHub issue and PR linking.
 5. Add multi-agent run orchestration and resume bundles.
