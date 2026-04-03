@@ -179,45 +179,22 @@ function updateTaskMeta(workspaceRoot, taskId, changes = {}) {
 }
 
 function recordRun(workspaceRoot, taskId, summary, status = "draft", agent = "manual") {
-  const files = taskFiles(workspaceRoot, taskId);
-
-  if (!fileExists(files.meta)) {
-    throw new Error(`Task ${taskId} does not exist yet.`);
-  }
-
-  const createdAt = new Date().toISOString();
-  const run = {
-    id: `run-${Date.now()}`,
-    taskId,
+  const run = createRunRecord(taskId, {
     agent,
     status,
     summary,
-    createdAt,
-  };
+  });
 
-  fs.mkdirSync(files.runs, { recursive: true });
-  writeJson(path.join(files.runs, `${run.id}.json`), run);
-
-  appendText(
-    files.verification,
-    `\n## Evidence ${createdAt}\n\n- Agent: ${agent}\n- Status: ${status}\n- Summary: ${summary}\n`
-  );
-
-  const meta = readJson(files.meta, {});
-  meta.updatedAt = createdAt;
-  if (status === "passed" && meta.status === "todo") {
-    meta.status = "in_progress";
-  }
-  writeJson(files.meta, meta);
-
-  return run;
+  return persistRunRecord(workspaceRoot, taskId, run);
 }
 
 module.exports = {
+  createRunRecord,
   createTask,
   getTaskDetail,
   listRuns,
   listTasks,
+  persistRunRecord,
   recordRun,
   updateTaskMeta,
 };
@@ -233,7 +210,77 @@ function describeFile(name, absolutePath) {
   };
 }
 
+function createRunRecord(taskId, fields = {}) {
+  const createdAt = isNonEmptyString(fields.createdAt) ? fields.createdAt : new Date().toISOString();
+  return {
+    id: isNonEmptyString(fields.id) ? fields.id : `run-${Date.now()}`,
+    taskId,
+    agent: fields.agent || "manual",
+    status: fields.status || "draft",
+    summary: fields.summary || "",
+    createdAt,
+    ...omitUndefined(fields, new Set(["id", "taskId", "agent", "status", "summary", "createdAt"])),
+  };
+}
+
+function persistRunRecord(workspaceRoot, taskId, run) {
+  const files = taskFiles(workspaceRoot, taskId);
+
+  if (!fileExists(files.meta)) {
+    throw new Error(`Task ${taskId} does not exist yet.`);
+  }
+
+  const persistedRun = {
+    ...run,
+    taskId,
+  };
+
+  fs.mkdirSync(files.runs, { recursive: true });
+  writeJson(path.join(files.runs, `${persistedRun.id}.json`), persistedRun);
+  appendText(files.verification, renderVerificationEvidence(persistedRun));
+
+  const meta = readJson(files.meta, {});
+  const updatedAt = persistedRun.completedAt || persistedRun.createdAt || new Date().toISOString();
+  meta.updatedAt = updatedAt;
+  if (persistedRun.status === "passed" && meta.status === "todo") {
+    meta.status = "in_progress";
+  }
+  writeJson(files.meta, meta);
+
+  return persistedRun;
+}
+
 function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function omitUndefined(value, excludedKeys) {
+  return Object.fromEntries(
+    Object.entries(value || {}).filter(
+      ([key, entryValue]) => !excludedKeys.has(key) && entryValue !== undefined
+    )
+  );
+}
+
+function renderVerificationEvidence(run) {
+  const timestamp = run.completedAt || run.createdAt || new Date().toISOString();
+  const lines = [
+    ["Agent", run.agent],
+    ["Source", run.source],
+    ["Adapter", run.adapterId],
+    ["Status", run.status],
+    ["Exit code", run.exitCode],
+    ["Prompt file", run.promptFile],
+    ["Run request file", run.runRequestFile],
+    ["Launch pack file", run.launchPackFile],
+    ["Stdout log", run.stdoutFile],
+    ["Stderr log", run.stderrFile],
+    ["Error", run.errorMessage],
+    ["Summary", run.summary],
+  ]
+    .filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== "")
+    .map(([label, value]) => `- ${label}: ${value}`);
+
+  return `\n## Evidence ${timestamp}\n\n${lines.join("\n")}\n`;
 }
 

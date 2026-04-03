@@ -6,6 +6,7 @@ const { listAdapters, normalizeAdapterId } = require("./lib/adapters");
 const { buildOverview } = require("./lib/overview");
 const { compilePrompt } = require("./lib/prompt-compiler");
 const { listRecipes } = require("./lib/recipes");
+const { executeRun } = require("./lib/run-executor");
 const { prepareRun } = require("./lib/run-preparer");
 const { scanWorkspace } = require("./lib/scanner");
 const { validateWorkspace } = require("./lib/schema-validator");
@@ -86,6 +87,21 @@ function main() {
         print(`Prepared ${adapterId} launch pack at ${result.launchPackPath}`);
         print(`Prepared ${adapterId} run request at ${result.runRequestPath}`);
         break;
+      }
+      case "run:execute": {
+        const [taskId] = positionals;
+        const adapterId = normalizeAdapterId(options.agent || options.adapter || "codex");
+        assert(taskId, "Usage: run:execute <taskId> [--agent codex|claude] [--root path]");
+        executeRun(workspaceRoot, taskId, adapterId)
+          .then((result) => {
+            print(`Executed ${adapterId} for ${taskId} with status ${result.run.status}.`);
+            print(`Recorded run ${result.run.id}.`);
+          })
+          .catch((error) => {
+            console.error(error.message);
+            process.exitCode = 1;
+          });
+        return;
       }
       case "checkpoint": {
         const [taskId] = positionals;
@@ -184,6 +200,7 @@ Commands:
   task:list [--root path]
   prompt:compile <taskId> [--agent codex|claude] [--root path]
   run:prepare <taskId> [--agent codex|claude] [--root path]
+  run:execute <taskId> [--agent codex|claude] [--root path]
   run:add <taskId> <summary> [--status passed|failed|draft] [--root path]
   checkpoint <taskId> [--root path]
   overview [--root path]

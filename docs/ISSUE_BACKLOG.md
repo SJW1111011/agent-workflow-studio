@@ -4,7 +4,7 @@ This file captures the first public issue drafts for the repository.
 
 It exists so the work can stay structured even when issue creation is done later by hand or through another tool.
 
-## 1. Design `run:execute` without breaking the contract-first architecture
+## 1. Harden `run:execute` after the first CLI-only pass
 
 Suggested labels:
 
@@ -14,26 +14,26 @@ Suggested labels:
 
 Title:
 
-`Design run:execute local executor without breaking the contract-first adapter layer`
+`Harden run:execute with capture, timeout handling, and clearer executor evidence`
 
 Problem:
 
-The project can already create prompt bundles, adapter handoff packs, runs, and checkpoints, but it cannot yet launch a local executor in a structured way. We need execution automation, but not at the cost of schema drift, machine-specific assumptions, or turning adapters into hard-coded vendor glue.
+The project now has a first CLI-only `run:execute` pass for adapters that opt into `commandMode: exec`, but it is intentionally minimal. It still needs stronger capture and failure-handling before it becomes a more complete local executor.
 
 Why it matters:
 
 - automation is a core product goal
 - execution should still leave durable evidence
 - handoff contracts should remain inspectable and portable
-- future agent/runtime integrations should not require rewriting the workflow model
+- future executor improvements should not require rewriting the workflow model
 
 Acceptance criteria:
 
-- define the boundary between `run-request.<adapter>.json`, adapter config, and runtime-only execution state
-- define what `run:execute` reads, what it writes, and what it must never persist
-- define how stdout, stderr, exit code, timestamps, and execution status map into `runs/*.json`
-- define how verification docs and checkpoints refresh after execution
-- define how user-approved local commands fit without baking absolute paths into the project state
+- add optional stdout and stderr capture without breaking relocatability
+- add timeout and interruption metadata
+- keep direct process spawning and avoid shell-built command strings
+- extend run evidence so failures are easier to triage in the dashboard later
+- keep adapter config as the only vendor-specific launch layer
 
 Non-goals:
 

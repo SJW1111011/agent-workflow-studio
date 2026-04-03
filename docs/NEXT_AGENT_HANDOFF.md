@@ -23,6 +23,7 @@ As of 2026-04-02, the project already has a working MVP foundation:
 - Codex / Claude Code adapter contracts
 - prompt compilation
 - run preparation handoff packs
+- CLI-only `run:execute` for adapters that opt into `commandMode: exec`
 - run evidence recording
 - checkpoint generation
 - recipe registry
@@ -69,6 +70,7 @@ Supported commands:
 - `task:list`
 - `prompt:compile`
 - `run:prepare`
+- `run:execute`
 - `run:add`
 - `checkpoint`
 - `overview`
@@ -131,6 +133,7 @@ The smoke test currently covers:
 - overview API
 - task detail API
 - dashboard write APIs for creating tasks, updating tasks, editing task docs, and recording runs
+- CLI executor path for `run:execute`, including run ledger + verification/checkpoint refresh
 
 ## Why moving the folder should be safe
 
@@ -154,8 +157,8 @@ Recommended next sequence:
 1. Add better freshness detection for memory docs and task docs.
 2. Add diff-aware verification gates.
 3. Harden task-level guardrails so metadata-managed markdown blocks stay stable during richer edits.
-4. Write the `run:execute` local executor design first, keeping the contract-first adapter layer intact.
-5. Only after the design is stable, add `run:execute` to launch local Codex / Claude Code runners.
+4. Add richer executor capture such as stdout/stderr logs, timeout handling, and interruption metadata.
+5. Only after the local executor is stable, extend dashboard-triggered execution.
 
 ## What not to do next
 
@@ -168,14 +171,13 @@ Recommended next sequence:
 
 Suggested first task:
 
-Design `run:execute` without implementing the executor yet.
+Add freshness and verification hardening on top of the new executor pass.
 
 Expected shape:
 
-- keep `.agent-workflow/adapters/*.json` as the source of truth
-- treat `run-request.<adapter>.json` as the executable handoff contract
-- avoid hard-coding machine paths or shell behavior into the core workflow model
-- define how execution evidence should flow back into `runs/*.json`, `verification.md`, and checkpoints
+- surface stale memory docs and stale task docs in overview risks
+- tie changed work more explicitly to verification expectations
+- keep the executor contract stable while improving trust signals
 
 ## Useful commands
 

@@ -37,6 +37,28 @@ async function main() {
     "# Notes\n\nThe scanner should discover this file.\n",
     "utf8"
   );
+  fs.writeFileSync(
+    path.join(tempRoot, "fake-runner.js"),
+    `const fs = require("fs");
+const path = require("path");
+
+const promptPath = process.argv[2];
+const runRequestPath = process.argv[3];
+
+if (!promptPath || !runRequestPath) {
+  console.error("missing args");
+  process.exit(2);
+}
+
+const prompt = fs.readFileSync(promptPath, "utf8");
+const runRequest = JSON.parse(fs.readFileSync(runRequestPath, "utf8"));
+const markerPath = path.join(process.cwd(), "executor-marker.txt");
+
+fs.writeFileSync(markerPath, prompt.includes("# T-001 Prompt") ? "executor-ok\\n" : "executor-bad\\n", "utf8");
+console.log("executed", runRequest.taskId, runRequest.adapterId);
+`,
+    "utf8"
+  );
 
   runNode(cliPath, ["init", "--root", tempRoot]);
   runNode(cliPath, ["scan", "--root", tempRoot]);
@@ -49,6 +71,20 @@ async function main() {
   runNode(cliPath, ["checkpoint", "T-001", "--root", tempRoot]);
   runNode(cliPath, ["validate", "--root", tempRoot]);
 
+  const codexAdapterPath = path.join(tempRoot, ".agent-workflow", "adapters", "codex.json");
+  const codexAdapter = JSON.parse(fs.readFileSync(codexAdapterPath, "utf8"));
+  codexAdapter.commandMode = "exec";
+  codexAdapter.runnerCommand = ["node"];
+  codexAdapter.argvTemplate = ["fake-runner.js", "{promptFile}", "{runRequestFile}"];
+  codexAdapter.cwdMode = "workspaceRoot";
+  codexAdapter.stdioMode = "inherit";
+  codexAdapter.successExitCodes = [0];
+  codexAdapter.envAllowlist = [];
+  fs.writeFileSync(codexAdapterPath, `${JSON.stringify(codexAdapter, null, 2)}\n`, "utf8");
+
+  runNode(cliPath, ["run:execute", "T-001", "--agent", "codex", "--root", tempRoot]);
+  runNode(cliPath, ["validate", "--root", tempRoot]);
+
   assertExists(path.join(tempRoot, ".agent-workflow", "adapters", "codex.json"));
   assertExists(path.join(tempRoot, ".agent-workflow", "recipes", "index.json"));
   assertExists(path.join(tempRoot, ".agent-workflow", "project-profile.json"));
@@ -56,6 +92,19 @@ async function main() {
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "run-request.codex.json"));
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "launch.codex.md"));
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "checkpoint.md"));
+  assertExists(path.join(tempRoot, "executor-marker.txt"));
+
+  const t001Runs = loadRunRecords(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "runs"));
+  const executorRun = t001Runs.find((run) => run.source === "executor");
+  if (!executorRun || executorRun.status !== "passed") {
+    throw new Error("run:execute did not persist a passed executor run.");
+  }
+  if (!fs.readFileSync(path.join(tempRoot, "executor-marker.txt"), "utf8").includes("executor-ok")) {
+    throw new Error("Fake executor did not observe the prepared prompt.");
+  }
+  if (!fs.readFileSync(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "verification.md"), "utf8").includes("Source: executor")) {
+    throw new Error("Executor evidence was not appended to verification.md.");
+  }
 
   const port = 4317;
   const server = spawn(process.execPath, [serverPath, "--root", tempRoot, "--port", String(port)], {
@@ -144,6 +193,13 @@ function assertExists(filePath) {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Expected file to exist: ${filePath}`);
   }
+}
+
+function loadRunRecords(runsRoot) {
+  return fs
+    .readdirSync(runsRoot, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+    .map((entry) => JSON.parse(fs.readFileSync(path.join(runsRoot, entry.name), "utf8")));
 }
 
 function wait(ms) {

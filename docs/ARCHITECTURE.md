@@ -47,6 +47,7 @@ The CLI owns:
 - task creation
 - prompt compilation
 - run preparation
+- run execution
 - run recording
 - checkpoint generation
 - schema validation

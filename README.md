@@ -39,6 +39,7 @@ The current foundation includes:
 - `task:new`: create a structured task package with both machine-readable and human-readable context
 - `prompt:compile`: generate Codex or Claude Code prompts from workflow state
 - `run:prepare`: generate an execution handoff pack for a specific adapter
+- `run:execute`: launch a local adapter when its config explicitly opts into `commandMode: exec`
 - `run:add`: append execution evidence to a task
 - `checkpoint`: build a resumable checkpoint for the current task
 - `validate`: run schema checks on project, adapters, tasks, and recorded runs
@@ -110,7 +111,16 @@ Instead it provides:
 - execution handoff packs such as `run-request.codex.json` and `launch.codex.md`
 - a place to customize local runner commands after you confirm your environment
 
+There is now a first CLI-only `run:execute` pass for adapters that explicitly switch to `commandMode: exec`.
+
+- built-in adapters still default to `manual`
+- the first executable pass keeps the contract-first structure
+- execution writes evidence back into `runs/*.json`, `verification.md`, and `checkpoint.md`
+- `stdioMode: inherit` is supported in the first pass; richer capture remains future work
+
 See `docs/ADAPTERS.md`.
+
+The next automation layer is now scoped in `docs/RUN_EXECUTE_DESIGN.md` before implementation begins.
 
 ## Recipe registry and schema checks
 
@@ -126,7 +136,7 @@ See `docs/RECIPES_AND_SCHEMA.md`.
 
 ## Suggested next build steps
 
-1. Add executable runner adapters on top of the current handoff contracts.
+1. Harden the new `run:execute` path with richer capture, timeout handling, and interruption metadata.
 2. Add richer freshness detection, diff-aware verification gates, and checkpoint refresh rules.
 3. Add repository-aware recipe customization and stronger task editing guardrails.
 4. Add GitHub issue and PR linking.

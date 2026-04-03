@@ -4,12 +4,14 @@ The adapter layer is the bridge between workflow state and a concrete agent runt
 
 ## Current goal
 
-The current version focuses on a safe contract first:
+The current version still focuses on a safe contract first:
 
 - define what each adapter expects
 - generate adapter-specific prompt targets
 - produce a run request that another tool or future executor can consume
 - avoid hard-coding machine-specific absolute paths
+
+It now also includes a first CLI-only executor path for adapters that opt into `commandMode: exec`.
 
 ## What gets generated
 
@@ -46,6 +48,13 @@ Launching agent CLIs directly can vary by:
 
 So the first version creates a durable handoff pack that is easy to inspect, version, and automate later.
 
+That remains true even after adding `run:execute`:
+
+- built-in adapters still default to `manual`
+- execution is only enabled when an adapter config explicitly opts into `exec`
+- the executor reads adapter config plus `run-request.<adapter>.json`
+- evidence is written back into task-local workflow files
+
 ## Adapter config fields
 
 - `adapterId`: stable identifier
@@ -54,13 +63,27 @@ So the first version creates a durable handoff pack that is easy to inspect, ver
 - `runRequestFile`: machine-readable execution handoff
 - `launchPackFile`: human-readable execution handoff
 - `runnerCommand`: local binary hint, editable by the user
+- `argvTemplate`: adapter-owned argument template for executable mode
+- `commandMode`: `manual` or `exec`
+- `cwdMode`: runtime working directory hint for executable mode
+- `stdioMode`: first pass supports `inherit`
+- `successExitCodes`: which exit codes count as pass
 - `capabilities`: lightweight feature flags for the adapter
 
 ## Next step
 
+The first local executor pass now supports:
+
+- CLI-only `run:execute`
+- direct process spawning from adapter config
+- run evidence written back into `runs/*.json`
+- automatic refresh of `verification.md` and `checkpoint.md`
+
 The next implementation layer can add:
 
-- real process spawning for approved local executors
-- richer stdin or prompt passing strategies
-- run completion ingestion
+- richer stdout and stderr capture
+- timeout and interruption handling
+- clearer executor state in the dashboard
 - session transcript linking
+
+The current recommended boundary for that work is documented in `docs/RUN_EXECUTE_DESIGN.md`.

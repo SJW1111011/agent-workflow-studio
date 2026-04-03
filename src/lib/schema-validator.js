@@ -82,6 +82,32 @@ function validateAdapters(workspaceRoot, issues) {
     }
     if (!Array.isArray(config.runnerCommand)) {
       issues.push(issue("warning", "adapter.runnerCommand", `Adapter ${adapter.adapterId} should include runnerCommand array`, adapter.adapterPath));
+    } else if ((config.commandMode || "manual") === "exec" && config.runnerCommand.length === 0) {
+      issues.push(issue("error", "adapter.runnerCommand.empty", `Adapter ${adapter.adapterId} cannot use exec mode with an empty runnerCommand`, adapter.adapterPath));
+    }
+    if (config.commandMode !== undefined && !["manual", "exec"].includes(config.commandMode)) {
+      issues.push(issue("error", "adapter.commandMode", `Adapter ${adapter.adapterId} has unsupported commandMode ${config.commandMode}`, adapter.adapterPath));
+    }
+    if (config.argvTemplate !== undefined && !Array.isArray(config.argvTemplate)) {
+      issues.push(issue("error", "adapter.argvTemplate", `Adapter ${adapter.adapterId} must use argvTemplate array when present`, adapter.adapterPath));
+    }
+    if (config.cwdMode !== undefined && !["workspaceRoot", "taskRoot"].includes(config.cwdMode)) {
+      issues.push(issue("error", "adapter.cwdMode", `Adapter ${adapter.adapterId} has unsupported cwdMode ${config.cwdMode}`, adapter.adapterPath));
+    }
+    if (config.stdioMode !== undefined && !["inherit", "pipe"].includes(config.stdioMode)) {
+      issues.push(issue("error", "adapter.stdioMode", `Adapter ${adapter.adapterId} has unsupported stdioMode ${config.stdioMode}`, adapter.adapterPath));
+    }
+    if (
+      config.successExitCodes !== undefined &&
+      (!Array.isArray(config.successExitCodes) || !config.successExitCodes.every((value) => Number.isInteger(value)))
+    ) {
+      issues.push(issue("error", "adapter.successExitCodes", `Adapter ${adapter.adapterId} must use numeric successExitCodes`, adapter.adapterPath));
+    }
+    if (
+      config.envAllowlist !== undefined &&
+      (!Array.isArray(config.envAllowlist) || !config.envAllowlist.every((value) => isNonEmptyString(value)))
+    ) {
+      issues.push(issue("error", "adapter.envAllowlist", `Adapter ${adapter.adapterId} must use string envAllowlist entries`, adapter.adapterPath));
     }
   });
 }
@@ -116,6 +142,18 @@ function validateTasks(workspaceRoot, issues) {
       }
       if (!isNonEmptyString(run.summary)) {
         issues.push(issue("warning", "run.summary", `Task ${task.id} has a run without summary`, runPath));
+      }
+      if (run.source !== undefined && !["manual", "executor"].includes(run.source)) {
+        issues.push(issue("warning", "run.source", `Task ${task.id} has a run with unsupported source ${run.source}`, runPath));
+      }
+      if (run.exitCode !== undefined && run.exitCode !== null && !Number.isInteger(run.exitCode)) {
+        issues.push(issue("warning", "run.exitCode", `Task ${task.id} has a run with non-numeric exitCode`, runPath));
+      }
+      if (run.promptFile !== undefined && !isNonEmptyString(run.promptFile)) {
+        issues.push(issue("warning", "run.promptFile", `Task ${task.id} has a run with invalid promptFile`, runPath));
+      }
+      if (run.runRequestFile !== undefined && !isNonEmptyString(run.runRequestFile)) {
+        issues.push(issue("warning", "run.runRequestFile", `Task ${task.id} has a run with invalid runRequestFile`, runPath));
       }
     });
   });
