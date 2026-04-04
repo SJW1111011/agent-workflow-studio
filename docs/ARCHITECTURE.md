@@ -84,9 +84,22 @@ The dashboard renders:
 - task board
 - task creation and task metadata editing forms
 - lightweight markdown editing for `task.md`, `context.md`, and `verification.md`
-- run evidence recording form
+- run evidence recording form with structured proof paths, checks, and artifact refs
+- metadata-managed markdown blocks for task title/recipe/context constraints that stay stable during edits
+- editor guidance that explains which sections are managed on save versus freeform
+- run proof path shortcuts that can prefill pending scoped files from the current verification gate
+- run check shortcuts that can draft one verification check per pending scoped file
+- verification.md shortcuts that can draft a pending proof plan from the current scoped file set by inserting planned checks plus file-only Proof links placeholders
+- run-form shortcuts that can sync drafted proof paths/checks into the verification editor as an unsaved proof plan
+- checkpoint detail
 - executor run metadata and task-local log inspection
+- a local-only dashboard execution bridge that reuses the shared executor module for `stdioMode: pipe` adapters
+- transient execution status plus cancel requests surfaced in task detail without creating a second durable execution database
+- clearer dashboard reporting backed by a structured execution outcome field instead of summary-text inference
+- overview task cards now expose the latest executor outcome separately from the latest overall run summary
+- overview stats now aggregate each task's latest executor outcome for dashboard-level reporting
 - memory freshness view
+- diff-aware verification gate summaries
 - risk queue
 - verification summary
 
@@ -145,11 +158,17 @@ The first dashboard pass computes risks from simple heuristics:
 - task has no run evidence
 - latest run failed
 - task docs older than recent workflow activity or the current freshness threshold
+- scoped local changes are newer than the latest verification evidence
+- scoped local changes are not explicitly linked to proof paths yet
+- proof only partially covers the scoped changed files
+- proof items exist but are too weak because they lack clear checks or artifact refs
+- active tasks have local changes but no repo-relative scope hints
+- task scope still contains ambiguous entries that cannot be matched automatically
 
 Later versions can add:
 
 - diff-aware stale docs based on changed files
-- diff-aware verification gaps
+- richer dashboard proof capture controls on top of the current structured check/artifact model
 - contract mismatches
 - fake implementation heuristics
 

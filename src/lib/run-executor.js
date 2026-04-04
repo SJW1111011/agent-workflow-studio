@@ -28,29 +28,11 @@ const CORE_ENV_KEYS = [
 ];
 
 async function executeRun(workspaceRoot, taskId, adapterInput, options = {}) {
-  const adapterId = normalizeAdapterId(adapterInput || "codex");
-  const prepared = prepareRun(workspaceRoot, taskId, adapterId);
-  const adapter = getAdapter(workspaceRoot, adapterId);
+  const plan = options.executionPlan || planRunExecution(workspaceRoot, taskId, adapterInput, options);
   const files = taskFiles(workspaceRoot, taskId);
-  const runRequest = readJson(prepared.runRequestPath, null);
-
-  if (!runRequest) {
-    throw new Error(`Run request is missing or invalid for ${taskId} (${adapterId}).`);
-  }
-
-  if ((adapter.commandMode || "manual") !== "exec") {
-    throw new Error(
-      `Adapter ${adapterId} is configured for manual handoff only. Review ${toWorkspaceRelative(
-        workspaceRoot,
-        prepared.launchPackPath
-      )} or switch commandMode to exec first.`
-    );
-  }
-
-  const plan = buildExecutionPlan(workspaceRoot, taskId, adapter, files, prepared, runRequest, options);
   const runId = `run-${Date.now()}`;
   const startedAt = new Date().toISOString();
-  const execution = await spawnExecution(plan, runId, files.runs);
+  const execution = await spawnExecution(plan, runId, plan.runsDirectory || files.runs, options.abortSignal);
   const completedAt = new Date().toISOString();
   const durationMs = new Date(completedAt).getTime() - new Date(startedAt).getTime();
   const exitCode = typeof execution.exitCode === "number" ? execution.exitCode : null;
@@ -58,8 +40,8 @@ async function executeRun(workspaceRoot, taskId, adapterInput, options = {}) {
 
   const run = createRunRecord(taskId, {
     id: runId,
-    agent: adapterId,
-    adapterId,
+    agent: plan.adapterId,
+    adapterId: plan.adapterId,
     source: "executor",
     status,
     summary: buildExecutionSummary(status, exitCode, {
@@ -82,6 +64,8 @@ async function executeRun(workspaceRoot, taskId, adapterInput, options = {}) {
     launchPackFile: plan.launchPackFileRelative,
     stdoutFile: execution.stdoutPath ? toWorkspaceRelative(workspaceRoot, execution.stdoutPath) : undefined,
     stderrFile: execution.stderrPath ? toWorkspaceRelative(workspaceRoot, execution.stderrPath) : undefined,
+    verificationChecks: buildExecutionVerificationChecks(workspaceRoot, plan, status, exitCode, execution),
+    verificationArtifacts: collectExecutionArtifactRefs(workspaceRoot, plan, execution),
     errorMessage: execution.errorMessage,
   });
 
@@ -89,11 +73,34 @@ async function executeRun(workspaceRoot, taskId, adapterInput, options = {}) {
   const checkpoint = buildCheckpoint(workspaceRoot, taskId);
 
   return {
-    adapterId,
+    adapterId: plan.adapterId,
     taskId,
     run: persistedRun,
     checkpoint,
   };
+}
+
+function planRunExecution(workspaceRoot, taskId, adapterInput, options = {}) {
+  const adapterId = normalizeAdapterId(adapterInput || "codex");
+  const prepared = prepareRun(workspaceRoot, taskId, adapterId);
+  const adapter = getAdapter(workspaceRoot, adapterId);
+  const files = taskFiles(workspaceRoot, taskId);
+  const runRequest = readJson(prepared.runRequestPath, null);
+
+  if (!runRequest) {
+    throw new Error(`Run request is missing or invalid for ${taskId} (${adapterId}).`);
+  }
+
+  if ((adapter.commandMode || "manual") !== "exec") {
+    throw new Error(
+      `Adapter ${adapterId} is configured for manual handoff only. Review ${toWorkspaceRelative(
+        workspaceRoot,
+        prepared.launchPackPath
+      )} or switch commandMode to exec first.`
+    );
+  }
+
+  return buildExecutionPlan(workspaceRoot, taskId, adapter, files, prepared, runRequest, options);
 }
 
 function buildExecutionPlan(workspaceRoot, taskId, adapter, files, prepared, runRequest, options = {}) {
@@ -143,6 +150,7 @@ function buildExecutionPlan(workspaceRoot, taskId, adapter, files, prepared, run
     promptFileRelative: runRequest.promptFile || toWorkspaceRelative(workspaceRoot, promptFileAbsolute),
     runRequestFileRelative: toWorkspaceRelative(workspaceRoot, runRequestAbsolute),
     launchPackFileRelative: runRequest.launchPackFile || toWorkspaceRelative(workspaceRoot, launchPackAbsolute),
+    runsDirectory: files.runs,
   };
 }
 
@@ -160,7 +168,7 @@ function resolveTemplateValue(value, tokenMap) {
   });
 }
 
-async function spawnExecution(plan, runId, runsDirectory) {
+async function spawnExecution(plan, runId, runsDirectory, abortSignal) {
   return new Promise((resolve, reject) => {
     let spawned = false;
     let stdoutPath;
@@ -174,6 +182,8 @@ async function spawnExecution(plan, runId, runsDirectory) {
     let terminationSignal = null;
     let timeoutHandle = null;
     let forceKillHandle = null;
+    let pendingTerminationReason = null;
+    let abortListener = null;
 
     try {
       if (plan.stdioMode === "pipe") {
@@ -208,12 +218,20 @@ async function spawnExecution(plan, runId, runsDirectory) {
       for (const [signal, listener] of signalListeners.entries()) {
         process.off(signal, listener);
       }
+      if (abortSignal && abortListener) {
+        abortSignal.removeEventListener("abort", abortListener);
+      }
       safeCloseFd(stdoutFd);
       safeCloseFd(stderrFd);
     };
 
     const requestTermination = (reason) => {
-      if (!spawned || child.exitCode !== null || child.killed) {
+      if (!spawned) {
+        pendingTerminationReason = reason;
+        return;
+      }
+
+      if (child.exitCode !== null || child.killed) {
         return;
       }
 
@@ -221,10 +239,10 @@ async function spawnExecution(plan, runId, runsDirectory) {
         timedOut = true;
       } else if (reason.type === "signal") {
         interrupted = true;
-        interruptionSignal = reason.signal;
+        interruptionSignal = reason.signal || "SIGTERM";
       }
 
-      const killSignal = reason.signal || "SIGTERM";
+      const killSignal = reason.killSignal || "SIGTERM";
       child.kill(killSignal);
       forceKillHandle = setTimeout(() => {
         if (child.exitCode === null) {
@@ -249,6 +267,10 @@ async function spawnExecution(plan, runId, runsDirectory) {
         signalListeners.set(signal, listener);
         process.on(signal, listener);
       });
+
+      if (pendingTerminationReason) {
+        requestTermination(pendingTerminationReason);
+      }
     });
 
     child.on("error", (error) => {
@@ -260,6 +282,25 @@ async function spawnExecution(plan, runId, runsDirectory) {
 
       childErrorMessage = error.message;
     });
+
+    if (abortSignal) {
+      if (abortSignal.aborted) {
+        requestTermination({
+          type: "signal",
+          signal: normalizeAbortReason(abortSignal.reason),
+          killSignal: "SIGTERM",
+        });
+      } else {
+        abortListener = () => {
+          requestTermination({
+            type: "signal",
+            signal: normalizeAbortReason(abortSignal.reason),
+            killSignal: "SIGTERM",
+          });
+        };
+        abortSignal.addEventListener("abort", abortListener, { once: true });
+      }
+    }
 
     child.on("close", (code, signal) => {
       cleanup();
@@ -327,6 +368,45 @@ function buildExecutionSummary(status, exitCode, execution) {
   return `Executor failed with exit code ${exitCode}.`;
 }
 
+function buildExecutionVerificationChecks(workspaceRoot, plan, status, exitCode, execution) {
+  const detailParts = [];
+  if (typeof exitCode === "number") {
+    detailParts.push(`exitCode=${exitCode}`);
+  }
+  detailParts.push(`stdio=${plan.stdioMode}`);
+  if (execution.timedOut && plan.timeoutMs) {
+    detailParts.push(`timedOut after ${plan.timeoutMs} ms`);
+  }
+  if (execution.interrupted && execution.interruptionSignal) {
+    detailParts.push(`interrupted via ${execution.interruptionSignal}`);
+  }
+  if (execution.terminationSignal) {
+    detailParts.push(`signal=${execution.terminationSignal}`);
+  }
+  if (execution.errorMessage) {
+    detailParts.push(execution.errorMessage);
+  }
+
+  return [
+    {
+      label: `Local ${plan.adapterId} executor result`,
+      status: status === "passed" ? "passed" : "failed",
+      details: detailParts.join("; "),
+      artifacts: collectExecutionArtifactRefs(workspaceRoot, plan, execution),
+    },
+  ];
+}
+
+function collectExecutionArtifactRefs(workspaceRoot, plan, execution) {
+  return [
+    plan.promptFileRelative,
+    plan.runRequestFileRelative,
+    plan.launchPackFileRelative,
+    execution.stdoutPath ? toWorkspaceRelative(workspaceRoot, execution.stdoutPath) : undefined,
+    execution.stderrPath ? toWorkspaceRelative(workspaceRoot, execution.stderrPath) : undefined,
+  ].filter(Boolean);
+}
+
 function normalizePositiveInteger(value) {
   if (value === undefined || value === null || value === "") {
     return null;
@@ -338,6 +418,14 @@ function normalizePositiveInteger(value) {
   }
 
   return normalized;
+}
+
+function normalizeAbortReason(reason) {
+  if (typeof reason === "string" && reason.trim()) {
+    return reason.trim();
+  }
+
+  return "dashboard-cancel";
 }
 
 function safeCloseFd(fd) {
@@ -356,4 +444,5 @@ function toWorkspaceRelative(workspaceRoot, absolutePath) {
 
 module.exports = {
   executeRun,
+  planRunExecution,
 };

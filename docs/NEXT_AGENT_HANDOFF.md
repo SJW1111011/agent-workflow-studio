@@ -15,7 +15,7 @@ The product direction is already chosen:
 
 ## Current status
 
-As of 2026-04-03, the project already has a working MVP foundation:
+As of 2026-04-04, the project already has a working MVP foundation:
 
 - workflow scaffold generation under `.agent-workflow/`
 - repository scanning and project profile generation
@@ -23,15 +23,33 @@ As of 2026-04-03, the project already has a working MVP foundation:
 - Codex / Claude Code adapter contracts
 - prompt compilation
 - run preparation handoff packs
-- CLI-only `run:execute` for adapters that opt into `commandMode: exec`
+- shared `run:execute` for adapters that opt into `commandMode: exec`
 - stdout/stderr capture plus timeout/interruption metadata for `run:execute`
+- a local-only dashboard execution bridge for adapters that resolve to `stdioMode: pipe`
+- dashboard-triggered local execution can now also request cancellation and surface transient `cancel-requested` state
+- dashboard execution state now also carries a structured final outcome so the UI does not have to infer pass/fail/cancel from summary text
+- overview task cards now also surface the latest executor outcome separately from the latest overall run
+- overview stats now also aggregate each task's latest executor outcome for dashboard-level reporting
 - run evidence recording
 - checkpoint generation
 - recipe registry
 - schema validation
 - local dashboard
 - lightweight freshness detection for memory docs and task markdown bundles
-- dashboard write actions for task creation, task metadata updates, markdown task doc edits, and run evidence creation
+- first-pass diff-aware verification gates using scoped workspace file mtimes plus task scope hints
+- stronger scope hint extraction for `task.md` markers like `path:` / `files:` / `dirs:`
+- checkpoint refresh rules that now surface scoped files awaiting proof
+- explicit proof linkage so generic verification edits no longer cover scoped changes unless repo-relative paths are named
+- proof items now carry paths plus check/artifact refs, and the gate can report `partially-covered`
+- passed runs can now persist structured `verificationChecks` and `verificationArtifacts`
+- dashboard write actions for task creation, task metadata updates, markdown task doc edits, and structured run evidence creation
+- metadata-managed task/context markdown blocks now stay stable during richer edits
+- the dashboard editor now explains managed vs free-edit sections for each task document
+- the dashboard run form can now prefill proof paths from pending scoped files
+- the dashboard run form can now also draft one check line per pending scoped file
+- the verification editor can now draft a pending proof plan from pending scoped files by inserting planned checks plus file-only proof-link placeholders
+- the run form can now sync drafted proof paths/checks into the verification editor as an unsaved proof-plan draft
+- the dashboard can now trigger local `run:execute` through a thin local API bridge, while task detail surfaces transient execution state plus persisted executor logs
 
 ## Important constraint
 
@@ -97,6 +115,8 @@ Current dashboard capabilities:
 - show task detail
 - show memory / risks / verification / recent runs
 - show memory and task doc freshness
+- show diff-aware verification gate state from current scoped workspace file changes
+- show checkpoint detail in task detail
 - inspect executor metadata and local stdout/stderr logs in task detail
 - create tasks
 - update selected task metadata
@@ -117,7 +137,7 @@ Start here:
 
 ## What was validated locally
 
-Verified on 2026-04-02:
+Verified on 2026-04-04:
 
 - `npm run smoke`
 
@@ -137,9 +157,18 @@ The smoke test currently covers:
 - overview API
 - task detail API
 - dashboard write APIs for creating tasks, updating tasks, editing task docs, and recording runs
+- markdown guardrails that keep managed task/context blocks synced without wiping nearby custom notes
 - CLI executor path for `run:execute`, including run ledger + verification/checkpoint refresh
+- dashboard executor bridge APIs for `POST /api/tasks/:taskId/execute` and `GET /api/tasks/:taskId/execution`
+- dashboard executor cancel API for `POST /api/tasks/:taskId/execution/cancel`
 - executor capture mode and timeout path
 - overview and task detail freshness heuristics for memory/task docs
+- diff-aware verification gate status transitions from "needs proof" to "covered"
+- checkpoint content for pending proof, covered proof, and weak scope hints
+- explicit proof linkage: generic verification text stays insufficient, but passed scoped evidence can cover files
+- structured run evidence: API/CLI run creation can persist scope proof paths plus concrete check/artifact refs
+- proof item parsing for manual verification notes and passed run evidence
+- overview aggregate stats for latest executor outcomes across tasks
 
 ## Why moving the folder should be safe
 
@@ -160,11 +189,11 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Add diff-aware verification gates.
-2. Harden task-level guardrails so metadata-managed markdown blocks stay stable during richer edits.
-3. Surface executor state even more clearly in the dashboard and task detail flows.
+1. Keep refining proof-capture shortcuts without letting drafts or placeholders masquerade as strong proof.
+2. Add lightweight execution observability on top of the shared executor boundary, such as better log-tail UX or clearer run-state transitions, without inventing a second durable execution store.
+3. Harden the new dashboard execution bridge without expanding it past the current `stdioMode: pipe` boundary.
 4. Add richer freshness heuristics based on repository changes instead of only timestamps.
-5. Only after the local executor is stable, extend dashboard-triggered execution.
+5. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 
 ## What not to do next
 
@@ -177,13 +206,13 @@ Recommended next sequence:
 
 Suggested first task:
 
-Add diff-aware verification gates on top of the current freshness heuristics.
+Add low-risk execution observability while preserving the current shared-executor boundary.
 
 Expected shape:
 
-- tie changed work more explicitly to verification expectations
-- build on top of the current timestamp-based freshness heuristics
-- keep the executor contract stable while improving trust signals
+- keep `src/lib/run-executor.js` as the only launch implementation
+- improve status/reporting/log visibility without inventing a second durable execution store
+- do not duplicate adapter launch logic or turn the browser into a terminal surrogate
 
 ## Useful commands
 

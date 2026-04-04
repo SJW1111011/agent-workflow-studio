@@ -112,6 +112,15 @@ Acceptance criteria:
 - avoid blocking the workflow on perfect automation
 - update docs so contributors understand the contract
 
+Status:
+
+- first local-only diff-aware verification gates are now implemented
+- current matching depends on repo-relative scope hints and current workspace file mtimes
+- scope extraction and checkpoint refresh rules have now improved
+- explicit proof linkage has now improved through repo-relative proof paths
+- proof paths now connect to concrete checks and artifact refs through proof items
+- next iteration should strengthen how proof items connect to command execution outputs and external artifacts
+
 Non-goals:
 
 - full CI integration on the first pass

@@ -27,6 +27,8 @@ Status: in progress in this repository.
 - verification artifact attachment
 - failure triage view
 
+Status: first-pass diff-aware verification gates are in place, and passed runs can now persist structured check/artifact proof. Next work should improve guardrails and capture UX instead of replacing the contract.
+
 ## Phase 3 - Multi-agent orchestration
 
 - agent role assignment

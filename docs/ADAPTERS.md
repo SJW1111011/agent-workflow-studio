@@ -82,10 +82,11 @@ The first local executor pass now supports:
 - automatic refresh of `verification.md` and `checkpoint.md`
 - stdout and stderr capture in `pipe` mode
 - timeout and interruption metadata in the run ledger
+- structured verification checks and artifact refs in passed run evidence
 
 The next implementation layer can add:
 
-- clearer executor state in the dashboard
+- richer proof capture and execution controls in the dashboard
 - session transcript linking
 - richer resume and interruption recovery flows
 

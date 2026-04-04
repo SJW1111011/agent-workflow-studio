@@ -120,8 +120,19 @@ function main() {
         const summary = summaryParts.join(" ").trim();
         const status = options.status || "draft";
         const agent = normalizeAdapterId(options.agent || "manual");
-        assert(taskId && summary, "Usage: run:add <taskId> <summary> [--status passed|failed|draft] [--root path]");
-        const run = recordRun(workspaceRoot, taskId, summary, status, agent);
+        assert(
+          taskId && summary,
+          "Usage: run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--root path]"
+        );
+        const run = recordRun(workspaceRoot, taskId, summary, status, agent, {
+          scopeProofPaths: getOptionList(options, "proof-path"),
+          verificationChecks: getOptionList(options, "check").map((label) => ({
+            label,
+            status: status === "passed" ? "passed" : status === "failed" ? "failed" : "recorded",
+          })),
+          verificationArtifacts: getOptionList(options, "artifact"),
+        });
+        buildCheckpoint(workspaceRoot, taskId);
         print(`Recorded run ${run.id} for ${taskId} with status ${run.status}.`);
         break;
       }
@@ -162,10 +173,10 @@ function parseCommand(argv) {
       const key = value.slice(2);
       const nextValue = argv[index + 1];
       if (nextValue && !nextValue.startsWith("--")) {
-        options[key] = nextValue;
+        assignOption(options, key, nextValue);
         index += 1;
       } else {
-        options[key] = true;
+        assignOption(options, key, true);
       }
       continue;
     }
@@ -177,6 +188,24 @@ function parseCommand(argv) {
     positionals,
     options,
   };
+}
+
+function assignOption(options, key, value) {
+  if (!Object.prototype.hasOwnProperty.call(options, key)) {
+    options[key] = value;
+    return;
+  }
+
+  options[key] = Array.isArray(options[key]) ? options[key].concat(value) : [options[key], value];
+}
+
+function getOptionList(options, key) {
+  const value = options[key];
+  if (value === undefined || value === true) {
+    return [];
+  }
+
+  return (Array.isArray(value) ? value : [value]).map((item) => String(item).trim()).filter(Boolean);
 }
 
 function normalizePromptAgent(agent) {
@@ -206,7 +235,7 @@ Commands:
   prompt:compile <taskId> [--agent codex|claude] [--root path]
   run:prepare <taskId> [--agent codex|claude] [--root path]
   run:execute <taskId> [--agent codex|claude] [--timeout-ms 300000] [--root path]
-  run:add <taskId> <summary> [--status passed|failed|draft] [--root path]
+  run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--root path]
   checkpoint <taskId> [--root path]
   overview [--root path]
   validate [--root path]

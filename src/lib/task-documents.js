@@ -15,6 +15,12 @@ const EDITABLE_TASK_DOCUMENTS = {
   },
 };
 
+const MANAGED_BLOCKS = {
+  taskRecipe: "task-recipe-meta",
+  contextRecipe: "context-recipe-guidance",
+  contextConstraints: "context-constraints-meta",
+};
+
 function renderTaskMarkdown(taskMeta, recipe) {
   return ensureTrailingNewline(`# ${taskMeta.id} - ${taskMeta.title}
 
@@ -22,15 +28,18 @@ function renderTaskMarkdown(taskMeta, recipe) {
 
 State the user outcome in one paragraph.
 
-## Recipe
-
-- Recipe ID: ${taskMeta.recipeId}
-- Recipe summary: ${recipe ? recipe.summary : "Unknown recipe"}
+${renderManagedSection(
+  "Recipe",
+  `- Recipe ID: ${taskMeta.recipeId}\n- Recipe summary: ${recipe ? recipe.summary : "Unknown recipe"}`,
+  MANAGED_BLOCKS.taskRecipe
+)}
 
 ## Scope
 
 - In scope:
+  - repo path:
 - Out of scope:
+  - repo path:
 
 ## Required docs
 
@@ -59,10 +68,13 @@ function renderContextMarkdown(taskMeta, recipe) {
 
 Describe why this task matters.
 
-## Recipe guidance
-
-- Recipe ID: ${taskMeta.recipeId}
-- Recommended for: ${recipe && Array.isArray(recipe.recommendedFor) ? recipe.recommendedFor.join(", ") : "N/A"}
+${renderManagedSection(
+  "Recipe guidance",
+  `- Recipe ID: ${taskMeta.recipeId}\n- Recommended for: ${
+    recipe && Array.isArray(recipe.recommendedFor) ? recipe.recommendedFor.join(", ") : "N/A"
+  }`,
+  MANAGED_BLOCKS.contextRecipe
+)}
 
 ## Facts
 
@@ -74,8 +86,10 @@ Describe why this task matters.
 
 ## Constraints
 
-- Priority: ${taskMeta.priority}
-- Keep the workflow docs current.
+${renderManagedLines(
+  [`- Priority: ${taskMeta.priority}`, "- Keep the workflow docs current."],
+  MANAGED_BLOCKS.contextConstraints
+)}
 `);
 }
 
@@ -86,6 +100,15 @@ function renderVerificationMarkdown(taskMeta) {
 
 - automated:
 - manual:
+
+## Proof links
+
+### Proof 1
+
+- Files:
+- Check:
+- Result:
+- Artifact:
 
 ## Blocking gaps
 
@@ -177,9 +200,10 @@ function normalizeEditableDocument(documentName, taskMeta, recipe, content) {
 
 function normalizeTaskMarkdown(taskMeta, recipe, content) {
   let nextContent = ensureHeading(content, `# ${taskMeta.id} - ${taskMeta.title}`);
-  nextContent = upsertSection(
+  nextContent = upsertManagedSection(
     nextContent,
     "Recipe",
+    MANAGED_BLOCKS.taskRecipe,
     `- Recipe ID: ${taskMeta.recipeId}\n- Recipe summary: ${recipe ? recipe.summary : "Unknown recipe"}`
   );
   return ensureTrailingNewline(nextContent);
@@ -187,19 +211,23 @@ function normalizeTaskMarkdown(taskMeta, recipe, content) {
 
 function normalizeContextMarkdown(taskMeta, recipe, content) {
   let nextContent = ensureHeading(content, `# ${taskMeta.id} Context`);
-  nextContent = upsertSection(
+  nextContent = upsertManagedSection(
     nextContent,
     "Recipe guidance",
+    MANAGED_BLOCKS.contextRecipe,
     `- Recipe ID: ${taskMeta.recipeId}\n- Recommended for: ${
       recipe && Array.isArray(recipe.recommendedFor) ? recipe.recommendedFor.join(", ") : "N/A"
     }`
   );
-  nextContent = upsertLineInSection(
+  nextContent = upsertManagedLinesInSection(
     nextContent,
     "Constraints",
-    "- Priority:",
-    `- Priority: ${taskMeta.priority}`,
-    "- Keep the workflow docs current."
+    MANAGED_BLOCKS.contextConstraints,
+    [`- Priority: ${taskMeta.priority}`, "- Keep the workflow docs current."],
+    {
+      stripLinePrefixes: ["- Priority:"],
+      stripExactLines: ["- Keep the workflow docs current."],
+    }
   );
   return ensureTrailingNewline(nextContent);
 }
@@ -250,6 +278,38 @@ function upsertSection(content, title, body) {
   }
 
   return joinBlocks(section.before, renderedSection, section.after);
+}
+
+function upsertManagedSection(content, title, blockId, body) {
+  const renderedBlock = renderManagedSection(title, body, blockId);
+  const replaced = replaceManagedBlock(content, blockId, renderedBlock);
+  if (replaced !== null) {
+    return replaced;
+  }
+
+  const section = getSection(content, title);
+  if (!section) {
+    const normalized = normalizeText(content);
+    return normalized ? `${normalized}\n\n${renderedBlock}` : renderedBlock;
+  }
+
+  return joinBlocks(section.before, renderedBlock, section.after);
+}
+
+function upsertManagedLinesInSection(content, title, blockId, lines, options = {}) {
+  const section = getSection(content, title);
+  const renderedBlock = renderManagedLines(lines, blockId);
+  if (!section) {
+    return upsertSection(content, title, renderedBlock);
+  }
+
+  const replacedBody = replaceManagedBlock(section.body, blockId, renderedBlock);
+  if (replacedBody !== null) {
+    return upsertSection(content, title, replacedBody);
+  }
+
+  const cleanedBody = stripLegacyManagedLines(section.body, options);
+  return upsertSection(content, title, joinBlocks(renderedBlock, cleanedBody));
 }
 
 function upsertLineInSection(content, title, linePrefix, nextLine, fallbackLine) {
@@ -307,6 +367,68 @@ function joinBlocks(...blocks) {
   return blocks.filter(Boolean).join("\n\n");
 }
 
+function renderManagedSection(title, body, blockId) {
+  return [
+    managedBlockStart(blockId),
+    `## ${title}`,
+    "",
+    normalizeText(body),
+    managedBlockEnd(blockId),
+  ].join("\n");
+}
+
+function renderManagedLines(lines, blockId) {
+  return [managedBlockStart(blockId), ...lines, managedBlockEnd(blockId)].join("\n");
+}
+
+function stripLegacyManagedLines(content, options = {}) {
+  const stripLinePrefixes = Array.isArray(options.stripLinePrefixes) ? options.stripLinePrefixes : [];
+  const stripExactLines = new Set(Array.isArray(options.stripExactLines) ? options.stripExactLines : []);
+
+  return String(content || "")
+    .split("\n")
+    .filter((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        return true;
+      }
+
+      if (stripExactLines.has(trimmed)) {
+        return false;
+      }
+
+      return !stripLinePrefixes.some((prefix) => trimmed.startsWith(prefix));
+    })
+    .join("\n")
+    .trim();
+}
+
+function replaceManagedBlock(content, blockId, replacement) {
+  const normalized = normalizeText(content);
+  if (!normalized) {
+    return null;
+  }
+
+  const pattern = new RegExp(
+    `${escapeRegex(managedBlockStart(blockId))}[\\s\\S]*?${escapeRegex(managedBlockEnd(blockId))}`,
+    "m"
+  );
+
+  if (!pattern.test(normalized)) {
+    return null;
+  }
+
+  return normalized.replace(pattern, replacement);
+}
+
+function managedBlockStart(blockId) {
+  return `<!-- agent-workflow:managed:${blockId}:start -->`;
+}
+
+function managedBlockEnd(blockId) {
+  return `<!-- agent-workflow:managed:${blockId}:end -->`;
+}
+
 function normalizeText(content) {
   return String(content || "").replace(/\r\n/g, "\n").trim();
 }
@@ -317,6 +439,10 @@ function ensureTrailingNewline(content) {
 
 function readFileWithFallback(filePath) {
   return fileExists(filePath) ? fs.readFileSync(filePath, "utf8") : "";
+}
+
+function escapeRegex(value) {
+  return String(value || "").replace(/[|\\{}()[\]^$+?.]/g, "\\$&");
 }
 
 module.exports = {

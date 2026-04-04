@@ -51,8 +51,25 @@
 
         <section class="panel panel-wide">
           <div class="panel-head">
-            <h2>Tasks</h2>
-            <p>What the agents are supposed to do and whether there is enough evidence behind each task.</p>
+            <div>
+              <h2>Tasks</h2>
+              <p>What the agents are supposed to do and whether there is enough evidence behind each task.</p>
+            </div>
+            <div class="panel-head-controls">
+              <label class="panel-filter">
+                <span>Executor Outcome</span>
+                <select id="task-executor-filter">
+                  <option value="all">All tasks</option>
+                  <option value="passed">Executor passed</option>
+                  <option value="failed">Executor failed</option>
+                  <option value="timed-out">Executor timed out</option>
+                  <option value="interrupted">Executor interrupted</option>
+                  <option value="cancelled">Executor cancelled</option>
+                  <option value="none">No executor run</option>
+                </select>
+              </label>
+              <p class="subtle panel-filter-summary" id="task-filter-summary">Showing all tasks.</p>
+            </div>
           </div>
           <div class="task-grid" id="tasks"></div>
         </section>
@@ -150,6 +167,46 @@
                 <span>Summary</span>
                 <textarea name="summary" id="run-summary" rows="5" placeholder="What happened in this run?"></textarea>
               </label>
+              <label>
+                <span>Proof Paths</span>
+                <textarea name="scopeProofPaths" id="run-proof-paths" rows="4" placeholder="One repo-relative path per line&#10;README.md&#10;src/server.js"></textarea>
+              </label>
+              <div class="form-inline-actions">
+                <button type="button" class="secondary-button" id="run-fill-pending-paths">Use Pending Scoped Files</button>
+                <button type="button" class="secondary-button" id="run-draft-pending-checks">Draft Checks From Pending Files</button>
+                <button type="button" class="secondary-button" id="run-sync-verification-draft">Sync Draft To verification.md Editor</button>
+              </div>
+              <label>
+                <span>Verification Checks</span>
+                <textarea name="verificationChecks" id="run-checks" rows="4" placeholder="One check per line&#10;Reviewed README.md diff&#10;passed | npm test | smoke workspace ok | .agent-workflow/tasks/T-001/checkpoint.md"></textarea>
+              </label>
+              <label>
+                <span>Verification Artifacts</span>
+                <textarea name="verificationArtifacts" id="run-artifacts" rows="4" placeholder="One repo-relative artifact ref per line&#10;.agent-workflow/tasks/T-001/checkpoint.md"></textarea>
+              </label>
+              <p class="subtle" id="run-proof-note">Checks default to the selected run status when you omit an explicit status. Use `status | label | optional details | artifact1, artifact2` for richer entries.</p>
+              <div class="form-subsection">
+                <h4>Execute Local Adapter</h4>
+                <p class="subtle" id="run-execute-note">Thin local bridge over `run:execute`. Dashboard-triggered execution stays local-only, currently supports adapters that resolve to `stdioMode: pipe`, and can request cancellation for active local runs; use the CLI for interactive `inherit` flows.</p>
+                <div class="editor-meta">
+                  <label>
+                    <span>Execute Agent</span>
+                    <select name="executeAgent" id="run-execute-agent">
+                      <option value="codex">codex</option>
+                      <option value="claude-code">claude-code</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Timeout Override (ms)</span>
+                    <input type="number" name="executeTimeoutMs" id="run-execute-timeout" min="1" placeholder="Optional">
+                  </label>
+                </div>
+                <div class="form-inline-actions">
+                  <button type="button" class="secondary-button" id="run-execute-local">Execute Local Adapter</button>
+                  <button type="button" class="secondary-button" id="run-cancel-execution">Cancel Active Execution</button>
+                </div>
+                <p class="subtle run-execution-status" id="run-execution-status">Select a task to view local execution status.</p>
+              </div>
               <button type="submit">Record Run Evidence</button>
             </form>
 
@@ -175,10 +232,28 @@
                   </select>
                 </label>
               </div>
+              <div class="editor-guidance">
+                <article class="editor-guidance-card">
+                  <h4>Managed On Save</h4>
+                  <ul class="editor-guidance-list" id="document-managed-list">
+                    <li>Select a task to view managed sections.</li>
+                  </ul>
+                </article>
+                <article class="editor-guidance-card">
+                  <h4>Free To Edit</h4>
+                  <ul class="editor-guidance-list" id="document-free-list">
+                    <li>Select a task to view editable sections.</li>
+                  </ul>
+                </article>
+              </div>
+              <div class="form-inline-actions">
+                <button type="button" class="secondary-button" id="document-draft-proof-links">Draft Proof Plan From Pending Files</button>
+              </div>
               <label>
                 <span>Content</span>
                 <textarea name="content" id="document-content" rows="14" placeholder="Select a task to edit its markdown bundle."></textarea>
               </label>
+              <p class="subtle" id="document-guardrail-note">Select a task to view editor guardrails.</p>
               <p class="subtle" id="document-sync-note">Select a task to edit its markdown bundle.</p>
             </form>
           </div>

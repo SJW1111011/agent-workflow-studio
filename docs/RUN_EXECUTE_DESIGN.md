@@ -4,13 +4,15 @@ This document defines the first local executor design for `run:execute`.
 
 The goal is to add real local execution without breaking the project's contract-first architecture.
 
-Status on 2026-04-03:
+Status on 2026-04-04:
 
-- Phase A is now implemented in CLI-only form
+- Phase A is now implemented
 - the first implementation supports `commandMode: exec`
 - the first implementation supports both `stdioMode: inherit` and `stdioMode: pipe`
 - stdout/stderr capture, timeout metadata, and interruption metadata are now implemented
-- dashboard-triggered execution and transcript linking remain future work
+- the dashboard now has a thin local API bridge over the same executor for `stdioMode: pipe`
+- the dashboard bridge can now request cancellation for active local `pipe` executions
+- transcript linking and richer resume metadata remain future work
 
 ## Why this exists
 
@@ -22,9 +24,9 @@ The current workflow can already:
 - record run evidence after the fact
 - refresh checkpoints
 
-What it cannot do yet is launch a local agent runtime in a structured, portable way.
+What it still cannot do yet is cover every local runtime shape with equal UX quality.
 
-That gap matters because automation is part of the product thesis, but the executor must not collapse the architecture into hard-coded vendor glue.
+That remaining gap matters because automation is part of the product thesis, but the executor must not collapse the architecture into hard-coded vendor glue.
 
 ## Non-negotiable constraints
 
@@ -179,6 +181,9 @@ Suggested additive fields:
 - `launchPackFile`
 - `stdoutFile`
 - `stderrFile`
+- `scopeProofPaths`
+- `verificationChecks`
+- `verificationArtifacts`
 - `errorMessage`
 
 Example shape:
@@ -202,7 +207,25 @@ Example shape:
   "runRequestFile": ".agent-workflow/tasks/T-001/run-request.codex.json",
   "launchPackFile": ".agent-workflow/tasks/T-001/launch.codex.md",
   "stdoutFile": ".agent-workflow/tasks/T-001/runs/run-1760000000000.stdout.log",
-  "stderrFile": ".agent-workflow/tasks/T-001/runs/run-1760000000000.stderr.log"
+  "stderrFile": ".agent-workflow/tasks/T-001/runs/run-1760000000000.stderr.log",
+  "verificationChecks": [
+    {
+      "label": "Local codex executor result",
+      "status": "passed",
+      "details": "exitCode=0; stdio=pipe",
+      "artifacts": [
+        ".agent-workflow/tasks/T-001/prompt.codex.md",
+        ".agent-workflow/tasks/T-001/run-request.codex.json",
+        ".agent-workflow/tasks/T-001/runs/run-1760000000000.stdout.log"
+      ]
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-001/prompt.codex.md",
+    ".agent-workflow/tasks/T-001/run-request.codex.json",
+    ".agent-workflow/tasks/T-001/runs/run-1760000000000.stdout.log",
+    ".agent-workflow/tasks/T-001/runs/run-1760000000000.stderr.log"
+  ]
 }
 ```
 
@@ -216,6 +239,7 @@ Example shape:
 - exit code
 - status
 - concise execution summary
+- structured verification checks and artifact refs when available
 
 ### Do not persist
 
@@ -293,6 +317,11 @@ The checkpoint should explicitly reflect:
 - latest run timestamp
 - whether execution evidence exists
 - what still needs manual verification
+- which scoped files still appear to need proof under the current local verification gate
+
+Passed runs may also snapshot `scopeProofPaths` so the verification layer can explain which repo-relative files were explicitly covered at record time.
+
+Those paths can now participate in proof items alongside structured `verificationChecks`, the run summary fallback, and task-local artifact refs such as stdout/stderr logs.
 
 ## Failure modes
 
@@ -312,7 +341,7 @@ Each of these should produce a run record when execution actually started, or a 
 
 ## Interaction model
 
-The first pass should stay CLI-first.
+Interactive terminal-owned flows should stay CLI-first.
 
 Why:
 
@@ -322,11 +351,101 @@ Why:
 
 Later, the dashboard can call into the same local execution service, but the core implementation should be shared and not duplicated in `src/server.js`.
 
+## Dashboard local API bridge
+
+This implementation does not rewrite `run:execute` for HTTP.
+
+It keeps a thin local bridge over the same executor path that the CLI already uses.
+
+That means:
+
+- `src/lib/run-executor.js` stays the single execution implementation
+- the dashboard only talks to a local server endpoint
+- `src/server.js` should stay a thin request/response wrapper, or delegate to a small execution-focused module if the flow grows
+- adapter argv resolution, process spawning, evidence writing, and checkpoint refresh must remain shared behavior
+
+### Current API shape
+
+The first dashboard execution pass stays local-only and small:
+
+- `POST /api/tasks/:taskId/execute`
+- request body:
+  - `agent`: optional adapter id, default `codex`
+  - `timeoutMs`: optional positive integer override
+- response:
+  - `202 Accepted` when a local execution starts
+  - task id, adapter id, local execution status, and latest known run id when available
+
+Current follow-up status route:
+
+- `GET /api/tasks/:taskId/execution`
+
+Current cancel route:
+
+- `POST /api/tasks/:taskId/execution/cancel`
+
+That route can expose transient server-local state such as:
+
+- `idle`
+- `starting`
+- `running`
+- `cancel-requested`
+- `completed`
+- `failed-to-start`
+
+### Current safety boundary
+
+The dashboard-triggered pass only launches adapters whose resolved execution plan uses `stdioMode: pipe`.
+
+If an adapter resolves to `stdioMode: inherit`, the local API should reject the request with a clear message telling the user to use the CLI.
+
+Why this boundary matters:
+
+- interactive agents often expect terminal ownership
+- the browser should not pretend to be a terminal multiplexer
+- keeping `inherit` CLI-only avoids inventing a fragile pseudo-chat shell around local processes
+
+### State model
+
+The dashboard does not need a second durable execution database.
+
+Instead:
+
+- transient "currently running" state can stay server-local and in memory
+- durable truth stays in the task package
+- the UI can poll task detail plus execution status while a job is active
+- cancellation only updates transient bridge state immediately; the durable truth still becomes the final interrupted executor run
+- the bridge can also expose a structured final `outcome` such as `passed`, `timed-out`, `interrupted`, `cancelled`, or `failed-to-start` so the dashboard does not have to infer that from summary strings
+
+Durable evidence still comes from the existing artifacts:
+
+- `runs/<runId>.json`
+- task-local stdout/stderr logs when capture mode is enabled
+- `verification.md`
+- `checkpoint.md`
+
+The current pass also keeps one more simplification:
+
+- allow at most one active dashboard-launched execution per task
+
+That keeps evidence ordering understandable and avoids overlapping local mutations before the model is proven.
+
+### Why this still fits the contract-first architecture
+
+This dashboard bridge does not change the source of truth:
+
+- the adapter contract still defines how execution works
+- the prepared run-request still defines what is being launched
+- the shared executor still owns runtime resolution and evidence writing
+- the task package still remains the durable audit trail
+
+So the dashboard becomes a local trigger, not a second workflow engine.
+
 ## Phased implementation plan
 
 ### Phase A: minimal local executor
 
-- CLI-only `run:execute`
+- shared `run:execute` executor path
 - additive run schema fields
 - adapter `commandMode: exec`
 - `stdioMode: inherit` support
@@ -339,12 +458,13 @@ Later, the dashboard can call into the same local execution service, but the cor
 - interruption metadata
 - richer adapter config validation
 - clearer failure summaries in dashboard views
+- local dashboard execution bridge for `stdioMode: pipe`
 
 ### Phase C: richer resume support
 
 - transcript linking where supported
 - resume metadata beyond first-pass interruption records
-- dashboard-triggered execution built on the same executor module
+- richer dashboard-triggered execution flows on top of the same executor module, while `inherit` stays CLI-only until terminal ownership is designed
 
 ## What this design deliberately avoids
 

@@ -3,6 +3,8 @@
 const fs = require("fs");
 const http = require("http");
 const path = require("path");
+const { buildCheckpoint } = require("./lib/checkpoint");
+const { createDashboardExecutionBridge } = require("./lib/dashboard-execution");
 const { buildOverview } = require("./lib/overview");
 const { listRecipes } = require("./lib/recipes");
 const { validateWorkspace } = require("./lib/schema-validator");
@@ -22,6 +24,7 @@ function main() {
   const workspaceRoot = resolveWorkspaceRoot(options.root);
   const port = Number(options.port || 4173);
   const dashboardRoot = path.join(__dirname, "..", "dashboard");
+  const executionBridge = createDashboardExecutionBridge(workspaceRoot);
 
   const server = http.createServer((request, response) => {
     const requestUrl = new URL(request.url, `http://${request.headers.host}`);
@@ -64,7 +67,12 @@ function main() {
           if (!isNonEmptyString(body.summary)) {
             return sendJson(response, 400, { error: "summary is required." });
           }
-          const run = recordRun(workspaceRoot, taskId, body.summary, body.status || "draft", body.agent || "manual");
+          const run = recordRun(workspaceRoot, taskId, body.summary, body.status || "draft", body.agent || "manual", {
+            scopeProofPaths: body.scopeProofPaths || body.proofPaths,
+            verificationChecks: body.verificationChecks || body.checks,
+            verificationArtifacts: body.verificationArtifacts || body.artifacts,
+          });
+          buildCheckpoint(workspaceRoot, taskId);
           return sendJson(response, 201, run);
         }
 
@@ -72,6 +80,7 @@ function main() {
           const taskId = decodeURIComponent(requestUrl.pathname.slice("/api/tasks/".length));
           const body = await readJsonBody(request);
           const updated = updateTaskMeta(workspaceRoot, taskId, body);
+          buildCheckpoint(workspaceRoot, taskId);
           return sendJson(response, 200, updated);
         }
 
@@ -83,7 +92,33 @@ function main() {
           }
 
           saveTaskDocument(workspaceRoot, documentRoute.taskId, documentRoute.documentName, body.content);
-          return sendJson(response, 200, buildTaskResponse(workspaceRoot, documentRoute.taskId));
+          buildCheckpoint(workspaceRoot, documentRoute.taskId);
+          return sendJson(response, 200, buildTaskResponse(workspaceRoot, documentRoute.taskId, executionBridge));
+        }
+
+        const taskExecuteRoute = parseTaskExecuteRoute(requestUrl.pathname);
+        if (taskExecuteRoute && request.method === "POST") {
+          const body = await readJsonBody(request);
+          const state = await executionBridge.startTaskExecution(taskExecuteRoute.taskId, body.agent || body.adapterId, {
+            timeoutMs: body.timeoutMs,
+          });
+          return sendJson(response, 202, state);
+        }
+
+        const taskExecutionRoute = parseTaskExecutionRoute(requestUrl.pathname);
+        if (taskExecutionRoute && request.method === "GET") {
+          if (!getTaskDetail(workspaceRoot, taskExecutionRoute.taskId)) {
+            return sendJson(response, 404, { error: `Task not found: ${taskExecutionRoute.taskId}` });
+          }
+          return sendJson(response, 200, executionBridge.getTaskExecution(taskExecutionRoute.taskId));
+        }
+
+        const taskExecutionCancelRoute = parseTaskExecutionCancelRoute(requestUrl.pathname);
+        if (taskExecutionCancelRoute && request.method === "POST") {
+          if (!getTaskDetail(workspaceRoot, taskExecutionCancelRoute.taskId)) {
+            return sendJson(response, 404, { error: `Task not found: ${taskExecutionCancelRoute.taskId}` });
+          }
+          return sendJson(response, 202, await executionBridge.cancelTaskExecution(taskExecutionCancelRoute.taskId));
         }
 
         const runLogRoute = parseTaskRunLogRoute(requestUrl.pathname);
@@ -97,7 +132,7 @@ function main() {
 
         if (requestUrl.pathname.startsWith("/api/tasks/") && request.method === "GET") {
           const taskId = decodeURIComponent(requestUrl.pathname.slice("/api/tasks/".length));
-          const detail = buildTaskResponse(workspaceRoot, taskId);
+          const detail = buildTaskResponse(workspaceRoot, taskId, executionBridge);
           if (!detail) {
             return sendJson(response, 404, { error: `Task not found: ${taskId}` });
           }
@@ -120,7 +155,9 @@ function main() {
       })
       .catch((error) => {
         const statusCode =
-          error.message === "Invalid JSON body." || error.message === "Request body too large."
+          Number.isInteger(error.statusCode)
+            ? error.statusCode
+            : error.message === "Invalid JSON body." || error.message === "Request body too large."
             ? 400
             : error.message.includes("does not exist yet.")
               ? 404
@@ -210,7 +247,7 @@ function serveStatic(dashboardRoot, pathname, response) {
   response.end(fs.readFileSync(filePath));
 }
 
-function buildTaskResponse(workspaceRoot, taskId) {
+function buildTaskResponse(workspaceRoot, taskId, executionBridge) {
   const detail = getTaskDetail(workspaceRoot, taskId);
   if (!detail) {
     return null;
@@ -220,6 +257,7 @@ function buildTaskResponse(workspaceRoot, taskId) {
   const taskTarget = `.agent-workflow/tasks/${taskId}`;
   return {
     ...detail,
+    executionState: executionBridge ? executionBridge.getTaskExecution(taskId) : undefined,
     schemaIssues: validation.issues.filter((item) => String(item.target).includes(taskTarget)),
   };
 }
@@ -250,6 +288,39 @@ function parseTaskRunLogRoute(pathname) {
     taskId: decodeURIComponent(matched[1]),
     runId: decodeURIComponent(matched[2]),
     stream: decodeURIComponent(matched[3]),
+  };
+}
+
+function parseTaskExecuteRoute(pathname) {
+  const matched = pathname.match(/^\/api\/tasks\/([^/]+)\/execute$/);
+  if (!matched) {
+    return null;
+  }
+
+  return {
+    taskId: decodeURIComponent(matched[1]),
+  };
+}
+
+function parseTaskExecutionRoute(pathname) {
+  const matched = pathname.match(/^\/api\/tasks\/([^/]+)\/execution$/);
+  if (!matched) {
+    return null;
+  }
+
+  return {
+    taskId: decodeURIComponent(matched[1]),
+  };
+}
+
+function parseTaskExecutionCancelRoute(pathname) {
+  const matched = pathname.match(/^\/api\/tasks\/([^/]+)\/execution\/cancel$/);
+  if (!matched) {
+    return null;
+  }
+
+  return {
+    taskId: decodeURIComponent(matched[1]),
   };
 }
 

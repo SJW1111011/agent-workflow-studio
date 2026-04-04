@@ -4,6 +4,14 @@ const { appendText, fileExists, readJson, writeFile, writeJson } = require("./fs
 const { buildTaskFreshness } = require("./freshness");
 const { getRecipe, normalizeRecipeId } = require("./recipes");
 const {
+  defaultCheckStatusForRunStatus,
+  formatVerificationCheck,
+  normalizeArtifactRefs,
+  normalizeProofPaths,
+  normalizeVerificationChecks,
+} = require("./evidence-utils");
+const { buildTaskVerificationGate, loadRepositoryDiff } = require("./verification-gates");
+const {
   renderCheckpointSkeleton,
   renderContextMarkdown,
   renderTaskMarkdown,
@@ -102,6 +110,8 @@ function getTaskDetail(workspaceRoot, taskId) {
   const meta = readJson(files.meta, {});
   const recipe = getRecipe(workspaceRoot, meta.recipeId);
   const runs = listRuns(workspaceRoot, taskId);
+  const taskText = safeRead(files.task);
+  const repositoryDiff = loadRepositoryDiff(workspaceRoot);
   return {
     meta,
     recipe: recipe
@@ -112,12 +122,13 @@ function getTaskDetail(workspaceRoot, taskId) {
           recommendedFor: recipe.recommendedFor,
         }
       : null,
-    taskText: safeRead(files.task),
+    taskText,
     contextText: safeRead(files.context),
     verificationText: safeRead(files.verification),
     checkpointText: safeRead(files.checkpoint),
     runs,
     freshness: buildTaskFreshness(workspaceRoot, meta, runs),
+    verificationGate: buildTaskVerificationGate(workspaceRoot, meta, runs, repositoryDiff, taskText),
     generatedFiles: [
       describeFile("prompt.codex.md", files.promptCodex),
       describeFile("prompt.claude.md", files.promptClaude),
@@ -181,11 +192,12 @@ function updateTaskMeta(workspaceRoot, taskId, changes = {}) {
   return nextMeta;
 }
 
-function recordRun(workspaceRoot, taskId, summary, status = "draft", agent = "manual") {
+function recordRun(workspaceRoot, taskId, summary, status = "draft", agent = "manual", fields = {}) {
   const run = createRunRecord(taskId, {
     agent,
     status,
     summary,
+    ...fields,
   });
 
   return persistRunRecord(workspaceRoot, taskId, run);
@@ -234,16 +246,41 @@ function persistRunRecord(workspaceRoot, taskId, run) {
     throw new Error(`Task ${taskId} does not exist yet.`);
   }
 
+  const meta = readJson(files.meta, {});
+  const existingRuns = listRuns(workspaceRoot, taskId);
+  const taskText = safeRead(files.task);
+  const gateBeforePersist = buildTaskVerificationGate(workspaceRoot, meta, existingRuns, null, taskText);
+  const inferredScopeProofPaths =
+    run.status === "passed"
+      ? Array.from(
+          new Set(
+            []
+              .concat((gateBeforePersist.relevantChangedFiles || []).map((item) => item.path))
+              .concat((gateBeforePersist.coveredScopedFiles || []).map((item) => item.path))
+          )
+        )
+      : (gateBeforePersist.relevantChangedFiles || []).map((item) => item.path);
+  const scopeProofPaths = normalizeProofPaths(
+    Array.isArray(run.scopeProofPaths) && run.scopeProofPaths.length > 0 ? run.scopeProofPaths : inferredScopeProofPaths
+  );
+  const verificationChecks = normalizeVerificationChecks(
+    run.verificationChecks,
+    defaultCheckStatusForRunStatus(run.status)
+  );
+  const verificationArtifacts = normalizeArtifactRefs(run.verificationArtifacts);
+
   const persistedRun = {
     ...run,
     taskId,
+    scopeProofPaths: scopeProofPaths.length > 0 ? scopeProofPaths : undefined,
+    verificationChecks: verificationChecks.length > 0 ? verificationChecks : undefined,
+    verificationArtifacts: verificationArtifacts.length > 0 ? verificationArtifacts : undefined,
   };
 
   fs.mkdirSync(files.runs, { recursive: true });
   writeJson(path.join(files.runs, `${persistedRun.id}.json`), persistedRun);
   appendText(files.verification, renderVerificationEvidence(persistedRun));
 
-  const meta = readJson(files.meta, {});
   const updatedAt = persistedRun.completedAt || persistedRun.createdAt || new Date().toISOString();
   meta.updatedAt = updatedAt;
   if (persistedRun.status === "passed" && meta.status === "todo") {
@@ -268,6 +305,12 @@ function omitUndefined(value, excludedKeys) {
 
 function renderVerificationEvidence(run) {
   const timestamp = run.completedAt || run.createdAt || new Date().toISOString();
+  const verificationChecks = normalizeVerificationChecks(
+    run.verificationChecks,
+    defaultCheckStatusForRunStatus(run.status)
+  );
+  const verificationArtifacts = normalizeArtifactRefs(run.verificationArtifacts);
+  const proofArtifacts = collectRunArtifactRefs(run);
   const lines = [
     ["Agent", run.agent],
     ["Source", run.source],
@@ -285,13 +328,30 @@ function renderVerificationEvidence(run) {
     ["Launch pack file", run.launchPackFile],
     ["Stdout log", run.stdoutFile],
     ["Stderr log", run.stderrFile],
+    ["Scoped files covered", Array.isArray(run.scopeProofPaths) ? run.scopeProofPaths.join(", ") : undefined],
+    ["Verification artifacts", verificationArtifacts.length > 0 ? verificationArtifacts.join(", ") : undefined],
+    ["Proof artifacts", proofArtifacts.length > 0 ? proofArtifacts.join(", ") : undefined],
     ["Error", run.errorMessage],
     ["Summary", run.summary],
   ]
     .filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== "")
     .map(([label, value]) => `- ${label}: ${value}`);
 
+  verificationChecks.forEach((check) => {
+    lines.push(`- Verification check: ${formatVerificationCheck(check)}`);
+  });
+
   return `\n## Evidence ${timestamp}\n\n${lines.join("\n")}\n`;
+}
+
+function collectRunArtifactRefs(run) {
+  return Array.from(
+    new Set(
+      [run.stdoutFile, run.stderrFile, run.promptFile, run.runRequestFile, run.launchPackFile]
+        .concat(normalizeArtifactRefs(run.verificationArtifacts))
+        .filter((value) => isNonEmptyString(value))
+    )
+  );
 }
 
 function getRunLog(workspaceRoot, taskId, runId, streamName, maxChars = 12000) {

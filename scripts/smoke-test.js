@@ -2,6 +2,29 @@ const fs = require("fs");
 const http = require("http");
 const path = require("path");
 const { spawn, execFileSync } = require("child_process");
+const {
+  buildPendingProofCheckLines,
+  buildVerificationPlannedCheckDraft,
+  buildVerificationProofDraft,
+  formatVerificationPlannedCheck,
+  extractVerificationPlannedManualChecks,
+  extractVerificationProofPaths,
+  filterTasksByExecutorOutcome,
+  getEditableDocumentConfig,
+  getPendingProofPaths,
+  hasRunDraftVerificationContent,
+  matchesExecutorOutcomeFilter,
+  mergeVerificationFromRunDraft,
+  mergeVerificationProofPlanDraft,
+  mergeVerificationPlannedCheckDraft,
+  mergeVerificationProofDraft,
+  mergeProofCheckDraft,
+  mergeProofPathDraft,
+  normalizeExecutorOutcomeFilter,
+  parseRunVerificationDraft,
+  parseRunEvidenceDraft,
+  summarizeExecutorOutcomeFilter,
+} = require("../dashboard/app.js");
 
 async function main() {
   const projectRoot = path.resolve(__dirname, "..");
@@ -81,6 +104,174 @@ main().catch((error) => {
     "utf8"
   );
 
+  const parsedDashboardEvidence = parseRunEvidenceDraft({
+    status: "passed",
+    scopeProofPaths: "README.md\nsrc/server.js",
+    verificationChecks: "Reviewed README diff\npassed | npm run smoke | smoke workspace ok | .agent-workflow/tasks/T-001/checkpoint.md",
+    verificationArtifacts: ".agent-workflow/tasks/T-001/checkpoint.md\n.agent-workflow/tasks/T-001/verification.md",
+  });
+  if (
+    !Array.isArray(parsedDashboardEvidence.scopeProofPaths) ||
+    parsedDashboardEvidence.scopeProofPaths.length !== 2 ||
+    !Array.isArray(parsedDashboardEvidence.verificationChecks) ||
+    parsedDashboardEvidence.verificationChecks.length !== 2 ||
+    parsedDashboardEvidence.verificationChecks[0].status !== "passed" ||
+    parsedDashboardEvidence.verificationChecks[1].label !== "npm run smoke" ||
+    !Array.isArray(parsedDashboardEvidence.verificationChecks[1].artifacts) ||
+    !parsedDashboardEvidence.verificationChecks[1].artifacts.includes(".agent-workflow/tasks/T-001/checkpoint.md") ||
+    !Array.isArray(parsedDashboardEvidence.verificationArtifacts) ||
+    !parsedDashboardEvidence.verificationArtifacts.includes(".agent-workflow/tasks/T-001/verification.md")
+  ) {
+    throw new Error("Dashboard structured proof parser did not normalize run evidence inputs.");
+  }
+  const taskDocConfig = getEditableDocumentConfig("task.md");
+  const verificationDocConfig = getEditableDocumentConfig("verification.md");
+  if (
+    !Array.isArray(taskDocConfig.managedSections) ||
+    !taskDocConfig.managedSections.includes("Heading from task id/title") ||
+    !Array.isArray(taskDocConfig.freeSections) ||
+    !taskDocConfig.freeSections.includes("Scope") ||
+    !Array.isArray(verificationDocConfig.managedSections) ||
+    !verificationDocConfig.managedSections.includes("Heading from task id") ||
+    !verificationDocConfig.freeSections.includes("Proof links")
+  ) {
+    throw new Error("Dashboard editor guidance config did not expose managed and free-edit sections.");
+  }
+  const mergedPendingPaths = mergeProofPathDraft(
+    "README.md\nsrc/server.js",
+    {
+      verificationGate: {
+        relevantChangedFiles: [{ path: "src/server.js" }, { path: "docs/notes.md" }],
+      },
+    }
+  );
+  const pendingProofPaths = getPendingProofPaths({
+    verificationGate: {
+      relevantChangedFiles: [{ path: "docs/notes.md" }, { path: "README.md" }],
+    },
+  });
+  const draftedPendingChecks = buildPendingProofCheckLines({
+    verificationGate: {
+      relevantChangedFiles: [{ path: "docs/notes.md" }, { path: "README.md" }],
+    },
+  });
+  const mergedPendingChecks = mergeProofCheckDraft(
+    "Review README.md diff\npassed | npm run smoke | smoke workspace ok",
+    {
+      verificationGate: {
+        relevantChangedFiles: [{ path: "docs/notes.md" }, { path: "README.md" }],
+      },
+    },
+    "passed"
+  );
+  const verificationPlannedCheckDraft = buildVerificationPlannedCheckDraft(
+    {
+      verificationGate: {
+        relevantChangedFiles: [{ path: "docs/notes.md" }, { path: "README.md" }],
+      },
+    },
+    "# T-001 Verification\n\n## Planned checks\n\n- automated:\n- manual: Review README.md diff"
+  );
+  const verificationProofDraft = buildVerificationProofDraft(
+    {
+      verificationGate: {
+        relevantChangedFiles: [{ path: "docs/notes.md" }, { path: "README.md" }],
+      },
+    },
+    "# T-001 Verification\n\n## Proof links\n\n### Proof 1\n\n- Files: README.md\n- Check:\n- Result:\n- Artifact:"
+  );
+  const mergedVerificationProofDraft = mergeVerificationProofDraft(
+    "# T-001 Verification\n\n## Blocking gaps\n\n- none",
+    {
+      verificationGate: {
+        relevantChangedFiles: [{ path: "docs/notes.md" }],
+      },
+    }
+  );
+  const mergedVerificationPlannedChecks = mergeVerificationPlannedCheckDraft(
+    "# T-001 Verification\n\n## Proof links\n\n### Proof 1\n\n- Files: README.md\n- Check:\n- Result:\n- Artifact:",
+    {
+      verificationGate: {
+        relevantChangedFiles: [{ path: "docs/notes.md" }],
+      },
+    }
+  );
+  const mergedVerificationProofPlan = mergeVerificationProofPlanDraft(
+    "# T-001 Verification\n\n## Planned checks\n\n- automated:\n- manual: Review README.md diff",
+    {
+      verificationGate: {
+        relevantChangedFiles: [{ path: "docs/notes.md" }, { path: "README.md" }],
+      },
+    }
+  );
+  const extractedVerificationPlannedChecks = Array.from(
+    extractVerificationPlannedManualChecks(
+      "# T-001 Verification\n\n## Planned checks\n\n- automated:\n- manual: Review docs/notes.md diff\n- manual: Review README.md diff"
+    )
+  );
+  const parsedRunVerificationDraft = parseRunVerificationDraft({
+    status: "passed",
+    scopeProofPaths: "docs/notes.md\nREADME.md",
+    verificationChecks: "Review docs/notes.md diff\npassed | npm run smoke | smoke workspace ok",
+  });
+  const mergedVerificationFromRunDraft = mergeVerificationFromRunDraft(
+    "# T-001 Verification\n\n## Blocking gaps\n\n- none",
+    {
+      status: "passed",
+      scopeProofPaths: "docs/notes.md",
+      verificationChecks: "Review docs/notes.md diff\npassed | npm run smoke | smoke workspace ok",
+    }
+  );
+  const extractedVerificationProofPaths = Array.from(
+    extractVerificationProofPaths(
+      "# T-001 Verification\n\n## Proof links\n\n### Proof 1\n\n- Files: docs/notes.md, README.md\n- Check:\n- Result:\n- Artifact:"
+    )
+  );
+  const filteredExecutorTasks = filterTasksByExecutorOutcome(
+    [
+      { id: "T-001", latestExecutorOutcome: "passed" },
+      { id: "T-002", latestExecutorOutcome: "cancelled" },
+      { id: "T-003" },
+    ],
+    "cancelled"
+  );
+  if (
+    mergedPendingPaths !== "README.md\nsrc/server.js\ndocs/notes.md" ||
+    pendingProofPaths.join(",") !== "docs/notes.md,README.md" ||
+    draftedPendingChecks.join(",") !== "Review docs/notes.md diff,Review README.md diff" ||
+    mergedPendingChecks !== "Review README.md diff\npassed | npm run smoke | smoke workspace ok\nReview docs/notes.md diff" ||
+    verificationPlannedCheckDraft !== "- manual: Review docs/notes.md diff" ||
+    !verificationProofDraft.includes("### Proof 2") ||
+    !verificationProofDraft.includes("- Files: docs/notes.md") ||
+    !mergedVerificationProofDraft.includes("## Proof links") ||
+    !mergedVerificationProofDraft.includes("- Files: docs/notes.md") ||
+    !mergedVerificationPlannedChecks.includes("## Planned checks") ||
+    !mergedVerificationPlannedChecks.includes("- manual: Review docs/notes.md diff") ||
+    !mergedVerificationProofPlan.includes("- manual: Review docs/notes.md diff") ||
+    !mergedVerificationProofPlan.includes("- Files: docs/notes.md") ||
+    extractedVerificationPlannedChecks.join(",") !== "Review docs/notes.md diff,Review README.md diff" ||
+    !hasRunDraftVerificationContent({
+      status: "passed",
+      scopeProofPaths: "docs/notes.md",
+      verificationChecks: "",
+    }) ||
+    parsedRunVerificationDraft.scopeProofPaths.join(",") !== "docs/notes.md,README.md" ||
+    parsedRunVerificationDraft.verificationChecks.length !== 2 ||
+    formatVerificationPlannedCheck(parsedRunVerificationDraft.verificationChecks[1]) !== "npm run smoke - smoke workspace ok" ||
+    !mergedVerificationFromRunDraft.includes("- manual: Review docs/notes.md diff") ||
+    !mergedVerificationFromRunDraft.includes("- manual: npm run smoke - smoke workspace ok") ||
+    !mergedVerificationFromRunDraft.includes("- Files: docs/notes.md") ||
+    extractedVerificationProofPaths.join(",") !== "docs/notes.md,README.md" ||
+    normalizeExecutorOutcomeFilter("Timed-Out") !== "timed-out" ||
+    !matchesExecutorOutcomeFilter({ latestExecutorOutcome: "cancelled" }, "cancelled") ||
+    !matchesExecutorOutcomeFilter({ latestExecutorOutcome: "" }, "none") ||
+    filteredExecutorTasks.length !== 1 ||
+    filteredExecutorTasks[0].id !== "T-002" ||
+    summarizeExecutorOutcomeFilter(3, 1, "cancelled") !== "Showing 1 of 3 tasks with executor outcome cancelled."
+  ) {
+    throw new Error("Dashboard pending proof helper utilities did not normalize the current verification gate state.");
+  }
+
   runNode(cliPath, ["init", "--root", tempRoot]);
   runNode(cliPath, ["scan", "--root", tempRoot]);
   runNode(cliPath, ["adapter:list", "--root", tempRoot]);
@@ -112,10 +303,61 @@ main().catch((error) => {
 
   const staleAt = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
   const architectureMemoryPath = path.join(tempRoot, ".agent-workflow", "memory", "architecture.md");
+  const t001TaskPath = path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "task.md");
   const t003ContextPath = path.join(tempRoot, ".agent-workflow", "tasks", "T-003", "context.md");
   fs.writeFileSync(architectureMemoryPath, "# Architecture Memory\n\nStable notes without template markers.\n", "utf8");
+  fs.writeFileSync(
+    t001TaskPath,
+    `# T-001 - Build scanner foundation
+
+## Goal
+
+Build the first scanner slice with explicit diff-aware verification.
+
+## Recipe
+
+- Recipe ID: feature
+- Recipe summary: Deliver scoped user value without breaking contracts.
+
+## Scope
+
+- In scope:
+  - files: docs/notes.md, README.md
+- Out of scope:
+  - path: package publishing
+
+## Required docs
+
+- .agent-workflow/project-profile.md
+
+## Deliverables
+
+- update docs/notes.md
+- refresh verification evidence
+
+## Risks
+
+- verification can drift from the actual changed file set
+`,
+    "utf8"
+  );
   fs.utimesSync(architectureMemoryPath, staleAt, staleAt);
   fs.utimesSync(t003ContextPath, staleAt, staleAt);
+
+  runCommand("git", ["init"], tempRoot);
+  runCommand("git", ["add", "."], tempRoot);
+  runCommand(
+    "git",
+    ["-c", "user.name=Smoke Test", "-c", "user.email=smoke@example.com", "commit", "-m", "Initial snapshot"],
+    tempRoot
+  );
+
+  fs.writeFileSync(
+    path.join(tempRoot, "docs", "notes.md"),
+    "# Notes\n\nThe scanner should discover this file.\n\nDiff-aware verification should detect this follow-up change.\n",
+    "utf8"
+  );
+  runNode(cliPath, ["checkpoint", "T-001", "--root", tempRoot]);
 
   assertExists(path.join(tempRoot, ".agent-workflow", "adapters", "codex.json"));
   assertExists(path.join(tempRoot, ".agent-workflow", "recipes", "index.json"));
@@ -125,7 +367,6 @@ main().catch((error) => {
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "launch.codex.md"));
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "checkpoint.md"));
   assertExists(path.join(tempRoot, "T-001.marker.txt"));
-  assertExists(path.join(tempRoot, "T-003.marker.txt"));
 
   const t001Runs = loadRunRecords(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "runs"));
   const executorRun = t001Runs.find((run) => run.source === "executor");
@@ -145,6 +386,13 @@ main().catch((error) => {
   }
   if (!fs.readFileSync(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "verification.md"), "utf8").includes("Source: executor")) {
     throw new Error("Executor evidence was not appended to verification.md.");
+  }
+  const pendingCheckpointText = fs.readFileSync(
+    path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "checkpoint.md"),
+    "utf8"
+  );
+  if (!pendingCheckpointText.includes("- Status: needs-proof") || !pendingCheckpointText.includes("- docs/notes.md")) {
+    throw new Error("Checkpoint did not surface scoped files awaiting proof.");
   }
 
   const t003Runs = loadRunRecords(path.join(tempRoot, ".agent-workflow", "tasks", "T-003", "runs"));
@@ -178,6 +426,10 @@ main().catch((error) => {
     if (!staleTask || staleTask.freshnessStatus !== "stale") {
       throw new Error("Overview did not expose stale task freshness.");
     }
+    const t001VerificationGate = (overview.verification || []).find((item) => item.taskId === "T-001");
+    if (!t001VerificationGate || t001VerificationGate.status !== "needs-proof") {
+      throw new Error("Overview did not expose diff-aware verification proof requirements.");
+    }
 
     await requestJson(`http://127.0.0.1:${port}/api/tasks`, "POST", {
       taskId: "T-002",
@@ -203,21 +455,353 @@ main().catch((error) => {
 
 Ship a dashboard markdown editor.
 
+## Recipe
+
+- Recipe ID: wrong
+- Recipe summary: wrong summary that should be replaced
+
 ## Scope
 
 - support task.md edits from the dashboard
 `,
     });
+    await requestJson(`http://127.0.0.1:${port}/api/tasks/T-002/documents/context.md`, "PUT", {
+      content: `# Wrong context heading
+
+## Recipe guidance
+
+- Recipe ID: wrong
+- Recommended for: wrong
+
+## Facts
+
+- Custom fact that should survive managed block refresh.
+
+## Constraints
+
+- Priority: P9
+- Keep the workflow docs current.
+- Custom constraint: stay local-first.
+`,
+    });
+    await requestJson(`http://127.0.0.1:${port}/api/tasks/T-002`, "PATCH", {
+      priority: "P0",
+      recipeId: "feature",
+      title: "Create from dashboard api guardrails",
+    });
+    await requestJson(`http://127.0.0.1:${port}/api/tasks`, "POST", {
+      taskId: "T-004",
+      title: "Dashboard execution bridge",
+      priority: "P2",
+      recipeId: "feature",
+    });
+    const startedDashboardExecution = await requestJson(`http://127.0.0.1:${port}/api/tasks/T-004/execute`, "POST", {
+      agent: "codex",
+      timeoutMs: 800,
+    });
+    if (
+      startedDashboardExecution.status !== "starting" ||
+      startedDashboardExecution.adapterId !== "codex" ||
+      startedDashboardExecution.stdioMode !== "pipe"
+    ) {
+      throw new Error("Dashboard execute API did not report the expected starting state.");
+    }
+    const completedDashboardExecution = await waitFor(async () => {
+      const executionState = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-004/execution`);
+      if (executionState.status === "starting" || executionState.status === "running") {
+        return null;
+      }
+      return executionState;
+    }, 5000, 100);
+    if (
+      !completedDashboardExecution ||
+      completedDashboardExecution.status !== "completed" ||
+      completedDashboardExecution.outcome !== "passed" ||
+      completedDashboardExecution.runStatus !== "passed" ||
+      !completedDashboardExecution.runId
+    ) {
+      throw new Error("Dashboard execution bridge did not complete with a persisted executor run.");
+    }
+    const dashboardExecuteDetail = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-004`);
+    if (
+      !dashboardExecuteDetail.executionState ||
+      dashboardExecuteDetail.executionState.status !== "completed" ||
+      dashboardExecuteDetail.executionState.outcome !== "passed" ||
+      dashboardExecuteDetail.executionState.runId !== completedDashboardExecution.runId
+    ) {
+      throw new Error("Task detail did not expose the latest dashboard execution state.");
+    }
+    const dashboardExecuteRun = (dashboardExecuteDetail.runs || []).find(
+      (run) => run.id === completedDashboardExecution.runId
+    );
+    if (!dashboardExecuteRun || dashboardExecuteRun.source !== "executor" || dashboardExecuteRun.status !== "passed") {
+      throw new Error("Dashboard execution bridge did not persist the executor run in task detail.");
+    }
+    const dashboardStdoutLog = await fetchJson(
+      `http://127.0.0.1:${port}/api/tasks/T-004/runs/${encodeURIComponent(completedDashboardExecution.runId)}/logs/stdout`
+    );
+    if (!dashboardStdoutLog.content.includes("stdout T-004 codex")) {
+      throw new Error("Dashboard execution bridge did not expose executor stdout through the local log API.");
+    }
+    codexAdapter.stdioMode = "inherit";
+    fs.writeFileSync(codexAdapterPath, `${JSON.stringify(codexAdapter, null, 2)}\n`, "utf8");
+    try {
+      await requestJson(`http://127.0.0.1:${port}/api/tasks/T-004/execute`, "POST", {
+        agent: "codex",
+      });
+      throw new Error("Dashboard execute API should reject interactive inherit mode.");
+    } catch (error) {
+      if (!String(error.message || "").includes("Use the CLI for interactive execution")) {
+        throw error;
+      }
+    }
+    codexAdapter.stdioMode = "pipe";
+    fs.writeFileSync(codexAdapterPath, `${JSON.stringify(codexAdapter, null, 2)}\n`, "utf8");
+    await requestJson(`http://127.0.0.1:${port}/api/tasks`, "POST", {
+      taskId: "T-005",
+      title: "Dashboard execution cancel bridge",
+      priority: "P2",
+      recipeId: "feature",
+    });
+    codexAdapter.argvTemplate = ["fake-runner.js", "{promptFile}", "{runRequestFile}", "--sleep-ms", "1500"];
+    fs.writeFileSync(codexAdapterPath, `${JSON.stringify(codexAdapter, null, 2)}\n`, "utf8");
+    const startedCancelledExecution = await requestJson(`http://127.0.0.1:${port}/api/tasks/T-005/execute`, "POST", {
+      agent: "codex",
+      timeoutMs: 5000,
+    });
+    if (startedCancelledExecution.status !== "starting") {
+      throw new Error("Dashboard cancel test did not start from the expected execution state.");
+    }
+    const cancelRequestedState = await requestJson(`http://127.0.0.1:${port}/api/tasks/T-005/execution/cancel`, "POST", {});
+    if (cancelRequestedState.status !== "cancel-requested" || !cancelRequestedState.cancelRequestedAt) {
+      throw new Error("Dashboard cancel API did not report a cancel-requested state.");
+    }
+    if (cancelRequestedState.outcome !== null) {
+      throw new Error("Dashboard cancel-requested state should not claim a final execution outcome yet.");
+    }
+    const cancelledExecution = await waitFor(async () => {
+      const executionState = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-005/execution`);
+      if (
+        executionState.status === "starting" ||
+        executionState.status === "running" ||
+        executionState.status === "cancel-requested"
+      ) {
+        return null;
+      }
+      return executionState;
+    }, 7000, 100);
+    if (
+      !cancelledExecution ||
+      cancelledExecution.status !== "completed" ||
+      cancelledExecution.outcome !== "cancelled" ||
+      cancelledExecution.runStatus !== "failed" ||
+      !String(cancelledExecution.summary || "").includes("dashboard-cancel")
+    ) {
+      throw new Error("Dashboard cancel flow did not finish as an interrupted executor run.");
+    }
+    const cancelledDetail = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-005`);
+    if (
+      !cancelledDetail.executionState ||
+      cancelledDetail.executionState.status !== "completed" ||
+      cancelledDetail.executionState.outcome !== "cancelled" ||
+      cancelledDetail.executionState.runId !== cancelledExecution.runId
+    ) {
+      throw new Error("Task detail did not expose the cancelled dashboard execution state.");
+    }
+    const cancelledRun = (cancelledDetail.runs || []).find((run) => run.id === cancelledExecution.runId);
+    if (
+      !cancelledRun ||
+      cancelledRun.source !== "executor" ||
+      cancelledRun.status !== "failed" ||
+      cancelledRun.interrupted !== true ||
+      cancelledRun.interruptionSignal !== "dashboard-cancel"
+    ) {
+      throw new Error("Cancelled dashboard execution did not persist interruption metadata.");
+    }
+    const cancelledStdoutLog = await fetchJson(
+      `http://127.0.0.1:${port}/api/tasks/T-005/runs/${encodeURIComponent(cancelledExecution.runId)}/logs/stdout`
+    );
+    if (cancelledStdoutLog.stream !== "stdout" || !cancelledStdoutLog.path.endsWith(".stdout.log")) {
+      throw new Error("Cancelled dashboard execution did not preserve stdout log access.");
+    }
+    try {
+      await requestJson(`http://127.0.0.1:${port}/api/tasks/T-005/execution/cancel`, "POST", {});
+      throw new Error("Dashboard cancel API should reject tasks without an active execution.");
+    } catch (error) {
+      if (!String(error.message || "").includes("no active dashboard execution")) {
+        throw error;
+      }
+    }
 
     const detail = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-001`);
     if (!detail.meta || detail.meta.recipeId !== "feature") {
       throw new Error("Task detail payload is missing recipe information.");
+    }
+    if (!detail.verificationGate || detail.verificationGate.summary.status !== "needs-proof") {
+      throw new Error("Task detail did not expose a diff-aware proof requirement.");
+    }
+    const relevantNoteChange = (detail.verificationGate.relevantChangedFiles || []).find((file) => file.path === "docs/notes.md");
+    if (!relevantNoteChange) {
+      throw new Error("Task detail did not expose the scoped changed file.");
     }
     const stdoutLog = await fetchJson(
       `http://127.0.0.1:${port}/api/tasks/T-001/runs/${encodeURIComponent(executorRun.id)}/logs/stdout`
     );
     if (!stdoutLog.content.includes("stdout T-001 codex") || stdoutLog.stream !== "stdout") {
       throw new Error("Run log API did not return the expected stdout content.");
+    }
+    const weakProofDetail = await requestJson(`http://127.0.0.1:${port}/api/tasks/T-001/documents/verification.md`, "PUT", {
+      content: `# T-001 Verification
+
+## Planned checks
+
+- automated: node fake-runner.js
+- manual: reviewed the latest scanner-related work after the executor run
+
+## Blocking gaps
+
+- none
+`,
+    });
+    if (!weakProofDetail.verificationGate || weakProofDetail.verificationGate.summary.status !== "needs-proof") {
+      throw new Error("Generic verification text should not satisfy scoped proof requirements.");
+    }
+    const draftedProofDetail = await requestJson(`http://127.0.0.1:${port}/api/tasks/T-001/documents/verification.md`, "PUT", {
+      content: mergeVerificationProofPlanDraft(weakProofDetail.verificationText, weakProofDetail),
+    });
+    if (
+      !draftedProofDetail.verificationText.includes("- Files: docs/notes.md") ||
+      !draftedProofDetail.verificationText.includes("- manual: Review docs/notes.md diff")
+    ) {
+      throw new Error("Verification draft shortcut did not insert the pending proof plan into verification.md.");
+    }
+    if (!draftedProofDetail.verificationGate || draftedProofDetail.verificationGate.summary.status !== "needs-proof") {
+      throw new Error("Drafted verification proof plans should not satisfy the verification gate by themselves.");
+    }
+    const manualProofDetail = await requestJson(`http://127.0.0.1:${port}/api/tasks/T-001/documents/verification.md`, "PUT", {
+      content: `# T-001 Verification
+
+## Planned checks
+
+- automated: node fake-runner.js
+- manual: reviewed docs/notes.md after the executor run
+
+## Proof links
+
+### Proof 1
+
+- Files: docs/notes.md
+- Check: reviewed docs/notes.md diff after the executor run
+- Result: passed
+- Artifact: ${executorRun.stdoutFile}
+
+## Blocking gaps
+
+- none
+`,
+    });
+    if (!manualProofDetail.verificationGate || manualProofDetail.verificationGate.summary.status !== "covered") {
+      throw new Error("Structured proof links did not satisfy the diff-aware gate.");
+    }
+    const manualProofItem = ((manualProofDetail.verificationGate.proofCoverage || {}).items || []).find(
+      (item) => item.sourceType === "manual" && (item.paths || []).includes("docs/notes.md")
+    );
+    if (
+      !manualProofItem ||
+      !manualProofItem.strong ||
+      !(manualProofItem.artifacts || []).includes(executorRun.stdoutFile) ||
+      !(manualProofItem.checks || []).some((check) => check.includes("result: passed"))
+    ) {
+      throw new Error("Manual proof item was not parsed into strong scoped coverage.");
+    }
+    const structuredDashboardRun = parseRunEvidenceDraft({
+      status: "passed",
+      scopeProofPaths: "docs/notes.md",
+      verificationChecks: `Reviewed docs/notes.md diff after the executor run\npassed | executor stdout captured | local executor output linked | ${executorRun.stdoutFile}`,
+      verificationArtifacts: executorRun.stdoutFile,
+    });
+    await requestJson(`http://127.0.0.1:${port}/api/tasks/T-001/runs`, "POST", {
+      agent: "manual",
+      status: "passed",
+      summary: "Manual scoped proof recorded.",
+      ...structuredDashboardRun,
+    });
+    const coveredDetail = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-001`);
+    if (!coveredDetail.verificationGate || coveredDetail.verificationGate.summary.status !== "covered") {
+      throw new Error("Explicit scope-linked run evidence did not satisfy the diff-aware gate.");
+    }
+    const manualProofRun = (coveredDetail.runs || []).find((run) => run.summary === "Manual scoped proof recorded.");
+    if (
+      !manualProofRun ||
+      !Array.isArray(manualProofRun.scopeProofPaths) ||
+      !manualProofRun.scopeProofPaths.includes("docs/notes.md") ||
+      !Array.isArray(manualProofRun.verificationArtifacts) ||
+      !manualProofRun.verificationArtifacts.includes(executorRun.stdoutFile) ||
+      !Array.isArray(manualProofRun.verificationChecks) ||
+      !manualProofRun.verificationChecks.some((check) => check.label === "Reviewed docs/notes.md diff after the executor run") ||
+      !manualProofRun.verificationChecks.some((check) => check.label === "executor stdout captured")
+    ) {
+      throw new Error("Passed run did not persist structured verification evidence.");
+    }
+    const runProofItem = ((coveredDetail.verificationGate.proofCoverage || {}).items || []).find(
+      (item) => item.sourceType === "run" && item.sourceLabel === manualProofRun.id
+    );
+    if (
+      !runProofItem ||
+      !runProofItem.strong ||
+      !(runProofItem.paths || []).includes("docs/notes.md") ||
+      !(runProofItem.checks || []).some((check) => check.includes("[passed] Reviewed docs/notes.md diff after the executor run")) ||
+      !(runProofItem.checks || []).some((check) => check.includes("[passed] executor stdout captured")) ||
+      !(runProofItem.artifacts || []).includes(executorRun.stdoutFile)
+    ) {
+      throw new Error("Run evidence was not exposed as a strong structured proof item.");
+    }
+    const coveredCheckpointText = fs.readFileSync(
+      path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "checkpoint.md"),
+      "utf8"
+    );
+    if (!coveredCheckpointText.includes("- Status: covered")) {
+      throw new Error("Checkpoint did not refresh after verification proof was updated.");
+    }
+    if (!fs.readFileSync(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "verification.md"), "utf8").includes("Scoped files covered: docs/notes.md")) {
+      throw new Error("Verification evidence block did not record scoped proof paths.");
+    }
+
+    fs.writeFileSync(
+      path.join(tempRoot, "README.md"),
+      "# Smoke Workspace\n\nThis repo exists to validate Agent Workflow Studio.\n\nCLI proof should cover this follow-up README change.\n",
+      "utf8"
+    );
+    runNode(cliPath, [
+      "run:add",
+      "T-001",
+      "README proof recorded.",
+      "--status",
+      "passed",
+      "--proof-path",
+      "README.md",
+      "--check",
+      "Reviewed README.md diff after CLI run",
+      "--artifact",
+      ".agent-workflow/tasks/T-001/checkpoint.md",
+      "--root",
+      tempRoot,
+    ]);
+    const cliProofDetail = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-001`);
+    const cliProofRun = (cliProofDetail.runs || []).find((run) => run.summary === "README proof recorded.");
+    if (
+      !cliProofRun ||
+      !Array.isArray(cliProofRun.scopeProofPaths) ||
+      !cliProofRun.scopeProofPaths.includes("README.md") ||
+      !Array.isArray(cliProofRun.verificationArtifacts) ||
+      !cliProofRun.verificationArtifacts.includes(".agent-workflow/tasks/T-001/checkpoint.md") ||
+      !Array.isArray(cliProofRun.verificationChecks) ||
+      !cliProofRun.verificationChecks.some((check) => check.label === "Reviewed README.md diff after CLI run")
+    ) {
+      throw new Error("CLI run:add flags did not persist structured proof evidence.");
+    }
+    if (!cliProofDetail.verificationGate || cliProofDetail.verificationGate.summary.status !== "covered") {
+      throw new Error("CLI structured proof did not keep scoped verification covered.");
     }
     const detail3 = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-003`);
     if (!detail3.freshness || !detail3.freshness.summary || detail3.freshness.summary.status !== "stale") {
@@ -229,7 +813,12 @@ Ship a dashboard markdown editor.
     }
 
     const detail2 = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-002`);
-    if (!detail2.meta || detail2.meta.recipeId !== "audit" || detail2.meta.status !== "in_progress") {
+    if (
+      !detail2.meta ||
+      detail2.meta.recipeId !== "feature" ||
+      detail2.meta.status !== "in_progress" ||
+      detail2.meta.priority !== "P0"
+    ) {
       throw new Error("Task mutation endpoints did not persist task metadata.");
     }
     if (!Array.isArray(detail2.runs) || detail2.runs.length !== 1) {
@@ -238,16 +827,76 @@ Ship a dashboard markdown editor.
     if (!detail2.taskText.includes("Ship a dashboard markdown editor.")) {
       throw new Error("Document editor endpoint did not persist custom task.md content.");
     }
-    if (!detail2.taskText.includes("# T-002 - Create from dashboard api updated")) {
+    if (!detail2.taskText.includes("# T-002 - Create from dashboard api guardrails")) {
       throw new Error("Document editor endpoint did not keep the managed task heading in sync.");
     }
-    if (!detail2.taskText.includes("- Recipe ID: audit")) {
-      throw new Error("Document editor endpoint did not keep recipe metadata in sync.");
+    if (
+      !detail2.taskText.includes("- Recipe ID: feature") ||
+      !detail2.taskText.includes("<!-- agent-workflow:managed:task-recipe-meta:start -->") ||
+      detail2.taskText.includes("wrong summary that should be replaced")
+    ) {
+      throw new Error("Document editor endpoint did not keep the managed task recipe block stable.");
+    }
+    if (
+      !detail2.contextText.includes("# T-002 Context") ||
+      !detail2.contextText.includes("- Recipe ID: feature") ||
+      !detail2.contextText.includes("- Priority: P0") ||
+      !detail2.contextText.includes("- Custom constraint: stay local-first.") ||
+      !detail2.contextText.includes("Custom fact that should survive managed block refresh.") ||
+      !detail2.contextText.includes("<!-- agent-workflow:managed:context-recipe-guidance:start -->") ||
+      !detail2.contextText.includes("<!-- agent-workflow:managed:context-constraints-meta:start -->") ||
+      detail2.contextText.includes("- Priority: P9") ||
+      detail2.contextText.includes("- Recipe ID: wrong")
+    ) {
+      throw new Error("Context markdown guardrails did not preserve custom content while refreshing managed blocks.");
+    }
+    const t002CheckpointText = fs.readFileSync(
+      path.join(tempRoot, ".agent-workflow", "tasks", "T-002", "checkpoint.md"),
+      "utf8"
+    );
+    if (!t002CheckpointText.includes("Task scope does not include clear repo-relative paths yet")) {
+      throw new Error("Checkpoint did not surface weak scope coverage after task.md editing.");
     }
 
     const overview2 = await fetchJson(`http://127.0.0.1:${port}/api/overview`);
-    if (overview2.tasks.length !== 3) {
+    if (overview2.tasks.length !== 5) {
       throw new Error("Overview did not reflect created task.");
+    }
+    if (
+      !overview2.stats ||
+      !overview2.stats.executorOutcomes ||
+      overview2.stats.executorOutcomes.passed !== 2 ||
+      overview2.stats.executorOutcomes.timedOut !== 1 ||
+      overview2.stats.executorOutcomes.cancelled !== 1 ||
+      overview2.stats.executorOutcomes.failed !== 0 ||
+      overview2.stats.executorOutcomes.interrupted !== 0 ||
+      overview2.stats.executorOutcomes.none !== 1
+    ) {
+      throw new Error("Overview did not aggregate the latest executor outcomes across tasks.");
+    }
+    const t001CoveredGate = (overview2.verification || []).find((item) => item.taskId === "T-001");
+    if (!t001CoveredGate || t001CoveredGate.status !== "covered") {
+      throw new Error("Overview did not refresh diff-aware verification state after proof was updated.");
+    }
+    const t001OverviewTask = (overview2.tasks || []).find((task) => task.id === "T-001");
+    if (!t001OverviewTask || t001OverviewTask.latestExecutorOutcome !== "passed") {
+      throw new Error("Overview task summary did not preserve the latest executor outcome for T-001.");
+    }
+    const t004OverviewTask = (overview2.tasks || []).find((task) => task.id === "T-004");
+    if (
+      !t004OverviewTask ||
+      t004OverviewTask.latestExecutorOutcome !== "passed" ||
+      !String(t004OverviewTask.latestExecutorSummary || "").includes("Executor completed with exit code 0.")
+    ) {
+      throw new Error("Overview task summary did not expose the passed executor outcome for T-004.");
+    }
+    const t005OverviewTask = (overview2.tasks || []).find((task) => task.id === "T-005");
+    if (
+      !t005OverviewTask ||
+      t005OverviewTask.latestExecutorOutcome !== "cancelled" ||
+      !String(t005OverviewTask.latestExecutorSummary || "").includes("dashboard-cancel")
+    ) {
+      throw new Error("Overview task summary did not expose the cancelled executor outcome for T-005.");
     }
   } finally {
     server.kill();
@@ -278,6 +927,13 @@ function runNodeExpectFailure(scriptPath, args) {
   throw new Error(`Expected command to fail: ${[scriptPath, ...args].join(" ")}`);
 }
 
+function runCommand(command, args, cwd) {
+  execFileSync(command, args, {
+    cwd,
+    stdio: "ignore",
+  });
+}
+
 function assertExists(filePath) {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Expected file to exist: ${filePath}`);
@@ -293,6 +949,19 @@ function loadRunRecords(runsRoot) {
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitFor(check, timeoutMs, intervalMs = 100) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    const value = await check();
+    if (value) {
+      return value;
+    }
+    await wait(intervalMs);
+  }
+
+  return null;
 }
 
 function fetchJson(url) {

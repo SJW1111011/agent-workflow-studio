@@ -1,4 +1,5 @@
 const path = require("path");
+const { VALID_CHECK_STATUSES } = require("./evidence-utils");
 const { fileExists, readJson } = require("./fs-utils");
 const { listAdapters } = require("./adapters");
 const { listRecipes } = require("./recipes");
@@ -167,6 +168,24 @@ function validateTasks(workspaceRoot, issues) {
       if (run.stderrFile !== undefined && !isNonEmptyString(run.stderrFile)) {
         issues.push(issue("warning", "run.stderrFile", `Task ${task.id} has a run with invalid stderrFile`, runPath));
       }
+      if (
+        run.scopeProofPaths !== undefined &&
+        (!Array.isArray(run.scopeProofPaths) || !run.scopeProofPaths.every((value) => isNonEmptyString(value)))
+      ) {
+        issues.push(issue("warning", "run.scopeProofPaths", `Task ${task.id} has a run with invalid scopeProofPaths`, runPath));
+      }
+      if (
+        run.verificationArtifacts !== undefined &&
+        (!Array.isArray(run.verificationArtifacts) || !run.verificationArtifacts.every((value) => isNonEmptyString(value)))
+      ) {
+        issues.push(issue("warning", "run.verificationArtifacts", `Task ${task.id} has a run with invalid verificationArtifacts`, runPath));
+      }
+      if (
+        run.verificationChecks !== undefined &&
+        (!Array.isArray(run.verificationChecks) || !run.verificationChecks.every((value) => isValidVerificationCheck(value)))
+      ) {
+        issues.push(issue("warning", "run.verificationChecks", `Task ${task.id} has a run with invalid verificationChecks`, runPath));
+      }
       if (run.timedOut !== undefined && typeof run.timedOut !== "boolean") {
         issues.push(issue("warning", "run.timedOut", `Task ${task.id} has a run with invalid timedOut flag`, runPath));
       }
@@ -197,6 +216,33 @@ function issue(level, code, message, target) {
 
 function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function isValidVerificationCheck(value) {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  if (!isNonEmptyString(value.label)) {
+    return false;
+  }
+
+  if (value.status !== undefined && !VALID_CHECK_STATUSES.includes(String(value.status || "").trim().toLowerCase())) {
+    return false;
+  }
+
+  if (value.details !== undefined && !isNonEmptyString(value.details)) {
+    return false;
+  }
+
+  if (
+    value.artifacts !== undefined &&
+    (!Array.isArray(value.artifacts) || !value.artifacts.every((entry) => isNonEmptyString(entry)))
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 module.exports = {
