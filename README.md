@@ -128,6 +128,7 @@ There is now a first local `run:execute` bridge for adapters that explicitly swi
 - the dashboard execution panel can now tail the active local stdout/stderr logs through a local-only API while the shared executor is still running
 - the execution state payload now also derives lightweight stream observability from those same task-local logs, including activity (`awaiting-output` vs `streaming-output`), last output time, and byte counts
 - when that local execution finishes, the same dashboard log panel can now switch over to the persisted run log automatically instead of dropping the log view
+- task detail now gives timeout / interrupted / cancelled / failed executions distinct visual treatment so cancellation does not read like a generic failure
 - overview task cards now also surface the latest executor outcome separately from the latest overall run, so manual proof updates do not hide the most recent executor result
 - overview stats now aggregate the latest executor outcome across tasks, so the dashboard can show how many tasks last passed, timed out, were cancelled, or still have no executor evidence
 - interactive `stdioMode: inherit` flows remain intentionally CLI-first so the browser does not become a fake terminal

@@ -432,6 +432,7 @@ Instead:
 - the bridge may derive lightweight stream/activity metadata from those same log files, as long as it does not become a second durable execution model
 - cancellation only updates transient bridge state immediately; the durable truth still becomes the final interrupted executor run
 - the bridge can also expose a structured final `outcome` such as `passed`, `timed-out`, `interrupted`, `cancelled`, or `failed-to-start` so the dashboard does not have to infer that from summary strings
+- the dashboard presentation layer may map those outcomes into distinct local visual states, as long as it remains a pure UI interpretation and not a second execution contract
 
 Durable evidence still comes from the existing artifacts:
 

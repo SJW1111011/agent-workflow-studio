@@ -99,6 +99,7 @@ The dashboard renders:
 - active execution stdout/stderr tail inspection through a local-only execution-log API backed by the same task-local log files
 - derived execution observability in task detail, such as awaiting-output vs streaming-output, stream byte counts, and last output time
 - a seamless handoff from active execution tails to persisted run-log viewing once the executor run is durably recorded
+- clearer task-detail outcome layering so timeout, interruption, cancellation, and generic failure do not collapse into one visual state
 - overview task cards now expose the latest executor outcome separately from the latest overall run summary
 - overview stats now aggregate each task's latest executor outcome for dashboard-level reporting
 - memory freshness view

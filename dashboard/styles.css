@@ -517,9 +517,110 @@ h1 {
   line-height: 1.5;
 }
 
+.execution-state-card.execution-tone-running,
+.run-item.run-tone-running {
+  border-color: rgba(15, 108, 92, 0.18);
+  background: rgba(246, 253, 250, 0.9);
+}
+
+.execution-state-card.execution-tone-pending,
+.run-item.run-tone-pending {
+  border-color: rgba(239, 108, 51, 0.16);
+  background: rgba(255, 249, 243, 0.9);
+}
+
+.execution-state-card.execution-tone-cancel-requested,
+.run-item.run-tone-cancel-requested {
+  border-color: rgba(181, 114, 33, 0.24);
+  background: rgba(255, 248, 239, 0.9);
+}
+
+.execution-state-card.execution-tone-cancelled,
+.run-item.run-tone-cancelled {
+  border-color: rgba(181, 114, 33, 0.26);
+  background: rgba(255, 248, 239, 0.9);
+}
+
+.execution-state-card.execution-tone-timed-out,
+.run-item.run-tone-timed-out {
+  border-color: rgba(208, 95, 37, 0.3);
+  background: rgba(255, 243, 238, 0.92);
+}
+
+.execution-state-card.execution-tone-interrupted,
+.run-item.run-tone-interrupted {
+  border-color: rgba(160, 88, 29, 0.28);
+  background: rgba(255, 245, 236, 0.92);
+}
+
+.execution-state-card.execution-tone-failed,
+.run-item.run-tone-failed {
+  border-color: rgba(143, 29, 29, 0.22);
+  background: rgba(255, 244, 244, 0.92);
+}
+
+.execution-state-card.execution-tone-passed,
+.run-item.run-tone-passed {
+  border-color: rgba(15, 108, 92, 0.22);
+  background: rgba(244, 252, 249, 0.92);
+}
+
 .run-item {
   display: grid;
   gap: 10px;
+}
+
+.status-banner {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid rgba(24, 34, 29, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 249, 242, 0.85);
+}
+
+.status-banner-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.status-banner h4 {
+  font-size: 16px;
+}
+
+.status-banner-running,
+.status-banner-passed {
+  border-color: rgba(15, 108, 92, 0.14);
+  background: rgba(243, 252, 248, 0.95);
+}
+
+.status-banner-pending {
+  border-color: rgba(239, 108, 51, 0.14);
+  background: rgba(255, 248, 241, 0.95);
+}
+
+.status-banner-cancel-requested,
+.status-banner-cancelled {
+  border-color: rgba(181, 114, 33, 0.16);
+  background: rgba(255, 248, 239, 0.95);
+}
+
+.status-banner-timed-out {
+  border-color: rgba(208, 95, 37, 0.18);
+  background: rgba(255, 242, 235, 0.95);
+}
+
+.status-banner-interrupted {
+  border-color: rgba(160, 88, 29, 0.18);
+  background: rgba(255, 244, 236, 0.95);
+}
+
+.status-banner-failed {
+  border-color: rgba(143, 29, 29, 0.18);
+  background: rgba(255, 243, 243, 0.95);
 }
 
 .run-meta {

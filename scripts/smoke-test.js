@@ -4,6 +4,8 @@ const path = require("path");
 const { spawn, execFileSync } = require("child_process");
 const {
   buildPendingProofCheckLines,
+  describeExecutionPresentation,
+  describeRunPresentation,
   buildVerificationPlannedCheckDraft,
   buildVerificationProofDraft,
   formatVerificationPlannedCheck,
@@ -256,6 +258,25 @@ main().catch((error) => {
     },
     "stdout"
   );
+  const cancelledExecutionPresentation = describeExecutionPresentation({
+    status: "completed",
+    outcome: "cancelled",
+    summary: "Executor interrupted by dashboard-cancel.",
+  });
+  const timedOutExecutionPresentation = describeExecutionPresentation({
+    status: "completed",
+    outcome: "timed-out",
+    summary: "Executor timed out after 50 ms.",
+  });
+  const cancelledRunPresentation = describeRunPresentation({
+    status: "failed",
+    interrupted: true,
+    interruptionSignal: "dashboard-cancel",
+  });
+  const failedRunPresentation = describeRunPresentation({
+    status: "failed",
+    summary: "Executor failed with exit code 1.",
+  });
   if (
     mergedPendingPaths !== "README.md\nsrc/server.js\ndocs/notes.md" ||
     pendingProofPaths.join(",") !== "docs/notes.md,README.md" ||
@@ -293,6 +314,16 @@ main().catch((error) => {
     !completedExecutionLogSource ||
     completedExecutionLogSource.kind !== "run" ||
     completedExecutionLogSource.runId !== "run-1" ||
+    !cancelledExecutionPresentation ||
+    cancelledExecutionPresentation.tone !== "cancelled" ||
+    cancelledExecutionPresentation.headline !== "Cancelled from dashboard" ||
+    !timedOutExecutionPresentation ||
+    timedOutExecutionPresentation.tone !== "timed-out" ||
+    timedOutExecutionPresentation.headline !== "Timed out" ||
+    !cancelledRunPresentation ||
+    cancelledRunPresentation.tone !== "cancelled" ||
+    !failedRunPresentation ||
+    failedRunPresentation.tone !== "failed" ||
     summarizeExecutorOutcomeFilter(3, 1, "cancelled") !== "Showing 1 of 3 tasks with executor outcome cancelled."
   ) {
     throw new Error("Dashboard pending proof helper utilities did not normalize the current verification gate state.");

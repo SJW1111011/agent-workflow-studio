@@ -601,6 +601,30 @@ function describeRunOutcome(run) {
   };
 }
 
+function describeRunPresentation(run) {
+  const outcome = describeRunOutcome(run);
+  const normalized = normalizePresentationTone(outcome.label);
+
+  return {
+    tone: normalized,
+    headline:
+      normalized === "cancelled"
+        ? "Cancelled from dashboard"
+        : normalized === "timed-out"
+          ? "Timed out"
+          : normalized === "interrupted"
+            ? "Interrupted"
+            : normalized === "failed"
+              ? "Failed"
+              : normalized === "passed"
+                ? "Passed"
+                : "Recorded",
+    summary: outcome.summary,
+    detail: outcome.detail,
+    warn: outcome.warn,
+  };
+}
+
 function describeExecutionState(executionState) {
   const state = executionState && typeof executionState === "object" ? executionState : { status: "idle" };
   const adapterLabel = state.adapterId || "adapter";
@@ -690,6 +714,91 @@ function describeExecutionState(executionState) {
     warn: false,
     summary: "No dashboard-triggered execution for the selected task yet.",
   };
+}
+
+function describeExecutionPresentation(executionState) {
+  const state = executionState && typeof executionState === "object" ? executionState : { status: "idle" };
+  const description = describeExecutionState(state);
+  const outcome = normalizeExecutionOutcome(state);
+
+  if (state.status === "starting") {
+    return {
+      tone: "running",
+      headline: "Starting local execution",
+      summary: description.summary,
+      warn: false,
+    };
+  }
+
+  if (state.status === "running") {
+    return {
+      tone: state.activity === "streaming-output" ? "running" : "pending",
+      headline: state.activity === "streaming-output" ? "Streaming local output" : "Awaiting first output",
+      summary: description.summary,
+      warn: false,
+    };
+  }
+
+  if (state.status === "cancel-requested") {
+    return {
+      tone: "cancel-requested",
+      headline: "Cancellation requested",
+      summary: description.summary,
+      warn: true,
+    };
+  }
+
+  if (state.status === "failed-to-start") {
+    return {
+      tone: "failed",
+      headline: "Failed to start",
+      summary: description.summary,
+      warn: true,
+    };
+  }
+
+  if (state.status === "completed") {
+    const normalized = normalizePresentationTone(outcome || description.statusLabel);
+    return {
+      tone: normalized,
+      headline:
+        normalized === "cancelled"
+          ? "Cancelled from dashboard"
+          : normalized === "timed-out"
+            ? "Timed out"
+            : normalized === "interrupted"
+              ? "Interrupted"
+              : normalized === "passed"
+                ? "Completed successfully"
+                : "Execution failed",
+      summary: description.summary,
+      warn: description.warn,
+    };
+  }
+
+  return {
+    tone: "idle",
+    headline: "No execution yet",
+    summary: description.summary,
+    warn: false,
+  };
+}
+
+function normalizePresentationTone(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "timed out") {
+    return "timed-out";
+  }
+  if (normalized === "cancel requested") {
+    return "cancel-requested";
+  }
+  if (normalized === "failed to start") {
+    return "failed";
+  }
+  if (["cancelled", "timed-out", "interrupted", "failed", "passed", "running", "pending", "idle"].includes(normalized)) {
+    return normalized;
+  }
+  return normalized || "idle";
 }
 
 function describeExecutorOutcome(outcome, summary) {
@@ -1016,6 +1125,7 @@ function renderExecutionStateMarkup(executionState) {
   const taskId = state.taskId || "";
   const adapterLabel = state.adapterId || "adapter";
   const description = describeExecutionState(state);
+  const presentation = describeExecutionPresentation(state);
   const activityTag = describeExecutionActivity(state);
   const tags = [
     createTag(description.statusLabel, description.warn),
@@ -1032,7 +1142,7 @@ function renderExecutionStateMarkup(executionState) {
   }
 
   const detailLines = [
-    `<p>${escapeHtml(description.summary)}</p>`,
+    renderStatusBanner("Execution state", presentation),
     state.startedAt ? `<p class="subtle">Started ${escapeHtml(formatTimestampLabel(state.startedAt))}</p>` : "",
     state.cancelRequestedAt ? `<p class="subtle">Cancel requested ${escapeHtml(formatTimestampLabel(state.cancelRequestedAt))}</p>` : "",
     state.completedAt ? `<p class="subtle">Completed ${escapeHtml(formatTimestampLabel(state.completedAt))}</p>` : "",
@@ -1052,7 +1162,7 @@ function renderExecutionStateMarkup(executionState) {
     .join("");
 
   return `
-    <article class="list-item">
+    <article class="list-item execution-state-card execution-tone-${escapeHtml(presentation.tone)}">
       <h3>${escapeHtml(adapterLabel)}</h3>
       ${detailLines}
       <div class="tag-row">${tags}</div>
@@ -1111,6 +1221,21 @@ function describeExecutionActivity(executionState) {
     label: activity,
     warn: false,
   };
+}
+
+function renderStatusBanner(label, presentation) {
+  const view = presentation && typeof presentation === "object" ? presentation : {};
+  const tone = normalizePresentationTone(view.tone);
+  const headline = view.headline || "Recorded";
+  const summary = view.summary || "";
+
+  return `
+    <div class="status-banner status-banner-${escapeHtml(tone)}">
+      <p class="status-banner-label">${escapeHtml(label)}</p>
+      <h4>${escapeHtml(headline)}</h4>
+      ${summary ? `<p>${escapeHtml(summary)}</p>` : ""}
+    </div>
+  `;
 }
 
 function renderExecutionStreamDetail(stream) {
@@ -2092,6 +2217,7 @@ function updateRunProofNote(detail) {
 
 function renderTaskRun(run, taskId) {
   const outcome = describeRunOutcome(run);
+  const presentation = describeRunPresentation(run);
   const tags = [
     createTag(outcome.label, outcome.warn),
     createTag(run.source || "manual", run.source === "executor" ? false : false),
@@ -2104,6 +2230,7 @@ function renderTaskRun(run, taskId) {
     .join("");
 
   const metaLines = [
+    renderStatusBanner("Run outcome", presentation),
     outcome.detail ? `<p>${escapeHtml(outcome.detail)}</p>` : "",
     run.createdAt ? `<p class="subtle">Started ${escapeHtml(run.createdAt)}</p>` : "",
     run.completedAt ? `<p class="subtle">Completed ${escapeHtml(run.completedAt)}</p>` : "",
@@ -2141,9 +2268,8 @@ function renderTaskRun(run, taskId) {
     .join("");
 
   return `
-    <article class="list-item run-item">
+    <article class="list-item run-item run-tone-${escapeHtml(presentation.tone)}">
       <h3>${escapeHtml(run.agent || "manual")} - ${escapeHtml(outcome.label)}</h3>
-      <p>${escapeHtml(outcome.summary)}</p>
       <div class="tag-row">${tags}</div>
       <div class="run-meta">${metaLines}</div>
       ${
@@ -2527,6 +2653,8 @@ if (typeof module !== "undefined" && module.exports) {
     buildVerificationPlannedCheckDraft,
     buildPendingProofCheckLines,
     collectRunDraftValues,
+    describeExecutionPresentation,
+    describeRunPresentation,
     extractVerificationPlannedManualChecks,
     extractVerificationProofPaths,
     filterTasksByExecutorOutcome,
