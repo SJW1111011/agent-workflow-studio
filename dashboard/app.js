@@ -1252,17 +1252,69 @@ function getExecutionLogPanelId(stream) {
   return `execution-log-${String(stream || "").replace(/[^a-zA-Z0-9_-]/g, "-")}`;
 }
 
+function resolveExecutionLogSource(taskId, executionState, stream) {
+  const state = executionState && typeof executionState === "object" ? executionState : {};
+  const fieldName = stream === "stderr" ? "stderrFile" : stream === "stdout" ? "stdoutFile" : null;
+  if (!fieldName || !state[fieldName]) {
+    return null;
+  }
+
+  if (!isActiveExecutionState(state) && state.status === "completed" && state.runId) {
+    return {
+      kind: "run",
+      taskId,
+      stream,
+      runId: state.runId,
+      path: state[fieldName],
+    };
+  }
+
+  return {
+    kind: "execution",
+    taskId,
+    stream,
+    runId: state.runId || null,
+    path: state[fieldName],
+  };
+}
+
+async function loadResolvedExecutionLog(logSource) {
+  if (!logSource || !logSource.kind) {
+    throw new Error("Execution log source is unavailable.");
+  }
+
+  if (logSource.kind === "run") {
+    const log = await loadRunLog(logSource.taskId, logSource.runId, logSource.stream);
+    return {
+      ...log,
+      source: "run",
+      active: false,
+      pending: false,
+    };
+  }
+
+  const log = await loadTaskExecutionLog(logSource.taskId, logSource.stream);
+  return {
+    ...log,
+    source: "execution",
+  };
+}
+
 function buildExecutionLogPanelMarkup(taskId, state, stream) {
-  const hasLog = Boolean(state && state[stream === "stderr" ? "stderrFile" : "stdoutFile"]);
+  const logSource = resolveExecutionLogSource(taskId, state, stream);
   const isOpen = executionLogTaskId === taskId && executionLogOpenStreams.has(stream);
 
-  if (!hasLog) {
+  if (!logSource) {
     return "";
   }
 
   return `
     <div class="run-log-panel ${isOpen ? "" : "hidden"}" id="${getExecutionLogPanelId(stream)}">
-      <p class="subtle">${escapeHtml(isActiveExecutionState(state) ? `Tail ${stream} from the active local execution.` : `View the latest cached ${stream} tail from this local execution.`)}</p>
+      <p class="subtle">${escapeHtml(
+        logSource.kind === "run"
+          ? `View the persisted ${stream} log from run ${logSource.runId}.`
+          : `Tail ${stream} from the active local execution.`
+      )}</p>
     </div>
   `;
 }
@@ -1270,13 +1322,17 @@ function buildExecutionLogPanelMarkup(taskId, state, stream) {
 function renderExecutionLogActions(taskId, state) {
   const buttons = ["stdout", "stderr"]
     .map((stream) => {
-      const hasLog = Boolean(state && state[stream === "stderr" ? "stderrFile" : "stdoutFile"]);
-      if (!hasLog) {
+      const logSource = resolveExecutionLogSource(taskId, state, stream);
+      if (!logSource) {
         return "";
       }
 
       const isOpen = executionLogTaskId === taskId && executionLogOpenStreams.has(stream);
-      const label = isOpen ? `Hide ${stream}` : isActiveExecutionState(state) ? `Tail ${stream}` : `View latest ${stream}`;
+      const label = isOpen
+        ? `Hide ${stream}`
+        : logSource.kind === "run"
+          ? `View persisted ${stream}`
+          : `Tail ${stream}`;
       return `<button type="button" class="log-button execution-log-button" data-task-id="${escapeHtml(taskId)}" data-execution-stream="${stream}">${escapeHtml(label)}</button>`;
     })
     .filter(Boolean);
@@ -1316,7 +1372,13 @@ async function refreshOpenExecutionLogs(taskId, executionState) {
       panel.innerHTML = `<p class="subtle">Loading ${escapeHtml(stream)}...</p>`;
 
       try {
-        const log = await loadTaskExecutionLog(taskId, stream);
+        const logSource = resolveExecutionLogSource(taskId, state, stream);
+        if (!logSource) {
+          panel.innerHTML = `<div class="empty">${escapeHtml(`No ${stream} log is available for this execution state.`)}</div>`;
+          return;
+        }
+
+        const log = await loadResolvedExecutionLog(logSource);
         if (executionLogTaskId !== taskId || !executionLogOpenStreams.has(stream)) {
           return;
         }
@@ -1327,6 +1389,11 @@ async function refreshOpenExecutionLogs(taskId, executionState) {
         }
 
         latestPanel.innerHTML = `
+          <p class="subtle">${escapeHtml(
+            log.source === "run"
+              ? `Showing persisted ${stream} from run ${log.runId}.`
+              : `Reading live ${stream} output from the active local execution.`
+          )}</p>
           <p class="subtle">Log path: ${escapeHtml(log.path)}</p>
           ${
             log.pending
@@ -1338,6 +1405,8 @@ async function refreshOpenExecutionLogs(taskId, executionState) {
           ${
             log.updatedAt
               ? `<p class="subtle">${escapeHtml(`${log.active ? "Auto-refreshing" : "Last updated"} ${formatTimestampLabel(log.updatedAt)}`)}</p>`
+              : log.source === "run"
+                ? `<p class="subtle">${escapeHtml(`Persisted run log ready for durable inspection.`)}</p>`
               : ""
           }
           <pre class="detail-pre">${escapeHtml(log.content || (log.pending ? "" : "(empty log)"))}</pre>
@@ -2477,6 +2546,7 @@ if (typeof module !== "undefined" && module.exports) {
     parseRunCheckLine,
     parseRunChecks,
     parseRunEvidenceDraft,
+    resolveExecutionLogSource,
     summarizeExecutorOutcomeFilter,
   };
 }

@@ -23,6 +23,7 @@ const {
   normalizeExecutorOutcomeFilter,
   parseRunVerificationDraft,
   parseRunEvidenceDraft,
+  resolveExecutionLogSource,
   summarizeExecutorOutcomeFilter,
 } = require("../dashboard/app.js");
 
@@ -235,6 +236,26 @@ main().catch((error) => {
     ],
     "cancelled"
   );
+  const runningExecutionLogSource = resolveExecutionLogSource(
+    "T-001",
+    {
+      taskId: "T-001",
+      status: "running",
+      runId: "run-1",
+      stdoutFile: ".agent-workflow/tasks/T-001/runs/run-1.stdout.log",
+    },
+    "stdout"
+  );
+  const completedExecutionLogSource = resolveExecutionLogSource(
+    "T-001",
+    {
+      taskId: "T-001",
+      status: "completed",
+      runId: "run-1",
+      stdoutFile: ".agent-workflow/tasks/T-001/runs/run-1.stdout.log",
+    },
+    "stdout"
+  );
   if (
     mergedPendingPaths !== "README.md\nsrc/server.js\ndocs/notes.md" ||
     pendingProofPaths.join(",") !== "docs/notes.md,README.md" ||
@@ -267,6 +288,11 @@ main().catch((error) => {
     !matchesExecutorOutcomeFilter({ latestExecutorOutcome: "" }, "none") ||
     filteredExecutorTasks.length !== 1 ||
     filteredExecutorTasks[0].id !== "T-002" ||
+    !runningExecutionLogSource ||
+    runningExecutionLogSource.kind !== "execution" ||
+    !completedExecutionLogSource ||
+    completedExecutionLogSource.kind !== "run" ||
+    completedExecutionLogSource.runId !== "run-1" ||
     summarizeExecutorOutcomeFilter(3, 1, "cancelled") !== "Showing 1 of 3 tasks with executor outcome cancelled."
   ) {
     throw new Error("Dashboard pending proof helper utilities did not normalize the current verification gate state.");

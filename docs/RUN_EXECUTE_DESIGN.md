@@ -385,6 +385,7 @@ Current active log route:
 - `GET /api/tasks/:taskId/execution/logs/:stream`
 - local-only tail/readback for the current dashboard execution state
 - backed by the same task-local stdout/stderr files that the shared executor writes
+- once the execution is durably recorded as a run, the dashboard may switch that panel to the persisted run-log route for the same stream
 
 Current cancel route:
 
