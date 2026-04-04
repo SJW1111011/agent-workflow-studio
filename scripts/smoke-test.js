@@ -543,6 +543,22 @@ Ship a dashboard markdown editor.
     ) {
       throw new Error("Dashboard execution log API did not expose the active stderr tail.");
     }
+    const runningExecutionDetail = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-004/execution`);
+    if (
+      runningExecutionDetail.activity !== "streaming-output" ||
+      !runningExecutionDetail.lastOutputAt ||
+      typeof runningExecutionDetail.totalOutputBytes !== "number" ||
+      runningExecutionDetail.totalOutputBytes <= 0 ||
+      !runningExecutionDetail.streams ||
+      !runningExecutionDetail.streams.stdout ||
+      runningExecutionDetail.streams.stdout.exists !== true ||
+      typeof runningExecutionDetail.streams.stdout.size !== "number" ||
+      runningExecutionDetail.streams.stdout.size <= 0 ||
+      !runningExecutionDetail.streams.stderr ||
+      runningExecutionDetail.streams.stderr.exists !== true
+    ) {
+      throw new Error("Dashboard execution state did not expose derived stream observability.");
+    }
     const completedDashboardExecution = await waitFor(async () => {
       const executionState = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-004/execution`);
       if (executionState.status === "starting" || executionState.status === "running") {

@@ -618,7 +618,10 @@ function describeExecutionState(executionState) {
     return {
       statusLabel: "running",
       warn: false,
-      summary: `Local ${adapterLabel} execution is running.`,
+      summary:
+        state.activity === "streaming-output"
+          ? `Local ${adapterLabel} execution is running and streaming local output.`
+          : `Local ${adapterLabel} execution is running and waiting for first output.`,
     };
   }
 
@@ -1013,8 +1016,10 @@ function renderExecutionStateMarkup(executionState) {
   const taskId = state.taskId || "";
   const adapterLabel = state.adapterId || "adapter";
   const description = describeExecutionState(state);
+  const activityTag = describeExecutionActivity(state);
   const tags = [
     createTag(description.statusLabel, description.warn),
+    activityTag ? createTag(activityTag.label, activityTag.warn) : "",
     state.runStatus ? createTag(state.runStatus, state.runStatus === "failed") : "",
     state.stdioMode ? createTag(`stdio ${state.stdioMode}`, false) : "",
     typeof state.exitCode === "number" ? createTag(`exit ${state.exitCode}`, state.runStatus === "failed") : "",
@@ -1032,6 +1037,10 @@ function renderExecutionStateMarkup(executionState) {
     state.cancelRequestedAt ? `<p class="subtle">Cancel requested ${escapeHtml(formatTimestampLabel(state.cancelRequestedAt))}</p>` : "",
     state.completedAt ? `<p class="subtle">Completed ${escapeHtml(formatTimestampLabel(state.completedAt))}</p>` : "",
     state.runId ? `<p class="subtle">Run id: ${escapeHtml(state.runId)}</p>` : "",
+    state.lastOutputAt ? `<p class="subtle">Latest output ${escapeHtml(formatTimestampLabel(state.lastOutputAt))}</p>` : "",
+    state.totalOutputBytes > 0 ? `<p class="subtle">Captured ${escapeHtml(formatByteCount(state.totalOutputBytes))} so far.</p>` : "",
+    renderExecutionStreamDetail(state.streams && state.streams.stdout),
+    renderExecutionStreamDetail(state.streams && state.streams.stderr),
     state.stdoutFile ? `<p class="subtle">stdout: ${escapeHtml(state.stdoutFile)}</p>` : "",
     state.stderrFile ? `<p class="subtle">stderr: ${escapeHtml(state.stderrFile)}</p>` : "",
     state.status === "completed" && state.summary && state.summary !== description.summary
@@ -1057,7 +1066,7 @@ function renderExecutionStateSummary(executionState) {
   const description = describeExecutionState(state);
 
   if (state.status === "running") {
-    return `${description.summary} Evidence will appear in task detail after it finishes.`;
+    return `${description.summary}${state.totalOutputBytes > 0 ? ` Captured ${formatByteCount(state.totalOutputBytes)} so far.` : ""}`;
   }
   if (state.status === "cancel-requested") {
     return `${description.summary} Waiting for the shared executor to exit cleanly.`;
@@ -1067,6 +1076,62 @@ function renderExecutionStateSummary(executionState) {
   }
 
   return description.summary;
+}
+
+function describeExecutionActivity(executionState) {
+  const state = executionState && typeof executionState === "object" ? executionState : {};
+  const activity = String(state.activity || "").trim().toLowerCase();
+
+  if (!activity || activity === "idle" || activity === "completed" || activity === "failed-to-start") {
+    return null;
+  }
+
+  if (activity === "awaiting-output") {
+    return {
+      label: "awaiting output",
+      warn: false,
+    };
+  }
+
+  if (activity === "streaming-output") {
+    return {
+      label: "streaming output",
+      warn: false,
+    };
+  }
+
+  if (activity === "shutting-down") {
+    return {
+      label: "shutting down",
+      warn: true,
+    };
+  }
+
+  return {
+    label: activity,
+    warn: false,
+  };
+}
+
+function renderExecutionStreamDetail(stream) {
+  if (!stream || !stream.stream) {
+    return "";
+  }
+
+  if (stream.exists) {
+    const updated = stream.updatedAt ? `, updated ${formatTimestampLabel(stream.updatedAt)}` : "";
+    return `<p class="subtle">${escapeHtml(`${stream.stream}: ${formatByteCount(stream.size)}${updated}`)}</p>`;
+  }
+
+  if (stream.pending) {
+    return `<p class="subtle">${escapeHtml(`${stream.stream}: waiting for output file`)}</p>`;
+  }
+
+  if (stream.path) {
+    return `<p class="subtle">${escapeHtml(`${stream.stream}: log path reserved but file is not available`)}</p>`;
+  }
+
+  return "";
 }
 
 function isActiveExecutionState(executionState) {
@@ -1691,6 +1756,23 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function formatByteCount(value) {
+  const bytes = Number(value);
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return "0 B";
+  }
+
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(bytes >= 10 * 1024 ? 0 : 1)} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function formatTimestampLabel(value) {

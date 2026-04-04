@@ -399,6 +399,13 @@ That route can expose transient server-local state such as:
 - `completed`
 - `failed-to-start`
 
+It can also derive lightweight observability from the current task-local log files, for example:
+
+- `activity`: `awaiting-output`, `streaming-output`, `shutting-down`, or terminal states
+- `streams.stdout` / `streams.stderr`: existence, byte count, and last update time
+- `lastOutputAt`
+- `totalOutputBytes`
+
 ### Current safety boundary
 
 The dashboard-triggered pass only launches adapters whose resolved execution plan uses `stdioMode: pipe`.
@@ -421,6 +428,7 @@ Instead:
 - durable truth stays in the task package
 - the UI can poll task detail plus execution status while a job is active
 - the bridge may also expose active stdout/stderr tail readback by pointing at the same task-local log files, without creating a second log store
+- the bridge may derive lightweight stream/activity metadata from those same log files, as long as it does not become a second durable execution model
 - cancellation only updates transient bridge state immediately; the durable truth still becomes the final interrupted executor run
 - the bridge can also expose a structured final `outcome` such as `passed`, `timed-out`, `interrupted`, `cancelled`, or `failed-to-start` so the dashboard does not have to infer that from summary strings
 

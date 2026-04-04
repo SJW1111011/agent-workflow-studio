@@ -9,7 +9,7 @@ function createDashboardExecutionBridge(workspaceRoot) {
   const taskControllers = new Map();
 
   function getTaskExecution(taskId) {
-    return cloneExecutionState(taskStates.get(taskId) || buildIdleExecutionState(taskId));
+    return buildPublicExecutionState(workspaceRoot, taskId, taskStates.get(taskId) || buildIdleExecutionState(taskId));
   }
 
   function getTaskExecutionLog(taskId, streamName, maxChars = 12000) {
@@ -158,7 +158,7 @@ function createDashboardExecutionBridge(workspaceRoot) {
       }
     });
 
-    return cloneExecutionState(nextState);
+    return getTaskExecution(taskId);
   }
 
   async function cancelTaskExecution(taskId) {
@@ -225,6 +225,25 @@ function cloneExecutionState(state) {
   return JSON.parse(JSON.stringify(state));
 }
 
+function buildPublicExecutionState(workspaceRoot, taskId, state) {
+  const baseState = cloneExecutionState(state);
+  const streams = {
+    stdout: buildExecutionStreamState(workspaceRoot, taskId, baseState, "stdout"),
+    stderr: buildExecutionStreamState(workspaceRoot, taskId, baseState, "stderr"),
+  };
+  const lastOutputAt = deriveLastOutputAt(streams);
+  const totalOutputBytes = normalizeByteCount(streams.stdout.size) + normalizeByteCount(streams.stderr.size);
+
+  return {
+    ...baseState,
+    activity: deriveExecutionActivity(baseState, streams),
+    activeStreamCount: countActiveStreams(streams),
+    totalOutputBytes,
+    lastOutputAt,
+    streams,
+  };
+}
+
 function isActiveExecutionStatus(status) {
   return status === "starting" || status === "running" || status === "cancel-requested";
 }
@@ -255,6 +274,97 @@ function deriveExecutionOutcome(run) {
 
 function isDashboardCancelSignal(signal) {
   return String(signal || "").trim().toLowerCase() === "dashboard-cancel";
+}
+
+function buildExecutionStreamState(workspaceRoot, taskId, state, streamName) {
+  const files = taskFiles(workspaceRoot, taskId);
+  const fieldName = streamName === "stderr" ? "stderrFile" : "stdoutFile";
+  const relativePath = state[fieldName] || null;
+
+  if (!isNonEmptyString(relativePath)) {
+    return {
+      stream: streamName,
+      path: null,
+      exists: false,
+      pending: isActiveExecutionStatus(state.status),
+      size: 0,
+      updatedAt: null,
+    };
+  }
+
+  const absolutePath = path.resolve(workspaceRoot, relativePath);
+  const allowedRoot = path.resolve(files.runs);
+  const normalizedAllowedRoot = `${allowedRoot}${path.sep}`;
+  if (absolutePath !== allowedRoot && !absolutePath.startsWith(normalizedAllowedRoot)) {
+    return {
+      stream: streamName,
+      path: relativePath,
+      exists: false,
+      pending: false,
+      size: 0,
+      updatedAt: null,
+      error: "outside-task-run-ledger",
+    };
+  }
+
+  if (!fileExists(absolutePath)) {
+    return {
+      stream: streamName,
+      path: relativePath,
+      exists: false,
+      pending: isActiveExecutionStatus(state.status),
+      size: 0,
+      updatedAt: null,
+    };
+  }
+
+  const stats = fs.statSync(absolutePath);
+  return {
+    stream: streamName,
+    path: relativePath,
+    exists: true,
+    pending: false,
+    size: normalizeByteCount(stats.size),
+    updatedAt: Number.isFinite(stats.mtimeMs) ? new Date(stats.mtimeMs).toISOString() : null,
+  };
+}
+
+function deriveExecutionActivity(state, streams) {
+  if (state.status === "cancel-requested") {
+    return "shutting-down";
+  }
+
+  if (!isActiveExecutionStatus(state.status)) {
+    return state.status === "completed" ? "completed" : state.status === "failed-to-start" ? "failed-to-start" : "idle";
+  }
+
+  const hasOutput = Object.values(streams).some((stream) => normalizeByteCount(stream.size) > 0);
+  return hasOutput ? "streaming-output" : "awaiting-output";
+}
+
+function deriveLastOutputAt(streams) {
+  return Object.values(streams).reduce((latest, stream) => {
+    if (!stream || !stream.updatedAt) {
+      return latest;
+    }
+
+    if (!latest) {
+      return stream.updatedAt;
+    }
+
+    return stream.updatedAt > latest ? stream.updatedAt : latest;
+  }, null);
+}
+
+function countActiveStreams(streams) {
+  return Object.values(streams).reduce((count, stream) => {
+    return stream && stream.exists ? count + 1 : count;
+  }, 0);
+}
+
+function normalizeByteCount(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric > 0 ? numeric : 0;
 }
 
 function buildExecutionLogPaths(workspaceRoot, taskId, runId, stdioMode) {

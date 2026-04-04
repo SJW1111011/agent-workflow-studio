@@ -29,6 +29,7 @@ As of 2026-04-04, the project already has a working MVP foundation:
 - dashboard-triggered local execution can now also request cancellation and surface transient `cancel-requested` state
 - dashboard execution state now also carries a structured final outcome so the UI does not have to infer pass/fail/cancel from summary text
 - dashboard task detail can now tail active local stdout/stderr through a local-only execution-log API while a shared executor run is still in flight
+- dashboard execution state now also derives lightweight stream observability from those same task-local logs, including activity, byte counts, and last output time
 - overview task cards now also surface the latest executor outcome separately from the latest overall run
 - overview stats now also aggregate each task's latest executor outcome for dashboard-level reporting
 - run evidence recording
@@ -162,6 +163,7 @@ The smoke test currently covers:
 - CLI executor path for `run:execute`, including run ledger + verification/checkpoint refresh
 - dashboard executor bridge APIs for `POST /api/tasks/:taskId/execute` and `GET /api/tasks/:taskId/execution`
 - dashboard active execution log API for `GET /api/tasks/:taskId/execution/logs/:stream`
+- derived execution-state observability fields such as `activity`, `streams`, `lastOutputAt`, and `totalOutputBytes`
 - dashboard executor cancel API for `POST /api/tasks/:taskId/execution/cancel`
 - executor capture mode and timeout path
 - overview and task detail freshness heuristics for memory/task docs
