@@ -30,7 +30,7 @@ const CORE_ENV_KEYS = [
 async function executeRun(workspaceRoot, taskId, adapterInput, options = {}) {
   const plan = options.executionPlan || planRunExecution(workspaceRoot, taskId, adapterInput, options);
   const files = taskFiles(workspaceRoot, taskId);
-  const runId = `run-${Date.now()}`;
+  const runId = isNonEmptyString(options.runId) ? String(options.runId).trim() : `run-${Date.now()}`;
   const startedAt = new Date().toISOString();
   const execution = await spawnExecution(plan, runId, plan.runsDirectory || files.runs, options.abortSignal);
   const completedAt = new Date().toISOString();
@@ -418,6 +418,10 @@ function normalizePositiveInteger(value) {
   }
 
   return normalized;
+}
+
+function isNonEmptyString(value) {
+  return typeof value === "string" && value.trim().length > 0;
 }
 
 function normalizeAbortReason(reason) {

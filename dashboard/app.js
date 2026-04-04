@@ -4,6 +4,8 @@ let activeDocumentName = "task.md";
 let activeExecutorOutcomeFilter = "all";
 let executionPollHandle = null;
 let executionPollTaskId = null;
+let executionLogTaskId = null;
+let executionLogOpenStreams = new Set();
 const CHECK_STATUSES = new Set(["passed", "failed", "recorded", "info"]);
 const EXECUTOR_OUTCOME_FILTERS = new Set(["all", "passed", "failed", "timed-out", "interrupted", "cancelled", "none"]);
 
@@ -494,6 +496,12 @@ async function loadTaskDetail(taskId) {
 
 async function loadTaskExecution(taskId) {
   return fetchJson(`/api/tasks/${encodeURIComponent(taskId)}/execution`);
+}
+
+async function loadTaskExecutionLog(taskId, stream, maxChars = 6000) {
+  const params = new URLSearchParams();
+  params.set("maxChars", String(maxChars));
+  return fetchJson(`/api/tasks/${encodeURIComponent(taskId)}/execution/logs/${encodeURIComponent(stream)}?${params.toString()}`);
 }
 
 async function loadRunLog(taskId, runId, stream) {
@@ -1002,6 +1010,7 @@ function renderValidation(report) {
 
 function renderExecutionStateMarkup(executionState) {
   const state = executionState && typeof executionState === "object" ? executionState : { status: "idle" };
+  const taskId = state.taskId || "";
   const adapterLabel = state.adapterId || "adapter";
   const description = describeExecutionState(state);
   const tags = [
@@ -1023,6 +1032,8 @@ function renderExecutionStateMarkup(executionState) {
     state.cancelRequestedAt ? `<p class="subtle">Cancel requested ${escapeHtml(formatTimestampLabel(state.cancelRequestedAt))}</p>` : "",
     state.completedAt ? `<p class="subtle">Completed ${escapeHtml(formatTimestampLabel(state.completedAt))}</p>` : "",
     state.runId ? `<p class="subtle">Run id: ${escapeHtml(state.runId)}</p>` : "",
+    state.stdoutFile ? `<p class="subtle">stdout: ${escapeHtml(state.stdoutFile)}</p>` : "",
+    state.stderrFile ? `<p class="subtle">stderr: ${escapeHtml(state.stderrFile)}</p>` : "",
     state.status === "completed" && state.summary && state.summary !== description.summary
       ? `<p class="subtle">${escapeHtml(state.summary)}</p>`
       : "",
@@ -1036,6 +1047,7 @@ function renderExecutionStateMarkup(executionState) {
       <h3>${escapeHtml(adapterLabel)}</h3>
       ${detailLines}
       <div class="tag-row">${tags}</div>
+      ${renderExecutionLogActions(taskId, state)}
     </article>
   `;
 }
@@ -1090,6 +1102,12 @@ function updateExecutionStateUI(executionState) {
 
   if (panelNode) {
     panelNode.innerHTML = renderExecutionStateMarkup(state);
+    if (selectedTaskId) {
+      bindExecutionLogButtons(selectedTaskId, state);
+      if (executionLogTaskId === selectedTaskId && executionLogOpenStreams.size > 0) {
+        refreshOpenExecutionLogs(selectedTaskId, state);
+      }
+    }
   }
 
   if (executeButton) {
@@ -1106,6 +1124,17 @@ function clearExecutionPolling() {
   }
   executionPollHandle = null;
   executionPollTaskId = null;
+}
+
+function clearExecutionLogState(nextTaskId = null) {
+  executionLogTaskId = nextTaskId;
+  executionLogOpenStreams = new Set();
+}
+
+function ensureExecutionLogTask(taskId) {
+  if (executionLogTaskId !== taskId) {
+    clearExecutionLogState(taskId);
+  }
 }
 
 function scheduleExecutionPolling(taskId, delayMs = 900) {
@@ -1154,16 +1183,150 @@ async function pollExecutionState(taskId) {
   }
 }
 
+function getExecutionLogPanelId(stream) {
+  return `execution-log-${String(stream || "").replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
+
+function buildExecutionLogPanelMarkup(taskId, state, stream) {
+  const hasLog = Boolean(state && state[stream === "stderr" ? "stderrFile" : "stdoutFile"]);
+  const isOpen = executionLogTaskId === taskId && executionLogOpenStreams.has(stream);
+
+  if (!hasLog) {
+    return "";
+  }
+
+  return `
+    <div class="run-log-panel ${isOpen ? "" : "hidden"}" id="${getExecutionLogPanelId(stream)}">
+      <p class="subtle">${escapeHtml(isActiveExecutionState(state) ? `Tail ${stream} from the active local execution.` : `View the latest cached ${stream} tail from this local execution.`)}</p>
+    </div>
+  `;
+}
+
+function renderExecutionLogActions(taskId, state) {
+  const buttons = ["stdout", "stderr"]
+    .map((stream) => {
+      const hasLog = Boolean(state && state[stream === "stderr" ? "stderrFile" : "stdoutFile"]);
+      if (!hasLog) {
+        return "";
+      }
+
+      const isOpen = executionLogTaskId === taskId && executionLogOpenStreams.has(stream);
+      const label = isOpen ? `Hide ${stream}` : isActiveExecutionState(state) ? `Tail ${stream}` : `View latest ${stream}`;
+      return `<button type="button" class="log-button execution-log-button" data-task-id="${escapeHtml(taskId)}" data-execution-stream="${stream}">${escapeHtml(label)}</button>`;
+    })
+    .filter(Boolean);
+
+  if (buttons.length === 0) {
+    return "";
+  }
+
+  return `
+    <div class="log-actions">${buttons.join("")}</div>
+    ${buildExecutionLogPanelMarkup(taskId, state, "stdout")}
+    ${buildExecutionLogPanelMarkup(taskId, state, "stderr")}
+  `;
+}
+
+async function refreshOpenExecutionLogs(taskId, executionState) {
+  if (!taskId || executionLogTaskId !== taskId || executionLogOpenStreams.size === 0) {
+    return;
+  }
+
+  const state =
+    executionState && executionState.taskId === taskId
+      ? executionState
+      : activeTaskDetail && activeTaskDetail.executionState && activeTaskDetail.executionState.taskId === taskId
+        ? activeTaskDetail.executionState
+        : null;
+
+  const streams = Array.from(executionLogOpenStreams);
+  await Promise.all(
+    streams.map(async (stream) => {
+      const panel = document.getElementById(getExecutionLogPanelId(stream));
+      if (!panel) {
+        return;
+      }
+
+      panel.classList.remove("hidden");
+      panel.innerHTML = `<p class="subtle">Loading ${escapeHtml(stream)}...</p>`;
+
+      try {
+        const log = await loadTaskExecutionLog(taskId, stream);
+        if (executionLogTaskId !== taskId || !executionLogOpenStreams.has(stream)) {
+          return;
+        }
+
+        const latestPanel = document.getElementById(getExecutionLogPanelId(stream));
+        if (!latestPanel) {
+          return;
+        }
+
+        latestPanel.innerHTML = `
+          <p class="subtle">Log path: ${escapeHtml(log.path)}</p>
+          ${
+            log.pending
+              ? `<p class="subtle">${escapeHtml(`Waiting for ${stream} output to appear...`)}</p>`
+              : log.truncated
+                ? `<p class="subtle">${escapeHtml(`Showing last ${log.content.length} of ${log.size} chars.`)}</p>`
+                : ""
+          }
+          ${
+            log.updatedAt
+              ? `<p class="subtle">${escapeHtml(`${log.active ? "Auto-refreshing" : "Last updated"} ${formatTimestampLabel(log.updatedAt)}`)}</p>`
+              : ""
+          }
+          <pre class="detail-pre">${escapeHtml(log.content || (log.pending ? "" : "(empty log)"))}</pre>
+        `;
+      } catch (error) {
+        if (executionLogTaskId !== taskId || !executionLogOpenStreams.has(stream)) {
+          return;
+        }
+
+        const latestPanel = document.getElementById(getExecutionLogPanelId(stream));
+        if (latestPanel) {
+          latestPanel.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+        }
+      }
+    })
+  );
+}
+
+function bindExecutionLogButtons(taskId, executionState) {
+  document.querySelectorAll("[data-execution-stream]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const stream = button.getAttribute("data-execution-stream");
+      ensureExecutionLogTask(taskId);
+
+      if (executionLogOpenStreams.has(stream)) {
+        executionLogOpenStreams.delete(stream);
+      } else {
+        executionLogOpenStreams.add(stream);
+      }
+
+      updateExecutionStateUI(executionState);
+      if (executionLogOpenStreams.has(stream)) {
+        await refreshOpenExecutionLogs(taskId, executionState);
+      }
+    });
+  });
+}
+
 function renderTaskDetail(detail) {
+  const previousTaskId = activeTaskDetail && activeTaskDetail.meta ? activeTaskDetail.meta.id : null;
   const container = document.getElementById("task-detail");
   activeTaskDetail = detail || null;
 
   if (!detail) {
     container.innerHTML = '<div class="empty">Select a task to inspect its detail bundle.</div>';
     clearExecutionPolling();
+    clearExecutionLogState(null);
     populateTaskForms(null);
     updateExecutionStateUI(null);
     return;
+  }
+
+  if (previousTaskId !== detail.meta.id) {
+    clearExecutionLogState(detail.meta.id);
   }
 
   const generatedFiles = (detail.generatedFiles || [])

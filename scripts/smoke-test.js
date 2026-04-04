@@ -502,9 +502,46 @@ Ship a dashboard markdown editor.
     if (
       startedDashboardExecution.status !== "starting" ||
       startedDashboardExecution.adapterId !== "codex" ||
-      startedDashboardExecution.stdioMode !== "pipe"
+      startedDashboardExecution.stdioMode !== "pipe" ||
+      !startedDashboardExecution.runId ||
+      !String(startedDashboardExecution.stdoutFile || "").endsWith(".stdout.log") ||
+      !String(startedDashboardExecution.stderrFile || "").endsWith(".stderr.log")
     ) {
       throw new Error("Dashboard execute API did not report the expected starting state.");
+    }
+    const runningDashboardExecution = await waitFor(async () => {
+      const executionState = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-004/execution`);
+      if (executionState.status !== "running" || !executionState.runId || !executionState.stdoutFile) {
+        return null;
+      }
+      return executionState;
+    }, 2000, 50);
+    if (!runningDashboardExecution) {
+      throw new Error("Dashboard execution bridge did not expose a running state with log paths.");
+    }
+    const activeExecutionStdoutLog = await waitFor(async () => {
+      const log = await fetchJson(
+        `http://127.0.0.1:${port}/api/tasks/T-004/execution/logs/stdout?maxChars=4000`
+      );
+      return log.content.includes("stdout T-004 codex") ? log : null;
+    }, 2000, 50);
+    if (
+      !activeExecutionStdoutLog ||
+      activeExecutionStdoutLog.active !== true ||
+      activeExecutionStdoutLog.pending !== false ||
+      activeExecutionStdoutLog.runId !== runningDashboardExecution.runId
+    ) {
+      throw new Error("Dashboard execution log API did not expose the active stdout tail.");
+    }
+    const activeExecutionStderrLog = await fetchJson(
+      `http://127.0.0.1:${port}/api/tasks/T-004/execution/logs/stderr?maxChars=4000`
+    );
+    if (
+      !activeExecutionStderrLog.content.includes("stderr T-004 codex") ||
+      activeExecutionStderrLog.active !== true ||
+      activeExecutionStderrLog.runId !== runningDashboardExecution.runId
+    ) {
+      throw new Error("Dashboard execution log API did not expose the active stderr tail.");
     }
     const completedDashboardExecution = await waitFor(async () => {
       const executionState = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-004/execution`);

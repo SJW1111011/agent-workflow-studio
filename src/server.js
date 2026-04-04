@@ -113,6 +113,22 @@ function main() {
           return sendJson(response, 200, executionBridge.getTaskExecution(taskExecutionRoute.taskId));
         }
 
+        const taskExecutionLogRoute = parseTaskExecutionLogRoute(requestUrl.pathname);
+        if (taskExecutionLogRoute && request.method === "GET") {
+          if (!getTaskDetail(workspaceRoot, taskExecutionLogRoute.taskId)) {
+            return sendJson(response, 404, { error: `Task not found: ${taskExecutionLogRoute.taskId}` });
+          }
+          return sendJson(
+            response,
+            200,
+            executionBridge.getTaskExecutionLog(
+              taskExecutionLogRoute.taskId,
+              taskExecutionLogRoute.stream,
+              normalizePositiveInteger(requestUrl.searchParams.get("maxChars")) || undefined
+            )
+          );
+        }
+
         const taskExecutionCancelRoute = parseTaskExecutionCancelRoute(requestUrl.pathname);
         if (taskExecutionCancelRoute && request.method === "POST") {
           if (!getTaskDetail(workspaceRoot, taskExecutionCancelRoute.taskId)) {
@@ -161,7 +177,9 @@ function main() {
             ? 400
             : error.message.includes("does not exist yet.")
               ? 404
-              : error.message.includes("does not exist for task") || error.message.includes("has no ") || error.message.includes("Log file is missing")
+              : error.message.includes("does not exist for task") ||
+                error.message.includes("has no ") ||
+                error.message.toLowerCase().includes("log file is missing")
                 ? 404
               : error.message.startsWith("Unsupported ") || error.message.startsWith("Unknown recipe:")
                 ? 400
@@ -266,6 +284,11 @@ function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function normalizePositiveInteger(value) {
+  const numeric = Number(value);
+  return Number.isInteger(numeric) && numeric > 0 ? numeric : null;
+}
+
 function parseTaskDocumentRoute(pathname) {
   const matched = pathname.match(/^\/api\/tasks\/([^/]+)\/documents\/([^/]+)$/);
   if (!matched) {
@@ -310,6 +333,18 @@ function parseTaskExecutionRoute(pathname) {
 
   return {
     taskId: decodeURIComponent(matched[1]),
+  };
+}
+
+function parseTaskExecutionLogRoute(pathname) {
+  const matched = pathname.match(/^\/api\/tasks\/([^/]+)\/execution\/logs\/([^/]+)$/);
+  if (!matched) {
+    return null;
+  }
+
+  return {
+    taskId: decodeURIComponent(matched[1]),
+    stream: decodeURIComponent(matched[2]),
   };
 }
 

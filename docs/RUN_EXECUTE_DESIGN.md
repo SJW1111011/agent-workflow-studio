@@ -380,6 +380,12 @@ Current follow-up status route:
 
 - `GET /api/tasks/:taskId/execution`
 
+Current active log route:
+
+- `GET /api/tasks/:taskId/execution/logs/:stream`
+- local-only tail/readback for the current dashboard execution state
+- backed by the same task-local stdout/stderr files that the shared executor writes
+
 Current cancel route:
 
 - `POST /api/tasks/:taskId/execution/cancel`
@@ -414,6 +420,7 @@ Instead:
 - transient "currently running" state can stay server-local and in memory
 - durable truth stays in the task package
 - the UI can poll task detail plus execution status while a job is active
+- the bridge may also expose active stdout/stderr tail readback by pointing at the same task-local log files, without creating a second log store
 - cancellation only updates transient bridge state immediately; the durable truth still becomes the final interrupted executor run
 - the bridge can also expose a structured final `outcome` such as `passed`, `timed-out`, `interrupted`, `cancelled`, or `failed-to-start` so the dashboard does not have to infer that from summary strings
 

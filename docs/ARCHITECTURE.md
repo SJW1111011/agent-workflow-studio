@@ -96,6 +96,7 @@ The dashboard renders:
 - a local-only dashboard execution bridge that reuses the shared executor module for `stdioMode: pipe` adapters
 - transient execution status plus cancel requests surfaced in task detail without creating a second durable execution database
 - clearer dashboard reporting backed by a structured execution outcome field instead of summary-text inference
+- active execution stdout/stderr tail inspection through a local-only execution-log API backed by the same task-local log files
 - overview task cards now expose the latest executor outcome separately from the latest overall run summary
 - overview stats now aggregate each task's latest executor outcome for dashboard-level reporting
 - memory freshness view
