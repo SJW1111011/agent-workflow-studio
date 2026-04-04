@@ -6,8 +6,10 @@ const {
   buildPendingProofCheckLines,
   describeExecutionPresentation,
   describeRunPresentation,
+  describeVerificationProofSignals,
   buildVerificationPlannedCheckDraft,
   buildVerificationProofDraft,
+  extractVerificationPlannedChecks,
   formatVerificationPlannedCheck,
   extractVerificationPlannedManualChecks,
   extractVerificationProofPaths,
@@ -277,6 +279,45 @@ main().catch((error) => {
     status: "failed",
     summary: "Executor failed with exit code 1.",
   });
+  const plannedVerificationChecks = extractVerificationPlannedChecks(
+    "# T-001 Verification\n\n## Planned checks\n\n- automated: npm run smoke\n- manual: Review docs/notes.md diff"
+  );
+  const draftVerificationSignals = describeVerificationProofSignals(
+    {
+      proofCoverage: {
+        items: [
+          {
+            sourceType: "manual",
+            sourceLabel: "verification.md#proof-1",
+            recordedAt: "2026-04-05T00:00:00.000Z",
+            paths: ["docs/notes.md"],
+            checks: [],
+            artifacts: [],
+            strong: false,
+          },
+        ],
+      },
+    },
+    "# T-001 Verification\n\n## Planned checks\n\n- manual: Review docs/notes.md diff"
+  );
+  const strongVerificationSignals = describeVerificationProofSignals(
+    {
+      proofCoverage: {
+        items: [
+          {
+            sourceType: "run",
+            sourceLabel: "run-1",
+            recordedAt: "2026-04-05T00:00:00.000Z",
+            paths: ["docs/notes.md"],
+            checks: ["[passed] Review docs/notes.md diff"],
+            artifacts: [".agent-workflow/tasks/T-001/runs/run-1.stdout.log"],
+            strong: true,
+          },
+        ],
+      },
+    },
+    "# T-001 Verification\n\n## Planned checks\n\n- manual: Review docs/notes.md diff"
+  );
   if (
     mergedPendingPaths !== "README.md\nsrc/server.js\ndocs/notes.md" ||
     pendingProofPaths.join(",") !== "docs/notes.md,README.md" ||
@@ -324,6 +365,14 @@ main().catch((error) => {
     cancelledRunPresentation.tone !== "cancelled" ||
     !failedRunPresentation ||
     failedRunPresentation.tone !== "failed" ||
+    plannedVerificationChecks.join(",") !== "automated: npm run smoke,manual: Review docs/notes.md diff" ||
+    !draftVerificationSignals ||
+    draftVerificationSignals.presentation.tone !== "draft" ||
+    draftVerificationSignals.weakItems.length !== 1 ||
+    draftVerificationSignals.plannedChecks.length !== 1 ||
+    !strongVerificationSignals ||
+    strongVerificationSignals.presentation.tone !== "passed" ||
+    strongVerificationSignals.strongItems.length !== 1 ||
     summarizeExecutorOutcomeFilter(3, 1, "cancelled") !== "Showing 1 of 3 tasks with executor outcome cancelled."
   ) {
     throw new Error("Dashboard pending proof helper utilities did not normalize the current verification gate state.");

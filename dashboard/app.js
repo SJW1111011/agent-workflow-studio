@@ -1622,7 +1622,7 @@ function renderTaskDetail(detail) {
     : '<div class="empty">No runs recorded yet.</div>';
 
   const freshnessItems = renderTaskFreshness(detail.freshness);
-  const verificationGateItems = renderVerificationGate(detail.verificationGate);
+  const verificationGateItems = renderVerificationGate(detail.verificationGate, detail.verificationText);
 
   container.innerHTML = `
     <div class="detail-grid">
@@ -1806,13 +1806,15 @@ function renderTaskFreshness(freshness) {
   `;
 }
 
-function renderVerificationGate(verificationGate) {
+function renderVerificationGate(verificationGate, verificationText = "") {
   if (!verificationGate || !verificationGate.summary) {
     return '<div class="empty">No verification gate data available.</div>';
   }
 
   const summary = verificationGate.summary;
   const scopeCoverage = verificationGate.scopeCoverage || {};
+  const proofCoverage = verificationGate.proofCoverage || {};
+  const proofSignals = describeVerificationProofSignals(verificationGate, verificationText);
   const scopeHints = (verificationGate.scopeHints || []).length
     ? (verificationGate.scopeHints || [])
         .map(
@@ -1859,24 +1861,31 @@ function renderVerificationGate(verificationGate) {
         )
         .join("")
     : '<div class="empty">No scoped files are explicitly linked to proof yet.</div>';
-  const proofItems = (proofCoverage.items || []).length
-    ? (proofCoverage.items || [])
+  const plannedChecks = proofSignals.plannedChecks.length
+    ? proofSignals.plannedChecks
         .map(
           (item) => `
-            <article class="list-item">
-              <h3>${escapeHtml(`${item.sourceType}:${item.sourceLabel}`)}</h3>
-              <p>${escapeHtml(item.checks && item.checks.length > 0 ? item.checks.join("; ") : "No explicit check text recorded.")}</p>
-              <p class="subtle">${escapeHtml(item.paths && item.paths.length > 0 ? item.paths.join(", ") : "No proof paths recorded.")}</p>
-              <p class="subtle">${escapeHtml(item.artifacts && item.artifacts.length > 0 ? item.artifacts.join(", ") : "No artifact refs recorded.")}</p>
+            <article class="list-item proof-item-card proof-item-planned">
+              <h3>${escapeHtml(item)}</h3>
+              <p class="subtle">Planned checks are notes until they are backed by explicit proof paths plus checks or artifacts.</p>
               <div class="tag-row">
-                <span class="tag ${item.strong ? "" : "warn"}">${escapeHtml(item.strong ? "strong proof" : "weak proof")}</span>
-                <span class="tag">${escapeHtml(formatTimestampLabel(item.recordedAt))}</span>
+                <span class="tag">${escapeHtml("planned")}</span>
               </div>
             </article>
           `
         )
         .join("")
-    : '<div class="empty">No explicit proof items recorded yet.</div>';
+    : '<div class="empty">No planned checks recorded in verification.md.</div>';
+  const weakProofItems = renderVerificationProofItems(
+    proofSignals.weakItems,
+    "draft",
+    "Draft proof still needs stronger check/result/artifact detail."
+  );
+  const strongProofItems = renderVerificationProofItems(
+    proofSignals.strongItems,
+    "strong",
+    "No strong proof items recorded yet."
+  );
   const ambiguousScopeEntries = (scopeCoverage.ambiguousEntries || []).length
     ? (scopeCoverage.ambiguousEntries || [])
         .map(
@@ -1891,7 +1900,6 @@ function renderVerificationGate(verificationGate) {
     : '<div class="empty">No ambiguous scope entries detected.</div>';
 
   const evidence = verificationGate.evidence || {};
-  const proofCoverage = verificationGate.proofCoverage || {};
 
   return `
     <article class="list-item">
@@ -1902,6 +1910,7 @@ function renderVerificationGate(verificationGate) {
         <span class="tag">${escapeHtml(`${summary.relevantChangeCount || 0} relevant change(s)`)}</span>
         <span class="tag">${escapeHtml(`${(verificationGate.repository && verificationGate.repository.scopedFileCount) || 0} scoped file(s)`)}</span>
         <span class="tag">${escapeHtml(`${scopeCoverage.hintCount || 0} scope hint(s)`)}</span>
+        ${proofSignals.plannedChecks.length > 0 ? `<span class="tag">${escapeHtml(`${proofSignals.plannedChecks.length} planned check(s)`)}</span>` : ""}
         ${(scopeCoverage.ambiguousCount || 0) > 0 ? `<span class="tag warn">${escapeHtml(`${scopeCoverage.ambiguousCount} ambiguous`)}</span>` : ""}
         ${(proofCoverage.explicitProofCount || 0) > 0 ? `<span class="tag">${escapeHtml(`${proofCoverage.explicitProofCount} explicit proof item(s)`)}</span>` : ""}
         ${(proofCoverage.weakProofCount || 0) > 0 ? `<span class="tag warn">${escapeHtml(`${proofCoverage.weakProofCount} weak proof item(s)`)}</span>` : ""}
@@ -1909,6 +1918,33 @@ function renderVerificationGate(verificationGate) {
       <p class="subtle">Latest run: ${escapeHtml(formatTimestampLabel(evidence.latestRunAt))}</p>
       <p class="subtle">Verification updated: ${escapeHtml(formatTimestampLabel(evidence.verificationUpdatedAt))}</p>
       <p class="subtle">Latest evidence: ${escapeHtml(formatTimestampLabel(evidence.latestEvidenceAt))}</p>
+      <div class="verification-signal-grid">
+        ${renderStatusBanner("Verification signal", proofSignals.presentation)}
+        ${renderStatusBanner("Planned checks", {
+          tone: proofSignals.plannedChecks.length > 0 ? "pending" : "idle",
+          headline: proofSignals.plannedChecks.length > 0 ? `${proofSignals.plannedChecks.length} planned check(s)` : "No planned checks",
+          summary:
+            proofSignals.plannedChecks.length > 0
+              ? "Planned checks are intent only; they do not satisfy the verification gate."
+              : "No planned checks are currently recorded in verification.md.",
+        })}
+        ${renderStatusBanner("Draft proof", {
+          tone: proofSignals.weakItems.length > 0 ? "draft" : "idle",
+          headline: proofSignals.weakItems.length > 0 ? `${proofSignals.weakItems.length} draft proof item(s)` : "No draft proof",
+          summary:
+            proofSignals.weakItems.length > 0
+              ? "Draft proof names files or intent, but still needs concrete checks, results, or artifact refs."
+              : "No weak proof placeholders are currently recorded.",
+        })}
+        ${renderStatusBanner("Strong proof", {
+          tone: proofSignals.strongItems.length > 0 ? "passed" : "idle",
+          headline: proofSignals.strongItems.length > 0 ? `${proofSignals.strongItems.length} strong proof item(s)` : "No strong proof",
+          summary:
+            proofSignals.strongItems.length > 0
+              ? "Strong proof ties repo-relative paths to checks or artifacts."
+              : "No strong proof items are currently recorded.",
+        })}
+      </div>
     </article>
     <article class="list-item">
       <h3>Scope Hints</h3>
@@ -1923,14 +1959,106 @@ function renderVerificationGate(verificationGate) {
       <div class="list">${coveredFiles}</div>
     </article>
     <article class="list-item">
-      <h3>Proof Items</h3>
-      <div class="list">${proofItems}</div>
+      <h3>Planned Checks</h3>
+      <div class="list">${plannedChecks}</div>
+    </article>
+    <article class="list-item">
+      <h3>Draft / Weak Proof</h3>
+      <div class="list">${weakProofItems}</div>
+    </article>
+    <article class="list-item">
+      <h3>Strong Proof</h3>
+      <div class="list">${strongProofItems}</div>
     </article>
     <article class="list-item">
       <h3>Scope Entries To Tighten</h3>
       <div class="list">${ambiguousScopeEntries}</div>
     </article>
   `;
+}
+
+function extractVerificationPlannedChecks(text) {
+  return splitLineEntries(getMarkdownSection(text, "Planned checks"))
+    .map((line) => String(line || "").replace(/^\s*[-*+]\s*/, "").trim())
+    .filter(Boolean);
+}
+
+function describeVerificationProofSignals(verificationGate, verificationText = "") {
+  const proofCoverage = verificationGate && verificationGate.proofCoverage ? verificationGate.proofCoverage : {};
+  const items = Array.isArray(proofCoverage.items) ? proofCoverage.items : [];
+  const strongItems = items.filter((item) => item && item.strong);
+  const weakItems = items.filter((item) => item && !item.strong);
+  const plannedChecks = extractVerificationPlannedChecks(verificationText);
+
+  let presentation;
+  if (strongItems.length > 0 && weakItems.length > 0) {
+    presentation = {
+      tone: "draft",
+      headline: "Some proof is strong, some is still draft",
+      summary: "Strong proof exists, but draft placeholders still need explicit checks, results, or artifact refs.",
+    };
+  } else if (weakItems.length > 0) {
+    presentation = {
+      tone: "draft",
+      headline: "Draft proof does not satisfy the gate yet",
+      summary: "Proof links without enough check/result/artifact detail stay non-authoritative.",
+    };
+  } else if (strongItems.length > 0 && plannedChecks.length > 0) {
+    presentation = {
+      tone: "passed",
+      headline: "Strong proof recorded; planned checks remain notes",
+      summary: "Planned checks can stay as reminders, but only strong proof satisfies the verification gate.",
+    };
+  } else if (strongItems.length > 0) {
+    presentation = {
+      tone: "passed",
+      headline: "Strong proof recorded",
+      summary: "Repo-relative paths are explicitly linked to checks or artifacts.",
+    };
+  } else if (plannedChecks.length > 0) {
+    presentation = {
+      tone: "pending",
+      headline: "Planned checks are not proof yet",
+      summary: "Verification plans are helpful, but they do not count until backed by explicit proof.",
+    };
+  } else {
+    presentation = {
+      tone: "idle",
+      headline: "No explicit proof recorded",
+      summary: "Add planned checks or strong proof items to make verification intent and coverage visible.",
+    };
+  }
+
+  return {
+    plannedChecks,
+    strongItems,
+    weakItems,
+    presentation,
+  };
+}
+
+function renderVerificationProofItems(items, variant, emptyMessage) {
+  const entries = Array.isArray(items) ? items : [];
+  if (entries.length === 0) {
+    return `<div class="empty">${escapeHtml(emptyMessage)}</div>`;
+  }
+
+  return entries
+    .map(
+      (item) => `
+        <article class="list-item proof-item-card proof-item-${escapeHtml(variant)}">
+          <h3>${escapeHtml(`${item.sourceType}:${item.sourceLabel}`)}</h3>
+          <p>${escapeHtml(item.checks && item.checks.length > 0 ? item.checks.join("; ") : "No explicit check text recorded.")}</p>
+          <p class="subtle">${escapeHtml(item.paths && item.paths.length > 0 ? item.paths.join(", ") : "No proof paths recorded.")}</p>
+          <p class="subtle">${escapeHtml(item.artifacts && item.artifacts.length > 0 ? item.artifacts.join(", ") : "No artifact refs recorded.")}</p>
+          <div class="tag-row">
+            <span class="tag ${item.strong ? "" : "warn"}">${escapeHtml(item.strong ? "strong proof" : "weak proof")}</span>
+            <span class="tag">${escapeHtml(formatTimestampLabel(item.recordedAt))}</span>
+          </div>
+        </article>
+      `
+    )
+    .join("");
 }
 
 function renderCollection(id, items, renderItem) {
@@ -2655,6 +2783,8 @@ if (typeof module !== "undefined" && module.exports) {
     collectRunDraftValues,
     describeExecutionPresentation,
     describeRunPresentation,
+    describeVerificationProofSignals,
+    extractVerificationPlannedChecks,
     extractVerificationPlannedManualChecks,
     extractVerificationProofPaths,
     filterTasksByExecutorOutcome,

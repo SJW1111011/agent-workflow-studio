@@ -602,6 +602,11 @@ h1 {
   background: rgba(255, 248, 241, 0.95);
 }
 
+.status-banner-draft {
+  border-color: rgba(186, 112, 42, 0.18);
+  background: rgba(255, 246, 236, 0.95);
+}
+
 .status-banner-cancel-requested,
 .status-banner-cancelled {
   border-color: rgba(181, 114, 33, 0.16);
@@ -626,6 +631,27 @@ h1 {
 .run-meta {
   display: grid;
   gap: 4px;
+}
+
+.verification-signal-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.proof-item-card.proof-item-planned {
+  border-color: rgba(239, 108, 51, 0.14);
+  background: rgba(255, 249, 242, 0.92);
+}
+
+.proof-item-card.proof-item-draft {
+  border-color: rgba(186, 112, 42, 0.18);
+  background: rgba(255, 245, 236, 0.92);
+}
+
+.proof-item-card.proof-item-strong {
+  border-color: rgba(15, 108, 92, 0.16);
+  background: rgba(244, 252, 248, 0.92);
 }
 
 .run-form-note {
