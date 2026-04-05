@@ -318,6 +318,9 @@ main().catch((error) => {
     },
     "# T-001 Verification\n\n## Planned checks\n\n- manual: Review docs/notes.md diff"
   );
+  const placeholderPlannedVerificationChecks = extractVerificationPlannedChecks(
+    "# T-001 Verification\n\n## Planned checks\n\n- automated:\n- manual:"
+  );
   if (
     mergedPendingPaths !== "README.md\nsrc/server.js\ndocs/notes.md" ||
     pendingProofPaths.join(",") !== "docs/notes.md,README.md" ||
@@ -373,6 +376,7 @@ main().catch((error) => {
     !strongVerificationSignals ||
     strongVerificationSignals.presentation.tone !== "passed" ||
     strongVerificationSignals.strongItems.length !== 1 ||
+    placeholderPlannedVerificationChecks.length !== 0 ||
     summarizeExecutorOutcomeFilter(3, 1, "cancelled") !== "Showing 1 of 3 tasks with executor outcome cancelled."
   ) {
     throw new Error("Dashboard pending proof helper utilities did not normalize the current verification gate state.");
@@ -1033,29 +1037,46 @@ Ship a dashboard markdown editor.
     ) {
       throw new Error("Overview did not aggregate the latest executor outcomes across tasks.");
     }
+    if (
+      !overview2.stats.verificationSignals ||
+      overview2.stats.verificationSignals.strong !== 1 ||
+      overview2.stats.verificationSignals.mixed !== 0 ||
+      overview2.stats.verificationSignals.draft !== 0 ||
+      overview2.stats.verificationSignals.planned !== 0 ||
+      overview2.stats.verificationSignals.none !== 4
+    ) {
+      throw new Error("Overview did not aggregate verification signal states across tasks.");
+    }
     const t001CoveredGate = (overview2.verification || []).find((item) => item.taskId === "T-001");
     if (!t001CoveredGate || t001CoveredGate.status !== "covered") {
       throw new Error("Overview did not refresh diff-aware verification state after proof was updated.");
     }
     const t001OverviewTask = (overview2.tasks || []).find((task) => task.id === "T-001");
-    if (!t001OverviewTask || t001OverviewTask.latestExecutorOutcome !== "passed") {
-      throw new Error("Overview task summary did not preserve the latest executor outcome for T-001.");
+    if (
+      !t001OverviewTask ||
+      t001OverviewTask.latestExecutorOutcome !== "passed" ||
+      t001OverviewTask.verificationSignalStatus !== "strong" ||
+      !String(t001OverviewTask.verificationSignalSummary || "").includes("strong proof")
+    ) {
+      throw new Error("Overview task summary did not preserve the latest executor outcome and verification signal for T-001.");
     }
     const t004OverviewTask = (overview2.tasks || []).find((task) => task.id === "T-004");
     if (
       !t004OverviewTask ||
       t004OverviewTask.latestExecutorOutcome !== "passed" ||
-      !String(t004OverviewTask.latestExecutorSummary || "").includes("Executor completed with exit code 0.")
+      !String(t004OverviewTask.latestExecutorSummary || "").includes("Executor completed with exit code 0.") ||
+      t004OverviewTask.verificationSignalStatus !== "none"
     ) {
-      throw new Error("Overview task summary did not expose the passed executor outcome for T-004.");
+      throw new Error("Overview task summary did not expose the passed executor outcome and verification signal for T-004.");
     }
     const t005OverviewTask = (overview2.tasks || []).find((task) => task.id === "T-005");
     if (
       !t005OverviewTask ||
       t005OverviewTask.latestExecutorOutcome !== "cancelled" ||
-      !String(t005OverviewTask.latestExecutorSummary || "").includes("dashboard-cancel")
+      !String(t005OverviewTask.latestExecutorSummary || "").includes("dashboard-cancel") ||
+      t005OverviewTask.verificationSignalStatus !== "none"
     ) {
-      throw new Error("Overview task summary did not expose the cancelled executor outcome for T-005.");
+      throw new Error("Overview task summary did not expose the cancelled executor outcome and verification signal for T-005.");
     }
   } finally {
     server.kill();

@@ -924,6 +924,17 @@ function normalizeStatCount(value) {
   return Number.isFinite(numeric) && numeric >= 0 ? numeric : 0;
 }
 
+function normalizeVerificationSignalStats(value) {
+  const source = value && typeof value === "object" ? value : {};
+  return {
+    strong: normalizeStatCount(source.strong),
+    mixed: normalizeStatCount(source.mixed),
+    draft: normalizeStatCount(source.draft),
+    planned: normalizeStatCount(source.planned),
+    none: normalizeStatCount(source.none),
+  };
+}
+
 function countTasksWithExecutorOutcome(executorStats) {
   const normalized = normalizeExecutorOutcomeStats(executorStats);
   return (
@@ -933,6 +944,11 @@ function countTasksWithExecutorOutcome(executorStats) {
     normalized.interrupted +
     normalized.cancelled
   );
+}
+
+function countTasksWithVerificationSignals(verificationStats) {
+  const normalized = normalizeVerificationSignalStats(verificationStats);
+  return normalized.strong + normalized.mixed + normalized.draft + normalized.planned;
 }
 
 function renderExecutorOutcomeStatCard(totalTasks, executorStats) {
@@ -972,6 +988,42 @@ function renderExecutorOutcomeStatCard(totalTasks, executorStats) {
   `;
 }
 
+function renderVerificationSignalStatCard(totalTasks, verificationStats) {
+  const normalized = normalizeVerificationSignalStats(verificationStats);
+  const annotatedTasks = countTasksWithVerificationSignals(normalized);
+  const summary =
+    totalTasks > 0
+      ? `${annotatedTasks} of ${totalTasks} tasks have planned or explicit verification signals.`
+      : "No tasks yet.";
+  const breakdown = [
+    ["Strong", normalized.strong, false],
+    ["Mixed", normalized.mixed, true],
+    ["Draft", normalized.draft, true],
+    ["Planned", normalized.planned, false],
+    ["None", normalized.none, false],
+  ];
+
+  return `
+    <article class="stat-card stat-card-breakdown">
+      <h3>Verification Signals</h3>
+      <strong>${escapeHtml(annotatedTasks)}</strong>
+      <p class="stat-caption">${escapeHtml(summary)}</p>
+      <dl class="stat-breakdown">
+        ${breakdown
+          .map(
+            ([label, value, warn]) => `
+              <div class="stat-breakdown-item ${warn ? "warn" : ""}">
+                <dt>${escapeHtml(label)}</dt>
+                <dd>${escapeHtml(value)}</dd>
+              </div>
+            `
+          )
+          .join("")}
+      </dl>
+    </article>
+  `;
+}
+
 function renderStats(stats) {
   const container = document.getElementById("stats");
   const entries = [
@@ -991,7 +1043,51 @@ function renderStats(stats) {
       `
     )
     .concat(renderExecutorOutcomeStatCard(normalizeStatCount(stats.tasks), stats.executorOutcomes))
+    .concat(renderVerificationSignalStatCard(normalizeStatCount(stats.tasks), stats.verificationSignals))
     .join("");
+}
+
+function describeTaskVerificationSignal(task) {
+  const status = String((task && task.verificationSignalStatus) || "").trim().toLowerCase();
+  const summary = String((task && task.verificationSignalSummary) || "").trim();
+
+  if (status === "strong") {
+    return {
+      label: "strong proof",
+      warn: false,
+      summary: summary || "Strong proof is recorded.",
+    };
+  }
+
+  if (status === "mixed") {
+    return {
+      label: "strong + draft",
+      warn: true,
+      summary: summary || "Some proof is strong, but draft placeholders remain.",
+    };
+  }
+
+  if (status === "draft") {
+    return {
+      label: "draft proof",
+      warn: true,
+      summary: summary || "Draft proof exists, but it does not satisfy the gate yet.",
+    };
+  }
+
+  if (status === "planned") {
+    return {
+      label: "planned checks",
+      warn: false,
+      summary: summary || "Planned checks are recorded, but no strong proof exists yet.",
+    };
+  }
+
+  return {
+    label: "no proof notes",
+    warn: false,
+    summary: summary || "No planned checks or explicit proof items are recorded.",
+  };
 }
 
 function renderTasks(tasks) {
@@ -1019,12 +1115,14 @@ function renderTasks(tasks) {
   container.innerHTML = visibleTasks
     .map((task) => {
       const executorOutcome = describeExecutorOutcome(task.latestExecutorOutcome, task.latestExecutorSummary);
+      const verificationSignal = describeTaskVerificationSignal(task);
       const cardToneClass = getTaskCardToneClass(task);
       return `
         <article class="task-card ${cardToneClass} ${task.id === activeTaskId ? "active" : ""}" data-task-id="${escapeHtml(task.id)}">
           <h3>${task.id} - ${escapeHtml(task.title || "Untitled task")}</h3>
           <p class="task-meta">Priority ${escapeHtml(task.priority || "P2")} | ${escapeHtml(task.status || "todo")} | Recipe ${escapeHtml(task.recipeId || "feature")}</p>
           <p>${escapeHtml(task.latestRunSummary || "No runs yet")}</p>
+          <p class="subtle">Verification: ${escapeHtml(verificationSignal.summary)}</p>
           ${
             executorOutcome
               ? `<p class="subtle">Latest executor: ${escapeHtml(executorOutcome.summary)}${task.latestExecutorAt ? ` (${escapeHtml(formatTimestampLabel(task.latestExecutorAt))})` : ""}</p>`
@@ -1035,6 +1133,7 @@ function renderTasks(tasks) {
             <span class="tag">${task.hasClaudePrompt ? "Claude prompt" : "No Claude prompt"}</span>
             <span class="tag ${task.freshnessStatus === "stale" ? "warn" : ""}">${escapeHtml(task.freshnessStatus === "stale" ? `Docs stale (${task.staleDocCount || 0})` : "Docs fresh")}</span>
             <span class="tag ${isVerificationGateWarning(task.verificationGateStatus) ? "warn" : ""}">${escapeHtml(formatVerificationGateLabel(task.verificationGateStatus, task.relevantChangeCount || 0))}</span>
+            <span class="tag ${verificationSignal.warn ? "warn" : ""}">${escapeHtml(verificationSignal.label)}</span>
             <span class="tag ${task.latestRunStatus === "failed" ? "warn" : ""}">${escapeHtml(task.latestRunStatus)}</span>
             ${
               executorOutcome
@@ -1979,8 +2078,23 @@ function renderVerificationGate(verificationGate, verificationText = "") {
 
 function extractVerificationPlannedChecks(text) {
   return splitLineEntries(getMarkdownSection(text, "Planned checks"))
-    .map((line) => String(line || "").replace(/^\s*[-*+]\s*/, "").trim())
+    .map((line) => normalizeVerificationPlannedCheckLine(line))
     .filter(Boolean);
+}
+
+function normalizeVerificationPlannedCheckLine(line) {
+  const normalized = String(line || "").replace(/^\s*[-*+]\s*/, "").trim();
+  if (!normalized) {
+    return "";
+  }
+
+  const labeledMatch = normalized.match(/^(automated|manual)\s*:\s*(.*)$/i);
+  if (labeledMatch) {
+    const value = String(labeledMatch[2] || "").trim();
+    return value ? `${labeledMatch[1].toLowerCase()}: ${value}` : "";
+  }
+
+  return normalized;
 }
 
 function describeVerificationProofSignals(verificationGate, verificationText = "") {

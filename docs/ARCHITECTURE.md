@@ -102,6 +102,8 @@ The dashboard renders:
 - clearer task-detail outcome layering so timeout, interruption, cancellation, and generic failure do not collapse into one visual state
 - overview task cards now expose the latest executor outcome separately from the latest overall run summary
 - overview stats now aggregate each task's latest executor outcome for dashboard-level reporting
+- overview stats now also aggregate task-level verification signals so the board can distinguish planned-only checks, draft proof, mixed proof, and strong proof at a glance
+- overview task cards now expose the task-level verification signal summary without opening task detail
 - memory freshness view
 - diff-aware verification gate summaries
 - risk queue

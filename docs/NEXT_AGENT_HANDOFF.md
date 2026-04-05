@@ -15,7 +15,7 @@ The product direction is already chosen:
 
 ## Current status
 
-As of 2026-04-04, the project already has a working MVP foundation:
+As of 2026-04-05, the project already has a working MVP foundation:
 
 - workflow scaffold generation under `.agent-workflow/`
 - repository scanning and project profile generation
@@ -34,6 +34,7 @@ As of 2026-04-04, the project already has a working MVP foundation:
 - task detail now visually separates timed-out, interrupted, cancelled, and failed executor outcomes instead of treating them as one generic warning state
 - overview task cards now also surface the latest executor outcome separately from the latest overall run
 - overview stats now also aggregate each task's latest executor outcome for dashboard-level reporting
+- overview stats and task cards now also aggregate task-level verification signals so planned-only checks, draft proof, mixed proof, and strong proof are visible without opening task detail
 - run evidence recording
 - checkpoint generation
 - recipe registry
@@ -141,7 +142,7 @@ Start here:
 
 ## What was validated locally
 
-Verified on 2026-04-04:
+Verified on 2026-04-05:
 
 - `npm run smoke`
 
@@ -177,6 +178,7 @@ The smoke test currently covers:
 - structured run evidence: API/CLI run creation can persist scope proof paths plus concrete check/artifact refs
 - proof item parsing for manual verification notes and passed run evidence
 - overview aggregate stats for latest executor outcomes across tasks
+- overview aggregate stats and task summaries for verification signal states across tasks, including the guardrail that blank `automated:` / `manual:` placeholders do not count as real planned checks
 
 ## Why moving the folder should be safe
 
@@ -197,9 +199,9 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Keep refining proof-capture shortcuts without letting drafts or placeholders masquerade as strong proof.
-2. Add lightweight execution observability on top of the shared executor boundary, such as better log-tail UX or clearer run-state transitions, without inventing a second durable execution store.
-3. Harden the new dashboard execution bridge without expanding it past the current `stdioMode: pipe` boundary.
+1. Add focused unit coverage around `src/lib/verification-gates.js` and `src/lib/task-documents.js`, which now carry more of the contract-sensitive proof logic than the smoke test alone should guard.
+2. Start modularizing `dashboard/app.js` around stable seams such as state, overview rendering, task detail rendering, and editor helpers before more dashboard capabilities pile into one file.
+3. Add lightweight execution observability on top of the shared executor boundary, such as better log-tail UX or clearer run-state transitions, without inventing a second durable execution store.
 4. Add richer freshness heuristics based on repository changes instead of only timestamps.
 5. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 
@@ -214,13 +216,13 @@ Recommended next sequence:
 
 Suggested first task:
 
-Add low-risk execution observability while preserving the current shared-executor boundary.
+Add unit coverage for proof parsing and verification-gate edge cases before taking on the next layer of execution or dashboard complexity.
 
 Expected shape:
 
-- keep `src/lib/run-executor.js` as the only launch implementation
-- improve status/reporting/log visibility without inventing a second durable execution store
-- do not duplicate adapter launch logic or turn the browser into a terminal surrogate
+- cover `src/lib/verification-gates.js` transitions such as `needs-proof`, `partially-covered`, `covered`, and weak-proof handling
+- cover `src/lib/task-documents.js` and dashboard proof-plan helpers so template placeholders and managed blocks do not silently regress
+- keep the smoke test as the relocatable end-to-end guard, but stop relying on it as the only proof of correctness
 
 ## Useful commands
 

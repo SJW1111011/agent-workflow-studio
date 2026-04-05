@@ -80,6 +80,7 @@ function emptyStats() {
     risks: 0,
     memoryDocs: 0,
     executorOutcomes: emptyExecutorOutcomes(),
+    verificationSignals: emptyVerificationSignals(),
   };
 }
 
@@ -90,6 +91,7 @@ function buildOverviewStats(tasks, runs, risks, memory) {
     risks: risks.length,
     memoryDocs: memory.length,
     executorOutcomes: countLatestExecutorOutcomes(tasks),
+    verificationSignals: countTaskVerificationSignals(tasks),
   };
 }
 
@@ -138,14 +140,55 @@ function countLatestExecutorOutcomes(tasks) {
   }, emptyExecutorOutcomes());
 }
 
+function emptyVerificationSignals() {
+  return {
+    strong: 0,
+    mixed: 0,
+    draft: 0,
+    planned: 0,
+    none: 0,
+  };
+}
+
+function countTaskVerificationSignals(tasks) {
+  return (Array.isArray(tasks) ? tasks : []).reduce((counts, task) => {
+    const status = String((task && task.verificationSignalStatus) || "").trim().toLowerCase();
+
+    if (status === "strong") {
+      counts.strong += 1;
+      return counts;
+    }
+
+    if (status === "mixed") {
+      counts.mixed += 1;
+      return counts;
+    }
+
+    if (status === "draft") {
+      counts.draft += 1;
+      return counts;
+    }
+
+    if (status === "planned") {
+      counts.planned += 1;
+      return counts;
+    }
+
+    counts.none += 1;
+    return counts;
+  }, emptyVerificationSignals());
+}
+
 function enrichTask(workspaceRoot, task, repositoryDiff) {
   const files = taskFiles(workspaceRoot, task.id);
   const runs = listRuns(workspaceRoot, task.id);
   const latestRun = runs[runs.length - 1] || null;
   const latestExecutorRun = [...runs].reverse().find((run) => run && run.source === "executor") || null;
   const taskText = readText(files.task, "");
+  const verificationText = readText(files.verification, "");
   const freshness = buildTaskFreshness(workspaceRoot, task, runs);
   const verificationGate = buildTaskVerificationGate(workspaceRoot, task, runs, repositoryDiff, taskText);
+  const verificationSignal = describeTaskVerificationSignal(verificationGate, verificationText);
 
   return {
     ...task,
@@ -162,6 +205,11 @@ function enrichTask(workspaceRoot, task, repositoryDiff) {
     verificationGateStatus: verificationGate.summary.status,
     relevantChangeCount: verificationGate.summary.relevantChangeCount,
     ambiguousScopeCount: verificationGate.scopeCoverage ? verificationGate.scopeCoverage.ambiguousCount : 0,
+    verificationSignalStatus: verificationSignal.status,
+    verificationSignalSummary: verificationSignal.summary,
+    plannedVerificationCheckCount: verificationSignal.plannedCheckCount,
+    draftProofCount: verificationSignal.draftProofCount,
+    strongProofCount: verificationSignal.strongProofCount,
   };
 }
 
@@ -183,6 +231,105 @@ function deriveExecutorOutcome(run) {
   }
 
   return run.status === "passed" ? "passed" : "failed";
+}
+
+function describeTaskVerificationSignal(verificationGate, verificationText) {
+  const proofCoverage = verificationGate && verificationGate.proofCoverage ? verificationGate.proofCoverage : {};
+  const items = Array.isArray(proofCoverage.items) ? proofCoverage.items : [];
+  const strongProofCount = items.filter((item) => item && item.strong).length;
+  const draftProofCount = items.filter((item) => item && !item.strong).length;
+  const plannedCheckCount = extractVerificationPlannedChecks(verificationText).length;
+
+  if (strongProofCount > 0 && draftProofCount > 0) {
+    return {
+      status: "mixed",
+      summary: `${strongProofCount} strong proof item(s), ${draftProofCount} draft proof item(s).`,
+      strongProofCount,
+      draftProofCount,
+      plannedCheckCount,
+    };
+  }
+
+  if (draftProofCount > 0) {
+    return {
+      status: "draft",
+      summary: `${draftProofCount} draft proof item(s) still need stronger detail.`,
+      strongProofCount,
+      draftProofCount,
+      plannedCheckCount,
+    };
+  }
+
+  if (strongProofCount > 0) {
+    return {
+      status: "strong",
+      summary:
+        plannedCheckCount > 0
+          ? `${strongProofCount} strong proof item(s); ${plannedCheckCount} planned check(s) remain as notes.`
+          : `${strongProofCount} strong proof item(s) recorded.`,
+      strongProofCount,
+      draftProofCount,
+      plannedCheckCount,
+    };
+  }
+
+  if (plannedCheckCount > 0) {
+    return {
+      status: "planned",
+      summary: `${plannedCheckCount} planned check(s) recorded, but no strong proof yet.`,
+      strongProofCount,
+      draftProofCount,
+      plannedCheckCount,
+    };
+  }
+
+  return {
+    status: "none",
+    summary: "No planned checks or explicit proof items recorded.",
+    strongProofCount,
+    draftProofCount,
+    plannedCheckCount,
+  };
+}
+
+function extractVerificationPlannedChecks(verificationText) {
+  const section = getMarkdownSection(verificationText, "Planned checks");
+  return splitLineEntries(section)
+    .map((line) => normalizePlannedCheckLine(line))
+    .filter(Boolean);
+}
+
+function normalizePlannedCheckLine(line) {
+  const normalized = String(line || "").replace(/^\s*[-*+]\s*/, "").trim();
+  if (!normalized) {
+    return "";
+  }
+
+  const labeledMatch = normalized.match(/^(automated|manual)\s*:\s*(.*)$/i);
+  if (labeledMatch) {
+    const value = String(labeledMatch[2] || "").trim();
+    return value ? `${labeledMatch[1].toLowerCase()}: ${value}` : "";
+  }
+
+  return normalized;
+}
+
+function getMarkdownSection(text, title) {
+  const normalized = String(text || "").replace(/\r\n/g, "\n");
+  const pattern = new RegExp(`^## ${escapeRegex(title)}\\n([\\s\\S]*?)(?=^## |\\Z)`, "m");
+  const match = normalized.match(pattern);
+  return match ? match[1].trim() : "";
+}
+
+function splitLineEntries(text) {
+  return String(text || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function escapeRegex(value) {
+  return String(value || "").replace(/[|\\{}()[\]^$+?.]/g, "\\$&");
 }
 
 function deriveOverviewRisks(workspaceRoot, tasks, memory, validation) {
