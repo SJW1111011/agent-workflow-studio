@@ -58,6 +58,7 @@ As of 2026-04-06, the project already has a working MVP foundation:
 - the repo now also has focused zero-dependency unit tests for `verification-gates` and `task-documents`, so proof parsing and managed markdown regressions do not rely on smoke coverage alone
 - low-risk dashboard modularization has started: document/proof drafting helpers and task-board/overview helpers now live in separate static modules, while `dashboard/app.js` stays the orchestration layer
 - verification freshness Phase 1 is now implemented behind `src/lib/repository-snapshot.js`, and the design note still scopes the later proof-anchor phase
+- the Phase 2 proof-anchor contract is now documented more concretely in `docs/VERIFICATION_FRESHNESS_DESIGN.md` and `docs/RUN_EXECUTE_DESIGN.md`, but it is not implemented yet
 
 ## Important constraint
 
@@ -211,7 +212,7 @@ Recommended next sequence:
 
 1. Continue modularizing `dashboard/app.js`, next targeting task-detail rendering plus execution/log helpers now that document/proof helpers and task-board helpers are extracted.
 2. Extend the new unit coverage outward from `verification-gates` / `task-documents` / `repository-snapshot` into dashboard proof-plan helpers and overview derivation so parsing and presentation logic stop depending on smoke alone.
-3. Implement Phase 2 of `docs/VERIFICATION_FRESHNESS_DESIGN.md`: add optional proof anchors for new evidence without breaking legacy/manual proof compatibility.
+3. Implement Phase 2 of `docs/VERIFICATION_FRESHNESS_DESIGN.md`: add optional `scopeProofAnchors` for newly recorded passed runs, then teach the gate to prefer anchor comparison without breaking legacy/manual proof compatibility.
 4. Harden server/API error typing so HTTP status mapping no longer depends on `error.message.includes(...)`.
 5. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 
@@ -233,6 +234,7 @@ Expected shape:
 - preserve the current local-only API contract and existing smoke coverage
 - keep `dashboard/app.js` focused on orchestration, event wiring, and refresh flow
 - move pure rendering or parsing helpers into static modules that still work without a bundler
+- if Phase 2 starts, capture anchors only for normalized proof paths on passed runs; do not require anchors for manual `verification.md` yet
 
 ## Useful commands
 

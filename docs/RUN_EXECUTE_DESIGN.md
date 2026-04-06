@@ -182,6 +182,7 @@ Suggested additive fields:
 - `stdoutFile`
 - `stderrFile`
 - `scopeProofPaths`
+- `scopeProofAnchors`
 - `verificationChecks`
 - `verificationArtifacts`
 - `errorMessage`
@@ -208,6 +209,18 @@ Example shape:
   "launchPackFile": ".agent-workflow/tasks/T-001/launch.codex.md",
   "stdoutFile": ".agent-workflow/tasks/T-001/runs/run-1760000000000.stdout.log",
   "stderrFile": ".agent-workflow/tasks/T-001/runs/run-1760000000000.stderr.log",
+  "scopeProofPaths": [
+    "src/server.js"
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/server.js",
+      "gitState": "M",
+      "previousPath": null,
+      "exists": true,
+      "contentFingerprint": "sha1:abc123"
+    }
+  ],
   "verificationChecks": [
     {
       "label": "Local codex executor result",
@@ -322,6 +335,15 @@ The checkpoint should explicitly reflect:
 Passed runs may also snapshot `scopeProofPaths` so the verification layer can explain which repo-relative files were explicitly covered at record time.
 
 Those paths can now participate in proof items alongside structured `verificationChecks`, the run summary fallback, and task-local artifact refs such as stdout/stderr logs.
+
+The next additive step should allow passed runs to persist optional `scopeProofAnchors` for those same proof paths.
+
+That should remain:
+
+- repo-relative
+- optional
+- backward compatible with existing run records
+- safe to omit when anchor capture is unavailable
 
 ## Failure modes
 

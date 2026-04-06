@@ -153,6 +153,96 @@ For legacy runs and freeform manual proof in `verification.md`:
 
 This preserves backward compatibility while letting new evidence become stronger.
 
+#### Minimal durable schema
+
+The smallest additive run-record extension should stay path-centric and repo-relative:
+
+```js
+{
+  scopeProofPaths: ["src/server.js"],
+  scopeProofAnchors: [
+    {
+      path: "src/server.js",
+      gitState: "M",
+      previousPath: null,
+      exists: true,
+      contentFingerprint: "sha1:..."
+    }
+  ]
+}
+```
+
+Rules:
+
+- `scopeProofAnchors` is optional
+- it should only be written for newly recorded passed runs
+- each anchor `path` must stay repo-relative, just like `scopeProofPaths`
+- no absolute paths, raw diffs, or machine-local temp paths should be persisted
+- the anchor list should be limited to the normalized proof paths for that run, not every changed file in the repository
+
+The field is intentionally narrow:
+
+- `path` keeps the proof contract explainable
+- `gitState` and `previousPath` preserve rename/delete context when Git knows it
+- `exists` makes delete coverage explicit
+- `contentFingerprint` is the durable comparison token
+
+#### Capture rules
+
+Phase 2 should capture anchors at run-persist time, after `scopeProofPaths` has already been normalized.
+
+Suggested behavior:
+
+1. Build or reuse the current repository snapshot.
+2. For each normalized proof path, try to find the matching snapshot entry.
+3. Persist an anchor only for the paths that can be described safely.
+4. If snapshot capture fails, still persist the run without anchors instead of failing the run record itself.
+
+That keeps the feature additive. Proof-anchor capture should strengthen evidence, not become a new write-time failure mode.
+
+#### Filesystem fallback strategy
+
+Git mode can usually provide both dirty-state metadata and current fingerprints.
+
+Filesystem fallback needs a narrower strategy so Phase 2 does not regress performance:
+
+- do not hash the whole workspace just to capture anchors
+- if Git is unavailable, compute targeted fingerprints only for the normalized proof paths being recorded
+- for deleted or missing files, persist `exists: false` and leave `contentFingerprint: null`
+
+This keeps fallback local-only and relocatable without reintroducing O(workspace files) cost.
+
+#### Matching rules inside the gate
+
+The gate should continue to start from strong proof items, then prefer anchors when present:
+
+1. Find strong proof items that mention the current scoped file path.
+2. If a proof item has a matching anchor, use anchor comparison as the freshness decision.
+3. If a proof item has no anchor, fall back to the existing time-based compatibility path.
+
+An anchor should count as matching when:
+
+- `path` matches the current scoped file path
+- `gitState` matches when both sides have one
+- `previousPath` matches for rename coverage when present
+- `exists` matches when present
+- `contentFingerprint` matches when both sides have one
+
+If an anchored proof item disagrees with the current snapshot, treat that file as needing fresh proof even when timestamps would have looked acceptable.
+
+#### Scope of Phase 2
+
+Phase 2 should extend passed run evidence only.
+
+It should not yet:
+
+- invent a second durable proof store
+- require anchors for manual `verification.md` proof blocks
+- block legacy run records from participating in the gate
+- replace proof strength rules with Git metadata alone
+
+Manual `verification.md` can keep the current compatibility path until there is a separate managed-anchor design for human-authored proof.
+
 ## Why not just use `git status --porcelain` everywhere
 
 `git status --porcelain` is necessary, but not sufficient.
@@ -316,11 +406,18 @@ Before implementation, add or extend tests around these cases:
    - `scope-missing`
 3. Backward compatibility
    - legacy run without anchors
+   - new run with anchors
    - manual `verification.md` proof only
    - non-Git workspace fallback
+   - anchor capture failure still records the run
 4. Performance-sensitive reuse
    - overview reuses one snapshot across all tasks
    - task detail does not perform duplicate snapshot collection
+5. Anchor matching behavior
+   - unchanged fingerprint stays covered
+   - changed fingerprint reopens `needs-proof`
+   - rename anchors match renamed scoped files
+   - deleted anchors match deleted scoped files
 
 ## Recommended implementation order
 
@@ -329,7 +426,8 @@ Before implementation, add or extend tests around these cases:
 3. Reuse one snapshot in overview/task-detail paths.
 4. Keep legacy time-based freshness as fallback.
 5. Add optional `scopeProofAnchors` for newly recorded passed runs.
-6. Later decide whether manual `verification.md` needs a managed anchor strategy.
+6. Teach the gate to prefer anchor comparison when those anchors exist.
+7. Later decide whether manual `verification.md` needs a managed anchor strategy.
 
 ## Non-goals
 
