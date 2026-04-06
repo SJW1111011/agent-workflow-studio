@@ -617,9 +617,11 @@ Ship a dashboard markdown editor.
       priority: "P2",
       recipeId: "feature",
     });
+    codexAdapter.argvTemplate = ["fake-runner.js", "{promptFile}", "{runRequestFile}", "--sleep-ms", "1200"];
+    fs.writeFileSync(codexAdapterPath, `${JSON.stringify(codexAdapter, null, 2)}\n`, "utf8");
     const startedDashboardExecution = await requestJson(`http://127.0.0.1:${port}/api/tasks/T-004/execute`, "POST", {
       agent: "codex",
-      timeoutMs: 800,
+      timeoutMs: 3000,
     });
     if (
       startedDashboardExecution.status !== "starting" ||
@@ -655,30 +657,41 @@ Ship a dashboard markdown editor.
     ) {
       throw new Error("Dashboard execution log API did not expose the active stdout tail.");
     }
-    const activeExecutionStderrLog = await fetchJson(
-      `http://127.0.0.1:${port}/api/tasks/T-004/execution/logs/stderr?maxChars=4000`
-    );
+    const activeExecutionStderrLog = await waitFor(async () => {
+      const log = await fetchJson(
+        `http://127.0.0.1:${port}/api/tasks/T-004/execution/logs/stderr?maxChars=4000`
+      );
+      return log.content.includes("stderr T-004 codex") ? log : null;
+    }, 2000, 50);
     if (
+      !activeExecutionStderrLog ||
       !activeExecutionStderrLog.content.includes("stderr T-004 codex") ||
       activeExecutionStderrLog.active !== true ||
       activeExecutionStderrLog.runId !== runningDashboardExecution.runId
     ) {
       throw new Error("Dashboard execution log API did not expose the active stderr tail.");
     }
-    const runningExecutionDetail = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-004/execution`);
-    if (
-      runningExecutionDetail.activity !== "streaming-output" ||
-      !runningExecutionDetail.lastOutputAt ||
-      typeof runningExecutionDetail.totalOutputBytes !== "number" ||
-      runningExecutionDetail.totalOutputBytes <= 0 ||
-      !runningExecutionDetail.streams ||
-      !runningExecutionDetail.streams.stdout ||
-      runningExecutionDetail.streams.stdout.exists !== true ||
-      typeof runningExecutionDetail.streams.stdout.size !== "number" ||
-      runningExecutionDetail.streams.stdout.size <= 0 ||
-      !runningExecutionDetail.streams.stderr ||
-      runningExecutionDetail.streams.stderr.exists !== true
-    ) {
+    const runningExecutionDetail = await waitFor(async () => {
+      const executionState = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-004/execution`);
+      if (
+        executionState.activity !== "streaming-output" ||
+        !executionState.lastOutputAt ||
+        typeof executionState.totalOutputBytes !== "number" ||
+        executionState.totalOutputBytes <= 0 ||
+        !executionState.streams ||
+        !executionState.streams.stdout ||
+        executionState.streams.stdout.exists !== true ||
+        typeof executionState.streams.stdout.size !== "number" ||
+        executionState.streams.stdout.size <= 0 ||
+        !executionState.streams.stderr ||
+        executionState.streams.stderr.exists !== true
+      ) {
+        return null;
+      }
+
+      return executionState;
+    }, 2000, 50);
+    if (!runningExecutionDetail) {
       throw new Error("Dashboard execution state did not expose derived stream observability.");
     }
     const completedDashboardExecution = await waitFor(async () => {

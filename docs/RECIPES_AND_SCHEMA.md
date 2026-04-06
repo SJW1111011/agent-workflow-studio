@@ -76,7 +76,7 @@ It does not try to prove business correctness yet. It proves something narrower 
 
 ## Scope hints and verification gates
 
-The first diff-aware verification pass stays contract-first and local-only.
+The current diff-aware verification pass stays contract-first and local-only.
 
 It looks for repo-relative scope hints in:
 
@@ -89,7 +89,11 @@ It also understands a few lightweight scope markers inside `task.md`, for exampl
 - `files: README.md, docs/ARCHITECTURE.md`
 - `dirs: src/lib/`
 
-Those hints are matched against current workspace files and their modification times.
+Those hints are matched against a normalized repository snapshot:
+
+- Git mode prefers `git status --porcelain=v2` so modified, added, deleted, renamed, untracked, and unmerged paths are explicit
+- filesystem mode remains as a compatibility fallback for non-Git or constrained environments
+- legacy/manual proof freshness still falls back to recorded time in this phase
 
 When scoped files are changed, the dashboard can now say whether:
 
@@ -109,6 +113,7 @@ This is intentionally heuristic:
 - it does not replace CI or human review
 - it works best when tasks declare clear repo-relative paths
 - it works best when `verification.md` or passed run evidence mentions the exact repo-relative paths being checked
+- overview and task detail reuse one repository snapshot per request so verification does not scale as tasks x workspace files
 - it is designed to stay explainable rather than opaque
 
 ## Explicit proof linkage

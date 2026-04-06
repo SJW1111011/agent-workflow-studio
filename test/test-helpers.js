@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { execFileSync } = require("child_process");
 const { createTask } = require("../src/lib/task-service");
 const { ensureWorkflowScaffold, taskFiles } = require("../src/lib/workspace");
 
@@ -54,23 +55,54 @@ function buildRepositoryDiff(entries) {
     const modifiedAt = String(entry.modifiedAt || "");
     return {
       path: entry.path,
+      changeType: entry.changeType || "modified",
+      gitState: entry.gitState || null,
+      previousPath: entry.previousPath || null,
+      exists: entry.exists !== undefined ? Boolean(entry.exists) : true,
       modifiedAt,
       modifiedAtMs: new Date(modifiedAt).getTime(),
+      contentFingerprint: entry.contentFingerprint || null,
     };
   });
 
   return {
+    mode: "test",
     available: true,
+    headCommit: null,
     fileCount: files.length,
     files,
   };
 }
 
+function runCommand(command, args, cwd) {
+  execFileSync(command, args, {
+    cwd,
+    stdio: "ignore",
+  });
+}
+
+function runCommandOutput(command, args, cwd) {
+  return execFileSync(command, args, {
+    cwd,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
+  });
+}
+
+function initializeGitRepository(workspaceRoot) {
+  runCommand("git", ["init"], workspaceRoot);
+  runCommand("git", ["config", "user.name", "Unit Test"], workspaceRoot);
+  runCommand("git", ["config", "user.email", "unit@example.com"], workspaceRoot);
+}
+
 module.exports = {
   buildRepositoryDiff,
   createTaskWorkspace,
+  initializeGitRepository,
   readJsonFile,
   readTextFile,
+  runCommand,
+  runCommandOutput,
   setFileModifiedAt,
   writeJsonFile,
   writeTextFile,

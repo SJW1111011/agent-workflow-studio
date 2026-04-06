@@ -41,7 +41,7 @@ As of 2026-04-06, the project already has a working MVP foundation:
 - schema validation
 - local dashboard
 - lightweight freshness detection for memory docs and task markdown bundles
-- first-pass diff-aware verification gates using scoped workspace file mtimes plus task scope hints
+- Git-aware diff-aware verification gates using a reusable repository snapshot with filesystem fallback
 - stronger scope hint extraction for `task.md` markers like `path:` / `files:` / `dirs:`
 - checkpoint refresh rules that now surface scoped files awaiting proof
 - explicit proof linkage so generic verification edits no longer cover scoped changes unless repo-relative paths are named
@@ -57,7 +57,7 @@ As of 2026-04-06, the project already has a working MVP foundation:
 - the dashboard can now trigger local `run:execute` through a thin local API bridge, while task detail surfaces transient execution state plus persisted executor logs
 - the repo now also has focused zero-dependency unit tests for `verification-gates` and `task-documents`, so proof parsing and managed markdown regressions do not rely on smoke coverage alone
 - low-risk dashboard modularization has started: document/proof drafting helpers and task-board/overview helpers now live in separate static modules, while `dashboard/app.js` stays the orchestration layer
-- a short design note now scopes how verification freshness should evolve from `mtime` heuristics toward a Git-aware repository snapshot model without breaking the current proof contract
+- verification freshness Phase 1 is now implemented behind `src/lib/repository-snapshot.js`, and the design note still scopes the later proof-anchor phase
 
 ## Important constraint
 
@@ -80,6 +80,7 @@ Files:
 - `src/lib/scanner.js`
 - `src/lib/task-service.js`
 - `src/lib/task-documents.js`
+- `src/lib/repository-snapshot.js`
 - `src/lib/prompt-compiler.js`
 - `src/lib/run-preparer.js`
 - `src/lib/checkpoint.js`
@@ -187,6 +188,7 @@ The smoke test currently covers:
 - overview aggregate stats for latest executor outcomes across tasks
 - overview aggregate stats and task summaries for verification signal states across tasks, including the guardrail that blank `automated:` / `manual:` placeholders do not count as real planned checks
 - unit-level verification for strong vs weak proof parsing, `scope-missing` / `partially-covered` transitions, and managed markdown synchronization in task documents
+- unit-level verification for Git repository snapshot parsing, including modified/untracked paths, rename metadata, and filesystem fallback
 
 ## Why moving the folder should be safe
 
@@ -208,9 +210,9 @@ npm run smoke
 Recommended next sequence:
 
 1. Continue modularizing `dashboard/app.js`, next targeting task-detail rendering plus execution/log helpers now that document/proof helpers and task-board helpers are extracted.
-2. Extend the new unit coverage outward from `verification-gates` / `task-documents` into dashboard proof-plan helpers and overview derivation so parsing and presentation logic stop depending on smoke alone.
-3. Implement Phase 1 of `docs/VERIFICATION_FRESHNESS_DESIGN.md`: introduce a reusable Git-aware repository snapshot with filesystem fallback before changing durable proof schema.
-4. Add lightweight execution observability on top of the shared executor boundary, such as better log-tail UX or clearer run-state transitions, without inventing a second durable execution store.
+2. Extend the new unit coverage outward from `verification-gates` / `task-documents` / `repository-snapshot` into dashboard proof-plan helpers and overview derivation so parsing and presentation logic stop depending on smoke alone.
+3. Implement Phase 2 of `docs/VERIFICATION_FRESHNESS_DESIGN.md`: add optional proof anchors for new evidence without breaking legacy/manual proof compatibility.
+4. Harden server/API error typing so HTTP status mapping no longer depends on `error.message.includes(...)`.
 5. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 
 ## What not to do next
@@ -224,7 +226,7 @@ Recommended next sequence:
 
 Suggested first task:
 
-Continue the dashboard refactor by extracting task-detail/execution rendering helpers out of `dashboard/app.js`, unless the next agent chooses to start Phase 1 of the Git-aware verification freshness design.
+Continue the dashboard refactor by extracting task-detail/execution rendering helpers out of `dashboard/app.js`. If verification work continues instead, move to Phase 2 proof anchors rather than rewriting the proof model around raw Git state alone.
 
 Expected shape:
 

@@ -43,7 +43,7 @@ The current foundation includes:
 - `run:add`: append execution evidence to a task, including optional proof paths, checks, and artifact refs
 - `checkpoint`: build a resumable checkpoint for the current task
 - `validate`: run schema checks on project, adapters, tasks, and recorded runs
-- `dashboard`: open a local control plane for tasks, memory freshness, task doc freshness, diff-aware verification gates, checkpoint detail, metadata edits, structured run evidence capture, a local execution bridge for `stdioMode: pipe` adapters, executor state/cancel flow, and markdown task doc edits
+- `dashboard`: open a local control plane for tasks, memory freshness, task doc freshness, Git-aware diff-aware verification gates, checkpoint detail, metadata edits, structured run evidence capture, a local execution bridge for `stdioMode: pipe` adapters, executor state/cancel flow, and markdown task doc edits
 
 ## Layout
 
@@ -148,7 +148,7 @@ The workflow layer now treats recipes as first-class metadata instead of loose m
 - Validation checks look for missing or malformed project, task, adapter, and run records
 - The dashboard surfaces both repository-wide and task-level schema issues
 - The dashboard applies lightweight freshness heuristics to memory docs and task markdown bundles
-- The dashboard applies a first-pass diff-aware verification gate by comparing repo-relative task scope hints against current workspace file mtimes
+- The dashboard applies a Git-aware verification gate by matching repo-relative task scope hints against a reusable repository snapshot
 - Checkpoints now surface whether scoped files still need explicit proof before handoff
 - The dashboard can create tasks, update selected task metadata, edit `task.md` / `context.md` / `verification.md`, and record structured run evidence through local-only API endpoints
 - metadata-managed markdown blocks now stay pinned during edits, so task title / recipe / context recipe guidance / priority lines refresh without wiping nearby custom notes
@@ -160,24 +160,27 @@ The workflow layer now treats recipes as first-class metadata instead of loose m
 
 Diff-aware verification stays intentionally lightweight in this pass:
 
-- it reads local workspace files only
+- it prefers a Git-backed repository snapshot from `git status --porcelain=v2` and falls back to a filesystem snapshot when Git is unavailable
 - it matches changed files against repo-relative paths declared in `task.json.scope` or `task.md` under `## Scope`
 - it understands simple scope directives such as `path:`, `files:`, and `dirs:`
+- it reuses one repository snapshot per overview or task-detail request instead of re-walking the workspace for each task
 - it only treats scoped changes as covered when explicit proof paths are linked through `verification.md` text or passed run evidence
 - passed run evidence can now persist structured `verificationChecks` and `verificationArtifacts` alongside `scopeProofPaths`
 - it now tracks proof items as `paths + checks + artifacts`, so evidence can be audited instead of treated as a bare timestamp
+- it makes rename / delete / untracked state explicit in the verification summary when Git is available
 - a generic `verification.md` timestamp bump is no longer enough to cover scoped changes by itself
+- legacy manual/run proof freshness still falls back to recorded time until proof anchors are added in a later phase
 - it does not try to replace human judgment or full CI evidence
 
 See `docs/RECIPES_AND_SCHEMA.md`.
 
 ## Suggested next build steps
 
-1. Add stronger task editing guardrails so managed markdown blocks stay stable during richer edits.
-2. Surface richer proof-capture controls in the dashboard run form.
-3. Harden dashboard execution/reporting flows without breaking the shared executor boundary.
-4. Add GitHub issue and PR linking.
-5. Add multi-agent run orchestration and resume bundles.
+1. Continue modularizing `dashboard/app.js`, especially task-detail and execution/log rendering helpers.
+2. Extend unit coverage into dashboard helpers, overview derivation, and more repository-snapshot edge cases.
+3. Implement Phase 2 of `docs/VERIFICATION_FRESHNESS_DESIGN.md` with optional proof anchors for content-aware freshness.
+4. Harden server/API error typing so HTTP status mapping no longer depends on message text.
+5. Design the next `run:execute` local executor step without breaking the contract-first workflow boundary.
 
 ## Contributing
 

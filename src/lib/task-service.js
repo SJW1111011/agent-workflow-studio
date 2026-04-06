@@ -10,7 +10,8 @@ const {
   normalizeProofPaths,
   normalizeVerificationChecks,
 } = require("./evidence-utils");
-const { buildTaskVerificationGate, loadRepositoryDiff } = require("./verification-gates");
+const { loadRepositorySnapshot } = require("./repository-snapshot");
+const { buildTaskVerificationGate } = require("./verification-gates");
 const {
   renderCheckpointSkeleton,
   renderContextMarkdown,
@@ -111,7 +112,7 @@ function getTaskDetail(workspaceRoot, taskId) {
   const recipe = getRecipe(workspaceRoot, meta.recipeId);
   const runs = listRuns(workspaceRoot, taskId);
   const taskText = safeRead(files.task);
-  const repositoryDiff = loadRepositoryDiff(workspaceRoot);
+  const repositorySnapshot = loadRepositorySnapshot(workspaceRoot);
   return {
     meta,
     recipe: recipe
@@ -128,7 +129,7 @@ function getTaskDetail(workspaceRoot, taskId) {
     checkpointText: safeRead(files.checkpoint),
     runs,
     freshness: buildTaskFreshness(workspaceRoot, meta, runs),
-    verificationGate: buildTaskVerificationGate(workspaceRoot, meta, runs, repositoryDiff, taskText),
+    verificationGate: buildTaskVerificationGate(workspaceRoot, meta, runs, repositorySnapshot, taskText),
     generatedFiles: [
       describeFile("prompt.codex.md", files.promptCodex),
       describeFile("prompt.claude.md", files.promptClaude),

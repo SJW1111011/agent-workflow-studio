@@ -2,9 +2,10 @@ const { fileExists, readText } = require("./fs-utils");
 const { listAdapters } = require("./adapters");
 const { buildTaskFreshness, loadMemoryFreshness } = require("./freshness");
 const { listRecipes } = require("./recipes");
+const { loadRepositorySnapshot } = require("./repository-snapshot");
 const { validateWorkspace } = require("./schema-validator");
 const { listRuns, listTasks } = require("./task-service");
-const { buildTaskVerificationGate, loadRepositoryDiff } = require("./verification-gates");
+const { buildTaskVerificationGate } = require("./verification-gates");
 const {
   ensureWorkflowScaffold,
   projectConfigPath,
@@ -49,8 +50,8 @@ function buildOverview(workspaceRoot) {
   const project = readProjectConfig(workspaceRoot);
   const adapters = listAdapters(workspaceRoot);
   const recipes = listRecipes(workspaceRoot);
-  const repositoryDiff = loadRepositoryDiff(workspaceRoot);
-  const tasks = listTasks(workspaceRoot).map((task) => enrichTask(workspaceRoot, task, repositoryDiff));
+  const repositorySnapshot = loadRepositorySnapshot(workspaceRoot);
+  const tasks = listTasks(workspaceRoot).map((task) => enrichTask(workspaceRoot, task, repositorySnapshot));
   const runs = tasks.flatMap((task) => listRuns(workspaceRoot, task.id));
   const memory = loadMemoryFreshness(workspaceRoot, MEMORY_PLACEHOLDERS);
   const validation = validateWorkspace(workspaceRoot);
@@ -179,7 +180,7 @@ function countTaskVerificationSignals(tasks) {
   }, emptyVerificationSignals());
 }
 
-function enrichTask(workspaceRoot, task, repositoryDiff) {
+function enrichTask(workspaceRoot, task, repositorySnapshot) {
   const files = taskFiles(workspaceRoot, task.id);
   const runs = listRuns(workspaceRoot, task.id);
   const latestRun = runs[runs.length - 1] || null;
@@ -187,7 +188,7 @@ function enrichTask(workspaceRoot, task, repositoryDiff) {
   const taskText = readText(files.task, "");
   const verificationText = readText(files.verification, "");
   const freshness = buildTaskFreshness(workspaceRoot, task, runs);
-  const verificationGate = buildTaskVerificationGate(workspaceRoot, task, runs, repositoryDiff, taskText);
+  const verificationGate = buildTaskVerificationGate(workspaceRoot, task, runs, repositorySnapshot, taskText);
   const verificationSignal = describeTaskVerificationSignal(verificationGate, verificationText);
 
   return {

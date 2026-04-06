@@ -2,6 +2,15 @@
 
 This note describes how `agent-workflow-studio` should evolve verification freshness from a mostly `mtime`-driven heuristic into a Git-aware repository snapshot model without breaking the current proof contract.
 
+## Status
+
+As of 2026-04-06:
+
+- Phase 1 is implemented through `src/lib/repository-snapshot.js`
+- overview and task detail now reuse a normalized repository snapshot
+- Git mode prefers `git status --porcelain=v2`, with filesystem fallback preserved
+- Phase 2 proof anchors are still pending
+
 ## Why this exists
 
 The current verification gate already gets the most important product decision right:

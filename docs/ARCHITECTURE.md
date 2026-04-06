@@ -62,11 +62,15 @@ The local HTTP server exposes:
 - `GET /api/overview`
 - `GET /api/tasks`
 - `GET /api/tasks/:taskId`
+- `GET /api/tasks/:taskId/execution`
+- `GET /api/tasks/:taskId/execution/logs/:stream`
 - `GET /api/tasks/:taskId/runs/:runId/logs/:stream`
 - `GET /api/recipes`
 - `GET /api/runs`
 - `GET /api/validate`
 - `POST /api/tasks`
+- `POST /api/tasks/:taskId/execute`
+- `POST /api/tasks/:taskId/execution/cancel`
 - `PATCH /api/tasks/:taskId`
 - `PUT /api/tasks/:taskId/documents/:documentName`
 - `POST /api/tasks/:taskId/runs`
@@ -105,7 +109,7 @@ The dashboard renders:
 - overview stats now also aggregate task-level verification signals so the board can distinguish planned-only checks, draft proof, mixed proof, and strong proof at a glance
 - overview task cards now expose the task-level verification signal summary without opening task detail
 - memory freshness view
-- diff-aware verification gate summaries
+- diff-aware verification gate summaries backed by a Git-aware repository snapshot with filesystem fallback
 - risk queue
 - verification summary
 
@@ -131,6 +135,17 @@ The browser-side code stays static and local-only:
 - docs
 - top-level directories
 - scanner recommendations
+
+### Repository snapshot
+
+Verification freshness now depends on an internal repository snapshot boundary rather than ad hoc workspace walks.
+
+That snapshot:
+
+- prefers Git dirty-state data from `git status --porcelain=v2`
+- falls back to filesystem mode for non-Git or constrained environments
+- normalizes file entries as `path + changeType + gitState + previousPath + modifiedAt`
+- is reused once per overview or task-detail request so verification does not scan the workspace per task
 
 ### Task
 
@@ -171,7 +186,7 @@ The first dashboard pass computes risks from simple heuristics:
 - task has no run evidence
 - latest run failed
 - task docs older than recent workflow activity or the current freshness threshold
-- scoped local changes are newer than the latest verification evidence
+- scoped local changes in the current repository snapshot are newer than the latest verification evidence
 - scoped local changes are not explicitly linked to proof paths yet
 - proof only partially covers the scoped changed files
 - proof items exist but are too weak because they lack clear checks or artifact refs

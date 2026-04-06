@@ -8,20 +8,16 @@ const {
   normalizeVerificationChecks,
 } = require("./evidence-utils");
 const { fileExists, readText } = require("./fs-utils");
+const { loadRepositorySnapshot } = require("./repository-snapshot");
 const { taskFiles } = require("./workspace");
 
-function loadRepositoryDiff(workspaceRoot) {
-  const files = walkWorkspaceFiles(workspaceRoot);
-  return {
-    available: true,
-    fileCount: files.length,
-    files,
-  };
+function loadRepositoryDiff(workspaceRoot, options = {}) {
+  return loadRepositorySnapshot(workspaceRoot, options);
 }
 
-function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositoryDiff = null, taskText = null) {
+function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositorySnapshot = null, taskText = null) {
   const files = taskFiles(workspaceRoot, taskMeta.id);
-  const workspaceIndex = repositoryDiff || loadRepositoryDiff(workspaceRoot);
+  const workspaceIndex = repositorySnapshot || loadRepositorySnapshot(workspaceRoot);
   const scopeBundle = collectTaskScopeHints(workspaceRoot, taskMeta, taskText === null ? readText(files.task, "") : taskText);
   const scopeHints = scopeBundle.hints;
   const verificationText = readText(files.verification, "");
@@ -42,12 +38,12 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
     const proofAtMs = maxTime(matchingProofItems.map((item) => item.recordedAtMs));
     const baselineAtMs = maxTime([taskCreatedAtMs, proofAtMs]);
 
-    if (!baselineAtMs || workspaceFile.modifiedAtMs > baselineAtMs) {
+    if (hasScopedFileChangedSinceBaseline(workspaceFile, baselineAtMs)) {
       relevantChangedFiles.push(stripInternalFileFields(workspaceFile, proofAtMs, matchingProofItems));
       return;
     }
 
-    if (proofAtMs && proofAtMs >= workspaceFile.modifiedAtMs) {
+    if (isScopedFileCoveredByProof(workspaceFile, proofAtMs)) {
       coveredScopedFiles.push(stripInternalFileFields(workspaceFile, proofAtMs, matchingProofItems));
     }
   });
@@ -124,35 +120,6 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
     evidence: buildEvidenceSummary(latestRunAtMs, verificationUpdatedAtMs, latestEvidenceAtMs),
     proofCoverage: summarizeProofCoverage(proofCoverage),
   };
-}
-
-function walkWorkspaceFiles(workspaceRoot, relativeDir = "") {
-  const directoryPath = relativeDir ? path.join(workspaceRoot, relativeDir) : workspaceRoot;
-
-  return fs
-    .readdirSync(directoryPath, { withFileTypes: true })
-    .filter((entry) => entry.name !== ".git" && entry.name !== "node_modules")
-    .flatMap((entry) => {
-      const relativePath = relativeDir ? path.join(relativeDir, entry.name) : entry.name;
-
-      if (entry.isDirectory()) {
-        return walkWorkspaceFiles(workspaceRoot, relativePath);
-      }
-
-      if (!entry.isFile()) {
-        return [];
-      }
-
-      const absolutePath = path.join(workspaceRoot, relativePath);
-      const stats = fs.statSync(absolutePath);
-      return [
-        {
-          path: relativePath.replace(/\\/g, "/"),
-          modifiedAt: new Date(stats.mtimeMs).toISOString(),
-          modifiedAtMs: stats.mtimeMs,
-        },
-      ];
-    });
 }
 
 function collectTaskScopeHints(workspaceRoot, taskMeta, taskText) {
@@ -392,6 +359,22 @@ function globToRegExp(pattern) {
   return new RegExp(expression);
 }
 
+function hasScopedFileChangedSinceBaseline(workspaceFile, baselineAtMs) {
+  if (!baselineAtMs) {
+    return true;
+  }
+
+  if (!Number.isFinite(workspaceFile.modifiedAtMs)) {
+    return true;
+  }
+
+  return workspaceFile.modifiedAtMs > baselineAtMs;
+}
+
+function isScopedFileCoveredByProof(workspaceFile, proofAtMs) {
+  return Number.isFinite(proofAtMs) && Number.isFinite(workspaceFile.modifiedAtMs) && proofAtMs >= workspaceFile.modifiedAtMs;
+}
+
 function buildEvidenceSummary(latestRunAtMs, verificationUpdatedAtMs, latestEvidenceAtMs) {
   return {
     latestRunAt: latestRunAtMs ? new Date(latestRunAtMs).toISOString() : null,
@@ -403,6 +386,8 @@ function buildEvidenceSummary(latestRunAtMs, verificationUpdatedAtMs, latestEvid
 function summarizeRepositoryDiff(workspaceIndex, scopedFileCount) {
   return {
     available: workspaceIndex.available,
+    mode: workspaceIndex.mode || "filesystem",
+    headCommit: workspaceIndex.headCommit || null,
     fileCount: workspaceIndex.fileCount || 0,
     scopedFileCount,
   };
@@ -420,7 +405,9 @@ function stripInternalFileFields(workspaceFile, proofAtMs, proofItems = []) {
   return {
     path: workspaceFile.path,
     modifiedAt: workspaceFile.modifiedAt,
-    changeType: "modified",
+    changeType: workspaceFile.changeType || "modified",
+    gitState: workspaceFile.gitState || null,
+    previousPath: workspaceFile.previousPath || null,
     matchedBy: workspaceFile.matchedBy,
     proofUpdatedAt: proofAtMs ? new Date(proofAtMs).toISOString() : null,
     proofItems: proofItems.map(summarizeProofItem),
@@ -675,4 +662,5 @@ function looksLikePathDirective(value) {
 module.exports = {
   buildTaskVerificationGate,
   loadRepositoryDiff,
+  loadRepositorySnapshot: loadRepositoryDiff,
 };
