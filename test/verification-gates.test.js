@@ -1,0 +1,173 @@
+const assert = require("node:assert/strict");
+
+const { buildTaskVerificationGate } = require("../src/lib/verification-gates");
+const {
+  buildRepositoryDiff,
+  createTaskWorkspace,
+  readJsonFile,
+  setFileModifiedAt,
+  writeJsonFile,
+  writeTextFile,
+} = require("./test-helpers");
+
+function prepareScopedTask(files, scope, createdAt = "2026-01-01T00:00:00.000Z") {
+  const meta = readJsonFile(files.meta);
+  meta.scope = scope;
+  meta.status = "in_progress";
+  meta.createdAt = createdAt;
+  meta.updatedAt = createdAt;
+  writeJsonFile(files.meta, meta);
+  return meta;
+}
+
+const tests = [
+  {
+    name: "manual proof covers scoped changes when strong proof is newer than the file",
+    run() {
+      const { workspaceRoot, files } = createTaskWorkspace("verification-covered");
+      writeTextFile(`${workspaceRoot}/src/app.js`, "module.exports = 'app';\n");
+
+      const meta = prepareScopedTask(files, ["src/app.js"]);
+
+      writeTextFile(
+        files.verification,
+        [
+          "# T-001 Verification",
+          "",
+          "## Proof links",
+          "",
+          "### Proof 1",
+          "",
+          "- Files: src/app.js",
+          "- Check: npm test",
+          "- Artifact: logs/app-proof.txt",
+          "",
+        ].join("\n")
+      );
+      setFileModifiedAt(files.verification, "2026-01-03T00:00:00.000Z");
+
+      const gate = buildTaskVerificationGate(
+        workspaceRoot,
+        meta,
+        [],
+        buildRepositoryDiff([{ path: "src/app.js", modifiedAt: "2026-01-02T00:00:00.000Z" }])
+      );
+
+      assert.equal(gate.summary.status, "covered");
+      assert.equal(gate.summary.relevantChangeCount, 0);
+      assert.equal(gate.coveredScopedFiles.length, 1);
+      assert.equal(gate.coveredScopedFiles[0].path, "src/app.js");
+      assert.equal(gate.proofCoverage.explicitProofCount, 1);
+      assert.equal(gate.proofCoverage.weakProofCount, 0);
+      assert.equal(gate.coveredScopedFiles[0].proofItems[0].strong, true);
+    },
+  },
+  {
+    name: "partial coverage keeps uncovered scoped files in needs-proof state",
+    run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("verification-partial");
+      writeTextFile(`${workspaceRoot}/src/app.js`, "module.exports = 'app';\n");
+      writeTextFile(`${workspaceRoot}/src/lib/util.js`, "module.exports = 'util';\n");
+
+      const meta = prepareScopedTask(files, ["src/app.js", "src/lib/util.js"]);
+      const runs = [
+        {
+          id: "run-001",
+          taskId,
+          status: "passed",
+          summary: "Scoped tests passed.",
+          createdAt: "2026-01-03T00:00:00.000Z",
+          completedAt: "2026-01-03T00:00:00.000Z",
+          scopeProofPaths: ["src/app.js"],
+          verificationChecks: [{ label: "npm test", status: "passed", details: "targeted scope ok" }],
+          verificationArtifacts: ["artifacts/npm-test.txt"],
+        },
+      ];
+
+      const gate = buildTaskVerificationGate(
+        workspaceRoot,
+        meta,
+        runs,
+        buildRepositoryDiff([
+          { path: "src/app.js", modifiedAt: "2026-01-02T00:00:00.000Z" },
+          { path: "src/lib/util.js", modifiedAt: "2026-01-02T00:00:00.000Z" },
+        ])
+      );
+
+      assert.equal(gate.summary.status, "partially-covered");
+      assert.equal(gate.summary.relevantChangeCount, 1);
+      assert.equal(gate.coveredScopedFiles.length, 1);
+      assert.equal(gate.coveredScopedFiles[0].path, "src/app.js");
+      assert.equal(gate.relevantChangedFiles.length, 1);
+      assert.equal(gate.relevantChangedFiles[0].path, "src/lib/util.js");
+      assert.equal(gate.proofCoverage.explicitProofCount, 1);
+    },
+  },
+  {
+    name: "file-only manual proof stays weak instead of counting as coverage",
+    run() {
+      const { workspaceRoot, files } = createTaskWorkspace("verification-weak");
+      writeTextFile(`${workspaceRoot}/src/app.js`, "module.exports = 'app';\n");
+
+      const meta = prepareScopedTask(files, ["src/app.js"]);
+
+      writeTextFile(
+        files.verification,
+        [
+          "# T-001 Verification",
+          "",
+          "## Proof links",
+          "",
+          "### Proof 1",
+          "",
+          "- Files: src/app.js",
+          "",
+        ].join("\n")
+      );
+      setFileModifiedAt(files.verification, "2026-01-03T00:00:00.000Z");
+
+      const gate = buildTaskVerificationGate(
+        workspaceRoot,
+        meta,
+        [],
+        buildRepositoryDiff([{ path: "src/app.js", modifiedAt: "2026-01-02T00:00:00.000Z" }])
+      );
+
+      assert.equal(gate.summary.status, "needs-proof");
+      assert.equal(gate.summary.relevantChangeCount, 1);
+      assert.equal(gate.proofCoverage.explicitProofCount, 0);
+      assert.equal(gate.proofCoverage.weakProofCount, 1);
+      assert.equal(gate.proofCoverage.items[0].strong, false);
+    },
+  },
+  {
+    name: "missing scope hints surface scope-missing for active work",
+    run() {
+      const { workspaceRoot, files } = createTaskWorkspace("verification-scope-missing");
+      writeTextFile(`${workspaceRoot}/src/app.js`, "module.exports = 'app';\n");
+
+      const meta = readJsonFile(files.meta);
+      meta.status = "in_progress";
+      meta.createdAt = "2026-01-01T00:00:00.000Z";
+      meta.updatedAt = "2026-01-01T00:00:00.000Z";
+      writeJsonFile(files.meta, meta);
+
+      const gate = buildTaskVerificationGate(
+        workspaceRoot,
+        meta,
+        [],
+        buildRepositoryDiff([{ path: "src/app.js", modifiedAt: "2026-01-02T00:00:00.000Z" }])
+      );
+
+      assert.equal(gate.summary.status, "scope-missing");
+      assert.equal(gate.scopeCoverage.hintCount, 0);
+      assert.ok(gate.scopeCoverage.ambiguousCount >= 1);
+      assert.match(gate.summary.message, /no repo-relative scope hints/i);
+    },
+  },
+];
+
+module.exports = {
+  name: "verification-gates",
+  tests,
+};

@@ -316,7 +316,7 @@ function normalizePlannedCheckLine(line) {
 
 function getMarkdownSection(text, title) {
   const normalized = String(text || "").replace(/\r\n/g, "\n");
-  const pattern = new RegExp(`^## ${escapeRegex(title)}\\n([\\s\\S]*?)(?=^## |\\Z)`, "m");
+  const pattern = new RegExp(`(?:^|\\n)## ${escapeRegex(title)}\\n([\\s\\S]*?)(?=\\n## |$)`);
   const match = normalized.match(pattern);
   return match ? match[1].trim() : "";
 }

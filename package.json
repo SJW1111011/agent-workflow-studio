@@ -8,6 +8,7 @@
     "agent-workflow": "./src/cli.js"
   },
   "scripts": {
+    "test": "node scripts/unit-test.js",
     "cli": "node src/cli.js",
     "init": "node src/cli.js init",
     "scan": "node src/cli.js scan",

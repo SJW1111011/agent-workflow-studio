@@ -14,7 +14,7 @@ This repository starts with a relocatable foundation:
 - a headless workflow scaffold in `.agent-workflow/`
 - a zero-dependency CLI to initialize, scan, create tasks, compile prompts, and record runs
 - a lightweight dashboard that reads the workflow state from any repository root
-- a smoke test that proves the project still works when nested under a non-English path
+- a zero-dependency test layer with focused unit coverage plus a smoke test that proves the project still works when nested under a non-English path
 
 ## Why this exists
 
@@ -85,6 +85,7 @@ npm run run:execute -- T-001 --agent codex --root ../some-repo
 npm run run:add -- T-001 "Initial scanner pass completed." --status passed --root ../some-repo
 npm run checkpoint -- T-001 --root ../some-repo
 npm run validate -- --root ../some-repo
+npm test
 npm run dashboard -- --root ../some-repo --port 4173
 ```
 
@@ -184,7 +185,7 @@ If you want to help shape this into a serious open source workflow layer, start 
 
 - read `CONTRIBUTING.md`
 - keep changes local-first, relocatable, and schema-aware
-- run `npm run smoke` before opening a PR
+- run `npm test` and `npm run smoke` before opening a PR
 
 ## Community
 

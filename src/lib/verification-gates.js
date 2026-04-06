@@ -253,7 +253,7 @@ function extractScopeCandidatesFromMarkdown(taskText) {
 
 function getMarkdownSection(content, title) {
   const normalized = String(content || "").replace(/\r\n/g, "\n");
-  const pattern = new RegExp(`^## ${escapeRegex(title)}\\n([\\s\\S]*?)(?=^## |\\Z)`, "m");
+  const pattern = new RegExp(`(?:^|\\n)## ${escapeRegex(title)}\\n([\\s\\S]*?)(?=\\n## |$)`);
   const match = normalized.match(pattern);
   return match ? match[1].trim() : "";
 }

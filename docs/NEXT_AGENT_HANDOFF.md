@@ -15,7 +15,7 @@ The product direction is already chosen:
 
 ## Current status
 
-As of 2026-04-05, the project already has a working MVP foundation:
+As of 2026-04-06, the project already has a working MVP foundation:
 
 - workflow scaffold generation under `.agent-workflow/`
 - repository scanning and project profile generation
@@ -55,6 +55,7 @@ As of 2026-04-05, the project already has a working MVP foundation:
 - the verification editor can now draft a pending proof plan from pending scoped files by inserting planned checks plus file-only proof-link placeholders
 - the run form can now sync drafted proof paths/checks into the verification editor as an unsaved proof-plan draft
 - the dashboard can now trigger local `run:execute` through a thin local API bridge, while task detail surfaces transient execution state plus persisted executor logs
+- the repo now also has focused zero-dependency unit tests for `verification-gates` and `task-documents`, so proof parsing and managed markdown regressions do not rely on smoke coverage alone
 
 ## Important constraint
 
@@ -142,8 +143,9 @@ Start here:
 
 ## What was validated locally
 
-Verified on 2026-04-05:
+Verified on 2026-04-06:
 
+- `npm test`
 - `npm run smoke`
 
 The smoke test currently covers:
@@ -179,6 +181,7 @@ The smoke test currently covers:
 - proof item parsing for manual verification notes and passed run evidence
 - overview aggregate stats for latest executor outcomes across tasks
 - overview aggregate stats and task summaries for verification signal states across tasks, including the guardrail that blank `automated:` / `manual:` placeholders do not count as real planned checks
+- unit-level verification for strong vs weak proof parsing, `scope-missing` / `partially-covered` transitions, and managed markdown synchronization in task documents
 
 ## Why moving the folder should be safe
 
@@ -199,8 +202,8 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Add focused unit coverage around `src/lib/verification-gates.js` and `src/lib/task-documents.js`, which now carry more of the contract-sensitive proof logic than the smoke test alone should guard.
-2. Start modularizing `dashboard/app.js` around stable seams such as state, overview rendering, task detail rendering, and editor helpers before more dashboard capabilities pile into one file.
+1. Start modularizing `dashboard/app.js` around stable seams such as state, overview rendering, task detail rendering, and editor helpers before more dashboard capabilities pile into one file.
+2. Extend the new unit coverage outward from `verification-gates` / `task-documents` into dashboard proof-plan helpers and overview derivation so parsing and presentation logic stop depending on smoke alone.
 3. Add lightweight execution observability on top of the shared executor boundary, such as better log-tail UX or clearer run-state transitions, without inventing a second durable execution store.
 4. Add richer freshness heuristics based on repository changes instead of only timestamps.
 5. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
@@ -216,13 +219,13 @@ Recommended next sequence:
 
 Suggested first task:
 
-Add unit coverage for proof parsing and verification-gate edge cases before taking on the next layer of execution or dashboard complexity.
+Start splitting `dashboard/app.js` into a few stable modules without changing the current dashboard contract.
 
 Expected shape:
 
-- cover `src/lib/verification-gates.js` transitions such as `needs-proof`, `partially-covered`, `covered`, and weak-proof handling
-- cover `src/lib/task-documents.js` and dashboard proof-plan helpers so template placeholders and managed blocks do not silently regress
-- keep the smoke test as the relocatable end-to-end guard, but stop relying on it as the only proof of correctness
+- preserve the current local-only API contract and existing smoke coverage
+- extract low-risk seams first, such as overview/task-card rendering, verification helpers, and editor helpers
+- keep the browser as a thin control plane over existing workflow documents rather than turning it into a second state system
 
 ## Useful commands
 
