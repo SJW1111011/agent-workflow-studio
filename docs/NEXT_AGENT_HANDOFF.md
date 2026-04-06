@@ -56,6 +56,7 @@ As of 2026-04-06, the project already has a working MVP foundation:
 - the run form can now sync drafted proof paths/checks into the verification editor as an unsaved proof-plan draft
 - the dashboard can now trigger local `run:execute` through a thin local API bridge, while task detail surfaces transient execution state plus persisted executor logs
 - the repo now also has focused zero-dependency unit tests for `verification-gates` and `task-documents`, so proof parsing and managed markdown regressions do not rely on smoke coverage alone
+- low-risk dashboard modularization has started: document/proof drafting helpers and task-board/overview helpers now live in separate static modules, while `dashboard/app.js` stays the orchestration layer
 
 ## Important constraint
 
@@ -110,6 +111,8 @@ Files:
 - `dashboard/index.html`
 - `dashboard/styles.css`
 - `dashboard/app.js`
+- `dashboard/document-helpers.js`
+- `dashboard/task-board-helpers.js`
 
 Current dashboard capabilities:
 
@@ -202,7 +205,7 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Start modularizing `dashboard/app.js` around stable seams such as state, overview rendering, task detail rendering, and editor helpers before more dashboard capabilities pile into one file.
+1. Continue modularizing `dashboard/app.js`, next targeting task-detail rendering plus execution/log helpers now that document/proof helpers and task-board helpers are extracted.
 2. Extend the new unit coverage outward from `verification-gates` / `task-documents` into dashboard proof-plan helpers and overview derivation so parsing and presentation logic stop depending on smoke alone.
 3. Add lightweight execution observability on top of the shared executor boundary, such as better log-tail UX or clearer run-state transitions, without inventing a second durable execution store.
 4. Add richer freshness heuristics based on repository changes instead of only timestamps.
@@ -219,13 +222,13 @@ Recommended next sequence:
 
 Suggested first task:
 
-Start splitting `dashboard/app.js` into a few stable modules without changing the current dashboard contract.
+Continue the dashboard refactor by extracting task-detail/execution rendering helpers out of `dashboard/app.js`.
 
 Expected shape:
 
 - preserve the current local-only API contract and existing smoke coverage
-- extract low-risk seams first, such as overview/task-card rendering, verification helpers, and editor helpers
-- keep the browser as a thin control plane over existing workflow documents rather than turning it into a second state system
+- keep `dashboard/app.js` focused on orchestration, event wiring, and refresh flow
+- move pure rendering or parsing helpers into static modules that still work without a bundler
 
 ## Useful commands
 

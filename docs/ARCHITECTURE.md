@@ -109,6 +109,13 @@ The dashboard renders:
 - risk queue
 - verification summary
 
+The browser-side code stays static and local-only:
+
+- `dashboard/app.js` remains the orchestration layer for fetches, state transitions, and DOM wiring
+- document/proof drafting helpers can live in separate static modules such as `dashboard/document-helpers.js`
+- overview/task-board derivation helpers can live in separate static modules such as `dashboard/task-board-helpers.js`
+- no bundler or cloud build step is required for these refactors
+
 ## Data model
 
 ### Project

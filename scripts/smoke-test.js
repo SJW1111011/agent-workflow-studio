@@ -524,6 +524,18 @@ Build the first scanner slice with explicit diff-aware verification.
 
   try {
     await wait(800);
+    const dashboardIndex = await requestText(`http://127.0.0.1:${port}/`);
+    const documentHelpersScript = await requestText(`http://127.0.0.1:${port}/document-helpers.js`);
+    const taskBoardHelpersScript = await requestText(`http://127.0.0.1:${port}/task-board-helpers.js`);
+    if (
+      !dashboardIndex.includes('/document-helpers.js') ||
+      !dashboardIndex.includes('/task-board-helpers.js') ||
+      !documentHelpersScript.includes("AgentWorkflowDashboardDocumentHelpers") ||
+      !taskBoardHelpersScript.includes("AgentWorkflowDashboardTaskBoardHelpers")
+    ) {
+      throw new Error("Dashboard static helper modules were not served correctly after modularization.");
+    }
+
     const overview = await fetchJson(`http://127.0.0.1:${port}/api/overview`);
     if (!overview.initialized || overview.tasks.length !== 2) {
       throw new Error("Unexpected overview payload.");
@@ -1146,6 +1158,27 @@ async function waitFor(check, timeoutMs, intervalMs = 100) {
 
 function fetchJson(url) {
   return requestJson(url, "GET");
+}
+
+function requestText(url) {
+  return new Promise((resolve, reject) => {
+    const request = http.request(url, { method: "GET" }, (response) => {
+      let body = "";
+      response.on("data", (chunk) => {
+        body += chunk;
+      });
+      response.on("end", () => {
+        if (response.statusCode >= 400) {
+          reject(new Error(`HTTP ${response.statusCode}`));
+          return;
+        }
+        resolve(body);
+      });
+    });
+
+    request.on("error", reject);
+    request.end();
+  });
 }
 
 function requestJson(url, method, payload) {
