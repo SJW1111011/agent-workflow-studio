@@ -29,6 +29,8 @@ Status: in progress in this repository.
 
 Status: first-pass diff-aware verification gates are in place, and passed runs can now persist structured check/artifact proof. Next work should improve guardrails and capture UX instead of replacing the contract.
 
+The next verification-freshness step should be Git-aware but still contract-first. See `docs/VERIFICATION_FRESHNESS_DESIGN.md`.
+
 ## Phase 3 - Multi-agent orchestration
 
 - agent role assignment

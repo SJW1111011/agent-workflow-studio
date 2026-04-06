@@ -57,6 +57,7 @@ As of 2026-04-06, the project already has a working MVP foundation:
 - the dashboard can now trigger local `run:execute` through a thin local API bridge, while task detail surfaces transient execution state plus persisted executor logs
 - the repo now also has focused zero-dependency unit tests for `verification-gates` and `task-documents`, so proof parsing and managed markdown regressions do not rely on smoke coverage alone
 - low-risk dashboard modularization has started: document/proof drafting helpers and task-board/overview helpers now live in separate static modules, while `dashboard/app.js` stays the orchestration layer
+- a short design note now scopes how verification freshness should evolve from `mtime` heuristics toward a Git-aware repository snapshot model without breaking the current proof contract
 
 ## Important constraint
 
@@ -143,6 +144,7 @@ Start here:
 - `docs/RECIPES_AND_SCHEMA.md`
 - `docs/ROADMAP.md`
 - `docs/RELOCATABLE_DESIGN.md`
+- `docs/VERIFICATION_FRESHNESS_DESIGN.md`
 
 ## What was validated locally
 
@@ -207,8 +209,8 @@ Recommended next sequence:
 
 1. Continue modularizing `dashboard/app.js`, next targeting task-detail rendering plus execution/log helpers now that document/proof helpers and task-board helpers are extracted.
 2. Extend the new unit coverage outward from `verification-gates` / `task-documents` into dashboard proof-plan helpers and overview derivation so parsing and presentation logic stop depending on smoke alone.
-3. Add lightweight execution observability on top of the shared executor boundary, such as better log-tail UX or clearer run-state transitions, without inventing a second durable execution store.
-4. Add richer freshness heuristics based on repository changes instead of only timestamps.
+3. Implement Phase 1 of `docs/VERIFICATION_FRESHNESS_DESIGN.md`: introduce a reusable Git-aware repository snapshot with filesystem fallback before changing durable proof schema.
+4. Add lightweight execution observability on top of the shared executor boundary, such as better log-tail UX or clearer run-state transitions, without inventing a second durable execution store.
 5. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 
 ## What not to do next
@@ -222,7 +224,7 @@ Recommended next sequence:
 
 Suggested first task:
 
-Continue the dashboard refactor by extracting task-detail/execution rendering helpers out of `dashboard/app.js`.
+Continue the dashboard refactor by extracting task-detail/execution rendering helpers out of `dashboard/app.js`, unless the next agent chooses to start Phase 1 of the Git-aware verification freshness design.
 
 Expected shape:
 
