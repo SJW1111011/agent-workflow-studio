@@ -7,10 +7,11 @@ const {
   defaultCheckStatusForRunStatus,
   formatVerificationCheck,
   normalizeArtifactRefs,
+  normalizeProofAnchors,
   normalizeProofPaths,
   normalizeVerificationChecks,
 } = require("./evidence-utils");
-const { loadRepositorySnapshot } = require("./repository-snapshot");
+const { buildScopeProofAnchors, loadRepositorySnapshot } = require("./repository-snapshot");
 const { buildTaskVerificationGate } = require("./verification-gates");
 const {
   renderCheckpointSkeleton,
@@ -250,7 +251,8 @@ function persistRunRecord(workspaceRoot, taskId, run) {
   const meta = readJson(files.meta, {});
   const existingRuns = listRuns(workspaceRoot, taskId);
   const taskText = safeRead(files.task);
-  const gateBeforePersist = buildTaskVerificationGate(workspaceRoot, meta, existingRuns, null, taskText);
+  const repositorySnapshot = loadRepositorySnapshot(workspaceRoot);
+  const gateBeforePersist = buildTaskVerificationGate(workspaceRoot, meta, existingRuns, repositorySnapshot, taskText);
   const inferredScopeProofPaths =
     run.status === "passed"
       ? Array.from(
@@ -269,11 +271,20 @@ function persistRunRecord(workspaceRoot, taskId, run) {
     defaultCheckStatusForRunStatus(run.status)
   );
   const verificationArtifacts = normalizeArtifactRefs(run.verificationArtifacts);
+  const scopeProofAnchors =
+    run.status === "passed" && scopeProofPaths.length > 0
+      ? normalizeProofAnchors(
+          Array.isArray(run.scopeProofAnchors) && run.scopeProofAnchors.length > 0
+            ? run.scopeProofAnchors
+            : buildScopeProofAnchors(workspaceRoot, scopeProofPaths, repositorySnapshot)
+        )
+      : [];
 
   const persistedRun = {
     ...run,
     taskId,
     scopeProofPaths: scopeProofPaths.length > 0 ? scopeProofPaths : undefined,
+    scopeProofAnchors: scopeProofAnchors.length > 0 ? scopeProofAnchors : undefined,
     verificationChecks: verificationChecks.length > 0 ? verificationChecks : undefined,
     verificationArtifacts: verificationArtifacts.length > 0 ? verificationArtifacts : undefined,
   };

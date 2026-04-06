@@ -336,9 +336,9 @@ Passed runs may also snapshot `scopeProofPaths` so the verification layer can ex
 
 Those paths can now participate in proof items alongside structured `verificationChecks`, the run summary fallback, and task-local artifact refs such as stdout/stderr logs.
 
-The next additive step should allow passed runs to persist optional `scopeProofAnchors` for those same proof paths.
+Passed runs can now also persist optional `scopeProofAnchors` for those same proof paths.
 
-That should remain:
+That remains:
 
 - repo-relative
 - optional

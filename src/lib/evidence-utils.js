@@ -14,6 +14,60 @@ function normalizeProofPaths(values) {
   return uniqueStrings(toArray(values).map(normalizeProofPath).filter(Boolean));
 }
 
+function normalizeProofAnchors(values) {
+  const anchorsByPath = new Map();
+
+  toArray(values)
+    .map((value) => normalizeProofAnchor(value))
+    .filter(Boolean)
+    .forEach((anchor) => {
+      const existing = anchorsByPath.get(anchor.path);
+      if (!existing || countDefinedProofAnchorFields(anchor) >= countDefinedProofAnchorFields(existing)) {
+        anchorsByPath.set(anchor.path, anchor);
+      }
+    });
+
+  return Array.from(anchorsByPath.values());
+}
+
+function normalizeProofAnchor(value) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const path = normalizeProofPath(value.path || value.file || value.proofPath);
+  if (!path) {
+    return null;
+  }
+
+  const anchor = { path };
+  const gitState = firstNonEmptyString([value.gitState, value.state]);
+  const previousPath = normalizeProofPath(value.previousPath || value.fromPath || value.oldPath);
+  const contentFingerprint = firstNonEmptyString([
+    value.contentFingerprint,
+    value.fingerprint,
+    value.hash,
+  ]);
+
+  if (gitState) {
+    anchor.gitState = gitState;
+  }
+
+  if (previousPath) {
+    anchor.previousPath = previousPath;
+  }
+
+  if (value.exists !== undefined) {
+    anchor.exists = Boolean(value.exists);
+  }
+
+  if (contentFingerprint) {
+    anchor.contentFingerprint = contentFingerprint;
+  }
+
+  return anchor;
+}
+
 function normalizeArtifactRefs(values) {
   return uniqueStrings(toArray(values).map(normalizeArtifactRef).filter(Boolean));
 }
@@ -143,12 +197,19 @@ function firstNonEmptyString(values) {
   return toArray(values).find((value) => typeof value === "string" && value.trim().length > 0) || "";
 }
 
+function countDefinedProofAnchorFields(anchor) {
+  return ["gitState", "previousPath", "exists", "contentFingerprint"].reduce((count, key) => {
+    return anchor && anchor[key] !== undefined ? count + 1 : count;
+  }, 0);
+}
+
 module.exports = {
   VALID_CHECK_STATUSES,
   defaultCheckStatusForRunStatus,
   formatVerificationCheck,
   normalizeArtifactRef,
   normalizeArtifactRefs,
+  normalizeProofAnchors,
   normalizeProofPath,
   normalizeProofPaths,
   normalizeVerificationChecks,

@@ -1,5 +1,5 @@
 const path = require("path");
-const { VALID_CHECK_STATUSES } = require("./evidence-utils");
+const { VALID_CHECK_STATUSES, normalizeProofAnchors } = require("./evidence-utils");
 const { fileExists, readJson } = require("./fs-utils");
 const { listAdapters } = require("./adapters");
 const { listRecipes } = require("./recipes");
@@ -175,6 +175,12 @@ function validateTasks(workspaceRoot, issues) {
         issues.push(issue("warning", "run.scopeProofPaths", `Task ${task.id} has a run with invalid scopeProofPaths`, runPath));
       }
       if (
+        run.scopeProofAnchors !== undefined &&
+        (!Array.isArray(run.scopeProofAnchors) || !run.scopeProofAnchors.every((value) => isValidProofAnchor(value)))
+      ) {
+        issues.push(issue("warning", "run.scopeProofAnchors", `Task ${task.id} has a run with invalid scopeProofAnchors`, runPath));
+      }
+      if (
         run.verificationArtifacts !== undefined &&
         (!Array.isArray(run.verificationArtifacts) || !run.verificationArtifacts.every((value) => isNonEmptyString(value)))
       ) {
@@ -239,6 +245,40 @@ function isValidVerificationCheck(value) {
     value.artifacts !== undefined &&
     (!Array.isArray(value.artifacts) || !value.artifacts.every((entry) => isNonEmptyString(entry)))
   ) {
+    return false;
+  }
+
+  return true;
+}
+
+function isValidProofAnchor(value) {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const normalized = normalizeProofAnchors([value]);
+  if (normalized.length !== 1) {
+    return false;
+  }
+
+  const anchor = normalized[0];
+  if (!isNonEmptyString(anchor.path)) {
+    return false;
+  }
+
+  if (anchor.gitState !== undefined && !isNonEmptyString(anchor.gitState)) {
+    return false;
+  }
+
+  if (anchor.previousPath !== undefined && !isNonEmptyString(anchor.previousPath)) {
+    return false;
+  }
+
+  if (anchor.exists !== undefined && typeof anchor.exists !== "boolean") {
+    return false;
+  }
+
+  if (anchor.contentFingerprint !== undefined && !isNonEmptyString(anchor.contentFingerprint)) {
     return false;
   }
 

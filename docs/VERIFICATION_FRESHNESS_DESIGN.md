@@ -9,7 +9,9 @@ As of 2026-04-06:
 - Phase 1 is implemented through `src/lib/repository-snapshot.js`
 - overview and task detail now reuse a normalized repository snapshot
 - Git mode prefers `git status --porcelain=v2`, with filesystem fallback preserved
-- Phase 2 proof anchors are still pending
+- Phase 2 has started: newly recorded passed runs can now persist optional `scopeProofAnchors`
+- the gate now prefers anchor comparison when those passed-run anchors are present
+- legacy/manual proof still uses the compatibility timestamp path
 
 ## Why this exists
 
@@ -421,12 +423,12 @@ Before implementation, add or extend tests around these cases:
 
 ## Recommended implementation order
 
-1. Introduce `loadRepositorySnapshot(...)` with Git mode plus filesystem fallback.
-2. Refactor `buildTaskVerificationGate(...)` to consume normalized snapshot entries.
-3. Reuse one snapshot in overview/task-detail paths.
-4. Keep legacy time-based freshness as fallback.
-5. Add optional `scopeProofAnchors` for newly recorded passed runs.
-6. Teach the gate to prefer anchor comparison when those anchors exist.
+1. Introduce `loadRepositorySnapshot(...)` with Git mode plus filesystem fallback. Implemented.
+2. Refactor `buildTaskVerificationGate(...)` to consume normalized snapshot entries. Implemented.
+3. Reuse one snapshot in overview/task-detail paths. Implemented.
+4. Keep legacy time-based freshness as fallback. Still active for compatibility.
+5. Add optional `scopeProofAnchors` for newly recorded passed runs. Implemented.
+6. Teach the gate to prefer anchor comparison when those anchors exist. Implemented for passed-run anchors.
 7. Later decide whether manual `verification.md` needs a managed anchor strategy.
 
 ## Non-goals

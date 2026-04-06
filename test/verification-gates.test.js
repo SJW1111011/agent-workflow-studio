@@ -104,6 +104,97 @@ const tests = [
     },
   },
   {
+    name: "anchor-matched proof stays covered even when mtimes would otherwise look stale",
+    run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("verification-anchors-covered");
+      const meta = prepareScopedTask(files, ["src/app.js"]);
+      const runs = [
+        {
+          id: "run-anchors-001",
+          taskId,
+          status: "passed",
+          summary: "Scoped proof recorded with anchors.",
+          createdAt: "2026-01-03T00:00:00.000Z",
+          completedAt: "2026-01-03T00:00:00.000Z",
+          scopeProofPaths: ["src/app.js"],
+          scopeProofAnchors: [
+            {
+              path: "src/app.js",
+              exists: true,
+              contentFingerprint: "sha1:same-fingerprint",
+            },
+          ],
+          verificationChecks: [{ label: "npm test", status: "passed", details: "anchored scope ok" }],
+          verificationArtifacts: ["artifacts/npm-test.txt"],
+        },
+      ];
+
+      const gate = buildTaskVerificationGate(
+        workspaceRoot,
+        meta,
+        runs,
+        buildRepositoryDiff([
+          {
+            path: "src/app.js",
+            modifiedAt: "2026-01-04T00:00:00.000Z",
+            contentFingerprint: "sha1:same-fingerprint",
+          },
+        ])
+      );
+
+      assert.equal(gate.summary.status, "covered");
+      assert.equal(gate.summary.relevantChangeCount, 0);
+      assert.equal(gate.coveredScopedFiles.length, 1);
+      assert.equal(gate.coveredScopedFiles[0].path, "src/app.js");
+      assert.equal(gate.proofCoverage.items[0].anchorCount, 1);
+    },
+  },
+  {
+    name: "anchor mismatch reopens needs-proof even when timestamps would otherwise pass",
+    run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("verification-anchors-mismatch");
+      const meta = prepareScopedTask(files, ["src/app.js"]);
+      const runs = [
+        {
+          id: "run-anchors-002",
+          taskId,
+          status: "passed",
+          summary: "Scoped proof recorded with anchors.",
+          createdAt: "2026-01-03T00:00:00.000Z",
+          completedAt: "2026-01-05T00:00:00.000Z",
+          scopeProofPaths: ["src/app.js"],
+          scopeProofAnchors: [
+            {
+              path: "src/app.js",
+              exists: true,
+              contentFingerprint: "sha1:old-fingerprint",
+            },
+          ],
+          verificationChecks: [{ label: "npm test", status: "passed", details: "anchored scope ok" }],
+          verificationArtifacts: ["artifacts/npm-test.txt"],
+        },
+      ];
+
+      const gate = buildTaskVerificationGate(
+        workspaceRoot,
+        meta,
+        runs,
+        buildRepositoryDiff([
+          {
+            path: "src/app.js",
+            modifiedAt: "2026-01-02T00:00:00.000Z",
+            contentFingerprint: "sha1:new-fingerprint",
+          },
+        ])
+      );
+
+      assert.equal(gate.summary.status, "needs-proof");
+      assert.equal(gate.summary.relevantChangeCount, 1);
+      assert.equal(gate.coveredScopedFiles.length, 0);
+      assert.equal(gate.relevantChangedFiles[0].path, "src/app.js");
+    },
+  },
+  {
     name: "file-only manual proof stays weak instead of counting as coverage",
     run() {
       const { workspaceRoot, files } = createTaskWorkspace("verification-weak");

@@ -923,6 +923,8 @@ Ship a dashboard markdown editor.
       !manualProofRun ||
       !Array.isArray(manualProofRun.scopeProofPaths) ||
       !manualProofRun.scopeProofPaths.includes("docs/notes.md") ||
+      !Array.isArray(manualProofRun.scopeProofAnchors) ||
+      !manualProofRun.scopeProofAnchors.some((anchor) => anchor.path === "docs/notes.md") ||
       !Array.isArray(manualProofRun.verificationArtifacts) ||
       !manualProofRun.verificationArtifacts.includes(executorRun.stdoutFile) ||
       !Array.isArray(manualProofRun.verificationChecks) ||
@@ -981,6 +983,8 @@ Ship a dashboard markdown editor.
       !cliProofRun ||
       !Array.isArray(cliProofRun.scopeProofPaths) ||
       !cliProofRun.scopeProofPaths.includes("README.md") ||
+      !Array.isArray(cliProofRun.scopeProofAnchors) ||
+      !cliProofRun.scopeProofAnchors.some((anchor) => anchor.path === "README.md") ||
       !Array.isArray(cliProofRun.verificationArtifacts) ||
       !cliProofRun.verificationArtifacts.includes(".agent-workflow/tasks/T-001/checkpoint.md") ||
       !Array.isArray(cliProofRun.verificationChecks) ||

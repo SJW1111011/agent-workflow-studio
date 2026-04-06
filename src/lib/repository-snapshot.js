@@ -63,6 +63,57 @@ function loadFilesystemSnapshot(workspaceRoot) {
   };
 }
 
+function buildScopeProofAnchors(workspaceRoot, proofPaths, repositorySnapshot = null) {
+  const snapshot = repositorySnapshot || loadRepositorySnapshot(workspaceRoot);
+  const snapshotFilesByPath = new Map(
+    (Array.isArray(snapshot.files) ? snapshot.files : [])
+      .filter((entry) => normalizeSnapshotPath(entry.path))
+      .map((entry) => [normalizeSnapshotPath(entry.path), entry])
+  );
+
+  return Array.from(
+    new Map(
+      (Array.isArray(proofPaths) ? proofPaths : [])
+        .map((proofPath) => buildProofAnchor(workspaceRoot, proofPath, snapshotFilesByPath.get(normalizeSnapshotPath(proofPath))))
+        .filter(Boolean)
+        .map((anchor) => [anchor.path, anchor])
+    ).values()
+  );
+}
+
+function buildProofAnchor(workspaceRoot, proofPath, repositoryEntry = null) {
+  const normalizedPath = normalizeSnapshotPath(proofPath || (repositoryEntry ? repositoryEntry.path : null));
+  if (!normalizedPath) {
+    return null;
+  }
+
+  const directFileAnchor = buildDirectProofAnchor(workspaceRoot, normalizedPath);
+  if (!repositoryEntry && !directFileAnchor) {
+    return null;
+  }
+
+  return {
+    path: normalizedPath,
+    gitState: repositoryEntry && repositoryEntry.gitState ? repositoryEntry.gitState : undefined,
+    previousPath:
+      repositoryEntry && normalizeSnapshotPath(repositoryEntry.previousPath)
+        ? normalizeSnapshotPath(repositoryEntry.previousPath)
+        : undefined,
+    exists:
+      repositoryEntry && repositoryEntry.exists !== undefined
+        ? Boolean(repositoryEntry.exists)
+        : directFileAnchor
+          ? true
+          : undefined,
+    contentFingerprint:
+      repositoryEntry && repositoryEntry.contentFingerprint
+        ? repositoryEntry.contentFingerprint
+        : directFileAnchor
+          ? directFileAnchor.contentFingerprint
+          : undefined,
+  };
+}
+
 function runGitCommand(command, args, cwd) {
   const captureDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-workflow-git-"));
   const outputPath = path.join(captureDir, "stdout.txt");
@@ -254,6 +305,23 @@ function hashFile(filePath) {
   return `sha1:${crypto.createHash("sha1").update(fs.readFileSync(filePath)).digest("hex")}`;
 }
 
+function buildDirectProofAnchor(workspaceRoot, relativePath) {
+  const normalizedPath = normalizeSnapshotPath(relativePath);
+  const absolutePath = normalizedPath
+    ? path.join(workspaceRoot, normalizedPath.split("/").join(path.sep))
+    : "";
+  const stats = getSnapshotFileStats(absolutePath);
+  if (!stats) {
+    return null;
+  }
+
+  return {
+    path: normalizedPath,
+    exists: true,
+    contentFingerprint: hashFile(absolutePath),
+  };
+}
+
 function normalizeSnapshotPath(value) {
   const normalized = String(value || "").replace(/\\/g, "/").trim();
   return normalized || null;
@@ -294,6 +362,8 @@ function walkWorkspaceFiles(workspaceRoot, relativeDir = "") {
 }
 
 module.exports = {
+  buildProofAnchor,
+  buildScopeProofAnchors,
   loadFilesystemSnapshot,
   loadRepositorySnapshot,
   parseGitStatusPorcelainV2,

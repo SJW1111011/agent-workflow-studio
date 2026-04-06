@@ -136,12 +136,13 @@ This keeps the model honest:
 
 - updating `verification.md` without naming the changed scoped files does not automatically satisfy the gate
 - recording a passed run can snapshot the current scoped files into evidence so the checkpoint and dashboard can explain why the gate moved to covered
-- passed runs can now also persist structured `verificationChecks` and `verificationArtifacts` so proof is tied to concrete results and task-local evidence refs
+- passed runs can now also persist structured `verificationChecks`, `verificationArtifacts`, and optional `scopeProofAnchors` so proof is tied to concrete results, task-local evidence refs, and stronger freshness comparisons
 - weak proof items that mention files but omit clear checks/artifacts can be surfaced for cleanup instead of silently counting as strong proof
 - the dashboard can now prefill proof paths from the current pending scoped file set, so local proof capture lines up with the gate more easily
 - the dashboard can now also draft one verification check per pending scoped file, which helps proof capture start from the actual gate state
 - the verification editor can now draft a pending proof plan from the same scoped file set by inserting planned checks plus file-only Proof links placeholders; those drafts still need real result/artifact content before they should count as strong proof
 - the run form can now sync its drafted proof paths/checks into the verification editor, so users can move from run evidence drafting into markdown proof planning without an extra copy/paste pass
+- when anchors are present on a passed run, the gate now prefers anchor comparison over timestamp heuristics for that scoped file
 
 ## CLI usage
 

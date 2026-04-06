@@ -1,6 +1,6 @@
 const assert = require("node:assert/strict");
 
-const { loadRepositorySnapshot } = require("../src/lib/repository-snapshot");
+const { buildScopeProofAnchors, loadRepositorySnapshot } = require("../src/lib/repository-snapshot");
 const {
   createTaskWorkspace,
   initializeGitRepository,
@@ -76,6 +76,24 @@ const tests = [
       assert.equal(snapshot.available, true);
       assert.ok(snapshot.fileCount >= 1);
       assert.ok(snapshot.files.some((item) => item.path === "plain.txt"));
+    },
+  },
+  {
+    name: "scope proof anchors hash targeted files even in filesystem fallback mode",
+    run() {
+      const { workspaceRoot } = createTaskWorkspace("repository-snapshot-proof-anchors");
+      writeTextFile(`${workspaceRoot}/plain.txt`, "fallback\n");
+
+      const snapshot = loadRepositorySnapshot(workspaceRoot, {
+        gitCommand: "definitely-not-a-real-git-command",
+      });
+      const anchors = buildScopeProofAnchors(workspaceRoot, ["plain.txt"], snapshot);
+
+      assert.equal(snapshot.mode, "filesystem");
+      assert.equal(anchors.length, 1);
+      assert.equal(anchors[0].path, "plain.txt");
+      assert.equal(anchors[0].exists, true);
+      assert.match(String(anchors[0].contentFingerprint || ""), /^sha1:/);
     },
   },
 ];

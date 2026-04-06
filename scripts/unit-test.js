@@ -1,4 +1,5 @@
 const suites = [
+  require("../test/proof-anchors.test.js"),
   require("../test/repository-snapshot.test.js"),
   require("../test/verification-gates.test.js"),
   require("../test/task-documents.test.js"),

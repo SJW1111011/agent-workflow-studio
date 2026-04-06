@@ -165,11 +165,11 @@ Diff-aware verification stays intentionally lightweight in this pass:
 - it understands simple scope directives such as `path:`, `files:`, and `dirs:`
 - it reuses one repository snapshot per overview or task-detail request instead of re-walking the workspace for each task
 - it only treats scoped changes as covered when explicit proof paths are linked through `verification.md` text or passed run evidence
-- passed run evidence can now persist structured `verificationChecks` and `verificationArtifacts` alongside `scopeProofPaths`
+- passed run evidence can now persist structured `verificationChecks`, `verificationArtifacts`, and optional `scopeProofAnchors` alongside `scopeProofPaths`
 - it now tracks proof items as `paths + checks + artifacts`, so evidence can be audited instead of treated as a bare timestamp
 - it makes rename / delete / untracked state explicit in the verification summary when Git is available
 - a generic `verification.md` timestamp bump is no longer enough to cover scoped changes by itself
-- legacy manual/run proof freshness still falls back to recorded time until proof anchors are added in a later phase
+- passed-run anchors now allow content-aware freshness when they are present, while legacy/manual proof still falls back to recorded time
 - it does not try to replace human judgment or full CI evidence
 
 See `docs/RECIPES_AND_SCHEMA.md`.
@@ -178,7 +178,7 @@ See `docs/RECIPES_AND_SCHEMA.md`.
 
 1. Continue modularizing `dashboard/app.js`, especially task-detail and execution/log rendering helpers.
 2. Extend unit coverage into dashboard helpers, overview derivation, and more repository-snapshot edge cases.
-3. Implement Phase 2 of `docs/VERIFICATION_FRESHNESS_DESIGN.md` with optional proof anchors for content-aware freshness.
+3. Extend proof-anchor coverage beyond passed runs only, starting with an intentional manual-proof strategy instead of ad hoc markdown magic.
 4. Harden server/API error typing so HTTP status mapping no longer depends on message text.
 5. Design the next `run:execute` local executor step without breaking the contract-first workflow boundary.
 

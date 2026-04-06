@@ -27,12 +27,12 @@ Status: in progress in this repository.
 - verification artifact attachment
 - failure triage view
 
-Status: first-pass diff-aware verification gates are in place, Git-aware repository snapshots now back current-diff detection, and passed runs can persist structured check/artifact proof.
+Status: first-pass diff-aware verification gates are in place, Git-aware repository snapshots now back current-diff detection, and passed runs can persist structured check/artifact proof plus optional `scopeProofAnchors`.
 
 Next verification work should stay contract-first:
 
-- add optional `scopeProofAnchors` for newly recorded passed runs
-- teach the gate to prefer anchor comparison when available
+- extend proof-anchor coverage beyond passed runs only
+- decide whether manual `verification.md` should gain a managed-anchor path
 - keep legacy/manual proof on the current compatibility path until a separate managed-anchor design exists
 
 The next verification-freshness step should be content-aware but still contract-first. See `docs/VERIFICATION_FRESHNESS_DESIGN.md`.

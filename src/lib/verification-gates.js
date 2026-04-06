@@ -4,11 +4,12 @@ const {
   defaultCheckStatusForRunStatus,
   formatVerificationCheck,
   normalizeArtifactRef,
+  normalizeProofAnchors,
   normalizeProofPath,
   normalizeVerificationChecks,
 } = require("./evidence-utils");
 const { fileExists, readText } = require("./fs-utils");
-const { loadRepositorySnapshot } = require("./repository-snapshot");
+const { buildProofAnchor, loadRepositorySnapshot } = require("./repository-snapshot");
 const { taskFiles } = require("./workspace");
 
 function loadRepositoryDiff(workspaceRoot, options = {}) {
@@ -32,11 +33,22 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
     .filter((workspaceFile) => workspaceFile.matchedBy.length > 0);
   const coveredScopedFiles = [];
   const relevantChangedFiles = [];
+  const resolveCurrentProofAnchor = createCurrentProofAnchorResolver(workspaceRoot);
 
   scopedFiles.forEach((workspaceFile) => {
     const matchingProofItems = findMatchingProofItems(proofCoverage.validItems, workspaceFile.path);
     const proofAtMs = maxTime(matchingProofItems.map((item) => item.recordedAtMs));
     const baselineAtMs = maxTime([taskCreatedAtMs, proofAtMs]);
+    const anchorCoverage = evaluateAnchorCoverage(workspaceFile, matchingProofItems, resolveCurrentProofAnchor);
+
+    if (anchorCoverage.hasAnchors) {
+      if (anchorCoverage.matched) {
+        coveredScopedFiles.push(stripInternalFileFields(workspaceFile, proofAtMs, matchingProofItems));
+      } else {
+        relevantChangedFiles.push(stripInternalFileFields(workspaceFile, proofAtMs, matchingProofItems));
+      }
+      return;
+    }
 
     if (hasScopedFileChangedSinceBaseline(workspaceFile, baselineAtMs)) {
       relevantChangedFiles.push(stripInternalFileFields(workspaceFile, proofAtMs, matchingProofItems));
@@ -414,6 +426,83 @@ function stripInternalFileFields(workspaceFile, proofAtMs, proofItems = []) {
   };
 }
 
+function createCurrentProofAnchorResolver(workspaceRoot) {
+  const cache = new Map();
+
+  return (workspaceFile) => {
+    const cacheKey = String(workspaceFile && workspaceFile.path ? workspaceFile.path : "");
+    if (!cacheKey) {
+      return null;
+    }
+
+    if (!cache.has(cacheKey)) {
+      cache.set(cacheKey, buildProofAnchor(workspaceRoot, workspaceFile.path, workspaceFile));
+    }
+
+    return cache.get(cacheKey);
+  };
+}
+
+function evaluateAnchorCoverage(workspaceFile, proofItems, resolveCurrentProofAnchor) {
+  const anchoredItems = (Array.isArray(proofItems) ? proofItems : []).filter(
+    (item) => Array.isArray(item.anchors) && item.anchors.some((anchor) => matchesScopePattern(anchor.path, workspaceFile.path))
+  );
+  if (anchoredItems.length === 0) {
+    return {
+      hasAnchors: false,
+      matched: false,
+    };
+  }
+
+  const currentAnchor = resolveCurrentProofAnchor(workspaceFile);
+  const matched = anchoredItems.some((item) => {
+    return item.anchors.some((anchor) => matchesProofAnchor(anchor, currentAnchor));
+  });
+
+  return {
+    hasAnchors: true,
+    matched,
+  };
+}
+
+function matchesProofAnchor(anchor, currentAnchor) {
+  if (!anchor || !currentAnchor || anchor.path !== currentAnchor.path) {
+    return false;
+  }
+
+  let comparedFieldCount = 0;
+
+  if (isNonEmptyString(anchor.gitState) && isNonEmptyString(currentAnchor.gitState)) {
+    comparedFieldCount += 1;
+    if (anchor.gitState !== currentAnchor.gitState) {
+      return false;
+    }
+  }
+
+  if (isNonEmptyString(anchor.previousPath) && isNonEmptyString(currentAnchor.previousPath)) {
+    comparedFieldCount += 1;
+    if (anchor.previousPath !== currentAnchor.previousPath) {
+      return false;
+    }
+  }
+
+  if (typeof anchor.exists === "boolean" && typeof currentAnchor.exists === "boolean") {
+    comparedFieldCount += 1;
+    if (anchor.exists !== currentAnchor.exists) {
+      return false;
+    }
+  }
+
+  if (isNonEmptyString(anchor.contentFingerprint) && isNonEmptyString(currentAnchor.contentFingerprint)) {
+    comparedFieldCount += 1;
+    if (anchor.contentFingerprint !== currentAnchor.contentFingerprint) {
+      return false;
+    }
+  }
+
+  return comparedFieldCount > 0;
+}
+
 function buildProofCoverage(verificationText, verificationUpdatedAtMs, runs) {
   const manualProofItems = parseManualProofItems(stripEvidenceBlocks(verificationText), verificationUpdatedAtMs);
   const runProofItems = buildRunProofItems(runs);
@@ -549,6 +638,7 @@ function buildRunProofItems(runs) {
   return (Array.isArray(runs) ? runs : [])
     .filter((run) => run && run.status === "passed" && Array.isArray(run.scopeProofPaths) && run.scopeProofPaths.length > 0)
     .map((run) => {
+      const proofPaths = uniqueStrings((run.scopeProofPaths || []).map(normalizeProofPath).filter(Boolean));
       const verificationChecks = normalizeVerificationChecks(
         run.verificationChecks,
         defaultCheckStatusForRunStatus(run.status)
@@ -568,7 +658,10 @@ function buildRunProofItems(runs) {
         sourceType: "run",
         sourceLabel: run.id,
         recordedAtMs: parseTime(run.completedAt || run.createdAt),
-        paths: uniqueStrings((run.scopeProofPaths || []).map(normalizeProofPath).filter(Boolean)),
+        paths: proofPaths,
+        anchors: normalizeProofAnchors(run.scopeProofAnchors).filter((anchor) =>
+          proofPaths.some((proofPath) => matchesScopePattern(proofPath, anchor.path))
+        ),
         checks:
           verificationChecks.length > 0
             ? uniqueStrings(verificationChecks.map((item) => formatVerificationCheck(item)).filter(Boolean))
@@ -599,6 +692,7 @@ function summarizeProofItem(item) {
     sourceLabel: item.sourceLabel,
     recordedAt: item.recordedAtMs ? new Date(item.recordedAtMs).toISOString() : null,
     paths: item.paths,
+    anchorCount: Array.isArray(item.anchors) ? item.anchors.length : 0,
     checks: item.checks,
     artifacts: item.artifacts,
     strong: isStrongProofItem(item),
@@ -657,6 +751,10 @@ function escapeRegex(value) {
 
 function looksLikePathDirective(value) {
   return /^(?:repo\s+)?(?:path|paths|file|files|dir|dirs|directory|directories)\s*:/i.test(String(value || "").trim());
+}
+
+function isNonEmptyString(value) {
+  return typeof value === "string" && value.trim().length > 0;
 }
 
 module.exports = {
