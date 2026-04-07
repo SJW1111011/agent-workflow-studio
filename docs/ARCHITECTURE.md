@@ -77,6 +77,8 @@ The local HTTP server exposes:
 
 Writes are still local-only and only affect the target repository's `.agent-workflow/` state.
 
+Server-facing modules are expected to throw explicit HTTP-aware errors (`statusCode` and optional stable `code`) so the local API can preserve its `{ error }` payload contract without mapping status codes from message text.
+
 ### 4. Dashboard layer
 
 The dashboard renders:
@@ -118,6 +120,15 @@ The browser-side code stays static and local-only:
 - `dashboard/app.js` remains the orchestration layer for fetches, state transitions, and DOM wiring
 - document/proof drafting helpers can live in separate static modules such as `dashboard/document-helpers.js`
 - overview/task-board derivation helpers can live in separate static modules such as `dashboard/task-board-helpers.js`
+- API request/url helpers can live in separate static modules such as `dashboard/api-client-helpers.js`
+- form/editor state derivation helpers can live in separate static modules such as `dashboard/form-state-helpers.js`
+- form event-flow helpers can live in separate static modules such as `dashboard/form-event-helpers.js`
+- orchestration state derivation helpers can live in separate static modules such as `dashboard/orchestration-state-helpers.js`
+- task-list/card renderers can live in separate static modules such as `dashboard/task-list-render-helpers.js`
+- execution/run detail presentation helpers can live in separate static modules such as `dashboard/execution-detail-helpers.js`
+- task-detail / verification rendering helpers can live in separate static modules such as `dashboard/task-detail-helpers.js`
+- log-panel state/render helpers can live in separate static modules such as `dashboard/log-panel-helpers.js`
+- overview/list section renderers can live in separate static modules such as `dashboard/overview-render-helpers.js`
 - no bundler or cloud build step is required for these refactors
 
 ## Data model

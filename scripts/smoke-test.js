@@ -731,6 +731,14 @@ Ship a dashboard markdown editor.
     if (!dashboardStdoutLog.content.includes("stdout T-004 codex")) {
       throw new Error("Dashboard execution bridge did not expose executor stdout through the local log API.");
     }
+    try {
+      await requestJson(`http://127.0.0.1:${port}/api/tasks/T-004/runs/run-missing/logs/stdout`, "GET");
+      throw new Error("Run log API should reject unknown run ids.");
+    } catch (error) {
+      if (error.statusCode !== 404 || !String(error.message || "").includes("does not exist for task")) {
+        throw error;
+      }
+    }
     codexAdapter.stdioMode = "inherit";
     fs.writeFileSync(codexAdapterPath, `${JSON.stringify(codexAdapter, null, 2)}\n`, "utf8");
     try {
@@ -739,7 +747,7 @@ Ship a dashboard markdown editor.
       });
       throw new Error("Dashboard execute API should reject interactive inherit mode.");
     } catch (error) {
-      if (!String(error.message || "").includes("Use the CLI for interactive execution")) {
+      if (error.statusCode !== 400 || !String(error.message || "").includes("Use the CLI for interactive execution")) {
         throw error;
       }
     }
@@ -816,7 +824,7 @@ Ship a dashboard markdown editor.
       await requestJson(`http://127.0.0.1:${port}/api/tasks/T-005/execution/cancel`, "POST", {});
       throw new Error("Dashboard cancel API should reject tasks without an active execution.");
     } catch (error) {
-      if (!String(error.message || "").includes("no active dashboard execution")) {
+      if (error.statusCode !== 409 || !String(error.message || "").includes("no active dashboard execution")) {
         throw error;
       }
     }
@@ -1219,7 +1227,9 @@ function requestJson(url, method, payload) {
           try {
             const parsed = body ? JSON.parse(body) : {};
             if (response.statusCode >= 400) {
-              reject(new Error(parsed.error || `HTTP ${response.statusCode}`));
+              const error = new Error(parsed.error || `HTTP ${response.statusCode}`);
+              error.statusCode = response.statusCode;
+              reject(error);
               return;
             }
             resolve(parsed);

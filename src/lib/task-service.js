@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { appendText, fileExists, readJson, writeFile, writeJson } = require("./fs-utils");
 const { buildTaskFreshness } = require("./freshness");
+const { badRequest, notFound } = require("./http-errors");
 const { getRecipe, normalizeRecipeId } = require("./recipes");
 const {
   defaultCheckStatusForRunStatus,
@@ -35,7 +36,7 @@ function createTask(workspaceRoot, taskId, title, options = {}) {
   const recipe = getRecipe(workspaceRoot, recipeId);
 
   if (!recipe) {
-    throw new Error(`Unknown recipe: ${recipeId}`);
+    throw badRequest(`Unknown recipe: ${recipeId}`, "unknown_recipe");
   }
 
   const taskMeta = exists
@@ -149,7 +150,7 @@ function getTaskDetail(workspaceRoot, taskId) {
 function updateTaskMeta(workspaceRoot, taskId, changes = {}) {
   const files = taskFiles(workspaceRoot, taskId);
   if (!fileExists(files.meta)) {
-    throw new Error(`Task ${taskId} does not exist yet.`);
+    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
   }
 
   const meta = readJson(files.meta, {});
@@ -163,7 +164,7 @@ function updateTaskMeta(workspaceRoot, taskId, changes = {}) {
   if (isNonEmptyString(changes.priority)) {
     const priority = changes.priority.trim().toUpperCase();
     if (!TASK_PRIORITIES.has(priority)) {
-      throw new Error(`Unsupported priority: ${changes.priority}`);
+      throw badRequest(`Unsupported priority: ${changes.priority}`, "unsupported_priority");
     }
     nextMeta.priority = priority;
   }
@@ -171,7 +172,7 @@ function updateTaskMeta(workspaceRoot, taskId, changes = {}) {
   if (isNonEmptyString(changes.status)) {
     const status = changes.status.trim();
     if (!TASK_STATUSES.has(status)) {
-      throw new Error(`Unsupported status: ${changes.status}`);
+      throw badRequest(`Unsupported status: ${changes.status}`, "unsupported_status");
     }
     nextMeta.status = status;
   }
@@ -180,7 +181,7 @@ function updateTaskMeta(workspaceRoot, taskId, changes = {}) {
     const recipeId = normalizeRecipeId(changes.recipeId || changes.recipe);
     const matchedRecipe = getRecipe(workspaceRoot, recipeId);
     if (!matchedRecipe) {
-      throw new Error(`Unknown recipe: ${recipeId}`);
+      throw badRequest(`Unknown recipe: ${recipeId}`, "unknown_recipe");
     }
     nextMeta.recipeId = recipeId;
     recipe = matchedRecipe;
@@ -245,7 +246,7 @@ function persistRunRecord(workspaceRoot, taskId, run) {
   const files = taskFiles(workspaceRoot, taskId);
 
   if (!fileExists(files.meta)) {
-    throw new Error(`Task ${taskId} does not exist yet.`);
+    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
   }
 
   const meta = readJson(files.meta, {});
@@ -369,28 +370,28 @@ function collectRunArtifactRefs(run) {
 function getRunLog(workspaceRoot, taskId, runId, streamName, maxChars = 12000) {
   const files = taskFiles(workspaceRoot, taskId);
   if (!fileExists(files.meta)) {
-    throw new Error(`Task ${taskId} does not exist yet.`);
+    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
   }
 
   const run = listRuns(workspaceRoot, taskId).find((item) => item.id === runId);
   if (!run) {
-    throw new Error(`Run ${runId} does not exist for task ${taskId}.`);
+    throw notFound(`Run ${runId} does not exist for task ${taskId}.`, "run_not_found");
   }
 
   const fieldName = streamName === "stderr" ? "stderrFile" : streamName === "stdout" ? "stdoutFile" : null;
   if (!fieldName) {
-    throw new Error(`Unsupported log stream: ${streamName}`);
+    throw badRequest(`Unsupported log stream: ${streamName}`, "unsupported_log_stream");
   }
 
   if (!isNonEmptyString(run[fieldName])) {
-    throw new Error(`Run ${runId} has no ${streamName} log.`);
+    throw notFound(`Run ${runId} has no ${streamName} log.`, "run_log_unavailable");
   }
 
   const absolutePath = path.resolve(workspaceRoot, run[fieldName]);
   const allowedRoot = path.resolve(files.runs);
   const normalizedAllowedRoot = `${allowedRoot}${path.sep}`;
   if ((absolutePath !== allowedRoot && !absolutePath.startsWith(normalizedAllowedRoot)) || !fileExists(absolutePath)) {
-    throw new Error(`Log file is missing for run ${runId} (${streamName}).`);
+    throw notFound(`Log file is missing for run ${runId} (${streamName}).`, "run_log_missing");
   }
 
   const content = fs.readFileSync(absolutePath, "utf8");

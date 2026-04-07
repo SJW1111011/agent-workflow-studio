@@ -4,15 +4,18 @@ This document defines the first local executor design for `run:execute`.
 
 The goal is to add real local execution without breaking the project's contract-first architecture.
 
-Status on 2026-04-04:
+Status on 2026-04-07:
 
-- Phase A is now implemented
+- Phase A is implemented
+- Phase B is largely implemented
 - the first implementation supports `commandMode: exec`
 - the first implementation supports both `stdioMode: inherit` and `stdioMode: pipe`
 - stdout/stderr capture, timeout metadata, and interruption metadata are now implemented
 - the dashboard now has a thin local API bridge over the same executor for `stdioMode: pipe`
 - the dashboard bridge can now request cancellation for active local `pipe` executions
+- HTTP behavior for the local API is now explicitly typed instead of inferred from error text
 - transcript linking and richer resume metadata remain future work
+- the next step is design hardening first, not a second execution subsystem
 
 ## Why this exists
 
@@ -480,6 +483,79 @@ This dashboard bridge does not change the source of truth:
 
 So the dashboard becomes a local trigger, not a second workflow engine.
 
+## Next local executor step
+
+The next `run:execute` step should stay deliberately narrow.
+
+It should harden the current contract instead of adding a second execution product.
+
+### What the next step should do
+
+- keep the existing pipeline: `task -> prompt/run-request -> execution plan -> local process -> run evidence -> verification/checkpoint refresh`
+- keep adapter config as the only vendor-specific launch contract
+- keep `src/lib/run-executor.js` as the shared execution implementation for both CLI and dashboard-triggered local runs
+- make long-running jobs easier to inspect and hand off by improving durable evidence, not by introducing hidden runtime state
+- extend tests and design constraints before expanding runtime breadth
+
+### What the next step should not do
+
+- do not create a dashboard-only execution ledger
+- do not persist chat transcripts or opaque session blobs as the main resume mechanism
+- do not turn the browser into a pseudo-terminal for `stdioMode: inherit`
+- do not bypass `run:prepare` / `run-request` by launching directly from ad hoc UI state
+- do not bake absolute paths, machine-specific temp state, or shell-composed command strings into workflow artifacts
+
+### Durable handoff contract
+
+The resume story should continue to rely on files that another agent or operator can inspect later:
+
+- `task.md`
+- `context.md`
+- `verification.md`
+- `checkpoint.md`
+- `prompt.<adapter>.md`
+- `run-request.<adapter>.json`
+- `launch.<adapter>.md`
+- `runs/<runId>.json`
+- task-local stdout/stderr logs when capture mode is enabled
+
+If a future execution feature cannot explain itself through those artifacts, it is probably outside the intended architecture boundary.
+
+### Additive contract growth only
+
+If future executor work needs more metadata, prefer additive optional fields over schema churn.
+
+Good candidates are fields that improve auditability without changing the source of truth, for example:
+
+- an execution intent identifier shared across transient bridge state and the final run record
+- a normalized lifecycle state description
+- explicit failure category labels
+- a sanitized execution summary that explains what happened without persisting machine-specific command strings
+
+Avoid fields that would make the task package depend on one machine's private environment.
+
+### UI boundary
+
+The dashboard should remain a control plane:
+
+- start a local execution
+- observe transient status
+- inspect active or persisted logs
+- request cancellation
+- refresh task detail after durable evidence lands
+
+It should not become the canonical execution state store.
+
+### Recommended implementation sequence
+
+Before adding another execution capability, do this in order:
+
+1. document the lifecycle and failure semantics clearly
+2. lock them down with unit and smoke coverage
+3. only then add the smallest implementation needed on top of the shared executor
+
+That sequence keeps automation aligned with the contract-first workflow model instead of letting orchestration details outrun the evidence model.
+
 ## Phased implementation plan
 
 ### Phase A: minimal local executor
@@ -504,6 +580,12 @@ So the dashboard becomes a local trigger, not a second workflow engine.
 - transcript linking where supported
 - resume metadata beyond first-pass interruption records
 - richer dashboard-triggered execution flows on top of the same executor module, while `inherit` stays CLI-only until terminal ownership is designed
+
+### Phase D: contract hardening before breadth
+
+- keep the execution lifecycle additive and explicit
+- expand test coverage around execution states, failure categories, and local API contracts
+- only add new executor behaviors that still land in the same durable task artifacts
 
 ## What this design deliberately avoids
 

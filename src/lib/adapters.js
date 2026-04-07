@@ -1,5 +1,6 @@
 const path = require("path");
 const { fileExists, readJson } = require("./fs-utils");
+const { badRequest } = require("./http-errors");
 const { adaptersRoot } = require("./workspace");
 
 const BUILTIN_ADAPTERS = [
@@ -33,7 +34,7 @@ function listAdapters(workspaceRoot) {
 function getAdapter(workspaceRoot, adapterId) {
   const match = listAdapters(workspaceRoot).find((adapter) => adapter.adapterId === normalizeAdapterId(adapterId));
   if (!match || !match.exists || !match.config) {
-    throw new Error(`Adapter ${adapterId} is not configured yet.`);
+    throw badRequest(`Adapter ${adapterId} is not configured yet.`, "adapter_not_configured");
   }
   return match.config;
 }

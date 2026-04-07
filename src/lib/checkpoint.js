@@ -1,5 +1,6 @@
 const path = require("path");
 const { fileExists, readJson, readText, writeFile, writeJson } = require("./fs-utils");
+const { notFound } = require("./http-errors");
 const { listRuns } = require("./task-service");
 const { buildTaskVerificationGate } = require("./verification-gates");
 const { projectProfilePath, taskFiles } = require("./workspace");
@@ -7,7 +8,7 @@ const { projectProfilePath, taskFiles } = require("./workspace");
 function buildCheckpoint(workspaceRoot, taskId) {
   const files = taskFiles(workspaceRoot, taskId);
   if (!fileExists(files.meta)) {
-    throw new Error(`Task ${taskId} does not exist yet.`);
+    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
   }
 
   const task = readJson(files.meta, {});

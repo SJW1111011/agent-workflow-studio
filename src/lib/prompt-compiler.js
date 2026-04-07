@@ -1,4 +1,5 @@
 const { fileExists, readJson, readText, writeFile } = require("./fs-utils");
+const { notFound } = require("./http-errors");
 const { getRecipe } = require("./recipes");
 const { projectProfilePath, taskFiles } = require("./workspace");
 
@@ -6,7 +7,7 @@ function compilePrompt(workspaceRoot, taskId, agent = "codex") {
   const files = taskFiles(workspaceRoot, taskId);
 
   if (!fileExists(files.meta)) {
-    throw new Error(`Task ${taskId} does not exist yet.`);
+    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
   }
 
   const taskMeta = readJson(files.meta, {});

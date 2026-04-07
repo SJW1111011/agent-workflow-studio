@@ -15,7 +15,7 @@ The product direction is already chosen:
 
 ## Current status
 
-As of 2026-04-06, the project already has a working MVP foundation:
+As of 2026-04-07, the project already has a working MVP foundation:
 
 - workflow scaffold generation under `.agent-workflow/`
 - repository scanning and project profile generation
@@ -56,9 +56,15 @@ As of 2026-04-06, the project already has a working MVP foundation:
 - the run form can now sync drafted proof paths/checks into the verification editor as an unsaved proof-plan draft
 - the dashboard can now trigger local `run:execute` through a thin local API bridge, while task detail surfaces transient execution state plus persisted executor logs
 - the repo now also has focused zero-dependency unit tests for `verification-gates` and `task-documents`, so proof parsing and managed markdown regressions do not rely on smoke coverage alone
-- low-risk dashboard modularization has started: document/proof drafting helpers and task-board/overview helpers now live in separate static modules, while `dashboard/app.js` stays the orchestration layer
+- low-risk dashboard modularization has started: document/proof drafting helpers, dashboard API client helpers, form/editor state helpers, form event-flow helpers, orchestration state helpers, task-board/overview helpers, task-list render helpers, execution/run detail presentation helpers, task-detail / verification rendering helpers, log-panel state/render helpers, and overview/list section renderers now live in separate static modules, while `dashboard/app.js` stays the orchestration layer
+- the repo now also has focused zero-dependency dashboard helper tests for dashboard API client helpers, form/editor state derivation, form event-flow payload helpers, orchestration state derivation, task-list rendering, task-detail / verification rendering, log-panel state/render behavior, and overview/list rendering, so more UI markup contracts are covered outside smoke
+- the repo now also has focused zero-dependency `run-executor` contract tests for execution-plan resolution plus passed / timed-out / interrupted local runs, so executor lifecycle behavior no longer depends on smoke alone
+- the repo now also has focused zero-dependency `overview` tests for uninitialized workspaces plus executor outcome / verification signal aggregation, so board-level summary logic is no longer smoke-only
+- the repo now also has focused zero-dependency `server-api` tests for health plus representative 400 / 404 / 409 local API contracts, so `src/server.js` behavior is less dependent on smoke
 - verification freshness Phase 1 is now implemented behind `src/lib/repository-snapshot.js`, and the design note still scopes the later proof-anchor phase
 - the first Phase 2 proof-anchor pass is now implemented: passed runs can capture `scopeProofAnchors`, and the gate prefers anchor comparison for those runs while legacy/manual proof stays on the compatibility path
+- `src/server.js` no longer infers HTTP status codes from `error.message.includes(...)`; server-facing libs now throw explicit HTTP-aware errors through `src/lib/http-errors.js`, while the JSON error payload contract stays unchanged
+- `docs/RUN_EXECUTE_DESIGN.md` now also scopes the next local executor step explicitly: harden the shared contract first, keep dashboard as a thin control plane, and avoid introducing a second execution database or chat-style runtime state
 
 ## Important constraint
 
@@ -85,7 +91,9 @@ Files:
 - `src/lib/prompt-compiler.js`
 - `src/lib/run-preparer.js`
 - `src/lib/checkpoint.js`
+- `src/lib/http-errors.js`
 - `src/lib/adapters.js`
+- `src/lib/run-executor.js`
 - `src/lib/recipes.js`
 - `src/lib/schema-validator.js`
 - `src/lib/overview.js`
@@ -115,7 +123,16 @@ Files:
 - `dashboard/styles.css`
 - `dashboard/app.js`
 - `dashboard/document-helpers.js`
+- `dashboard/api-client-helpers.js`
+- `dashboard/form-state-helpers.js`
+- `dashboard/form-event-helpers.js`
+- `dashboard/orchestration-state-helpers.js`
 - `dashboard/task-board-helpers.js`
+- `dashboard/task-list-render-helpers.js`
+- `dashboard/execution-detail-helpers.js`
+- `dashboard/task-detail-helpers.js`
+- `dashboard/log-panel-helpers.js`
+- `dashboard/overview-render-helpers.js`
 
 Current dashboard capabilities:
 
@@ -150,7 +167,7 @@ Start here:
 
 ## What was validated locally
 
-Verified on 2026-04-06:
+Verified on 2026-04-07:
 
 - `npm test`
 - `npm run smoke`
@@ -178,8 +195,19 @@ The smoke test currently covers:
 - derived execution-state observability fields such as `activity`, `streams`, `lastOutputAt`, and `totalOutputBytes`
 - seamless UI handoff from active execution tails to persisted run-log viewing after completion
 - helper-backed presentation mapping for execution/run outcomes so cancellation/timeout/failure stay visually distinct in task detail
+- static execution/run detail helper loading via `dashboard/index.html`, so browser and Node smoke imports both resolve the same rendering helpers
+- static task-detail helper loading via `dashboard/index.html`, so browser rendering and Node unit tests use the same task-detail / verification markup logic
+- static log-panel helper loading via `dashboard/index.html`, so browser log state/render behavior shares the same helpers used in unit tests
+- static overview-render helper loading via `dashboard/index.html`, so dashboard list/summary rendering shares the same helpers used in unit tests
+- static task-list helper loading via `dashboard/index.html`, so task-card filtering/rendering shares the same helpers used in unit tests
+- static form-state helper loading via `dashboard/index.html`, so editor/task-form state derivation shares the same helpers used in unit tests
+- static form-event helper loading via `dashboard/index.html`, so task/doc/run form event flows share the same helpers used in unit tests
+- static orchestration-state helper loading via `dashboard/index.html`, so task selection and execution-state resolution logic shares the same helpers used in unit tests
+- static api-client helper loading via `dashboard/index.html`, so dashboard request/url construction shares the same helpers used in unit tests
 - dashboard executor cancel API for `POST /api/tasks/:taskId/execution/cancel`
+- explicit API error typing for local dashboard/server routes, including 400/404/409 behavior without message-text status inference
 - executor capture mode and timeout path
+- unit-level `run:execute` lifecycle coverage for plan resolution, passed runs, timeout metadata, and interruption records
 - overview and task detail freshness heuristics for memory/task docs
 - diff-aware verification gate status transitions from "needs proof" to "covered"
 - checkpoint content for pending proof, covered proof, and weak scope hints
@@ -191,6 +219,18 @@ The smoke test currently covers:
 - unit-level verification for strong vs weak proof parsing, `scope-missing` / `partially-covered` transitions, and managed markdown synchronization in task documents
 - unit-level verification for Git repository snapshot parsing, including modified/untracked paths, rename metadata, and filesystem fallback
 - unit-level verification for passed-run proof anchors, including anchor persistence, anchor-aware gate matching, and schema validation for malformed anchors
+- unit-level verification for dashboard task-detail / verification rendering, including proof signal separation and execution-log UI wiring in task detail markup
+- unit-level verification for dashboard log-panel helpers, including active-task stream toggling, resolved log-source loading, and persisted-vs-live log messaging
+- unit-level verification for dashboard overview/list render helpers, including stat-card composition plus memory/verification/run/validation markup
+- unit-level verification for dashboard task-list render helpers, including filter summaries, card tone classes, and empty filtered-state messaging
+- unit-level verification for dashboard form-state helpers, including document editor guardrails, task-form reset rules, and optional timeout normalization
+- unit-level verification for dashboard form-event helpers, including task/run/document payload normalization and execution request validation
+- unit-level verification for dashboard orchestration-state helpers, including task selection fallback, execution UI button state, and completion-status messaging
+- unit-level verification for dashboard api-client helpers, including request option generation, log-url construction, and structured API error surfacing
+- unit-level verification for explicit HTTP error helpers plus server-facing task/run/execution error status codes
+- unit-level verification for `run-executor`, including adapter token resolution, timeout override behavior, durable stdout/stderr evidence, and interrupted-run persistence
+- unit-level verification for `overview`, including uninitialized workspace behavior plus task-level aggregation of latest executor outcomes and verification signal summaries
+- unit-level verification for `server-api`, including health plus representative 400 validation errors, 404 missing-resource routes, and 409 inactive-execution conflicts
 
 ## Why moving the folder should be safe
 
@@ -211,11 +251,11 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Continue modularizing `dashboard/app.js`, next targeting task-detail rendering plus execution/log helpers now that document/proof helpers and task-board helpers are extracted.
-2. Extend the new unit coverage outward from `verification-gates` / `task-documents` / `repository-snapshot` into dashboard proof-plan helpers and overview derivation so parsing and presentation logic stop depending on smoke alone.
-3. Continue Phase 2 of `docs/VERIFICATION_FRESHNESS_DESIGN.md`: decide whether manual `verification.md` gets a managed-anchor path and whether anchor-aware freshness should surface more directly in dashboard/task detail.
-4. Harden server/API error typing so HTTP status mapping no longer depends on `error.message.includes(...)`.
-5. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
+1. Extend the new unit coverage outward from `verification-gates` / `task-documents` / `repository-snapshot` into more overview derivation and additional server/API contract edges so parsing and status behavior stop depending on smoke alone.
+2. Continue Phase 2 of `docs/VERIFICATION_FRESHNESS_DESIGN.md`: decide whether manual `verification.md` gets a managed-anchor path and whether anchor-aware freshness should surface more directly in dashboard/task detail.
+3. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
+4. Design the next `run:execute` local executor step without breaking the contract-first workflow boundary.
+5. Keep `dashboard/app.js` focused on orchestration/event wiring if additional dashboard features land.
 
 ## What not to do next
 
@@ -228,11 +268,13 @@ Recommended next sequence:
 
 Suggested first task:
 
-Continue the dashboard refactor by extracting task-detail/execution rendering helpers out of `dashboard/app.js`. If verification work continues instead, keep building on the new anchor-aware contract instead of rewriting the proof model around raw Git state alone.
+Push unit coverage one step further into overview derivation plus remaining local API contract edges, then resume the proof-anchor design work for manual verification paths. Keep building on the current anchor-aware contract instead of rewriting the proof model around raw Git state alone.
 
 Expected shape:
 
 - preserve the current local-only API contract and existing smoke coverage
+- keep using `src/lib/http-errors.js` for any new server-facing route or local API surface
+- keep `docs/RUN_EXECUTE_DESIGN.md` as the boundary for any future `run:execute` work so executor breadth does not outrun the evidence model
 - keep `dashboard/app.js` focused on orchestration, event wiring, and refresh flow
 - move pure rendering or parsing helpers into static modules that still work without a bundler
 - if verification evolves further, preserve backward compatibility for legacy/manual proof and keep anchors repo-relative only

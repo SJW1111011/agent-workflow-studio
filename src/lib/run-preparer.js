@@ -2,6 +2,7 @@ const path = require("path");
 const { fileExists, readJson, writeFile, writeJson } = require("./fs-utils");
 const { getAdapter, normalizeAdapterId } = require("./adapters");
 const { compilePrompt } = require("./prompt-compiler");
+const { notFound } = require("./http-errors");
 const { taskFiles } = require("./workspace");
 
 function prepareRun(workspaceRoot, taskId, adapterInput) {
@@ -10,7 +11,7 @@ function prepareRun(workspaceRoot, taskId, adapterInput) {
   const files = taskFiles(workspaceRoot, taskId);
 
   if (!fileExists(files.meta)) {
-    throw new Error(`Task ${taskId} does not exist yet.`);
+    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
   }
 
   const agent = adapterId === "claude-code" ? "claude" : "codex";

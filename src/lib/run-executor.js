@@ -4,6 +4,7 @@ const { spawn } = require("child_process");
 const { getAdapter, normalizeAdapterId } = require("./adapters");
 const { buildCheckpoint } = require("./checkpoint");
 const { readJson } = require("./fs-utils");
+const { badRequest, conflict } = require("./http-errors");
 const { prepareRun } = require("./run-preparer");
 const { createRunRecord, persistRunRecord } = require("./task-service");
 const { taskFiles } = require("./workspace");
@@ -88,15 +89,16 @@ function planRunExecution(workspaceRoot, taskId, adapterInput, options = {}) {
   const runRequest = readJson(prepared.runRequestPath, null);
 
   if (!runRequest) {
-    throw new Error(`Run request is missing or invalid for ${taskId} (${adapterId}).`);
+    throw conflict(`Run request is missing or invalid for ${taskId} (${adapterId}).`, "run_request_missing");
   }
 
   if ((adapter.commandMode || "manual") !== "exec") {
-    throw new Error(
+    throw conflict(
       `Adapter ${adapterId} is configured for manual handoff only. Review ${toWorkspaceRelative(
         workspaceRoot,
         prepared.launchPackPath
-      )} or switch commandMode to exec first.`
+      )} or switch commandMode to exec first.`,
+      "adapter_manual_handoff_only"
     );
   }
 
@@ -105,7 +107,10 @@ function planRunExecution(workspaceRoot, taskId, adapterInput, options = {}) {
 
 function buildExecutionPlan(workspaceRoot, taskId, adapter, files, prepared, runRequest, options = {}) {
   if (!Array.isArray(adapter.runnerCommand) || adapter.runnerCommand.length === 0) {
-    throw new Error(`Adapter ${adapter.adapterId} must include a non-empty runnerCommand to support run:execute.`);
+    throw conflict(
+      `Adapter ${adapter.adapterId} must include a non-empty runnerCommand to support run:execute.`,
+      "adapter_runner_command_missing"
+    );
   }
 
   const promptFileAbsolute = path.resolve(
@@ -414,7 +419,7 @@ function normalizePositiveInteger(value) {
 
   const normalized = Number(value);
   if (!Number.isInteger(normalized) || normalized <= 0) {
-    throw new Error(`timeoutMs must be a positive integer, received: ${value}`);
+    throw badRequest(`timeoutMs must be a positive integer, received: ${value}`, "invalid_timeout_ms");
   }
 
   return normalized;

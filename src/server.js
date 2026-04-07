@@ -5,6 +5,7 @@ const http = require("http");
 const path = require("path");
 const { buildCheckpoint } = require("./lib/checkpoint");
 const { createDashboardExecutionBridge } = require("./lib/dashboard-execution");
+const { badRequest, getHttpStatusCode } = require("./lib/http-errors");
 const { buildOverview } = require("./lib/overview");
 const { listRecipes } = require("./lib/recipes");
 const { validateWorkspace } = require("./lib/schema-validator");
@@ -170,21 +171,7 @@ function main() {
         return serveStatic(dashboardRoot, requestUrl.pathname, response);
       })
       .catch((error) => {
-        const statusCode =
-          Number.isInteger(error.statusCode)
-            ? error.statusCode
-            : error.message === "Invalid JSON body." || error.message === "Request body too large."
-            ? 400
-            : error.message.includes("does not exist yet.")
-              ? 404
-              : error.message.includes("does not exist for task") ||
-                error.message.includes("has no ") ||
-                error.message.toLowerCase().includes("log file is missing")
-                ? 404
-              : error.message.startsWith("Unsupported ") || error.message.startsWith("Unknown recipe:")
-                ? 400
-                : 500;
-        sendJson(response, statusCode, { error: error.message });
+        sendJson(response, getHttpStatusCode(error), { error: error.message });
       });
   });
 
@@ -227,7 +214,7 @@ function readJsonBody(request) {
     request.on("data", (chunk) => {
       body += chunk;
       if (body.length > 1024 * 1024) {
-        reject(new Error("Request body too large."));
+        reject(badRequest("Request body too large.", "request_body_too_large"));
       }
     });
 
@@ -240,7 +227,7 @@ function readJsonBody(request) {
       try {
         resolve(JSON.parse(body));
       } catch (error) {
-        reject(new Error("Invalid JSON body."));
+        reject(badRequest("Invalid JSON body.", "invalid_json_body"));
       }
     });
 

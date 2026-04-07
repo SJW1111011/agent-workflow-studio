@@ -1,5 +1,6 @@
 const fs = require("fs");
 const { fileExists, readJson, writeFile, writeJson } = require("./fs-utils");
+const { badRequest, notFound } = require("./http-errors");
 const { getRecipe } = require("./recipes");
 const { taskFiles } = require("./workspace");
 
@@ -157,12 +158,12 @@ function syncManagedTaskDocs(files, taskMeta, recipe) {
 function saveTaskDocument(workspaceRoot, taskId, documentName, content) {
   const files = taskFiles(workspaceRoot, taskId);
   if (!fileExists(files.meta)) {
-    throw new Error(`Task ${taskId} does not exist yet.`);
+    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
   }
 
   const documentConfig = EDITABLE_TASK_DOCUMENTS[documentName];
   if (!documentConfig) {
-    throw new Error(`Unsupported task document: ${documentName}`);
+    throw badRequest(`Unsupported task document: ${documentName}`, "unsupported_task_document");
   }
 
   const taskMeta = readJson(files.meta, {});
@@ -195,7 +196,7 @@ function normalizeEditableDocument(documentName, taskMeta, recipe, content) {
     return normalizeVerificationMarkdown(taskMeta, text);
   }
 
-  throw new Error(`Unsupported task document: ${documentName}`);
+  throw badRequest(`Unsupported task document: ${documentName}`, "unsupported_task_document");
 }
 
 function normalizeTaskMarkdown(taskMeta, recipe, content) {

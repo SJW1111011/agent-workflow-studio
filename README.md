@@ -15,6 +15,9 @@ This repository starts with a relocatable foundation:
 - a zero-dependency CLI to initialize, scan, create tasks, compile prompts, and record runs
 - a lightweight dashboard that reads the workflow state from any repository root
 - a zero-dependency test layer with focused unit coverage plus a smoke test that proves the project still works when nested under a non-English path
+- executor contract coverage now includes focused unit tests for plan resolution plus passed / timed-out / interrupted local runs, so `run:execute` lifecycle rules do not live in smoke alone
+- overview aggregation now also has focused unit coverage for uninitialized workspaces plus task-level executor outcome / verification signal summaries
+- local server/API coverage now also has focused tests for health, 400 validation paths, 404 missing-resource paths, and 409 inactive-execution conflicts
 
 ## Why this exists
 
@@ -44,6 +47,8 @@ The current foundation includes:
 - `checkpoint`: build a resumable checkpoint for the current task
 - `validate`: run schema checks on project, adapters, tasks, and recorded runs
 - `dashboard`: open a local control plane for tasks, memory freshness, task doc freshness, Git-aware diff-aware verification gates, checkpoint detail, metadata edits, structured run evidence capture, a local execution bridge for `stdioMode: pipe` adapters, executor state/cancel flow, and markdown task doc edits
+- the dashboard frontend is now split across static helper modules for document editing/proof drafting, API client helpers, form/editor state derivation, form event flows, orchestration state derivation, task-board summaries, task-list rendering, execution/run detail presentation, task-detail/verification rendering, log-panel state/render helpers, and overview/list section rendering without introducing a bundler
+- server-facing mutations and log APIs now use explicit HTTP-aware errors, so the local control plane no longer guesses status codes from message text
 
 ## Layout
 
@@ -137,7 +142,7 @@ There is now a first local `run:execute` bridge for adapters that explicitly swi
 
 See `docs/ADAPTERS.md`.
 
-The current executor contract and next hardening steps are scoped in `docs/RUN_EXECUTE_DESIGN.md`.
+The current executor contract and the next local executor boundary are scoped in `docs/RUN_EXECUTE_DESIGN.md`.
 
 ## Recipe registry and schema checks
 
@@ -176,11 +181,11 @@ See `docs/RECIPES_AND_SCHEMA.md`.
 
 ## Suggested next build steps
 
-1. Continue modularizing `dashboard/app.js`, especially task-detail and execution/log rendering helpers.
-2. Extend unit coverage into dashboard helpers, overview derivation, and more repository-snapshot edge cases.
-3. Extend proof-anchor coverage beyond passed runs only, starting with an intentional manual-proof strategy instead of ad hoc markdown magic.
-4. Harden server/API error typing so HTTP status mapping no longer depends on message text.
-5. Design the next `run:execute` local executor step without breaking the contract-first workflow boundary.
+1. Extend unit coverage into overview derivation, additional server contract edges, and more repository-snapshot edge cases.
+2. Extend proof-anchor coverage beyond passed runs only, starting with an intentional manual-proof strategy instead of ad hoc markdown magic.
+3. Design the next `run:execute` local executor step without breaking the contract-first workflow boundary.
+4. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
+5. Keep `dashboard/app.js` focused on orchestration/event wiring if any new dashboard features land.
 
 ## Contributing
 

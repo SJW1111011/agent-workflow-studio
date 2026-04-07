@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { executeRun, planRunExecution } = require("./run-executor");
 const { fileExists } = require("./fs-utils");
+const { badRequest, conflict, notFound } = require("./http-errors");
 const { taskFiles } = require("./workspace");
 
 function createDashboardExecutionBridge(workspaceRoot) {
@@ -15,25 +16,28 @@ function createDashboardExecutionBridge(workspaceRoot) {
   function getTaskExecutionLog(taskId, streamName, maxChars = 12000) {
     const files = taskFiles(workspaceRoot, taskId);
     if (!fileExists(files.meta)) {
-      throw new Error(`Task ${taskId} does not exist yet.`);
+      throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
     }
 
     const state = taskStates.get(taskId) || buildIdleExecutionState(taskId);
     const fieldName = streamName === "stderr" ? "stderrFile" : streamName === "stdout" ? "stdoutFile" : null;
     if (!fieldName) {
-      throw new Error(`Unsupported execution log stream: ${streamName}`);
+      throw badRequest(`Unsupported execution log stream: ${streamName}`, "unsupported_execution_log_stream");
     }
 
     const relativePath = state[fieldName];
     if (!isNonEmptyString(relativePath)) {
-      throw new Error(`Task ${taskId} has no ${streamName} execution log available.`);
+      throw notFound(`Task ${taskId} has no ${streamName} execution log available.`, "execution_log_unavailable");
     }
 
     const absolutePath = path.resolve(workspaceRoot, relativePath);
     const allowedRoot = path.resolve(files.runs);
     const normalizedAllowedRoot = `${allowedRoot}${path.sep}`;
     if (absolutePath !== allowedRoot && !absolutePath.startsWith(normalizedAllowedRoot)) {
-      throw new Error(`Execution log path is outside the task run ledger for ${taskId} (${streamName}).`);
+      throw badRequest(
+        `Execution log path is outside the task run ledger for ${taskId} (${streamName}).`,
+        "execution_log_outside_task_ledger"
+      );
     }
 
     if (!fileExists(absolutePath)) {
@@ -52,7 +56,10 @@ function createDashboardExecutionBridge(workspaceRoot) {
         };
       }
 
-      throw new Error(`Execution log file is missing for task ${taskId} (${streamName}).`);
+      throw notFound(
+        `Execution log file is missing for task ${taskId} (${streamName}).`,
+        "execution_log_missing"
+      );
     }
 
     const content = fs.readFileSync(absolutePath, "utf8");
@@ -76,18 +83,15 @@ function createDashboardExecutionBridge(workspaceRoot) {
   async function startTaskExecution(taskId, adapterInput, options = {}) {
     const existingState = taskStates.get(taskId);
     if (existingState && isActiveExecutionStatus(existingState.status)) {
-      const error = new Error(`Task ${taskId} already has an active dashboard execution.`);
-      error.statusCode = 409;
-      throw error;
+      throw conflict(`Task ${taskId} already has an active dashboard execution.`, "dashboard_execution_active");
     }
 
     const plan = planRunExecution(workspaceRoot, taskId, adapterInput || "codex", options);
     if (plan.stdioMode !== "pipe") {
-      const error = new Error(
-        `Unsupported dashboard execution for ${plan.adapterId}: resolved stdioMode is ${plan.stdioMode}. Use the CLI for interactive execution.`
+      throw badRequest(
+        `Unsupported dashboard execution for ${plan.adapterId}: resolved stdioMode is ${plan.stdioMode}. Use the CLI for interactive execution.`,
+        "unsupported_dashboard_stdio_mode"
       );
-      error.statusCode = 400;
-      throw error;
     }
 
     const runId = `run-${Date.now()}`;
@@ -166,9 +170,10 @@ function createDashboardExecutionBridge(workspaceRoot) {
     const controller = taskControllers.get(taskId);
 
     if (!existingState || !controller || !isActiveExecutionStatus(existingState.status)) {
-      const error = new Error(`Task ${taskId} has no active dashboard execution to cancel.`);
-      error.statusCode = 409;
-      throw error;
+      throw conflict(
+        `Task ${taskId} has no active dashboard execution to cancel.`,
+        "dashboard_execution_not_active"
+      );
     }
 
     updateExecutionState(taskStates, taskId, {
