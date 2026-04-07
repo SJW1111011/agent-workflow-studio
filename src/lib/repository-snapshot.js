@@ -4,6 +4,9 @@ const os = require("os");
 const path = require("path");
 const { execFileSync } = require("child_process");
 
+const FILE_FINGERPRINT_CACHE_LIMIT = 256;
+const fileFingerprintCache = new Map();
+
 function loadRepositorySnapshot(workspaceRoot, options = {}) {
   if (!workspaceRoot) {
     throw new Error("workspaceRoot is required to load a repository snapshot.");
@@ -288,7 +291,7 @@ function buildSnapshotFile(workspaceRoot, relativePath, options = {}) {
     exists: Boolean(fileStats),
     modifiedAt: fileStats ? new Date(fileStats.mtimeMs).toISOString() : null,
     modifiedAtMs: fileStats ? fileStats.mtimeMs : null,
-    contentFingerprint: fileStats ? hashFile(absolutePath) : null,
+    contentFingerprint: fileStats ? hashFileWithCache(absolutePath, fileStats) : null,
   };
 }
 
@@ -301,8 +304,24 @@ function getSnapshotFileStats(absolutePath) {
   return stats.isFile() ? stats : null;
 }
 
-function hashFile(filePath) {
-  return `sha1:${crypto.createHash("sha1").update(fs.readFileSync(filePath)).digest("hex")}`;
+function hashFileWithCache(filePath, stats = null) {
+  const fileStats = stats || getSnapshotFileStats(filePath);
+  if (!fileStats) {
+    return null;
+  }
+
+  const cacheKey = buildFingerprintCacheKey(filePath, fileStats);
+  if (fileFingerprintCache.has(cacheKey)) {
+    const cachedFingerprint = fileFingerprintCache.get(cacheKey);
+    fileFingerprintCache.delete(cacheKey);
+    fileFingerprintCache.set(cacheKey, cachedFingerprint);
+    return cachedFingerprint;
+  }
+
+  const fingerprint = `sha1:${crypto.createHash("sha1").update(fs.readFileSync(filePath)).digest("hex")}`;
+  fileFingerprintCache.set(cacheKey, fingerprint);
+  trimFingerprintCache();
+  return fingerprint;
 }
 
 function buildDirectProofAnchor(workspaceRoot, relativePath) {
@@ -318,8 +337,26 @@ function buildDirectProofAnchor(workspaceRoot, relativePath) {
   return {
     path: normalizedPath,
     exists: true,
-    contentFingerprint: hashFile(absolutePath),
+    contentFingerprint: hashFileWithCache(absolutePath, stats),
   };
+}
+
+function buildFingerprintCacheKey(filePath, stats) {
+  return [
+    path.resolve(filePath),
+    Number.isFinite(stats && stats.mtimeMs) ? stats.mtimeMs : "no-mtime",
+    Number.isFinite(stats && stats.size) ? stats.size : "no-size",
+  ].join("::");
+}
+
+function trimFingerprintCache() {
+  while (fileFingerprintCache.size > FILE_FINGERPRINT_CACHE_LIMIT) {
+    const oldestCacheKey = fileFingerprintCache.keys().next().value;
+    if (!oldestCacheKey) {
+      return;
+    }
+    fileFingerprintCache.delete(oldestCacheKey);
+  }
 }
 
 function normalizeSnapshotPath(value) {

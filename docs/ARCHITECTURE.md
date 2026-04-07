@@ -156,6 +156,8 @@ That snapshot:
 - prefers Git dirty-state data from `git status --porcelain=v2`
 - falls back to filesystem mode for non-Git or constrained environments
 - normalizes file entries as `path + changeType + gitState + previousPath + modifiedAt`
+- caches direct proof-path fingerprints in memory by file path plus `mtime` so repeated refreshes do not keep re-hashing unchanged files
+- keeps filesystem fallback targeted by fingerprinting proof paths on demand instead of hashing the whole workspace
 - is reused once per overview or task-detail request so verification does not scan the workspace per task
 
 ### Task

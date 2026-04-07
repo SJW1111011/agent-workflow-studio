@@ -1,4 +1,6 @@
 const assert = require("node:assert/strict");
+const fs = require("fs");
+const path = require("path");
 
 const { buildScopeProofAnchors, loadRepositorySnapshot } = require("../src/lib/repository-snapshot");
 const {
@@ -94,6 +96,38 @@ const tests = [
       assert.equal(anchors[0].path, "plain.txt");
       assert.equal(anchors[0].exists, true);
       assert.match(String(anchors[0].contentFingerprint || ""), /^sha1:/);
+    },
+  },
+  {
+    name: "targeted proof fingerprint hashing reuses cached fingerprints until file mtime changes",
+    run() {
+      const { workspaceRoot } = createTaskWorkspace("repository-snapshot-cache");
+      const proofPath = `${workspaceRoot}/plain.txt`;
+      writeTextFile(proofPath, "initial\n");
+
+      const snapshot = loadRepositorySnapshot(workspaceRoot, {
+        gitCommand: "definitely-not-a-real-git-command",
+      });
+      const firstAnchors = buildScopeProofAnchors(workspaceRoot, ["plain.txt"], snapshot);
+      const originalReadFileSync = fs.readFileSync;
+
+      try {
+        fs.readFileSync = function patchedReadFileSync(filePath, ...args) {
+          if (path.resolve(filePath) === path.resolve(proofPath)) {
+            throw new Error("Fingerprint cache miss for unchanged proof path.");
+          }
+          return originalReadFileSync.call(fs, filePath, ...args);
+        };
+
+        const cachedAnchors = buildScopeProofAnchors(workspaceRoot, ["plain.txt"], snapshot);
+        assert.equal(cachedAnchors[0].contentFingerprint, firstAnchors[0].contentFingerprint);
+      } finally {
+        fs.readFileSync = originalReadFileSync;
+      }
+
+      writeTextFile(proofPath, "updated\n");
+      const refreshedAnchors = buildScopeProofAnchors(workspaceRoot, ["plain.txt"], snapshot);
+      assert.notEqual(refreshedAnchors[0].contentFingerprint, firstAnchors[0].contentFingerprint);
     },
   },
 ];

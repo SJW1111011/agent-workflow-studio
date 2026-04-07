@@ -9,6 +9,13 @@ The product thesis is simple:
 - evidence should refresh docs and checkpoints
 - long jobs should survive context compaction and agent handoff
 
+Two verification ideas sit at the center of that thesis:
+
+- `verification gate`: compare repo-relative task scope against the current repository snapshot and explain which scoped files still need explicit proof
+- `proof anchor`: persist repo-relative content fingerprints with passed run evidence so freshness can survive misleading `mtime` churn, branch switches, and agent handoff noise
+
+Git mode gives the strongest version of this model because it carries dirty-state metadata plus current fingerprints for changed files. Filesystem fallback stays local-only and portable, but only hashes targeted proof paths instead of the whole workspace.
+
 This repository starts with a relocatable foundation:
 
 - a headless workflow scaffold in `.agent-workflow/`
@@ -175,14 +182,16 @@ Diff-aware verification stays intentionally lightweight in this pass:
 - it makes rename / delete / untracked state explicit in the verification summary when Git is available
 - a generic `verification.md` timestamp bump is no longer enough to cover scoped changes by itself
 - passed-run anchors now allow content-aware freshness when they are present, while legacy/manual proof still falls back to recorded time
+- direct proof fingerprint reads now use a small in-memory cache keyed by file path plus `mtime`, so repeated overview/task-detail refreshes do not keep re-hashing unchanged proof files
+- filesystem fallback still avoids hashing the whole workspace; it only fingerprints the proof paths being anchored, so Git mode remains the strongest protection path
 - it does not try to replace human judgment or full CI evidence
 
 See `docs/RECIPES_AND_SCHEMA.md`.
 
 ## Suggested next build steps
 
-1. Extend unit coverage into overview derivation, additional server contract edges, and more repository-snapshot edge cases.
-2. Extend proof-anchor coverage beyond passed runs only, starting with an intentional manual-proof strategy instead of ad hoc markdown magic.
+1. Extend proof-anchor coverage beyond passed runs only, starting with an intentional manual-proof strategy instead of ad hoc markdown magic.
+2. Surface proof-anchor vs compatibility freshness more clearly in dashboard/task detail so operators can see which path a gate decision came from.
 3. Design the next `run:execute` local executor step without breaking the contract-first workflow boundary.
 4. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 5. Keep `dashboard/app.js` focused on orchestration/event wiring if any new dashboard features land.

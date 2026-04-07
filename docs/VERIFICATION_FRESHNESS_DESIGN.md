@@ -4,7 +4,7 @@ This note describes how `agent-workflow-studio` should evolve verification fresh
 
 ## Status
 
-As of 2026-04-06:
+As of 2026-04-08:
 
 - Phase 1 is implemented through `src/lib/repository-snapshot.js`
 - overview and task detail now reuse a normalized repository snapshot
@@ -12,6 +12,7 @@ As of 2026-04-06:
 - Phase 2 has started: newly recorded passed runs can now persist optional `scopeProofAnchors`
 - the gate now prefers anchor comparison when those passed-run anchors are present
 - legacy/manual proof still uses the compatibility timestamp path
+- direct proof fingerprint reads now use a small in-memory cache keyed by path plus `mtime`
 
 ## Why this exists
 
@@ -211,8 +212,14 @@ Filesystem fallback needs a narrower strategy so Phase 2 does not regress perfor
 - do not hash the whole workspace just to capture anchors
 - if Git is unavailable, compute targeted fingerprints only for the normalized proof paths being recorded
 - for deleted or missing files, persist `exists: false` and leave `contentFingerprint: null`
+- the current implementation also keeps a small in-memory cache for those targeted fingerprints, keyed by absolute path plus `mtime`, so repeated overview/task-detail refreshes can reuse unchanged proof hashes
 
 This keeps fallback local-only and relocatable without reintroducing O(workspace files) cost.
+
+Important nuance:
+
+- Git mode remains the strongest protection path because changed files already carry snapshot metadata plus current fingerprints
+- filesystem fallback only fingerprints proof paths on demand, so scoped files without linked proof still rely on the normal scoped-change gate rather than full-workspace fingerprint comparison
 
 #### Matching rules inside the gate
 
