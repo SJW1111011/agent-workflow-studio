@@ -6,7 +6,15 @@ const { executeRun, planRunExecution, preflightRunExecution } = require("../src/
 const { validateWorkspace } = require("../src/lib/schema-validator");
 const { listRuns } = require("../src/lib/task-service");
 const { adaptersRoot, taskFiles } = require("../src/lib/workspace");
-const { createTaskWorkspace, readJsonFile, readTextFile, writeJsonFile, writeTextFile } = require("./test-helpers");
+const {
+  createTaskWorkspace,
+  initializeGitRepository,
+  readJsonFile,
+  readTextFile,
+  runCommand,
+  writeJsonFile,
+  writeTextFile,
+} = require("./test-helpers");
 
 function writeFakeRunner(workspaceRoot) {
   writeTextFile(
@@ -254,6 +262,62 @@ const tests = [
       assert.match(readiness.message, /unavailable on this machine/i);
       assert.ok(Array.isArray(readiness.advisories));
       assert.ok(readiness.advisories.some((entry) => /not found on PATH/i.test(entry.message)));
+    },
+  },
+  {
+    name: "preflightRunExecution surfaces missing allowed env vars as advisories",
+    run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("run-executor-preflight-env");
+      const previousEnv = process.env.RUN_EXECUTOR_MISSING_ENV;
+      delete process.env.RUN_EXECUTOR_MISSING_ENV;
+
+      try {
+        writeFakeRunner(workspaceRoot);
+        configureCodexExecutor(workspaceRoot, {
+          envAllowlist: ["RUN_EXECUTOR_MISSING_ENV"],
+        });
+
+        const readiness = preflightRunExecution(workspaceRoot, taskId, "codex");
+
+        assert.equal(readiness.ready, true);
+        assert.ok(Array.isArray(readiness.advisories));
+        assert.ok(
+          readiness.advisories.some(
+            (entry) =>
+              /missing from the current process/i.test(entry.message) &&
+              /RUN_EXECUTOR_MISSING_ENV/.test(entry.message)
+          )
+        );
+      } finally {
+        if (previousEnv === undefined) {
+          delete process.env.RUN_EXECUTOR_MISSING_ENV;
+        } else {
+          process.env.RUN_EXECUTOR_MISSING_ENV = previousEnv;
+        }
+      }
+    },
+  },
+  {
+    name: "preflightRunExecution surfaces dirty git worktree advisories when the repository is not clean",
+    run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("run-executor-preflight-dirty");
+
+      writeFakeRunner(workspaceRoot);
+      configureCodexExecutor(workspaceRoot);
+      writeTextFile(path.join(workspaceRoot, "README.md"), "# Dirty repo fixture\n");
+
+      initializeGitRepository(workspaceRoot);
+      runCommand("git", ["add", "."], workspaceRoot);
+      runCommand("git", ["commit", "-m", "Initial fixture"], workspaceRoot);
+
+      writeTextFile(path.join(workspaceRoot, "README.md"), "# Dirty repo fixture\n\nchanged\n");
+
+      const readiness = preflightRunExecution(workspaceRoot, taskId, "codex");
+
+      assert.equal(readiness.ready, true);
+      assert.ok(Array.isArray(readiness.advisories));
+      assert.ok(readiness.advisories.some((entry) => /dirty worktree|changed path\(s\) in Git mode/i.test(entry.message)));
+      assert.ok(readiness.advisories.some((entry) => /README\.md/.test(entry.message)));
     },
   },
   {

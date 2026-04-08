@@ -163,6 +163,8 @@ There is now a first local `run:execute` bridge for adapters that explicitly swi
 - execution can record timeout and interruption metadata
 - CLI and dashboard now share the same preflight/readiness pass before launch, so adapter validation, artifact readiness, and caller-specific stdio checks do not drift apart
 - that shared preflight now also surfaces adapter notes plus local runner-availability advisories, so blocked launches can explain whether the machine is missing a confirmed CLI path or just still configured for manual handoff
+- in Git-backed repositories, that same preflight can now also warn when the current worktree is already dirty, so inspection-first dogfooding runs are less likely to surprise operators after launch
+- when an adapter explicitly allowlists environment variables, preflight can now also warn when those entries are missing from the current process before a real local CLI fails later for avoidable setup reasons
 - the dashboard task detail can inspect executor metadata and local run logs through local-only APIs
 - the CLI can launch both `inherit` and `pipe` modes through the shared executor
 - the dashboard now uses a thin local API over that same executor module for `stdioMode: pipe`

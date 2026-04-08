@@ -5,6 +5,7 @@ const { getAdapter, normalizeAdapterId } = require("./adapters");
 const { buildCheckpoint } = require("./checkpoint");
 const { fileExists, readJson } = require("./fs-utils");
 const { badRequest, conflict, createHttpError, getHttpStatusCode } = require("./http-errors");
+const { loadGitRepositorySnapshot } = require("./repository-snapshot");
 const { prepareRun } = require("./run-preparer");
 const { createRunRecord, persistRunRecord } = require("./task-service");
 const { taskFiles } = require("./workspace");
@@ -153,6 +154,8 @@ function preflightRunExecution(workspaceRoot, taskId, adapterInput, options = {}
     const plan = buildExecutionPlan(workspaceRoot, taskId, adapter, files, prepared, runRequest, options);
     const runnerAvailability = inspectRunnerCommandAvailability(plan.command, plan.cwd);
     advisories = advisories.concat(buildRunnerAvailabilityAdvisories(plan.adapterId, runnerAvailability));
+    advisories = advisories.concat(buildMissingEnvAdvisories(plan.adapterId, plan.envAllowlist, plan.env));
+    advisories = advisories.concat(buildDirtyRepositoryAdvisories(workspaceRoot));
     if (!runnerAvailability.available) {
       throw createExecutionPreflightError(
         409,
@@ -260,6 +263,7 @@ function buildExecutionPlan(workspaceRoot, taskId, adapter, files, prepared, run
     successExitCodes,
     timeoutMs: timeoutOverride || timeoutConfigured || null,
     env: buildChildEnv(envAllowlist),
+    envAllowlist,
     promptFileRelative,
     runRequestFileRelative,
     launchPackFileRelative,
@@ -961,6 +965,10 @@ function stripWrappedQuotes(value) {
   return String(value || "").replace(/^"(.*)"$/, "$1");
 }
 
+function normalizeSnapshotPath(value) {
+  return isNonEmptyString(value) ? String(value).trim().replace(/\\/g, "/") : "";
+}
+
 function isExecutableFile(filePath) {
   try {
     const stats = fs.statSync(filePath);
@@ -1020,6 +1028,65 @@ function buildRunnerUnavailableBlockingMessage(runnerAvailability) {
   }
 
   return `Runner command "${runnerAvailability.configuredCommand}" was not found on PATH for the current process.`;
+}
+
+function buildMissingEnvAdvisories(adapterId, envAllowlist, childEnv) {
+  const requestedKeys = Array.isArray(envAllowlist) ? envAllowlist.filter(isNonEmptyString) : [];
+  if (requestedKeys.length === 0) {
+    return [];
+  }
+
+  const availableKeys = Object.keys(childEnv || {});
+  const missingKeys = requestedKeys.filter(
+    (requestedKey) => !availableKeys.some((availableKey) => availableKey.toLowerCase() === requestedKey.toLowerCase())
+  );
+
+  if (missingKeys.length === 0) {
+    return [];
+  }
+
+  return normalizeAdvisories({
+    advisories: [
+      {
+        code: "env-allowlist-missing",
+        message: `Allowed env vars for ${adapterId} are missing from the current process: ${missingKeys.join(
+          ", "
+        )}. Real local execution may still fail until they are exported.`,
+      },
+    ],
+  });
+}
+
+function buildDirtyRepositoryAdvisories(workspaceRoot) {
+  try {
+    const snapshot = loadGitRepositorySnapshot(workspaceRoot);
+    if (!snapshot || !Array.isArray(snapshot.files) || snapshot.files.length === 0) {
+      return [];
+    }
+
+    const samplePaths = snapshot.files
+      .map((entry) => normalizeSnapshotPath(entry.path))
+      .filter(isNonEmptyString)
+      .slice(0, 3);
+    const remainingCount = Math.max(snapshot.files.length - samplePaths.length, 0);
+    const sampleSuffix =
+      samplePaths.length === 0
+        ? ""
+        : ` Example path${samplePaths.length === 1 ? "" : "s"}: ${samplePaths.join(", ")}${
+            remainingCount > 0 ? ` (+${remainingCount} more)` : ""
+          }.`;
+
+    return normalizeAdvisories({
+      advisories: [
+        {
+          code: "repository-dirty-state",
+          message: `Repository currently has ${snapshot.files.length} changed path(s) in Git mode; a real agent may stop on a dirty worktree or limit edits.${sampleSuffix}`,
+        },
+      ],
+    });
+  } catch (error) {
+    return [];
+  }
 }
 
 function normalizeExecutionFailureCategory(error, statusCode) {

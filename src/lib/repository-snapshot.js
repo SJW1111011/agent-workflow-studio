@@ -22,6 +22,14 @@ function loadRepositorySnapshot(workspaceRoot, options = {}) {
   return loadFilesystemSnapshot(workspaceRoot);
 }
 
+function loadGitRepositorySnapshot(workspaceRoot, options = {}) {
+  if (!workspaceRoot) {
+    throw new Error("workspaceRoot is required to load a repository snapshot.");
+  }
+
+  return tryLoadGitRepositorySnapshot(workspaceRoot, options);
+}
+
 function tryLoadGitRepositorySnapshot(workspaceRoot, options = {}) {
   const gitCommand = options.gitCommand || "git";
   const repositoryRoot = runGitCommand(gitCommand, ["rev-parse", "--show-toplevel"], workspaceRoot);
@@ -401,6 +409,7 @@ function walkWorkspaceFiles(workspaceRoot, relativeDir = "") {
 module.exports = {
   buildProofAnchor,
   buildScopeProofAnchors,
+  loadGitRepositorySnapshot,
   loadFilesystemSnapshot,
   loadRepositorySnapshot,
   parseGitStatusPorcelainV2,

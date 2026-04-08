@@ -89,6 +89,7 @@ This is intentionally still opt-in:
 - Windows may still need a wrapper such as `cmd.exe` if direct `codex` spawning is not available on that machine
 - even after runner shape is confirmed, a real local CLI may still require separate auth/provider readiness before model execution succeeds, and that may depend on adapter-owned `envAllowlist` entries for the child process
 - preflight now surfaces those readiness issues as typed blocking issues plus advisories instead of silently failing at spawn time
+- in Git mode, preflight can also add a non-blocking dirty-worktree advisory when the repository already has local changes before launch
 
 ## Next step
 
