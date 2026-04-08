@@ -17,6 +17,13 @@ Onboarding now also has first-pass shortcuts:
 - `quick` for the common task bootstrap flow
 - `memory:bootstrap` for generating a local-only memory bootstrap prompt instead of requiring embedded AI calls
 
+## Near-term priorities
+
+- P0: prove one real local `run:execute` path on top of the current run-request contract instead of broadening executor surface area blindly
+- P1: dogfood that real execution path in this repository so prompt -> run -> evidence -> checkpoint stays grounded in actual use
+- P1: decide which checked-in `.agent-workflow/` artifacts should remain as durable examples versus temporary dogfooding state
+- P2: revisit adapter extensibility only after the executor/evidence path is proven stable
+
 ## Phase 1 - Stronger prompt compiler
 
 - task-type presets for audit, feature, bugfix, and review
@@ -32,13 +39,13 @@ Onboarding now also has first-pass shortcuts:
 - verification artifact attachment
 - failure triage view
 
-Status: first-pass diff-aware verification gates are in place, Git-aware repository snapshots now back current-diff detection, and passed runs can persist structured check/artifact proof plus optional `scopeProofAnchors`.
+Status: first-pass diff-aware verification gates are in place, Git-aware repository snapshots now back current-diff detection, passed runs can persist structured check/artifact proof plus optional `scopeProofAnchors`, and manual `verification.md` proof can now also refresh managed proof anchors.
 
 Next verification work should stay contract-first:
 
-- extend proof-anchor coverage beyond passed runs only
-- decide whether manual `verification.md` should gain a managed-anchor path
-- keep legacy/manual proof on the current compatibility path until a separate managed-anchor design exists
+- keep anchor-backed proof additive and backward-compatible for legacy/manual evidence
+- keep freshness decisions explainable from repo-relative artifacts instead of broadening hidden heuristics
+- extend real-world dogfooding before widening the proof model again
 
 The next verification-freshness step should be content-aware but still contract-first. See `docs/VERIFICATION_FRESHNESS_DESIGN.md`.
 

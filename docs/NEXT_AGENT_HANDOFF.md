@@ -24,6 +24,7 @@ As of 2026-04-08, the project already has a working MVP foundation:
 - prompt compilation
 - `quick` task bootstrap for the common local flow: scan -> task bundle -> prompt -> run-request/launch pack -> checkpoint
 - `memory:bootstrap` for the common onboarding flow: scan -> refresh project profile -> write a reusable memory bootstrap prompt under `.agent-workflow/handoffs/`
+- the repo now also has a checked-in `.agent-workflow/` dogfooding state with grounded memory docs plus a real `T-001` onboarding task bundle, checkpoint, and run evidence
 - run preparation handoff packs
 - shared `run:execute` for adapters that opt into `commandMode: exec`
 - stdout/stderr capture plus timeout/interruption metadata for `run:execute`
@@ -112,9 +113,11 @@ Supported commands:
 
 - `init`
 - `scan`
+- `memory:bootstrap`
 - `adapter:list`
 - `recipe:list`
 - `task:new`
+- `quick`
 - `task:list`
 - `prompt:compile`
 - `run:prepare`
@@ -269,11 +272,11 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Start dogfooding the new onboarding path: `memory:bootstrap` -> `quick` -> real agent run -> evidence -> checkpoint.
-2. Keep future executor work additive on top of the shared preflight/readiness contract instead of adding caller-specific launch logic.
+1. Move to a narrow real-agent `run:execute` pilot on top of the shared preflight/readiness contract instead of broadening executor features blindly.
+2. Dogfood that real execution path in this repository so prompt -> run -> evidence -> checkpoint is proven with an actual local agent CLI.
 3. If executor metadata grows, decide whether `executionIntentId` or richer advisories belong in transient bridge state, durable run records, or both.
 4. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
-5. Revisit adapter extensibility only after the verification/evidence model is stable enough to stay contract-first.
+5. Revisit adapter extensibility only after the executor/evidence model is proven stable in dogfooding.
 
 ## What not to do next
 
@@ -286,11 +289,12 @@ Recommended next sequence:
 
 Suggested first task:
 
-Move to the next `run:execute` local executor design step now that manual proof anchors and freshness-path visibility are both in place. Keep building on the current anchor-aware contract instead of rewriting the proof model around raw Git state alone.
+Move to a narrow real-agent `run:execute` pilot now that onboarding shortcuts, manual proof anchors, and shared preflight/readiness are all in place. Keep building on the current anchor-aware contract instead of rewriting the proof model around raw Git state alone.
 
 Expected shape:
 
 - preserve the current local-only API contract and existing smoke coverage
+- keep the next executor slice focused on one real local CLI path before broadening defaults or adapter breadth
 - keep manual proof human-authored in `## Proof links`, with machine-owned anchor metadata isolated under the managed `## Evidence` block
 - keep using `src/lib/http-errors.js` for any new server-facing route or local API surface
 - keep `docs/RUN_EXECUTE_DESIGN.md` as the boundary for any future `run:execute` work so executor breadth does not outrun the evidence model

@@ -732,6 +732,43 @@ Before adding another execution capability, do this in order:
 
 That sequence keeps automation aligned with the contract-first workflow model instead of letting orchestration details outrun the evidence model.
 
+### Current priority slice: real local adapter pilot
+
+With shared preflight/readiness, normalized lifecycle fields, dashboard log inspection, and anchor-aware proof already in place, the next step should not be "more executor surface area."
+
+It should be a narrow proof that the current contract can drive at least one real local agent CLI end to end.
+
+The recommended slice is:
+
+1. keep built-in adapters conservative by default unless their local invocation contract is explicitly confirmed
+2. let preflight/reporting grow just enough to explain why a real launch is or is not ready on the current machine
+3. dogfood one real adapter path through the existing `task -> prompt -> run-request -> execute -> evidence -> checkpoint` pipeline
+4. only then decide whether broader adapter enablement belongs in core defaults, local overrides, or documentation only
+
+That keeps the next step focused on contract proof, not product sprawl.
+
+#### What this pilot should add
+
+- binary/readiness discovery as advisory or blocking preflight output, not as hidden side effects
+- explicit operator-facing guidance when an adapter stays `manual` because the local command shape is still unconfirmed
+- one documented, reproducible real-agent dogfooding path that lands in the same task-local evidence files as every other run
+- additive run metadata only if it improves handoff clarity without introducing machine-specific durable state
+
+#### What this pilot should not add
+
+- no default auto-enable of every built-in adapter across all machines
+- no browser-owned terminal emulation for `stdioMode: inherit`
+- no second runtime database, process registry, or opaque session store
+- no chat transcript persistence as the primary resume mechanism
+- no vendor-specific shortcut that bypasses prepared prompt or run-request artifacts
+
+#### Preferred rollout order
+
+1. extend preflight/readiness output first if real local launches need better operator feedback
+2. document the opt-in adapter shape for one real CLI path
+3. dogfood that path in this repository and capture the resulting evidence
+4. revisit broader adapter defaults only after the evidence model still feels cleaner, not noisier
+
 ## Phased implementation plan
 
 ### Phase A: minimal local executor
