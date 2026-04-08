@@ -24,11 +24,18 @@
 - Result: The dogfooding path now reaches the real Codex CLI with the narrower confirmed argv shape, and failed executor runs stay schema-valid while leaving durable logs.
 - Artifact: .agent-workflow/tasks/T-002/runs/run-1775654646958.stderr.log
 
+### Proof 3
+
+- Files: .agent-workflow/adapters/codex.json, .agent-workflow/tasks/T-002/context.md, .agent-workflow/tasks/T-002/verification.md, docs/NEXT_AGENT_HANDOFF.md
+- Check: Corrected the repo-local dogfooding auth path after confirming `OPENAI_API_KEY` exists locally but was not being forwarded because the adapter `envAllowlist` was empty.
+- Result: The repo-local Codex pilot now forwards the existing local auth env var into the child process without broadening generated defaults.
+- Artifact: .agent-workflow/tasks/T-002/runs/run-1775655024856.stderr.log
+
 ## Blocking gaps
 
 - The first real launch proved the child process path but failed because the prior recommended template passed unsupported `--ask-for-approval` flags to `codex exec`.
-- After the template fix, the real launch reached Codex itself but still failed before model execution because the local environment does not provide `OPENAI_API_KEY`.
-- A fully passed end-to-end Codex pilot on this machine now depends on local auth/provider readiness, not on prompt streaming, run ledger persistence, or Windows wrapper shape.
+- After the template fix, the real launch reached Codex itself but still failed before model execution because the child process did not receive `OPENAI_API_KEY`; the repo-local adapter now allowlists that env var.
+- The pilot now has a passed real local run, but that run intentionally stopped on a dirty working tree after ingesting the prompt and inspecting the scoped files, so the remaining question is whether to preflight that condition earlier or keep it as an honest agent-side stop.
 
 ## Evidence 2026-04-08T13:24:07.079Z
 
@@ -92,3 +99,23 @@
 - Failure category: non-zero-exit
 - Summary: Executor failed with exit code 1.
 - Verification check: [failed] Local codex executor result - exitCode=1; stdio=pipe; stdin=promptFile
+
+## Evidence 2026-04-08T13:46:14.597Z
+
+- Agent: codex
+- Source: executor
+- Adapter: codex
+- Status: passed
+- Outcome: passed
+- Exit code: 0
+- Duration ms: 44063
+- Prompt file: .agent-workflow/tasks/T-002/prompt.codex.md
+- Run request file: .agent-workflow/tasks/T-002/run-request.codex.json
+- Launch pack file: .agent-workflow/tasks/T-002/launch.codex.md
+- Stdout log: .agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log
+- Stderr log: .agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log
+- Scoped files covered: .agent-workflow/tasks/T-002/run-request.codex.json, docs/NEXT_AGENT_HANDOFF.md, .agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log, .agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log, .agent-workflow/adapters/codex.json, .agent-workflow/tasks/T-002/context.md, .agent-workflow/tasks/T-002/verification.md
+- Verification artifacts: .agent-workflow/tasks/T-002/prompt.codex.md, .agent-workflow/tasks/T-002/run-request.codex.json, .agent-workflow/tasks/T-002/launch.codex.md, .agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log, .agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log
+- Proof artifacts: .agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log, .agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log, .agent-workflow/tasks/T-002/prompt.codex.md, .agent-workflow/tasks/T-002/run-request.codex.json, .agent-workflow/tasks/T-002/launch.codex.md
+- Summary: Executor completed with exit code 0.
+- Verification check: [passed] Local codex executor result - exitCode=0; stdio=pipe; stdin=promptFile

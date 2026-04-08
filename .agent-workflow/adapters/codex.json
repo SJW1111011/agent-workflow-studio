@@ -25,7 +25,9 @@
   "successExitCodes": [
     0
   ],
-  "envAllowlist": [],
+  "envAllowlist": [
+    "OPENAI_API_KEY"
+  ],
   "capabilities": {
     "interactive": true,
     "multiAgent": true,
@@ -35,6 +37,7 @@
     "This repository's dogfooding workspace opts the local Codex adapter into exec mode for the narrow T-002 pilot; generated scaffolds should still stay manual by default.",
     "On this Windows machine the repo-local dogfooding profile uses `cmd.exe /d /s /c codex ...` because direct PowerShell invocation of the local shim is blocked by script-execution policy.",
     "On the locally observed Codex CLI surface from 2026-04-08, `codex exec` accepted `--sandbox` but rejected `--ask-for-approval`, so this dogfooding profile keeps the narrower confirmed flag shape.",
+    "This repo-local dogfooding profile also allowlists OPENAI_API_KEY so the executor can forward the already-configured local auth env var to the child Codex process.",
     "Keep this profile narrow and local-only until the real run path is proven stable through task-local evidence."
   ]
 }

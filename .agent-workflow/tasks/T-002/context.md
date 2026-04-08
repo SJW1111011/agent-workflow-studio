@@ -20,14 +20,16 @@ The project already has shared executor preflight/readiness, additive failure ca
 - Durable workflow artifacts must remain repo-relative and Git-friendly.
 - The first dogfooding launch does not need the child Codex process to implement a feature; it only needs the process to consume the compiled prompt, stay within scope, and leave honest run evidence.
 - The first repo-local dogfooding launch reached the real child process but exposed a template bug: the locally observed `codex exec` surface rejected `--ask-for-approval`.
-- After fixing that template, the next real launch reached Codex itself and confirmed stdin prompt delivery, but the local Codex CLI still failed before model work because `OPENAI_API_KEY` is not configured in this environment.
+- After fixing that template, the next real launch reached Codex itself and confirmed stdin prompt delivery, but the local Codex CLI still failed before model work because the executor had not allowlisted `OPENAI_API_KEY` into the child process environment.
+- After allowlisting `OPENAI_API_KEY`, the next real launch completed with exit code 0 and left durable logs, but the child Codex session stopped intentionally after detecting the already-dirty working tree instead of making further edits.
 
 ## Open questions
 
 - Does `child_process.spawn(...)` succeed with a Windows-safe wrapper such as `cmd.exe /c codex ...` in the real executor path on this machine?
 - What is the narrowest dogfooding prompt that proves the pipeline without inviting unrelated repo edits?
 - Which evidence should remain committed after the first real local run, and which should stay transient?
-- Should local auth/provider prerequisites remain documented as operator setup, or become an additive adapter preflight concept without hard-coding vendor assumptions into core defaults?
+- Should local auth/provider prerequisites remain documented as operator setup, or become an additive adapter preflight concept that can point to missing `envAllowlist` entries without hard-coding vendor assumptions into core defaults?
+- Should dirty-worktree detection remain something the child agent handles inside the prompt, or should the local executor eventually expose a lightweight advisory before launch for inspection-first dogfooding tasks?
 
 ## Constraints
 

@@ -1,150 +1,29 @@
 {
   "taskId": "T-002",
-  "generatedAt": "2026-04-08T13:32:54.220Z",
-  "latestRunStatus": "failed",
-  "runCount": 3,
+  "generatedAt": "2026-04-08T13:47:39.328Z",
+  "latestRunStatus": "passed",
+  "runCount": 4,
   "risks": [
-    "Latest recorded run failed.",
-    "Some scoped files still need proof: README.md, docs/NEXT_AGENT_HANDOFF.md, docs/RUN_EXECUTE_DESIGN.md, .agent-workflow/tasks/T-002/checkpoint.json, .agent-workflow/tasks/T-002/checkpoint.md, .agent-workflow/tasks/T-002/launch.codex.md, .agent-workflow/tasks/T-002/prompt.codex.md, .agent-workflow/tasks/T-002/run-request.codex.json, .agent-workflow/tasks/T-002/runs/run-1775654646958.json, .agent-workflow/tasks/T-002/runs/run-1775654646958.stderr.log, .agent-workflow/tasks/T-002/runs/run-1775654646958.stdout.log, .agent-workflow/tasks/T-002/runs/run-1775654963721.json, .agent-workflow/tasks/T-002/runs/run-1775654963721.stderr.log, .agent-workflow/tasks/T-002/runs/run-1775654963721.stdout.log, .agent-workflow/tasks/T-002/runs/run-1775655024856.json, .agent-workflow/tasks/T-002/runs/run-1775655024856.stderr.log, .agent-workflow/tasks/T-002/runs/run-1775655024856.stdout.log, .agent-workflow/tasks/T-002/task.json"
+    "Some scoped files still need proof: .agent-workflow/tasks/T-002/checkpoint.json, .agent-workflow/tasks/T-002/checkpoint.md, .agent-workflow/tasks/T-002/context.md, .agent-workflow/tasks/T-002/task.json, .agent-workflow/tasks/T-002/verification.md, docs/NEXT_AGENT_HANDOFF.md, .agent-workflow/tasks/T-002/runs/run-1775655930534.json"
   ],
   "completed": [
     "Prompt compiled",
-    "3 run(s) recorded",
+    "4 run(s) recorded",
     "Task context captured",
     "Some scoped files are already linked to explicit proof"
   ],
   "verificationGate": {
     "status": "partially-covered",
     "message": "Some scoped files are explicitly covered, but newer scoped changes still need proof.",
-    "relevantChangeCount": 18,
+    "relevantChangeCount": 7,
     "scopeHintCount": 5,
     "ambiguousScopeCount": 0,
     "relevantChangedFiles": [
       {
-        "path": "README.md",
-        "modifiedAt": "2026-04-08T13:32:30.517Z",
-        "changeType": "modified",
-        "gitState": "M",
-        "previousPath": null,
-        "matchedBy": [
-          {
-            "pattern": "README.md",
-            "source": "task.md"
-          }
-        ],
-        "proofUpdatedAt": "2026-04-08T13:32:20.968Z",
-        "proofFreshnessSource": null,
-        "proofItems": [
-          {
-            "sourceType": "manual",
-            "sourceLabel": "verification.md#proof-2",
-            "recordedAt": "2026-04-08T13:32:20.968Z",
-            "paths": [
-              "src/lib/workspace.js",
-              "src/lib/run-executor.js",
-              "test/workspace.test.js",
-              "test/run-executor.test.js",
-              "README.md",
-              "docs/ADAPTERS.md",
-              "docs/RUN_EXECUTE_DESIGN.md",
-              "docs/NEXT_AGENT_HANDOFF.md"
-            ],
-            "anchorCount": 0,
-            "checks": [
-              "Updated the recommended Codex exec template after a real dogfooding run showed that the local `codex exec` subcommand rejected `--ask-for-approval`, and fixed executor run serialization so ordinary failed runs do not persist invalid null signal fields. (result: The dogfooding path now reaches the real Codex CLI with the narrower confirmed argv shape, and failed executor runs stay schema-valid while leaving durable logs.)"
-            ],
-            "artifacts": [
-              ".agent-workflow/tasks/T-002/runs/run-1775654646958.stderr.log"
-            ],
-            "strong": true
-          }
-        ]
-      },
-      {
-        "path": "docs/NEXT_AGENT_HANDOFF.md",
-        "modifiedAt": "2026-04-08T13:32:20.969Z",
-        "changeType": "modified",
-        "gitState": "M",
-        "previousPath": null,
-        "matchedBy": [
-          {
-            "pattern": "docs/NEXT_AGENT_HANDOFF.md",
-            "source": "task.md"
-          }
-        ],
-        "proofUpdatedAt": "2026-04-08T13:32:20.968Z",
-        "proofFreshnessSource": null,
-        "proofItems": [
-          {
-            "sourceType": "manual",
-            "sourceLabel": "verification.md#proof-2",
-            "recordedAt": "2026-04-08T13:32:20.968Z",
-            "paths": [
-              "src/lib/workspace.js",
-              "src/lib/run-executor.js",
-              "test/workspace.test.js",
-              "test/run-executor.test.js",
-              "README.md",
-              "docs/ADAPTERS.md",
-              "docs/RUN_EXECUTE_DESIGN.md",
-              "docs/NEXT_AGENT_HANDOFF.md"
-            ],
-            "anchorCount": 0,
-            "checks": [
-              "Updated the recommended Codex exec template after a real dogfooding run showed that the local `codex exec` subcommand rejected `--ask-for-approval`, and fixed executor run serialization so ordinary failed runs do not persist invalid null signal fields. (result: The dogfooding path now reaches the real Codex CLI with the narrower confirmed argv shape, and failed executor runs stay schema-valid while leaving durable logs.)"
-            ],
-            "artifacts": [
-              ".agent-workflow/tasks/T-002/runs/run-1775654646958.stderr.log"
-            ],
-            "strong": true
-          }
-        ]
-      },
-      {
-        "path": "docs/RUN_EXECUTE_DESIGN.md",
-        "modifiedAt": "2026-04-08T13:32:20.969Z",
-        "changeType": "modified",
-        "gitState": "M",
-        "previousPath": null,
-        "matchedBy": [
-          {
-            "pattern": "docs/RUN_EXECUTE_DESIGN.md",
-            "source": "task.md"
-          }
-        ],
-        "proofUpdatedAt": "2026-04-08T13:32:20.968Z",
-        "proofFreshnessSource": null,
-        "proofItems": [
-          {
-            "sourceType": "manual",
-            "sourceLabel": "verification.md#proof-2",
-            "recordedAt": "2026-04-08T13:32:20.968Z",
-            "paths": [
-              "src/lib/workspace.js",
-              "src/lib/run-executor.js",
-              "test/workspace.test.js",
-              "test/run-executor.test.js",
-              "README.md",
-              "docs/ADAPTERS.md",
-              "docs/RUN_EXECUTE_DESIGN.md",
-              "docs/NEXT_AGENT_HANDOFF.md"
-            ],
-            "anchorCount": 0,
-            "checks": [
-              "Updated the recommended Codex exec template after a real dogfooding run showed that the local `codex exec` subcommand rejected `--ask-for-approval`, and fixed executor run serialization so ordinary failed runs do not persist invalid null signal fields. (result: The dogfooding path now reaches the real Codex CLI with the narrower confirmed argv shape, and failed executor runs stay schema-valid while leaving durable logs.)"
-            ],
-            "artifacts": [
-              ".agent-workflow/tasks/T-002/runs/run-1775654646958.stderr.log"
-            ],
-            "strong": true
-          }
-        ]
-      },
-      {
         "path": ".agent-workflow/tasks/T-002/checkpoint.json",
-        "modifiedAt": "2026-04-08T13:30:25.759Z",
-        "changeType": "untracked",
-        "gitState": "??",
+        "modifiedAt": "2026-04-08T13:46:14.982Z",
+        "changeType": "modified",
+        "gitState": "M",
         "previousPath": null,
         "matchedBy": [
           {
@@ -158,9 +37,9 @@
       },
       {
         "path": ".agent-workflow/tasks/T-002/checkpoint.md",
-        "modifiedAt": "2026-04-08T13:30:25.759Z",
-        "changeType": "untracked",
-        "gitState": "??",
+        "modifiedAt": "2026-04-08T13:46:14.983Z",
+        "changeType": "modified",
+        "gitState": "M",
         "previousPath": null,
         "matchedBy": [
           {
@@ -173,10 +52,10 @@
         "proofItems": []
       },
       {
-        "path": ".agent-workflow/tasks/T-002/launch.codex.md",
-        "modifiedAt": "2026-04-08T13:30:24.850Z",
-        "changeType": "untracked",
-        "gitState": "??",
+        "path": ".agent-workflow/tasks/T-002/context.md",
+        "modifiedAt": "2026-04-08T13:47:29.456Z",
+        "changeType": "modified",
+        "gitState": "M",
         "previousPath": null,
         "matchedBy": [
           {
@@ -184,189 +63,260 @@
             "source": "task.md"
           }
         ],
-        "proofUpdatedAt": null,
-        "proofFreshnessSource": null,
-        "proofItems": []
-      },
-      {
-        "path": ".agent-workflow/tasks/T-002/prompt.codex.md",
-        "modifiedAt": "2026-04-08T13:32:53.418Z",
-        "changeType": "untracked",
-        "gitState": "??",
-        "previousPath": null,
-        "matchedBy": [
+        "proofUpdatedAt": "2026-04-08T13:47:29.457Z",
+        "proofFreshnessSource": "anchor-stale",
+        "proofItems": [
           {
-            "pattern": ".agent-workflow/tasks/T-002/",
-            "source": "task.md"
-          }
-        ],
-        "proofUpdatedAt": null,
-        "proofFreshnessSource": null,
-        "proofItems": []
-      },
-      {
-        "path": ".agent-workflow/tasks/T-002/run-request.codex.json",
-        "modifiedAt": "2026-04-08T13:30:24.850Z",
-        "changeType": "untracked",
-        "gitState": "??",
-        "previousPath": null,
-        "matchedBy": [
+            "sourceType": "run",
+            "sourceLabel": "run-1775655930534",
+            "recordedAt": "2026-04-08T13:46:14.597Z",
+            "paths": [
+              ".agent-workflow/tasks/T-002/run-request.codex.json",
+              "docs/NEXT_AGENT_HANDOFF.md",
+              ".agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log",
+              ".agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log",
+              ".agent-workflow/adapters/codex.json",
+              ".agent-workflow/tasks/T-002/context.md",
+              ".agent-workflow/tasks/T-002/verification.md"
+            ],
+            "anchorCount": 7,
+            "checks": [
+              "[passed] Local codex executor result - exitCode=0; stdio=pipe; stdin=promptFile"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log",
+              ".agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log",
+              ".agent-workflow/tasks/T-002/prompt.codex.md",
+              ".agent-workflow/tasks/T-002/run-request.codex.json",
+              ".agent-workflow/tasks/T-002/launch.codex.md"
+            ],
+            "strong": true
+          },
           {
-            "pattern": ".agent-workflow/tasks/T-002/",
-            "source": "task.md"
-          }
-        ],
-        "proofUpdatedAt": null,
-        "proofFreshnessSource": null,
-        "proofItems": []
-      },
-      {
-        "path": ".agent-workflow/tasks/T-002/runs/run-1775654646958.json",
-        "modifiedAt": "2026-04-08T13:29:12.649Z",
-        "changeType": "untracked",
-        "gitState": "??",
-        "previousPath": null,
-        "matchedBy": [
+            "sourceType": "manual",
+            "sourceLabel": "verification.md#proof-1",
+            "recordedAt": "2026-04-08T13:47:29.457Z",
+            "paths": [
+              ".agent-workflow/adapters/codex.json",
+              ".agent-workflow/tasks/T-002/task.md",
+              ".agent-workflow/tasks/T-002/context.md",
+              ".agent-workflow/tasks/T-002/verification.md"
+            ],
+            "anchorCount": 0,
+            "checks": [
+              "Scoped the repo-local dogfooding adapter and task docs so one real Codex run can be attempted through the existing `run:execute` contract. (result: The task bundle now defines a narrow, local-only executor pilot with explicit checks and boundaries.)"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-002/checkpoint.md"
+            ],
+            "strong": true
+          },
           {
-            "pattern": ".agent-workflow/tasks/T-002/",
-            "source": "task.md"
+            "sourceType": "manual",
+            "sourceLabel": "verification.md#proof-3",
+            "recordedAt": "2026-04-08T13:47:29.457Z",
+            "paths": [
+              ".agent-workflow/adapters/codex.json",
+              ".agent-workflow/tasks/T-002/context.md",
+              ".agent-workflow/tasks/T-002/verification.md",
+              "docs/NEXT_AGENT_HANDOFF.md"
+            ],
+            "anchorCount": 0,
+            "checks": [
+              "Corrected the repo-local dogfooding auth path after confirming `OPENAI_API_KEY` exists locally but was not being forwarded because the adapter `envAllowlist` was empty. (result: The repo-local Codex pilot now forwards the existing local auth env var into the child process without broadening generated defaults.)"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-002/runs/run-1775655024856.stderr.log"
+            ],
+            "strong": true
           }
-        ],
-        "proofUpdatedAt": null,
-        "proofFreshnessSource": null,
-        "proofItems": []
-      },
-      {
-        "path": ".agent-workflow/tasks/T-002/runs/run-1775654646958.stderr.log",
-        "modifiedAt": "2026-04-08T13:24:07.067Z",
-        "changeType": "untracked",
-        "gitState": "??",
-        "previousPath": null,
-        "matchedBy": [
-          {
-            "pattern": ".agent-workflow/tasks/T-002/",
-            "source": "task.md"
-          }
-        ],
-        "proofUpdatedAt": null,
-        "proofFreshnessSource": null,
-        "proofItems": []
-      },
-      {
-        "path": ".agent-workflow/tasks/T-002/runs/run-1775654646958.stdout.log",
-        "modifiedAt": "2026-04-08T13:24:06.959Z",
-        "changeType": "untracked",
-        "gitState": "??",
-        "previousPath": null,
-        "matchedBy": [
-          {
-            "pattern": ".agent-workflow/tasks/T-002/",
-            "source": "task.md"
-          }
-        ],
-        "proofUpdatedAt": null,
-        "proofFreshnessSource": null,
-        "proofItems": []
-      },
-      {
-        "path": ".agent-workflow/tasks/T-002/runs/run-1775654963721.json",
-        "modifiedAt": "2026-04-08T13:29:24.056Z",
-        "changeType": "untracked",
-        "gitState": "??",
-        "previousPath": null,
-        "matchedBy": [
-          {
-            "pattern": ".agent-workflow/tasks/T-002/",
-            "source": "task.md"
-          }
-        ],
-        "proofUpdatedAt": null,
-        "proofFreshnessSource": null,
-        "proofItems": []
-      },
-      {
-        "path": ".agent-workflow/tasks/T-002/runs/run-1775654963721.stderr.log",
-        "modifiedAt": "2026-04-08T13:29:23.845Z",
-        "changeType": "untracked",
-        "gitState": "??",
-        "previousPath": null,
-        "matchedBy": [
-          {
-            "pattern": ".agent-workflow/tasks/T-002/",
-            "source": "task.md"
-          }
-        ],
-        "proofUpdatedAt": null,
-        "proofFreshnessSource": null,
-        "proofItems": []
-      },
-      {
-        "path": ".agent-workflow/tasks/T-002/runs/run-1775654963721.stdout.log",
-        "modifiedAt": "2026-04-08T13:29:23.722Z",
-        "changeType": "untracked",
-        "gitState": "??",
-        "previousPath": null,
-        "matchedBy": [
-          {
-            "pattern": ".agent-workflow/tasks/T-002/",
-            "source": "task.md"
-          }
-        ],
-        "proofUpdatedAt": null,
-        "proofFreshnessSource": null,
-        "proofItems": []
-      },
-      {
-        "path": ".agent-workflow/tasks/T-002/runs/run-1775655024856.json",
-        "modifiedAt": "2026-04-08T13:30:25.575Z",
-        "changeType": "untracked",
-        "gitState": "??",
-        "previousPath": null,
-        "matchedBy": [
-          {
-            "pattern": ".agent-workflow/tasks/T-002/",
-            "source": "task.md"
-          }
-        ],
-        "proofUpdatedAt": null,
-        "proofFreshnessSource": null,
-        "proofItems": []
-      },
-      {
-        "path": ".agent-workflow/tasks/T-002/runs/run-1775655024856.stderr.log",
-        "modifiedAt": "2026-04-08T13:30:25.351Z",
-        "changeType": "untracked",
-        "gitState": "??",
-        "previousPath": null,
-        "matchedBy": [
-          {
-            "pattern": ".agent-workflow/tasks/T-002/",
-            "source": "task.md"
-          }
-        ],
-        "proofUpdatedAt": null,
-        "proofFreshnessSource": null,
-        "proofItems": []
-      },
-      {
-        "path": ".agent-workflow/tasks/T-002/runs/run-1775655024856.stdout.log",
-        "modifiedAt": "2026-04-08T13:30:24.857Z",
-        "changeType": "untracked",
-        "gitState": "??",
-        "previousPath": null,
-        "matchedBy": [
-          {
-            "pattern": ".agent-workflow/tasks/T-002/",
-            "source": "task.md"
-          }
-        ],
-        "proofUpdatedAt": null,
-        "proofFreshnessSource": null,
-        "proofItems": []
+        ]
       },
       {
         "path": ".agent-workflow/tasks/T-002/task.json",
-        "modifiedAt": "2026-04-08T13:30:25.577Z",
+        "modifiedAt": "2026-04-08T13:46:14.810Z",
+        "changeType": "modified",
+        "gitState": "M",
+        "previousPath": null,
+        "matchedBy": [
+          {
+            "pattern": ".agent-workflow/tasks/T-002/",
+            "source": "task.md"
+          }
+        ],
+        "proofUpdatedAt": null,
+        "proofFreshnessSource": null,
+        "proofItems": []
+      },
+      {
+        "path": ".agent-workflow/tasks/T-002/verification.md",
+        "modifiedAt": "2026-04-08T13:47:29.457Z",
+        "changeType": "modified",
+        "gitState": "M",
+        "previousPath": null,
+        "matchedBy": [
+          {
+            "pattern": ".agent-workflow/tasks/T-002/",
+            "source": "task.md"
+          }
+        ],
+        "proofUpdatedAt": "2026-04-08T13:47:29.457Z",
+        "proofFreshnessSource": "anchor-stale",
+        "proofItems": [
+          {
+            "sourceType": "run",
+            "sourceLabel": "run-1775655930534",
+            "recordedAt": "2026-04-08T13:46:14.597Z",
+            "paths": [
+              ".agent-workflow/tasks/T-002/run-request.codex.json",
+              "docs/NEXT_AGENT_HANDOFF.md",
+              ".agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log",
+              ".agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log",
+              ".agent-workflow/adapters/codex.json",
+              ".agent-workflow/tasks/T-002/context.md",
+              ".agent-workflow/tasks/T-002/verification.md"
+            ],
+            "anchorCount": 7,
+            "checks": [
+              "[passed] Local codex executor result - exitCode=0; stdio=pipe; stdin=promptFile"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log",
+              ".agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log",
+              ".agent-workflow/tasks/T-002/prompt.codex.md",
+              ".agent-workflow/tasks/T-002/run-request.codex.json",
+              ".agent-workflow/tasks/T-002/launch.codex.md"
+            ],
+            "strong": true
+          },
+          {
+            "sourceType": "manual",
+            "sourceLabel": "verification.md#proof-1",
+            "recordedAt": "2026-04-08T13:47:29.457Z",
+            "paths": [
+              ".agent-workflow/adapters/codex.json",
+              ".agent-workflow/tasks/T-002/task.md",
+              ".agent-workflow/tasks/T-002/context.md",
+              ".agent-workflow/tasks/T-002/verification.md"
+            ],
+            "anchorCount": 0,
+            "checks": [
+              "Scoped the repo-local dogfooding adapter and task docs so one real Codex run can be attempted through the existing `run:execute` contract. (result: The task bundle now defines a narrow, local-only executor pilot with explicit checks and boundaries.)"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-002/checkpoint.md"
+            ],
+            "strong": true
+          },
+          {
+            "sourceType": "manual",
+            "sourceLabel": "verification.md#proof-3",
+            "recordedAt": "2026-04-08T13:47:29.457Z",
+            "paths": [
+              ".agent-workflow/adapters/codex.json",
+              ".agent-workflow/tasks/T-002/context.md",
+              ".agent-workflow/tasks/T-002/verification.md",
+              "docs/NEXT_AGENT_HANDOFF.md"
+            ],
+            "anchorCount": 0,
+            "checks": [
+              "Corrected the repo-local dogfooding auth path after confirming `OPENAI_API_KEY` exists locally but was not being forwarded because the adapter `envAllowlist` was empty. (result: The repo-local Codex pilot now forwards the existing local auth env var into the child process without broadening generated defaults.)"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-002/runs/run-1775655024856.stderr.log"
+            ],
+            "strong": true
+          }
+        ]
+      },
+      {
+        "path": "docs/NEXT_AGENT_HANDOFF.md",
+        "modifiedAt": "2026-04-08T13:47:29.457Z",
+        "changeType": "modified",
+        "gitState": "M",
+        "previousPath": null,
+        "matchedBy": [
+          {
+            "pattern": "docs/NEXT_AGENT_HANDOFF.md",
+            "source": "task.md"
+          }
+        ],
+        "proofUpdatedAt": "2026-04-08T13:47:29.457Z",
+        "proofFreshnessSource": "anchor-stale",
+        "proofItems": [
+          {
+            "sourceType": "run",
+            "sourceLabel": "run-1775655930534",
+            "recordedAt": "2026-04-08T13:46:14.597Z",
+            "paths": [
+              ".agent-workflow/tasks/T-002/run-request.codex.json",
+              "docs/NEXT_AGENT_HANDOFF.md",
+              ".agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log",
+              ".agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log",
+              ".agent-workflow/adapters/codex.json",
+              ".agent-workflow/tasks/T-002/context.md",
+              ".agent-workflow/tasks/T-002/verification.md"
+            ],
+            "anchorCount": 7,
+            "checks": [
+              "[passed] Local codex executor result - exitCode=0; stdio=pipe; stdin=promptFile"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log",
+              ".agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log",
+              ".agent-workflow/tasks/T-002/prompt.codex.md",
+              ".agent-workflow/tasks/T-002/run-request.codex.json",
+              ".agent-workflow/tasks/T-002/launch.codex.md"
+            ],
+            "strong": true
+          },
+          {
+            "sourceType": "manual",
+            "sourceLabel": "verification.md#proof-2",
+            "recordedAt": "2026-04-08T13:47:29.457Z",
+            "paths": [
+              "src/lib/workspace.js",
+              "src/lib/run-executor.js",
+              "test/workspace.test.js",
+              "test/run-executor.test.js",
+              "README.md",
+              "docs/ADAPTERS.md",
+              "docs/RUN_EXECUTE_DESIGN.md",
+              "docs/NEXT_AGENT_HANDOFF.md"
+            ],
+            "anchorCount": 0,
+            "checks": [
+              "Updated the recommended Codex exec template after a real dogfooding run showed that the local `codex exec` subcommand rejected `--ask-for-approval`, and fixed executor run serialization so ordinary failed runs do not persist invalid null signal fields. (result: The dogfooding path now reaches the real Codex CLI with the narrower confirmed argv shape, and failed executor runs stay schema-valid while leaving durable logs.)"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-002/runs/run-1775654646958.stderr.log"
+            ],
+            "strong": true
+          },
+          {
+            "sourceType": "manual",
+            "sourceLabel": "verification.md#proof-3",
+            "recordedAt": "2026-04-08T13:47:29.457Z",
+            "paths": [
+              ".agent-workflow/adapters/codex.json",
+              ".agent-workflow/tasks/T-002/context.md",
+              ".agent-workflow/tasks/T-002/verification.md",
+              "docs/NEXT_AGENT_HANDOFF.md"
+            ],
+            "anchorCount": 0,
+            "checks": [
+              "Corrected the repo-local dogfooding auth path after confirming `OPENAI_API_KEY` exists locally but was not being forwarded because the adapter `envAllowlist` was empty. (result: The repo-local Codex pilot now forwards the existing local auth env var into the child process without broadening generated defaults.)"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-002/runs/run-1775655024856.stderr.log"
+            ],
+            "strong": true
+          }
+        ]
+      },
+      {
+        "path": ".agent-workflow/tasks/T-002/runs/run-1775655930534.json",
+        "modifiedAt": "2026-04-08T13:46:14.808Z",
         "changeType": "untracked",
         "gitState": "??",
         "previousPath": null,

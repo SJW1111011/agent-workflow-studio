@@ -87,7 +87,7 @@ This is intentionally still opt-in:
 - local environments vary
 - on the locally observed Codex CLI surface from 2026-04-08, `codex exec` accepted `--sandbox` but rejected `--ask-for-approval`, so the current recommended template stays within that confirmed flag shape
 - Windows may still need a wrapper such as `cmd.exe` if direct `codex` spawning is not available on that machine
-- even after runner shape is confirmed, a real local CLI may still require separate auth/provider readiness before model execution succeeds
+- even after runner shape is confirmed, a real local CLI may still require separate auth/provider readiness before model execution succeeds, and that may depend on adapter-owned `envAllowlist` entries for the child process
 - preflight now surfaces those readiness issues as typed blocking issues plus advisories instead of silently failing at spawn time
 
 ## Next step

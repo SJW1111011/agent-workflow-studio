@@ -69,7 +69,8 @@ As of 2026-04-08, the project already has a working MVP foundation:
 - preflight/readiness now also returns additive `advisories`, including adapter notes plus first-pass local runner-availability guidance for real CLI pilot work
 - adapters can now also opt into `stdinMode: promptFile`, and the executor can stream the compiled prompt into stdin for non-interactive real-CLI style profiles without shell redirection
 - the first repo-local real Codex dogfooding attempt reached the actual child process and persisted executor evidence, but it failed fast because the locally observed `codex exec` CLI rejected `--ask-for-approval`; the recommended template now stays within the confirmed `codex exec --sandbox workspace-write -` flag shape
-- a follow-up real Codex launch then reached Codex itself and confirmed stdin prompt delivery plus durable run logs, but it still failed before model work because this environment does not currently provide `OPENAI_API_KEY`
+- a follow-up real Codex launch then reached Codex itself and confirmed stdin prompt delivery plus durable run logs, but it still failed before model work because the repo-local dogfooding adapter had not forwarded `OPENAI_API_KEY` into the child process; the local profile now allowlists that env var
+- a subsequent real Codex launch now completes with exit code 0 and lands durable task-local evidence, proving the local `run:execute` path end to end; in this repository state the child agent then stopped honestly on the already-dirty working tree instead of making further edits
 - the dashboard execution bridge now preserves a transient `preflight-failed` state locally when launch is blocked before spawn, while durable run evidence still remains reserved for real process starts
 - verification freshness Phase 1 is now implemented behind `src/lib/repository-snapshot.js`, and the design note still scopes the later proof-anchor phase
 - the first Phase 2 proof-anchor pass is now implemented: passed runs can capture `scopeProofAnchors`, and the gate prefers anchor comparison for those runs while manual proof defaults to the compatibility path until anchors are explicitly refreshed
@@ -276,8 +277,8 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Decide whether auth/provider prerequisites for real local CLIs should stay documented as operator setup or become an additive adapter preflight concept without hard-coding vendor assumptions globally.
-2. Re-run `T-002` with a locally authenticated/configured Codex CLI so prompt -> run -> evidence -> checkpoint is proven with a passed real agent execution, not only a launched one.
+1. Decide whether dirty-worktree awareness for inspection-first real-agent pilots belongs in executor preflight/advisories or should remain an agent-side honest stop surfaced only through run logs.
+2. Decide whether auth/provider prerequisites for real local CLIs should stay documented as operator setup or become an additive adapter preflight concept without hard-coding vendor assumptions globally.
 3. If executor metadata grows, decide whether `executionIntentId` or richer advisories belong in transient bridge state, durable run records, or both.
 4. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 5. Revisit adapter extensibility only after the executor/evidence model is proven stable in dogfooding.
@@ -293,7 +294,7 @@ Recommended next sequence:
 
 Suggested first task:
 
-Finish the narrow real-agent `run:execute` pilot now that onboarding shortcuts, manual proof anchors, and shared preflight/readiness are all in place. The current blocker is no longer runner shape or stdin prompt delivery; it is honest local auth/provider readiness for the real Codex CLI on this machine.
+Build on the now-proven narrow real-agent `run:execute` pilot without broadening defaults. The current follow-up question is no longer whether a real local Codex run can launch; it is how much additional operator guidance should exist before a real agent sees a dirty worktree or missing auth prerequisites.
 
 Expected shape:
 

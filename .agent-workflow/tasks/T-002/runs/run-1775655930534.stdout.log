@@ -1,0 +1,16 @@
+I noticed the repo is already dirty with changes I didn’t make:
+
+- ` .agent-workflow/adapters/codex.json`
+- ` .agent-workflow/tasks/T-002/context.md`
+- ` .agent-workflow/tasks/T-002/run-request.codex.json`
+- ` .agent-workflow/tasks/T-002/verification.md`
+- ` docs/ADAPTERS.md`
+- ` docs/NEXT_AGENT_HANDOFF.md`
+- untracked: ` .agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log`
+- untracked: ` .agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log`
+
+I’ve paused before making edits. How would you like me to proceed?
+
+1. Treat these as intentional in-progress changes and continue, building on top of them.
+2. First inspect and summarize those existing changes for you, then continue.
+3. Stop here so you can clean up or clarify the repo state first.

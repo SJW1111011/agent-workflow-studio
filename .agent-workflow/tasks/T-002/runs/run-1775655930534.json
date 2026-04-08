@@ -1,0 +1,95 @@
+{
+  "id": "run-1775655930534",
+  "taskId": "T-002",
+  "agent": "codex",
+  "status": "passed",
+  "summary": "Executor completed with exit code 0.",
+  "createdAt": "2026-04-08T13:45:30.534Z",
+  "adapterId": "codex",
+  "source": "executor",
+  "outcome": "passed",
+  "startedAt": "2026-04-08T13:45:30.534Z",
+  "completedAt": "2026-04-08T13:46:14.597Z",
+  "durationMs": 44063,
+  "exitCode": 0,
+  "commandMode": "exec",
+  "promptFile": ".agent-workflow/tasks/T-002/prompt.codex.md",
+  "runRequestFile": ".agent-workflow/tasks/T-002/run-request.codex.json",
+  "launchPackFile": ".agent-workflow/tasks/T-002/launch.codex.md",
+  "stdoutFile": ".agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log",
+  "stderrFile": ".agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log",
+  "verificationChecks": [
+    {
+      "label": "Local codex executor result",
+      "status": "passed",
+      "details": "exitCode=0; stdio=pipe; stdin=promptFile",
+      "artifacts": [
+        ".agent-workflow/tasks/T-002/prompt.codex.md",
+        ".agent-workflow/tasks/T-002/run-request.codex.json",
+        ".agent-workflow/tasks/T-002/launch.codex.md",
+        ".agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log",
+        ".agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log"
+      ]
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-002/prompt.codex.md",
+    ".agent-workflow/tasks/T-002/run-request.codex.json",
+    ".agent-workflow/tasks/T-002/launch.codex.md",
+    ".agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log",
+    ".agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log"
+  ],
+  "scopeProofPaths": [
+    ".agent-workflow/tasks/T-002/run-request.codex.json",
+    "docs/NEXT_AGENT_HANDOFF.md",
+    ".agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log",
+    ".agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log",
+    ".agent-workflow/adapters/codex.json",
+    ".agent-workflow/tasks/T-002/context.md",
+    ".agent-workflow/tasks/T-002/verification.md"
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": ".agent-workflow/tasks/T-002/run-request.codex.json",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:dda42f950f85327f49ef39c622bbddf97648079e"
+    },
+    {
+      "path": "docs/NEXT_AGENT_HANDOFF.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:fb2da7fc3c90823bae0ca94edf6384f3fd154ff9"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-002/runs/run-1775655930534.stderr.log",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:5b55a0e55cbddfc10b4929fdcac31b35a7b1e6f8"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-002/runs/run-1775655930534.stdout.log",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:68333b3a081c4f0662288df252bd5bc50e5b57a4"
+    },
+    {
+      "path": ".agent-workflow/adapters/codex.json",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:fbbe4851f162e681c7cc2488ae8892ebc22072ba"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-002/context.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:3e80c194f69733b0f4238dacc236f1cfaae156d4"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-002/verification.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:e72d32776d6e9a9d17db3f3df63a5210cc1fa5da"
+    }
+  ]
+}
