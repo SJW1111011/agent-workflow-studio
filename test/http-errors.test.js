@@ -103,7 +103,7 @@ const tests = [
       assert.equal(planError.failureCategory, "adapter-manual-only");
       assert.match(planError.message, /manual handoff only/);
       assert.ok(Array.isArray(planError.advisories));
-      assert.match(planError.advisories[0].message, /Confirm the local Codex CLI invocation/i);
+      assert.ok(planError.advisories.some((entry) => /Confirm the local Codex CLI invocation/i.test(entry.message)));
     },
   },
 ];

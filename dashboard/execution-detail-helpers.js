@@ -400,6 +400,7 @@
       state.runStatus ? createTag(state.runStatus, state.runStatus === "failed") : "",
       state.failureCategory ? createTag(state.failureCategory, true) : "",
       state.stdioMode ? createTag(`stdio ${state.stdioMode}`, false) : "",
+      state.stdinMode && state.stdinMode !== "none" ? createTag(`stdin ${state.stdinMode}`, false) : "",
       typeof state.exitCode === "number" ? createTag(`exit ${state.exitCode}`, state.runStatus === "failed") : "",
     ]
       .filter(Boolean)

@@ -26,6 +26,7 @@ async function main() {
 
   let sleepMs = 0;
   let exitCode = 0;
+  let expectStdin = false;
 
   for (let index = 0; index < extras.length; index += 1) {
     if (extras[index] === "--sleep-ms") {
@@ -34,6 +35,8 @@ async function main() {
     } else if (extras[index] === "--exit-code") {
       exitCode = Number(extras[index + 1] || 0);
       index += 1;
+    } else if (extras[index] === "--expect-stdin") {
+      expectStdin = true;
     }
   }
 
@@ -48,6 +51,15 @@ async function main() {
   if (!prompt.includes("# " + runRequest.taskId + " Prompt")) {
     console.error("prompt header missing");
     process.exit(3);
+  }
+
+  if (expectStdin) {
+    const stdinPrompt = fs.readFileSync(0, "utf8");
+    if (!stdinPrompt.includes("# " + runRequest.taskId + " Prompt")) {
+      console.error("stdin prompt missing");
+      process.exit(4);
+    }
+    fs.writeFileSync(path.join(process.cwd(), runRequest.taskId + ".stdin.txt"), stdinPrompt, "utf8");
   }
 
   console.log("stdout", runRequest.taskId, runRequest.adapterId);
@@ -79,6 +91,7 @@ function configureCodexExecutor(workspaceRoot, overrides = {}) {
     argvTemplate: ["fake-runner.js", "{promptFile}", "{runRequestFile}"],
     cwdMode: "workspaceRoot",
     stdioMode: "pipe",
+    stdinMode: "none",
     successExitCodes: [0],
     envAllowlist: [],
   });
@@ -120,6 +133,7 @@ const tests = [
         assert.equal(plan.command, process.execPath);
         assert.equal(plan.cwd, files.root);
         assert.equal(plan.stdioMode, "pipe");
+        assert.equal(plan.stdinMode, "none");
         assert.equal(plan.timeoutMs, 500);
         assert.equal(path.normalize(plan.args[0]), path.join(workspaceRoot, "fake-runner.js"));
         assert.equal(path.normalize(plan.args[1]), files.promptCodex);
@@ -141,6 +155,24 @@ const tests = [
           process.env.RUN_EXECUTOR_TEST_FLAG = previousEnv;
         }
       }
+    },
+  },
+  {
+    name: "planRunExecution can wire promptFile into stdin for real-cli style adapters",
+    run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("run-executor-plan-stdin");
+
+      writeFakeRunner(workspaceRoot);
+      configureCodexExecutor(workspaceRoot, {
+        argvTemplate: ["fake-runner.js", "{promptFile}", "{runRequestFile}", "--expect-stdin"],
+        stdinMode: "promptFile",
+      });
+
+      const plan = planRunExecution(workspaceRoot, taskId, "codex");
+
+      assert.equal(plan.stdinMode, "promptFile");
+      assert.equal(path.normalize(plan.stdinPath), files.promptCodex);
+      assert.equal(plan.args.includes("--expect-stdin"), true);
     },
   },
   {
@@ -178,7 +210,7 @@ const tests = [
       assert.equal(readiness.failureCategory, "adapter-manual-only");
       assert.equal(readiness.code, "adapter_manual_handoff_only");
       assert.ok(Array.isArray(readiness.advisories));
-      assert.match(readiness.advisories[0].message, /Confirm the local Codex CLI invocation/i);
+      assert.ok(readiness.advisories.some((entry) => /Confirm the local Codex CLI invocation/i.test(entry.message)));
     },
   },
   {
@@ -259,6 +291,25 @@ const tests = [
       const validation = validateWorkspace(workspaceRoot);
       assert.equal(validation.issues.some((issue) => issue.code === "run.outcome"), false);
       assert.equal(validation.issues.some((issue) => issue.code === "run.failureCategory"), false);
+    },
+  },
+  {
+    name: "executeRun can stream the compiled prompt into stdin for non-interactive adapter profiles",
+    async run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("run-executor-stdin");
+
+      writeFakeRunner(workspaceRoot);
+      configureCodexExecutor(workspaceRoot, {
+        argvTemplate: ["fake-runner.js", "{promptFile}", "{runRequestFile}", "--expect-stdin"],
+        stdinMode: "promptFile",
+      });
+
+      const result = await executeRun(workspaceRoot, taskId, "codex");
+
+      assert.equal(result.run.status, "passed");
+      assert.match(result.run.verificationChecks[0].details, /stdin=promptFile/);
+      assertFileExists(path.join(workspaceRoot, "T-001.stdin.txt"));
+      assert.match(readTextFile(path.join(workspaceRoot, "T-001.stdin.txt")), /# T-001 Prompt/);
     },
   },
   {

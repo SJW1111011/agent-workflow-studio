@@ -152,9 +152,11 @@ Instead it provides:
 There is now a first local `run:execute` bridge for adapters that explicitly switch to `commandMode: exec`.
 
 - built-in adapters still default to `manual`
+- the built-in Codex adapter now also carries a recommended non-interactive `codex exec ... -` profile, but it still stays `manual` until you explicitly opt in
 - the first executable pass keeps the contract-first structure
 - execution writes evidence back into `runs/*.json`, `verification.md`, and `checkpoint.md`
 - `stdioMode: inherit` and `stdioMode: pipe` are supported
+- adapters can now also declare `stdinMode: promptFile`, so non-interactive CLIs can receive the compiled prompt over stdin without shell glue
 - capture mode can persist stdout and stderr logs under the task run ledger
 - execution can record timeout and interruption metadata
 - CLI and dashboard now share the same preflight/readiness pass before launch, so adapter validation, artifact readiness, and caller-specific stdio checks do not drift apart

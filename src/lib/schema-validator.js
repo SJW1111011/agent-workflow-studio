@@ -101,6 +101,9 @@ function validateAdapters(workspaceRoot, issues) {
     if (config.stdioMode !== undefined && !["inherit", "pipe"].includes(config.stdioMode)) {
       issues.push(issue("error", "adapter.stdioMode", `Adapter ${adapter.adapterId} has unsupported stdioMode ${config.stdioMode}`, adapter.adapterPath));
     }
+    if (config.stdinMode !== undefined && !["none", "promptFile"].includes(config.stdinMode)) {
+      issues.push(issue("error", "adapter.stdinMode", `Adapter ${adapter.adapterId} has unsupported stdinMode ${config.stdinMode}`, adapter.adapterPath));
+    }
     if (
       config.successExitCodes !== undefined &&
       (!Array.isArray(config.successExitCodes) || !config.successExitCodes.every((value) => Number.isInteger(value)))

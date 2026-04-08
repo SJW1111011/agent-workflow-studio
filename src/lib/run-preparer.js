@@ -39,6 +39,7 @@ function prepareRun(workspaceRoot, taskId, adapterInput) {
     ],
     runnerCommand: adapter.runnerCommand || [],
     commandMode: adapter.commandMode || "manual",
+    stdinMode: adapter.stdinMode || "none",
     capabilities: adapter.capabilities || {},
   };
 
@@ -69,6 +70,7 @@ function renderLaunchPack(taskId, title, adapter, runRequest) {
 - Adapter ID: ${adapter.adapterId}
 - Command mode: ${adapter.commandMode}
 ${runnerHint}
+- stdin mode: ${adapter.stdinMode || "none"}
 
 ## Task
 

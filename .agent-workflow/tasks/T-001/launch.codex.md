@@ -6,6 +6,7 @@
 - Adapter ID: codex
 - Command mode: manual
 - Local runner hint: `codex`
+- stdin mode: promptFile
 
 ## Task
 

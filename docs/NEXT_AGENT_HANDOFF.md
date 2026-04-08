@@ -67,6 +67,7 @@ As of 2026-04-08, the project already has a working MVP foundation:
 - `run:execute` now also has a first shared preflight/readiness pass in `src/lib/run-executor.js`, so CLI and dashboard both validate adapter config, prepared artifacts, runtime plan safety, and caller-specific stdio compatibility through the same contract
 - dashboard/API execution launch failures can now return additive `code`, `failureCategory`, and `blockingIssues` fields instead of relying on free-form error text only
 - preflight/readiness now also returns additive `advisories`, including adapter notes plus first-pass local runner-availability guidance for real CLI pilot work
+- adapters can now also opt into `stdinMode: promptFile`, and the executor can stream the compiled prompt into stdin for non-interactive real-CLI style profiles without shell redirection
 - the dashboard execution bridge now preserves a transient `preflight-failed` state locally when launch is blocked before spawn, while durable run evidence still remains reserved for real process starts
 - verification freshness Phase 1 is now implemented behind `src/lib/repository-snapshot.js`, and the design note still scopes the later proof-anchor phase
 - the first Phase 2 proof-anchor pass is now implemented: passed runs can capture `scopeProofAnchors`, and the gate prefers anchor comparison for those runs while manual proof defaults to the compatibility path until anchors are explicitly refreshed

@@ -171,6 +171,7 @@ function preflightRunExecution(workspaceRoot, taskId, adapterInput, options = {}
       adapterId: plan.adapterId,
       caller,
       stdioMode: plan.stdioMode,
+      stdinMode: plan.stdinMode,
       cwdMode: plan.cwdMode,
       failureCategory: null,
       blockingIssues: [],
@@ -188,6 +189,7 @@ function preflightRunExecution(workspaceRoot, taskId, adapterInput, options = {}
       adapterId,
       caller,
       stdioMode: null,
+      stdinMode: null,
       cwdMode: null,
       failureCategory: normalizeExecutionFailureCategory(error, statusCode),
       blockingIssues: normalizeBlockingIssues(error),
@@ -236,6 +238,7 @@ function buildExecutionPlan(workspaceRoot, taskId, adapter, files, prepared, run
   const resolvedArgvTemplate = resolveTemplateArray(argvTemplate, tokenMap, adapter.adapterId, "argvTemplate");
   const cwdMode = normalizeCwdMode(adapter.cwdMode, adapter.adapterId);
   const stdioMode = normalizeStdioMode(adapter.stdioMode, adapter.adapterId);
+  const stdinMode = normalizeStdinMode(adapter.stdinMode, adapter.adapterId);
   const successExitCodes = normalizeSuccessExitCodes(adapter.successExitCodes, adapter.adapterId);
   const envAllowlist = normalizeEnvAllowlist(adapter.envAllowlist, adapter.adapterId);
   const timeoutOverride = normalizePositiveInteger(options.timeoutMs);
@@ -252,6 +255,8 @@ function buildExecutionPlan(workspaceRoot, taskId, adapter, files, prepared, run
     cwd,
     cwdMode,
     stdioMode,
+    stdinMode,
+    stdinPath: stdinMode === "promptFile" ? promptFileAbsolute : null,
     successExitCodes,
     timeoutMs: timeoutOverride || timeoutConfigured || null,
     env: buildChildEnv(envAllowlist),
@@ -290,6 +295,7 @@ function resolveTemplateValue(value, tokenMap, adapterId, fieldName) {
 async function spawnExecution(plan, runId, runsDirectory, abortSignal) {
   return new Promise((resolve, reject) => {
     let spawned = false;
+    let stdinFd = null;
     let stdoutPath;
     let stderrPath;
     let stdoutFd = null;
@@ -305,6 +311,9 @@ async function spawnExecution(plan, runId, runsDirectory, abortSignal) {
     let abortListener = null;
 
     try {
+      if (plan.stdinMode === "promptFile" && isNonEmptyString(plan.stdinPath)) {
+        stdinFd = fs.openSync(plan.stdinPath, "r");
+      }
       if (plan.stdioMode === "pipe") {
         fs.mkdirSync(runsDirectory, { recursive: true });
         stdoutPath = path.join(runsDirectory, `${runId}.stdout.log`);
@@ -313,16 +322,18 @@ async function spawnExecution(plan, runId, runsDirectory, abortSignal) {
         stderrFd = fs.openSync(stderrPath, "w");
       }
     } catch (error) {
+      safeCloseFd(stdinFd);
       safeCloseFd(stdoutFd);
       safeCloseFd(stderrFd);
       reject(error);
       return;
     }
 
+    const stdinHandle = typeof stdinFd === "number" ? stdinFd : "ignore";
     const child = spawn(plan.command, plan.args, {
       cwd: plan.cwd,
       env: plan.env,
-      stdio: plan.stdioMode === "pipe" ? ["ignore", stdoutFd, stderrFd] : "inherit",
+      stdio: plan.stdioMode === "pipe" ? [stdinHandle, stdoutFd, stderrFd] : [stdinHandle, "inherit", "inherit"],
     });
 
     const signalListeners = new Map();
@@ -340,6 +351,7 @@ async function spawnExecution(plan, runId, runsDirectory, abortSignal) {
       if (abortSignal && abortListener) {
         abortSignal.removeEventListener("abort", abortListener);
       }
+      safeCloseFd(stdinFd);
       safeCloseFd(stdoutFd);
       safeCloseFd(stderrFd);
     };
@@ -525,6 +537,9 @@ function buildExecutionVerificationChecks(workspaceRoot, plan, status, exitCode,
     detailParts.push(`exitCode=${exitCode}`);
   }
   detailParts.push(`stdio=${plan.stdioMode}`);
+  if (plan.stdinMode && plan.stdinMode !== "none") {
+    detailParts.push(`stdin=${plan.stdinMode}`);
+  }
   if (execution.timedOut && plan.timeoutMs) {
     detailParts.push(`timedOut after ${plan.timeoutMs} ms`);
   }
@@ -652,6 +667,24 @@ function normalizeStdioMode(value, adapterId) {
     "adapter_stdio_mode_invalid",
     "adapter-invalid",
     [createBlockingIssue("stdioMode", `Unsupported stdioMode: ${value}.`)]
+  );
+}
+
+function normalizeStdinMode(value, adapterId) {
+  if (value === undefined || value === null || value === "") {
+    return "none";
+  }
+
+  if (value === "none" || value === "promptFile") {
+    return value;
+  }
+
+  throw createExecutionPreflightError(
+    409,
+    `Adapter ${adapterId} has unsupported stdinMode ${value}.`,
+    "adapter_stdin_mode_invalid",
+    "adapter-invalid",
+    [createBlockingIssue("stdinMode", `Unsupported stdinMode: ${value}.`)]
   );
 }
 

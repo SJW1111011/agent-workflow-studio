@@ -8,10 +8,18 @@
   "runnerCommand": [
     "codex"
   ],
-  "argvTemplate": [],
+  "argvTemplate": [
+    "exec",
+    "--sandbox",
+    "workspace-write",
+    "--ask-for-approval",
+    "never",
+    "-"
+  ],
   "commandMode": "manual",
   "cwdMode": "workspaceRoot",
-  "stdioMode": "inherit",
+  "stdioMode": "pipe",
+  "stdinMode": "promptFile",
   "successExitCodes": [
     0
   ],
@@ -22,6 +30,8 @@
     "resumable": true
   },
   "notes": [
-    "Confirm the local Codex CLI invocation for this machine before automating process launch."
+    "The built-in Codex profile now includes a recommended non-interactive `codex exec` template, but commandMode stays manual until you opt in.",
+    "Confirm the local Codex CLI invocation for this machine before automating process launch.",
+    "If Windows direct spawning of `codex` is unavailable on your machine, switch runnerCommand to a working local wrapper such as `cmd.exe` plus a matching argvTemplate."
   ]
 }

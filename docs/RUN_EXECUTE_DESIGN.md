@@ -708,6 +708,7 @@ Good candidates are fields that improve auditability without changing the source
 - explicit failure category labels
 - a caller-visible preflight/readiness result that wraps the resolved plan without inventing a second source of truth
 - a sanitized execution summary that explains what happened without persisting machine-specific command strings
+- an explicit `stdinMode` such as `promptFile` when a non-interactive local CLI needs the compiled prompt over stdin instead of as a path argument
 
 Avoid fields that would make the task package depend on one machine's private environment.
 

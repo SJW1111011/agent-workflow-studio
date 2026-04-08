@@ -67,10 +67,26 @@ That remains true even after adding `run:execute`:
 - `commandMode`: `manual` or `exec`
 - `cwdMode`: runtime working directory hint for executable mode
 - `stdioMode`: `inherit` or `pipe`
+- `stdinMode`: `none` or `promptFile`
 - `successExitCodes`: which exit codes count as pass
 - `timeoutMs`: optional adapter-level timeout
 - `envAllowlist`: optional environment keys to forward
 - `capabilities`: lightweight feature flags for the adapter
+
+## Current real-CLI pilot
+
+The current narrow pilot is Codex-first:
+
+- the built-in Codex adapter still defaults to `commandMode: manual`
+- it now also carries a recommended non-interactive `codex exec` argv template
+- that template uses `stdinMode: promptFile`, so the compiled prompt can be streamed to Codex over stdin instead of relying on shell redirection
+- this keeps the adapter contract file-based and portable while avoiding a dashboard-only launch path
+
+This is intentionally still opt-in:
+
+- local environments vary
+- Windows may still need a wrapper such as `cmd.exe` if direct `codex` spawning is not available on that machine
+- preflight now surfaces those readiness issues as typed blocking issues plus advisories instead of silently failing at spawn time
 
 ## Next step
 
@@ -83,6 +99,7 @@ The first local executor pass now supports:
 - stdout and stderr capture in `pipe` mode
 - timeout and interruption metadata in the run ledger
 - structured verification checks and artifact refs in passed run evidence
+- prompt-to-stdin delivery for adapters that explicitly declare `stdinMode: promptFile`
 
 The next implementation layer can add:
 

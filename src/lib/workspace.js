@@ -148,6 +148,7 @@ const ADAPTER_TEMPLATES = {
 These files describe local adapter contracts for agent runtimes.
 
 - Edit runnerCommand after confirming your local installation.
+- Built-in adapters may include a recommended exec template while still defaulting to manual mode.
 - Keep this folder portable.
 - Do not write absolute machine paths here unless you truly need them.
 `,
@@ -160,10 +161,11 @@ These files describe local adapter contracts for agent runtimes.
       runRequestFile: "run-request.codex.json",
       launchPackFile: "launch.codex.md",
       runnerCommand: ["codex"],
-      argvTemplate: [],
+      argvTemplate: ["exec", "--sandbox", "workspace-write", "--ask-for-approval", "never", "-"],
       commandMode: "manual",
       cwdMode: "workspaceRoot",
-      stdioMode: "inherit",
+      stdioMode: "pipe",
+      stdinMode: "promptFile",
       successExitCodes: [0],
       envAllowlist: [],
       capabilities: {
@@ -171,7 +173,11 @@ These files describe local adapter contracts for agent runtimes.
         multiAgent: true,
         resumable: true,
       },
-      notes: ["Confirm the local Codex CLI invocation for this machine before automating process launch."],
+      notes: [
+        "The built-in Codex profile now includes a recommended non-interactive `codex exec` template, but commandMode stays manual until you opt in.",
+        "Confirm the local Codex CLI invocation for this machine before automating process launch.",
+        "If Windows direct spawning of `codex` is unavailable on your machine, switch runnerCommand to a working local wrapper such as `cmd.exe` plus a matching argvTemplate.",
+      ],
     },
     null,
     2
