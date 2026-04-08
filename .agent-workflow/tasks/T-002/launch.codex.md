@@ -1,4 +1,4 @@
-# Launch Pack - T-001
+# Launch Pack - T-002
 
 ## Adapter
 
@@ -10,8 +10,8 @@
 
 ## Task
 
-- ID: T-001
-- Title: Dogfood onboarding path on agent-workflow-studio itself
+- ID: T-002
+- Title: Dogfood Codex run execute pilot on this repository
 
 ## Read first
 
@@ -20,7 +20,7 @@
 - .agent-workflow/memory/product.md
 - .agent-workflow/memory/architecture.md
 - .agent-workflow/memory/domain-rules.md
-- .agent-workflow/tasks/T-001/prompt.codex.md
+- .agent-workflow/tasks/T-002/prompt.codex.md
 
 ## Suggested operator flow
 

@@ -126,9 +126,10 @@ Example direction:
   "adapterId": "codex",
   "runnerCommand": ["codex"],
   "commandMode": "exec",
-  "argvTemplate": ["run", "--prompt-file", "{promptFile}"],
+  "argvTemplate": ["exec", "--sandbox", "workspace-write", "-"],
   "cwdMode": "workspaceRoot",
-  "stdioMode": "inherit",
+  "stdioMode": "pipe",
+  "stdinMode": "promptFile",
   "successExitCodes": [0],
   "envAllowlist": []
 }
@@ -756,6 +757,8 @@ That keeps the next step focused on contract proof, not product sprawl.
 - explicit operator-facing guidance when an adapter stays `manual` because the local command shape is still unconfirmed
 - one documented, reproducible real-agent dogfooding path that lands in the same task-local evidence files as every other run
 - additive run metadata only if it improves handoff clarity without introducing machine-specific durable state
+- keep adapter argv templates aligned with the locally confirmed CLI flag surface instead of assuming every top-level Codex flag also exists on `codex exec`
+- make room for auth/provider readiness to surface honestly, but do not hard-code vendor-specific secrets into global defaults before the local contract is really known
 
 #### What this pilot should not add
 

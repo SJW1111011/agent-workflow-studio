@@ -6,17 +6,19 @@
   "runRequestFile": "run-request.codex.json",
   "launchPackFile": "launch.codex.md",
   "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
     "codex"
   ],
   "argvTemplate": [
     "exec",
     "--sandbox",
     "workspace-write",
-    "--ask-for-approval",
-    "never",
     "-"
   ],
-  "commandMode": "manual",
+  "commandMode": "exec",
   "cwdMode": "workspaceRoot",
   "stdioMode": "pipe",
   "stdinMode": "promptFile",
@@ -30,8 +32,9 @@
     "resumable": true
   },
   "notes": [
-    "The built-in Codex profile now includes a recommended non-interactive `codex exec` template, but commandMode stays manual until you opt in.",
-    "Confirm the local Codex CLI invocation for this machine before automating process launch.",
-    "If Windows direct spawning of `codex` is unavailable on your machine, switch runnerCommand to a working local wrapper such as `cmd.exe` plus a matching argvTemplate."
+    "This repository's dogfooding workspace opts the local Codex adapter into exec mode for the narrow T-002 pilot; generated scaffolds should still stay manual by default.",
+    "On this Windows machine the repo-local dogfooding profile uses `cmd.exe /d /s /c codex ...` because direct PowerShell invocation of the local shim is blocked by script-execution policy.",
+    "On the locally observed Codex CLI surface from 2026-04-08, `codex exec` accepted `--sandbox` but rejected `--ask-for-approval`, so this dogfooding profile keeps the narrower confirmed flag shape.",
+    "Keep this profile narrow and local-only until the real run path is proven stable through task-local evidence."
   ]
 }

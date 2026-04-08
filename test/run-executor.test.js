@@ -210,7 +210,11 @@ const tests = [
       assert.equal(readiness.failureCategory, "adapter-manual-only");
       assert.equal(readiness.code, "adapter_manual_handoff_only");
       assert.ok(Array.isArray(readiness.advisories));
-      assert.ok(readiness.advisories.some((entry) => /Confirm the local Codex CLI invocation/i.test(entry.message)));
+      assert.ok(
+        readiness.advisories.some(
+          (entry) => /locally observed Codex CLI surface|Confirm the local Codex CLI invocation/i.test(entry.message)
+        )
+      );
     },
   },
   {
@@ -334,6 +338,28 @@ const tests = [
       assert.match(result.run.verificationChecks[0].details, /timedOut after 50 ms/);
       assertFileExists(path.join(workspaceRoot, result.run.stdoutFile));
       assertFileExists(path.join(workspaceRoot, result.run.stderrFile));
+    },
+  },
+  {
+    name: "executeRun keeps optional signal fields undefined for ordinary non-zero exits",
+    async run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("run-executor-nonzero-exit");
+
+      writeFakeRunner(workspaceRoot);
+      configureCodexExecutor(workspaceRoot, {
+        argvTemplate: ["fake-runner.js", "{promptFile}", "{runRequestFile}", "--exit-code", "2"],
+      });
+
+      const result = await executeRun(workspaceRoot, taskId, "codex");
+      const validation = validateWorkspace(workspaceRoot);
+
+      assert.equal(result.run.status, "failed");
+      assert.equal(result.run.outcome, "failed");
+      assert.equal(result.run.failureCategory, "non-zero-exit");
+      assert.equal(result.run.interruptionSignal, undefined);
+      assert.equal(result.run.terminationSignal, undefined);
+      assert.equal(validation.issues.some((issue) => issue.code === "run.interruptionSignal"), false);
+      assert.equal(validation.issues.some((issue) => issue.code === "run.terminationSignal"), false);
     },
   },
   {

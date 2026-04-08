@@ -1,0 +1,56 @@
+{
+  "id": "run-1775654646958",
+  "taskId": "T-002",
+  "agent": "codex",
+  "status": "failed",
+  "summary": "Executor failed with exit code 2.",
+  "createdAt": "2026-04-08T13:24:06.958Z",
+  "adapterId": "codex",
+  "source": "executor",
+  "outcome": "failed",
+  "startedAt": "2026-04-08T13:24:06.958Z",
+  "completedAt": "2026-04-08T13:24:07.079Z",
+  "durationMs": 121,
+  "exitCode": 2,
+  "commandMode": "exec",
+  "promptFile": ".agent-workflow/tasks/T-002/prompt.codex.md",
+  "runRequestFile": ".agent-workflow/tasks/T-002/run-request.codex.json",
+  "launchPackFile": ".agent-workflow/tasks/T-002/launch.codex.md",
+  "stdoutFile": ".agent-workflow/tasks/T-002/runs/run-1775654646958.stdout.log",
+  "stderrFile": ".agent-workflow/tasks/T-002/runs/run-1775654646958.stderr.log",
+  "failureCategory": "non-zero-exit",
+  "verificationChecks": [
+    {
+      "label": "Local codex executor result",
+      "status": "failed",
+      "details": "exitCode=2; stdio=pipe; stdin=promptFile",
+      "artifacts": [
+        ".agent-workflow/tasks/T-002/prompt.codex.md",
+        ".agent-workflow/tasks/T-002/run-request.codex.json",
+        ".agent-workflow/tasks/T-002/launch.codex.md",
+        ".agent-workflow/tasks/T-002/runs/run-1775654646958.stdout.log",
+        ".agent-workflow/tasks/T-002/runs/run-1775654646958.stderr.log"
+      ]
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-002/prompt.codex.md",
+    ".agent-workflow/tasks/T-002/run-request.codex.json",
+    ".agent-workflow/tasks/T-002/launch.codex.md",
+    ".agent-workflow/tasks/T-002/runs/run-1775654646958.stdout.log",
+    ".agent-workflow/tasks/T-002/runs/run-1775654646958.stderr.log"
+  ],
+  "scopeProofPaths": [
+    ".agent-workflow/adapters/codex.json",
+    ".agent-workflow/tasks/T-002/checkpoint.json",
+    ".agent-workflow/tasks/T-002/checkpoint.md",
+    ".agent-workflow/tasks/T-002/context.md",
+    ".agent-workflow/tasks/T-002/launch.codex.md",
+    ".agent-workflow/tasks/T-002/prompt.codex.md",
+    ".agent-workflow/tasks/T-002/run-request.codex.json",
+    ".agent-workflow/tasks/T-002/runs/run-1775654646958.stderr.log",
+    ".agent-workflow/tasks/T-002/runs/run-1775654646958.stdout.log",
+    ".agent-workflow/tasks/T-002/task.json",
+    ".agent-workflow/tasks/T-002/task.md"
+  ]
+}

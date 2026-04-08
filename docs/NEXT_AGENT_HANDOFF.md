@@ -68,6 +68,8 @@ As of 2026-04-08, the project already has a working MVP foundation:
 - dashboard/API execution launch failures can now return additive `code`, `failureCategory`, and `blockingIssues` fields instead of relying on free-form error text only
 - preflight/readiness now also returns additive `advisories`, including adapter notes plus first-pass local runner-availability guidance for real CLI pilot work
 - adapters can now also opt into `stdinMode: promptFile`, and the executor can stream the compiled prompt into stdin for non-interactive real-CLI style profiles without shell redirection
+- the first repo-local real Codex dogfooding attempt reached the actual child process and persisted executor evidence, but it failed fast because the locally observed `codex exec` CLI rejected `--ask-for-approval`; the recommended template now stays within the confirmed `codex exec --sandbox workspace-write -` flag shape
+- a follow-up real Codex launch then reached Codex itself and confirmed stdin prompt delivery plus durable run logs, but it still failed before model work because this environment does not currently provide `OPENAI_API_KEY`
 - the dashboard execution bridge now preserves a transient `preflight-failed` state locally when launch is blocked before spawn, while durable run evidence still remains reserved for real process starts
 - verification freshness Phase 1 is now implemented behind `src/lib/repository-snapshot.js`, and the design note still scopes the later proof-anchor phase
 - the first Phase 2 proof-anchor pass is now implemented: passed runs can capture `scopeProofAnchors`, and the gate prefers anchor comparison for those runs while manual proof defaults to the compatibility path until anchors are explicitly refreshed
@@ -274,8 +276,8 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Move to a narrow real-agent `run:execute` pilot on top of the shared preflight/readiness contract instead of broadening executor features blindly.
-2. Dogfood that real execution path in this repository so prompt -> run -> evidence -> checkpoint is proven with an actual local agent CLI.
+1. Decide whether auth/provider prerequisites for real local CLIs should stay documented as operator setup or become an additive adapter preflight concept without hard-coding vendor assumptions globally.
+2. Re-run `T-002` with a locally authenticated/configured Codex CLI so prompt -> run -> evidence -> checkpoint is proven with a passed real agent execution, not only a launched one.
 3. If executor metadata grows, decide whether `executionIntentId` or richer advisories belong in transient bridge state, durable run records, or both.
 4. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 5. Revisit adapter extensibility only after the executor/evidence model is proven stable in dogfooding.
@@ -291,7 +293,7 @@ Recommended next sequence:
 
 Suggested first task:
 
-Move to a narrow real-agent `run:execute` pilot now that onboarding shortcuts, manual proof anchors, and shared preflight/readiness are all in place. Keep building on the current anchor-aware contract instead of rewriting the proof model around raw Git state alone.
+Finish the narrow real-agent `run:execute` pilot now that onboarding shortcuts, manual proof anchors, and shared preflight/readiness are all in place. The current blocker is no longer runner shape or stdin prompt delivery; it is honest local auth/provider readiness for the real Codex CLI on this machine.
 
 Expected shape:
 
@@ -301,6 +303,8 @@ Expected shape:
 - keep using `src/lib/http-errors.js` for any new server-facing route or local API surface
 - keep `docs/RUN_EXECUTE_DESIGN.md` as the boundary for any future `run:execute` work so executor breadth does not outrun the evidence model
 - executor work should now start from the shared `preflightRunExecution(...)` result plus normalized failure categories instead of another launch surface
+- keep real-adapter argv templates grounded in confirmed local CLI help/output instead of copying unsupported top-level flags into subcommands
+- if auth/provider setup becomes productized, keep it additive and adapter-owned instead of baking vendor-specific secret assumptions into global workflow state
 - keep `dashboard/app.js` focused on orchestration, event wiring, and refresh flow
 - move pure rendering or parsing helpers into static modules that still work without a bundler
 - if verification evolves further, preserve backward compatibility for legacy/manual proof and keep anchors repo-relative only
