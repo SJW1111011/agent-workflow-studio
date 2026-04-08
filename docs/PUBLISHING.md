@@ -47,6 +47,8 @@ As of 2026-04-09:
 
 The main remaining release work is now polish around the published install experience, not package structure.
 
+See `docs/GETTING_STARTED.md` for the short npm-first onboarding path that was derived from this external validation pass.
+
 ## Expected install shapes
 
 Current install and verification commands:

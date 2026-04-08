@@ -108,6 +108,8 @@ npm test
 
 Then open `http://localhost:4173`.
 
+If you want the shortest installed-package path instead of contributor-from-source commands, see `docs/GETTING_STARTED.md`.
+
 `quick` is intentionally a shortcut over the existing file-based workflow, not a replacement for it.
 
 It still lands the same durable artifacts:
@@ -151,6 +153,8 @@ npx agent-workflow dashboard --root ../some-repo --port 4173
 ```
 
 The package name and executable name are intentionally different, so the verified install flow is `npm install ...` followed by `agent-workflow` / `npx agent-workflow`.
+
+For a verified npm-first onboarding flow that keeps your target repo clean, see `docs/GETTING_STARTED.md`.
 
 See `docs/PUBLISHING.md` for the release checklist, current published status, and post-publish verification commands.
 

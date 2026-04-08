@@ -76,6 +76,7 @@ As of 2026-04-09, the project already has a working MVP foundation:
 - the published install surface is now partially verified on this Windows machine: `npm install agent-workflow-studio` followed by `npx agent-workflow --help` works from a clean temp directory, while docs now avoid the misleading package-name-as-command shortcut
 - the published package now also exposes dashboard launch through the main CLI (`agent-workflow dashboard` / `npx agent-workflow dashboard`), so first-time users no longer need to know the internal `src/server.js` path just to open the local control plane
 - a clean temp install of `agent-workflow-studio@0.1.1` has now re-verified the npm-first bootstrap path end to end: `init`, `scan`, `memory:bootstrap`, `quick`, `validate`, and dashboard launch all work from the published package
+- that validated path is now written down as a short operator-facing walkthrough in `docs/GETTING_STARTED.md`
 - `docs/PUBLISHING.md` now records both the release checklist and the current published status, including the requirement that future publishes still use OTP or bypass-2FA-compatible token auth
 - the dashboard execution bridge now preserves a transient `preflight-failed` state locally when launch is blocked before spawn, while durable run evidence still remains reserved for real process starts
 - verification freshness Phase 1 is now implemented behind `src/lib/repository-snapshot.js`, and the design note still scopes the later proof-anchor phase
