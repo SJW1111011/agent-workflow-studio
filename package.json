@@ -1,9 +1,34 @@
 {
   "name": "agent-workflow-studio",
   "version": "0.1.0",
-  "private": true,
   "description": "Local-first workflow OS and project control plane for Codex and Claude Code.",
+  "license": "MIT",
   "type": "commonjs",
+  "keywords": [
+    "agent",
+    "workflow",
+    "codex",
+    "claude-code",
+    "local-first",
+    "git-native"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SJW1111011/agent-workflow-studio.git"
+  },
+  "homepage": "https://github.com/SJW1111011/agent-workflow-studio#readme",
+  "bugs": {
+    "url": "https://github.com/SJW1111011/agent-workflow-studio/issues"
+  },
+  "files": [
+    "src",
+    "dashboard",
+    "docs",
+    "README.md",
+    "LICENSE",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md"
+  ],
   "bin": {
     "agent-workflow": "./src/cli.js"
   },
