@@ -116,12 +116,14 @@ function planRunExecution(workspaceRoot, taskId, adapterInput, options = {}) {
 function preflightRunExecution(workspaceRoot, taskId, adapterInput, options = {}) {
   const adapterId = normalizeAdapterId(adapterInput || "codex");
   const caller = normalizeExecutionCaller(options.caller);
+  let advisories = [];
 
   try {
     const prepared = prepareRun(workspaceRoot, taskId, adapterId);
     const adapter = getAdapter(workspaceRoot, adapterId);
     const files = taskFiles(workspaceRoot, taskId);
     const runRequest = readJson(prepared.runRequestPath, null);
+    advisories = collectAdapterExecutionAdvisories(adapter);
 
     if (!runRequest) {
       throw createExecutionPreflightError(
@@ -129,7 +131,8 @@ function preflightRunExecution(workspaceRoot, taskId, adapterInput, options = {}
         `Run request is missing or invalid for ${taskId} (${adapterId}).`,
         "run_request_missing",
         "prepared-artifacts-missing",
-        [createBlockingIssue("runRequestFile", "Run request is missing or invalid.")]
+        [createBlockingIssue("runRequestFile", "Run request is missing or invalid.")],
+        advisories
       );
     }
 
@@ -142,12 +145,25 @@ function preflightRunExecution(workspaceRoot, taskId, adapterInput, options = {}
         )} or switch commandMode to exec first.`,
         "adapter_manual_handoff_only",
         "adapter-manual-only",
-        [createBlockingIssue("commandMode", `Adapter ${adapterId} is still configured for manual handoff.`)]
+        [createBlockingIssue("commandMode", `Adapter ${adapterId} is still configured for manual handoff.`)],
+        advisories
       );
     }
 
     const plan = buildExecutionPlan(workspaceRoot, taskId, adapter, files, prepared, runRequest, options);
-    assertExecutionPlanSupportedForCaller(plan, caller);
+    const runnerAvailability = inspectRunnerCommandAvailability(plan.command, plan.cwd);
+    advisories = advisories.concat(buildRunnerAvailabilityAdvisories(plan.adapterId, runnerAvailability));
+    if (!runnerAvailability.available) {
+      throw createExecutionPreflightError(
+        409,
+        buildRunnerUnavailableMessage(plan.adapterId, runnerAvailability),
+        "runner_command_unavailable",
+        "runtime-unavailable",
+        [createBlockingIssue("runnerCommand", buildRunnerUnavailableBlockingMessage(runnerAvailability))],
+        advisories
+      );
+    }
+    assertExecutionPlanSupportedForCaller(plan, caller, advisories);
 
     return {
       ready: true,
@@ -158,7 +174,7 @@ function preflightRunExecution(workspaceRoot, taskId, adapterInput, options = {}
       cwdMode: plan.cwdMode,
       failureCategory: null,
       blockingIssues: [],
-      advisories: [],
+      advisories,
       message: `Ready to execute ${plan.adapterId} for ${taskId}.`,
       statusCode: 200,
       code: null,
@@ -175,7 +191,7 @@ function preflightRunExecution(workspaceRoot, taskId, adapterInput, options = {}
       cwdMode: null,
       failureCategory: normalizeExecutionFailureCategory(error, statusCode),
       blockingIssues: normalizeBlockingIssues(error),
-      advisories: [],
+      advisories: normalizeAdvisories(error).length > 0 ? normalizeAdvisories(error) : advisories,
       message: error.message,
       statusCode,
       code: typeof error.code === "string" ? error.code : null,
@@ -737,7 +753,7 @@ function normalizeExecutionCaller(value) {
   return Object.prototype.hasOwnProperty.call(EXECUTION_CALLERS, value) ? value : "cli";
 }
 
-function assertExecutionPlanSupportedForCaller(plan, caller) {
+function assertExecutionPlanSupportedForCaller(plan, caller, advisories = []) {
   const capabilities = EXECUTION_CALLERS[caller] || EXECUTION_CALLERS.cli;
   if (capabilities.supportedStdioModes.has(plan.stdioMode)) {
     return;
@@ -748,15 +764,17 @@ function assertExecutionPlanSupportedForCaller(plan, caller) {
     `Unsupported ${capabilities.label} execution for ${plan.adapterId}: resolved stdioMode is ${plan.stdioMode}. Use the CLI for interactive execution.`,
     caller === "dashboard" ? "unsupported_dashboard_stdio_mode" : "unsupported_execution_stdio_mode",
     "caller-not-supported",
-    [createBlockingIssue("stdioMode", `${capabilities.label} does not support stdioMode ${plan.stdioMode}.`)]
+    [createBlockingIssue("stdioMode", `${capabilities.label} does not support stdioMode ${plan.stdioMode}.`)],
+    advisories
   );
 }
 
-function createExecutionPreflightError(statusCode, message, code, failureCategory, blockingIssues) {
+function createExecutionPreflightError(statusCode, message, code, failureCategory, blockingIssues, advisories) {
   return createHttpError(statusCode, message, {
     code,
     failureCategory,
     blockingIssues: normalizeBlockingIssues({ blockingIssues }),
+    advisories: normalizeAdvisories({ advisories }),
   });
 }
 
@@ -765,6 +783,7 @@ function createRunExecutionPreflightError(readiness) {
     code: readiness.code || "execution_preflight_failed",
     failureCategory: readiness.failureCategory || "plan-invalid",
     blockingIssues: normalizeBlockingIssues(readiness),
+    advisories: normalizeAdvisories(readiness),
   });
 }
 
@@ -783,6 +802,191 @@ function normalizeBlockingIssues(value) {
       field: isNonEmptyString(entry.field) ? String(entry.field).trim() : null,
       message: String(entry.message).trim(),
     }));
+}
+
+function normalizeAdvisories(value) {
+  const entries = Array.isArray(value && value.advisories) ? value.advisories : [];
+  return entries
+    .map((entry) => {
+      if (isNonEmptyString(entry)) {
+        return {
+          code: null,
+          message: String(entry).trim(),
+        };
+      }
+
+      if (!entry || typeof entry !== "object" || !isNonEmptyString(entry.message)) {
+        return null;
+      }
+
+      return {
+        code: isNonEmptyString(entry.code) ? String(entry.code).trim() : null,
+        message: String(entry.message).trim(),
+      };
+    })
+    .filter(Boolean);
+}
+
+function collectAdapterExecutionAdvisories(adapter) {
+  const notes = Array.isArray(adapter && adapter.notes) ? adapter.notes : [];
+  return normalizeAdvisories({
+    advisories: notes.map((note) => ({
+      code: "adapter-note",
+      message: note,
+    })),
+  });
+}
+
+function inspectRunnerCommandAvailability(command, cwd) {
+  const configuredCommand = String(command || "").trim();
+  if (!configuredCommand) {
+    return {
+      available: false,
+      configuredCommand,
+      lookupMode: "missing",
+      resolvedPath: null,
+    };
+  }
+
+  if (path.isAbsolute(configuredCommand)) {
+    return {
+      available: isExecutableFile(configuredCommand),
+      configuredCommand,
+      lookupMode: "absolute",
+      resolvedPath: configuredCommand,
+    };
+  }
+
+  if (configuredCommand.includes("/") || configuredCommand.includes("\\")) {
+    const resolvedPath = path.resolve(cwd || process.cwd(), configuredCommand);
+    return {
+      available: isExecutableFile(resolvedPath),
+      configuredCommand,
+      lookupMode: "relative",
+      resolvedPath,
+    };
+  }
+
+  const resolvedPath = resolveCommandFromPath(configuredCommand);
+  return {
+    available: isNonEmptyString(resolvedPath),
+    configuredCommand,
+    lookupMode: "path",
+    resolvedPath,
+  };
+}
+
+function resolveCommandFromPath(command) {
+  const pathValue = getEnvironmentValueCaseInsensitive("PATH");
+  if (!isNonEmptyString(pathValue)) {
+    return null;
+  }
+
+  const directories = pathValue
+    .split(path.delimiter)
+    .map((entry) => stripWrappedQuotes(entry))
+    .filter(isNonEmptyString);
+  const candidates = buildPathCommandCandidates(command);
+
+  for (const directory of directories) {
+    for (const candidate of candidates) {
+      const absolutePath = path.join(directory, candidate);
+      if (isExecutableFile(absolutePath)) {
+        return absolutePath;
+      }
+    }
+  }
+
+  return null;
+}
+
+function buildPathCommandCandidates(command) {
+  if (process.platform !== "win32") {
+    return [command];
+  }
+
+  if (path.extname(command)) {
+    return [command];
+  }
+
+  const pathExt = getEnvironmentValueCaseInsensitive("PATHEXT") || ".COM;.EXE;.BAT;.CMD";
+  const extensions = pathExt
+    .split(";")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  return extensions.length > 0 ? extensions.map((extension) => `${command}${extension}`) : [command];
+}
+
+function getEnvironmentValueCaseInsensitive(key) {
+  const matchedKey = Object.keys(process.env).find(
+    (existingKey) => existingKey.toLowerCase() === String(key || "").toLowerCase()
+  );
+  return matchedKey ? process.env[matchedKey] : null;
+}
+
+function stripWrappedQuotes(value) {
+  return String(value || "").replace(/^"(.*)"$/, "$1");
+}
+
+function isExecutableFile(filePath) {
+  try {
+    const stats = fs.statSync(filePath);
+    if (!stats.isFile()) {
+      return false;
+    }
+    fs.accessSync(filePath, fs.constants.X_OK);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+function buildRunnerAvailabilityAdvisories(adapterId, runnerAvailability) {
+  if (!runnerAvailability || !isNonEmptyString(runnerAvailability.configuredCommand)) {
+    return [];
+  }
+
+  if (runnerAvailability.available && isNonEmptyString(runnerAvailability.resolvedPath)) {
+    return normalizeAdvisories({
+      advisories: [
+        {
+          code: "runner-command-resolved",
+          message: `Runner command for ${adapterId} resolves locally: ${runnerAvailability.resolvedPath}`,
+        },
+      ],
+    });
+  }
+
+  return normalizeAdvisories({
+    advisories: [
+      {
+        code: "runner-command-missing",
+        message: buildRunnerUnavailableBlockingMessage(runnerAvailability),
+      },
+    ],
+  });
+}
+
+function buildRunnerUnavailableMessage(adapterId, runnerAvailability) {
+  return `Runner command for ${adapterId} is unavailable on this machine. ${buildRunnerUnavailableBlockingMessage(
+    runnerAvailability
+  )}`;
+}
+
+function buildRunnerUnavailableBlockingMessage(runnerAvailability) {
+  if (!runnerAvailability || !isNonEmptyString(runnerAvailability.configuredCommand)) {
+    return "runnerCommand is missing or empty.";
+  }
+
+  if (runnerAvailability.lookupMode === "absolute") {
+    return `Configured runner path does not exist or is not executable: ${runnerAvailability.resolvedPath}`;
+  }
+
+  if (runnerAvailability.lookupMode === "relative") {
+    return `Configured runner path did not resolve to an executable from the local cwd: ${runnerAvailability.configuredCommand}`;
+  }
+
+  return `Runner command "${runnerAvailability.configuredCommand}" was not found on PATH for the current process.`;
 }
 
 function normalizeExecutionFailureCategory(error, statusCode) {

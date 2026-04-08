@@ -85,6 +85,7 @@ const tests = [
             code: "task_not_found",
             failureCategory: "task-missing",
             blockingIssues: [{ field: "taskId", message: "Task T-999 does not exist yet." }],
+            advisories: [{ code: "note", message: "Check the current workspace root." }],
           };
         },
       }));
@@ -102,6 +103,8 @@ const tests = [
       assert.equal(error.failureCategory, "task-missing");
       assert.ok(Array.isArray(error.blockingIssues));
       assert.equal(error.blockingIssues[0].field, "taskId");
+      assert.ok(Array.isArray(error.advisories));
+      assert.equal(error.advisories[0].message, "Check the current workspace root.");
     },
   },
 ];

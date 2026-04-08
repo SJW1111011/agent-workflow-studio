@@ -104,6 +104,7 @@ function createDashboardExecutionBridge(workspaceRoot) {
         error: readiness.message,
         failureCategory: readiness.failureCategory,
         blockingIssues: readiness.blockingIssues,
+        advisories: Array.isArray(readiness.advisories) ? readiness.advisories : [],
       });
       throw createRunExecutionPreflightError(readiness);
     }
@@ -129,6 +130,7 @@ function createDashboardExecutionBridge(workspaceRoot) {
       exitCode: null,
       failureCategory: null,
       blockingIssues: [],
+      advisories: Array.isArray(readiness.advisories) ? readiness.advisories : [],
       stdoutFile: executionLogPaths.stdoutFile,
       stderrFile: executionLogPaths.stderrFile,
       error: null,
@@ -166,6 +168,7 @@ function createDashboardExecutionBridge(workspaceRoot) {
                 : null,
           failureCategory: result.run && result.run.failureCategory ? result.run.failureCategory : null,
           blockingIssues: [],
+          advisories: [],
           stdoutFile: result.run && result.run.stdoutFile ? result.run.stdoutFile : nextState.stdoutFile,
           stderrFile: result.run && result.run.stderrFile ? result.run.stderrFile : nextState.stderrFile,
           error: null,
@@ -177,6 +180,7 @@ function createDashboardExecutionBridge(workspaceRoot) {
           outcome: "failed-to-start",
           failureCategory: error.failureCategory || "launch-error",
           blockingIssues: Array.isArray(error.blockingIssues) ? error.blockingIssues : [],
+          advisories: Array.isArray(error.advisories) ? error.advisories : [],
           error: error.message,
         });
       } finally {
@@ -244,6 +248,7 @@ function buildIdleExecutionState(taskId) {
     exitCode: null,
     failureCategory: null,
     blockingIssues: [],
+    advisories: [],
     stdoutFile: null,
     stderrFile: null,
     error: null,

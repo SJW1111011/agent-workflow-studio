@@ -350,6 +350,7 @@ const tests = [
         assert.equal(execute.json.code, "unsupported_dashboard_stdio_mode");
         assert.equal(execute.json.failureCategory, "caller-not-supported");
         assert.ok(Array.isArray(execute.json.blockingIssues));
+        assert.ok(Array.isArray(execute.json.advisories));
         assert.equal(execute.json.blockingIssues[0].field, "stdioMode");
 
         const executionState = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}/execution`);
@@ -357,7 +358,45 @@ const tests = [
         assert.equal(executionState.json.status, "preflight-failed");
         assert.equal(executionState.json.failureCategory, "caller-not-supported");
         assert.ok(Array.isArray(executionState.json.blockingIssues));
+        assert.ok(Array.isArray(executionState.json.advisories));
         assert.equal(executionState.json.blockingIssues[0].field, "stdioMode");
+      } finally {
+        await server.stop();
+      }
+    },
+  },
+  {
+    name: "server api exposes runner readiness failures with advisories when the local executable is unavailable",
+    async run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("server-api-execution-runner-missing");
+      updateCodexAdapter(workspaceRoot, {
+        commandMode: "exec",
+        runnerCommand: ["agent-workflow-runner-that-should-not-exist"],
+        argvTemplate: [],
+        stdioMode: "pipe",
+      });
+
+      const server = await startServer(workspaceRoot);
+
+      try {
+        const execute = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}/execute`, {
+          method: "POST",
+          body: {},
+        });
+        assert.equal(execute.statusCode, 409);
+        assert.equal(execute.json.code, "runner_command_unavailable");
+        assert.equal(execute.json.failureCategory, "runtime-unavailable");
+        assert.ok(Array.isArray(execute.json.blockingIssues));
+        assert.equal(execute.json.blockingIssues[0].field, "runnerCommand");
+        assert.ok(Array.isArray(execute.json.advisories));
+        assert.ok(execute.json.advisories.some((entry) => /not found on PATH/i.test(entry.message)));
+
+        const executionState = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}/execution`);
+        assert.equal(executionState.statusCode, 200);
+        assert.equal(executionState.json.status, "preflight-failed");
+        assert.equal(executionState.json.failureCategory, "runtime-unavailable");
+        assert.ok(Array.isArray(executionState.json.advisories));
+        assert.ok(executionState.json.advisories.some((entry) => /not found on PATH/i.test(entry.message)));
       } finally {
         await server.stop();
       }

@@ -490,11 +490,13 @@ The current code now implements the first pass of this shape:
   - `code`
   - `failureCategory`
   - `blockingIssues`
+  - additive `advisories`
+- shared preflight can now also surface first-pass local runner readiness, so the operator can distinguish "manual by design" from "exec was requested but the local command is unavailable"
 - the dashboard bridge can also keep a transient `preflight-failed` state locally without creating a fake durable run record
 
 What remains future work:
 
-- richer advisories beyond blocking issues
+- richer readiness hints beyond the current adapter-note plus runner-availability advisories
 - a reusable execution intent identifier across preflight, bridge state, and final run records
 - broader failure-category adoption in persisted run metadata beyond the current first-pass executor fields
 

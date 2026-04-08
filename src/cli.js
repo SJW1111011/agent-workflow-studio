@@ -133,6 +133,11 @@ function main() {
                 console.error(`- ${issue.message}`);
               });
             }
+            if (Array.isArray(error.advisories) && error.advisories.length > 0) {
+              error.advisories.forEach((advisory) => {
+                console.error(`- note: ${advisory.message}`);
+              });
+            }
             process.exitCode = 1;
           });
         return;

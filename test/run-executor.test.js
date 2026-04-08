@@ -161,8 +161,24 @@ const tests = [
       assert.equal(readiness.failureCategory, "caller-not-supported");
       assert.equal(readiness.code, "unsupported_dashboard_stdio_mode");
       assert.ok(Array.isArray(readiness.blockingIssues));
+      assert.ok(Array.isArray(readiness.advisories));
+      assert.ok(readiness.advisories.some((entry) => /resolves locally/i.test(entry.message)));
       assert.match(readiness.message, /Use the CLI for interactive execution/);
       assert.equal(readiness.blockingIssues[0].field, "stdioMode");
+    },
+  },
+  {
+    name: "preflightRunExecution keeps adapter notes visible while an adapter stays manual-only",
+    run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("run-executor-preflight-manual-note");
+
+      const readiness = preflightRunExecution(workspaceRoot, taskId, "codex");
+
+      assert.equal(readiness.ready, false);
+      assert.equal(readiness.failureCategory, "adapter-manual-only");
+      assert.equal(readiness.code, "adapter_manual_handoff_only");
+      assert.ok(Array.isArray(readiness.advisories));
+      assert.match(readiness.advisories[0].message, /Confirm the local Codex CLI invocation/i);
     },
   },
   {
@@ -182,6 +198,26 @@ const tests = [
       assert.equal(readiness.code, "adapter_template_token_invalid");
       assert.match(readiness.message, /unsupported template token/i);
       assert.equal(readiness.blockingIssues[0].field, "argvTemplate");
+    },
+  },
+  {
+    name: "preflightRunExecution reports missing local runner commands before spawn",
+    run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("run-executor-preflight-runner-missing");
+
+      configureCodexExecutor(workspaceRoot, {
+        runnerCommand: ["agent-workflow-runner-that-should-not-exist"],
+      });
+
+      const readiness = preflightRunExecution(workspaceRoot, taskId, "codex");
+
+      assert.equal(readiness.ready, false);
+      assert.equal(readiness.failureCategory, "runtime-unavailable");
+      assert.equal(readiness.code, "runner_command_unavailable");
+      assert.equal(readiness.blockingIssues[0].field, "runnerCommand");
+      assert.match(readiness.message, /unavailable on this machine/i);
+      assert.ok(Array.isArray(readiness.advisories));
+      assert.ok(readiness.advisories.some((entry) => /not found on PATH/i.test(entry.message)));
     },
   },
   {

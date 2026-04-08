@@ -61,6 +61,9 @@
         if (payload && Array.isArray(payload.blockingIssues) && payload.blockingIssues.length > 0) {
           error.blockingIssues = payload.blockingIssues;
         }
+        if (payload && Array.isArray(payload.advisories) && payload.advisories.length > 0) {
+          error.advisories = payload.advisories;
+        }
         throw error;
       }
 

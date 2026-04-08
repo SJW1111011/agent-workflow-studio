@@ -141,6 +141,12 @@ const tests = [
             activity: "streaming-output",
             totalOutputBytes: 512,
             runId: "run-2",
+            advisories: [
+              {
+                code: "runner-command-resolved",
+                message: "Runner command for codex resolves locally: C:/tools/codex.cmd",
+              },
+            ],
             stdoutFile: ".agent-workflow/tasks/T-001/runs/run-2.stdout.log",
             streams: {
               stdout: {
@@ -248,6 +254,7 @@ const tests = [
       assert.match(markup, /Scoped diff is covered/);
       assert.match(markup, /compatibility-only/);
       assert.match(markup, /task-missing-proof/);
+      assert.match(markup, /Runner command for codex resolves locally/);
     },
   },
 ];

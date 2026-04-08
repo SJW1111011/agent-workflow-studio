@@ -236,6 +236,10 @@ function buildErrorPayload(error) {
     payload.blockingIssues = error.blockingIssues;
   }
 
+  if (Array.isArray(error.advisories) && error.advisories.length > 0) {
+    payload.advisories = error.advisories;
+  }
+
   return payload;
 }
 

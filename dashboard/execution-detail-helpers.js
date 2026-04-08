@@ -426,6 +426,11 @@
             .map((issue) => `<p class="subtle run-error">${escapeHtml(issue.message || "Execution preflight is blocked.")}</p>`)
             .join("")
         : "",
+      Array.isArray(state.advisories) && state.advisories.length > 0
+        ? state.advisories
+            .map((advisory) => `<p class="subtle">${escapeHtml(advisory.message || "Execution advisory.")}</p>`)
+            .join("")
+        : "",
       state.status === "completed" && state.summary && state.summary !== description.summary
         ? `<p class="subtle">${escapeHtml(state.summary)}</p>`
         : "",

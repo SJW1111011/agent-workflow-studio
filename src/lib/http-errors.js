@@ -14,6 +14,10 @@ function createHttpError(statusCode, message, options = {}) {
     error.blockingIssues = options.blockingIssues;
   }
 
+  if (Array.isArray(options.advisories) && options.advisories.length > 0) {
+    error.advisories = options.advisories;
+  }
+
   return error;
 }
 
