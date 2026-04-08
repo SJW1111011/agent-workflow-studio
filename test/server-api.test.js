@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const http = require("http");
 const net = require("net");
+const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
 
@@ -251,6 +252,70 @@ const tests = [
         );
         assert.equal(missingExecutionState.statusCode, 404);
         assert.match(missingExecutionState.json.error, /Task not found: T-404/);
+      } finally {
+        await server.stop();
+      }
+    },
+  },
+  {
+    name: "server api refreshes manual proof anchors and returns typed validation errors when proof is not ready",
+    async run() {
+      const { workspaceRoot, files } = createTaskWorkspace("server-api-manual-proof-anchors");
+      fs.mkdirSync(path.join(workspaceRoot, "src"), { recursive: true });
+      fs.writeFileSync(path.join(workspaceRoot, "src", "app.js"), "module.exports = 'server';\n", "utf8");
+      fs.writeFileSync(
+        files.verification,
+        [
+          "# T-001 Verification",
+          "",
+          "## Proof links",
+          "",
+          "### Proof 1",
+          "",
+          "- Files: src/app.js",
+          "- Check: npm test",
+          "- Artifact: logs/test.txt",
+          "",
+        ].join("\n"),
+        "utf8"
+      );
+
+      const server = await startServer(workspaceRoot);
+
+      try {
+        const refreshed = await request(
+          `http://127.0.0.1:${server.port}/api/tasks/T-001/verification/anchors/refresh`,
+          {
+            method: "POST",
+            body: {},
+          }
+        );
+        assert.equal(refreshed.statusCode, 200);
+        assert.equal(refreshed.json.manualProofAnchorRefresh.refreshedCount, 1);
+        assert.match(refreshed.json.verificationText, /verification-manual-proof-anchors:start/);
+
+        fs.writeFileSync(
+          files.verification,
+          [
+            "# T-001 Verification",
+            "",
+            "## Planned checks",
+            "",
+            "- manual: review src/app.js",
+            "",
+          ].join("\n"),
+          "utf8"
+        );
+
+        const noStrongProof = await request(
+          `http://127.0.0.1:${server.port}/api/tasks/T-001/verification/anchors/refresh`,
+          {
+            method: "POST",
+            body: {},
+          }
+        );
+        assert.equal(noStrongProof.statusCode, 400);
+        assert.match(noStrongProof.json.error, /no strong manual proof items to anchor/i);
       } finally {
         await server.stop();
       }

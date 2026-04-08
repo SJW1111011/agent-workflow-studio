@@ -1,10 +1,12 @@
 const assert = require("node:assert/strict");
 
 const {
+  buildManualProofAnchorRefreshMessage,
   buildDocumentSavePayload,
   buildRunCreatePayload,
   buildTaskCreatePayload,
   buildTaskUpdatePayload,
+  hasUnsavedVerificationEditorChanges,
   requireActiveTaskId,
   resolveExecutionRequest,
 } = require("../dashboard/form-event-helpers.js");
@@ -127,6 +129,58 @@ const tests = [
       assert.throws(
         () => requireActiveTaskId(null, "Select a task first."),
         /Select a task first\./
+      );
+    },
+  },
+  {
+    name: "manual proof anchor refresh helpers guard unsaved verification edits and summarize outcomes",
+    run() {
+      assert.equal(
+        hasUnsavedVerificationEditorChanges(
+          "verification.md",
+          "# T-001 Verification\n\n## Proof links\n\n- Files: src/app.js",
+          {
+            verificationText:
+              "# T-001 Verification\n\n## Proof links\n\n- Files: src/app.js\n\n## Evidence\n\n<!-- agent-workflow:managed:verification-manual-proof-anchors:start -->\n### Manual proof anchors\n\n```json\n{\"version\":1,\"manualProofAnchors\":[]}\n```\n<!-- agent-workflow:managed:verification-manual-proof-anchors:end -->\n",
+          },
+          (documentName, content) =>
+            documentName === "verification.md"
+              ? "# T-001 Verification\n\n## Proof links\n\n- Files: src/app.js"
+              : content
+        ),
+        false
+      );
+      assert.equal(
+        hasUnsavedVerificationEditorChanges(
+          "verification.md",
+          "# T-001 Verification\n\n## Proof links\n\n- Files: src/app.js\n- Check: npm test",
+          {
+            verificationText: "# T-001 Verification\n\n## Proof links\n\n- Files: src/app.js",
+          },
+          (documentName, content) => content
+        ),
+        true
+      );
+
+      assert.match(
+        buildManualProofAnchorRefreshMessage("T-001", {
+          changed: true,
+          refreshedCount: 2,
+          skippedCount: 1,
+          strongProofCount: 3,
+          clearedCount: 0,
+        }),
+        /Refreshed 2 manual proof anchor record\(s\)/
+      );
+      assert.match(
+        buildManualProofAnchorRefreshMessage("T-001", {
+          changed: true,
+          refreshedCount: 0,
+          skippedCount: 0,
+          strongProofCount: 0,
+          clearedCount: 1,
+        }),
+        /Cleared 1 stale manual proof anchor record\(s\)/
       );
     },
   },

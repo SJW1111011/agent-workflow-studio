@@ -3,6 +3,7 @@ const suites = [
   require("../test/overview.test.js"),
   require("../test/run-executor.test.js"),
   require("../test/server-api.test.js"),
+  require("../test/dashboard-document-helpers.test.js"),
   require("../test/dashboard-api-client-helpers.test.js"),
   require("../test/dashboard-form-event-helpers.test.js"),
   require("../test/dashboard-form-state-helpers.test.js"),

@@ -1,7 +1,7 @@
 const assert = require("node:assert/strict");
 
 const { getRecipe } = require("../src/lib/recipes");
-const { saveTaskDocument, syncManagedTaskDocs } = require("../src/lib/task-documents");
+const { refreshManualProofAnchors, saveTaskDocument, syncManagedTaskDocs } = require("../src/lib/task-documents");
 const {
   createTaskWorkspace,
   readJsonFile,
@@ -114,6 +114,100 @@ const tests = [
       assert.match(result.content, /- Check: npm test/);
       assert.match(result.content, /- Artifact: logs\/test\.txt/);
       assert.doesNotMatch(result.content, /^# Draft verification$/m);
+    },
+  },
+  {
+    name: "saveTaskDocument preserves managed manual proof anchors while the editor saves freeform verification text",
+    run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("task-doc-verification-anchors");
+
+      writeTextFile(`${workspaceRoot}/src/app.js`, "module.exports = 'anchored';\n");
+      writeTextFile(
+        files.verification,
+        [
+          "# T-001 Verification",
+          "",
+          "## Proof links",
+          "",
+          "### Proof 1",
+          "",
+          "- Files: src/app.js",
+          "- Check: npm test",
+          "- Artifact: logs/test.txt",
+          "",
+        ].join("\n")
+      );
+
+      const refreshSummary = refreshManualProofAnchors(workspaceRoot, taskId);
+      assert.equal(refreshSummary.refreshedCount, 1);
+
+      const result = saveTaskDocument(
+        workspaceRoot,
+        taskId,
+        "verification.md",
+        [
+          "# Temporary heading",
+          "",
+          "## Proof links",
+          "",
+          "### Proof 1",
+          "",
+          "- Files: src/app.js",
+          "- Check: npm test",
+          "- Artifact: logs/test.txt",
+          "",
+          "## Blocking gaps",
+          "",
+          "- none",
+          "",
+        ].join("\n")
+      );
+
+      assert.match(result.content, /^# T-001 Verification$/m);
+      assert.match(result.content, /agent-workflow:managed:verification-manual-proof-anchors:start/);
+      assert.match(result.content, /"proofSignature": "sha1:/);
+      assert.match(result.content, /"path": "src\/app\.js"/);
+      assert.match(result.content, /## Blocking gaps\n\n- none/);
+    },
+  },
+  {
+    name: "refreshManualProofAnchors inserts the managed evidence section before appended run evidence blocks",
+    run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("task-doc-refresh-anchors");
+
+      writeTextFile(`${workspaceRoot}/src/app.js`, "module.exports = 'refresh';\n");
+      writeTextFile(
+        files.verification,
+        [
+          "# T-001 Verification",
+          "",
+          "## Proof links",
+          "",
+          "### Proof 1",
+          "",
+          "- Files: src/app.js",
+          "- Check: npm test",
+          "- Artifact: logs/test.txt",
+          "",
+          "## Evidence 2026-04-08T12:00:00.000Z",
+          "",
+          "- Source: manual",
+          "",
+        ].join("\n")
+      );
+
+      const refreshSummary = refreshManualProofAnchors(workspaceRoot, taskId);
+      const verificationText = readTextFile(files.verification);
+      const managedEvidenceIndex = verificationText.indexOf("## Evidence\n");
+      const appendedEvidenceIndex = verificationText.indexOf("## Evidence 2026-04-08T12:00:00.000Z");
+
+      assert.equal(refreshSummary.strongProofCount, 1);
+      assert.equal(refreshSummary.refreshedCount, 1);
+      assert.ok(managedEvidenceIndex >= 0);
+      assert.ok(appendedEvidenceIndex >= 0);
+      assert.ok(managedEvidenceIndex < appendedEvidenceIndex);
+      assert.match(verificationText, /agent-workflow:managed:verification-manual-proof-anchors:start/);
+      assert.match(verificationText, /"contentFingerprint": "sha1:/);
     },
   },
   {

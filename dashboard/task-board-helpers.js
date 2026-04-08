@@ -165,21 +165,31 @@
     `;
   }
 
-  function describeTaskVerificationSignal(task) {
-    const status = String((task && task.verificationSignalStatus) || "").trim().toLowerCase();
-    const summary = String((task && task.verificationSignalSummary) || "").trim();
+function describeTaskVerificationSignal(task) {
+  const status = String((task && task.verificationSignalStatus) || "").trim().toLowerCase();
+  const summary = String((task && task.verificationSignalSummary) || "").trim();
+  const anchorBackedStrongProofCount = Number((task && task.anchorBackedStrongProofCount) || 0);
+  const compatibilityStrongProofCount = Number((task && task.compatibilityStrongProofCount) || 0);
+  const freshnessLabel = describeVerificationFreshnessLabel(anchorBackedStrongProofCount, compatibilityStrongProofCount);
 
-    if (status === "strong") {
-      return {
-        label: "strong proof",
-        warn: false,
-        summary: summary || "Strong proof is recorded.",
-      };
-    }
+  if (status === "strong") {
+    return {
+      label:
+        freshnessLabel === "anchor-backed"
+          ? "anchor-backed proof"
+          : freshnessLabel === "compatibility-only"
+            ? "compatibility proof"
+            : freshnessLabel === "mixed freshness"
+              ? "mixed freshness"
+              : "strong proof",
+      warn: freshnessLabel === "compatibility-only" || freshnessLabel === "mixed freshness",
+      summary: summary || "Strong proof is recorded.",
+    };
+  }
 
-    if (status === "mixed") {
-      return {
-        label: "strong + draft",
+  if (status === "mixed") {
+    return {
+      label: "strong + draft",
         warn: true,
         summary: summary || "Some proof is strong, but draft placeholders remain.",
       };
@@ -201,17 +211,34 @@
       };
     }
 
-    return {
-      label: "no proof notes",
-      warn: false,
-      summary: summary || "No planned checks or explicit proof items are recorded.",
-    };
+  return {
+    label: "no proof notes",
+    warn: false,
+    summary: summary || "No planned checks or explicit proof items are recorded.",
+  };
+}
+
+function describeVerificationFreshnessLabel(anchorBackedStrongProofCount, compatibilityStrongProofCount) {
+  if (anchorBackedStrongProofCount > 0 && compatibilityStrongProofCount > 0) {
+    return "mixed freshness";
   }
+
+  if (anchorBackedStrongProofCount > 0) {
+    return "anchor-backed";
+  }
+
+  if (compatibilityStrongProofCount > 0) {
+    return "compatibility-only";
+  }
+
+  return "";
+}
 
   return {
     countTasksWithExecutorOutcome,
     countTasksWithVerificationSignals,
     describeExecutorOutcomeFilter,
+    describeVerificationFreshnessLabel,
     describeTaskVerificationSignal,
     filterTasksByExecutorOutcome,
     matchesExecutorOutcomeFilter,

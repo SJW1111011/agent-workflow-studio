@@ -15,9 +15,11 @@ const {
   extractVerificationProofPaths,
   findMarkdownSectionRange,
   formatVerificationPlannedCheck,
+  getEditableDocumentContent,
   getEditableDocumentConfig,
   getPendingProofPaths,
   hasRunDraftVerificationContent,
+  hasManagedVerificationAnchorBlock,
   mergeProofCheckDraft,
   mergeProofPathDraft,
   mergeVerificationFromRunDraft,
@@ -441,10 +443,15 @@ function populateDocumentEditor(detail) {
   const freeNode = document.getElementById("document-free-list");
   const guardrailNode = document.getElementById("document-guardrail-note");
   const draftProofButton = document.getElementById("document-draft-proof-links");
+  const editableConfig = getEditableDocumentConfig(activeDocumentName);
   const view = buildDocumentEditorView({
     detail,
     activeDocumentName,
-    editableConfig: getEditableDocumentConfig(activeDocumentName),
+    editableConfig,
+    documentContent:
+      detail && editableConfig.detailField
+        ? getEditableDocumentContent(activeDocumentName, detail[editableConfig.detailField] || "")
+        : "",
     pendingPaths: getPendingProofPaths(detail),
   });
 
@@ -458,6 +465,11 @@ function populateDocumentEditor(detail) {
   if (draftProofButton) {
     draftProofButton.disabled = view.draftProofButtonDisabled;
     draftProofButton.textContent = view.draftProofButtonText;
+  }
+  const refreshProofAnchorsButton = document.getElementById("document-refresh-proof-anchors");
+  if (refreshProofAnchorsButton) {
+    refreshProofAnchorsButton.disabled = view.refreshProofAnchorsButtonDisabled;
+    refreshProofAnchorsButton.textContent = view.refreshProofAnchorsButtonText;
   }
 
   Array.from(form.elements).forEach((element) => {
@@ -630,9 +642,13 @@ function bindForms() {
     collectRunDraftValues,
     getActiveDocumentName: () => activeDocumentName,
     getActiveTaskDetail: () => activeTaskDetail,
+    getEditableDocumentContent,
     getOverviewTasks: () => (window.__overview && window.__overview.tasks) || [],
     getPendingProofPaths,
-    getVerificationEditorBaseText,
+    getVerificationEditorBaseText(args) {
+      return getVerificationEditorBaseText({ ...args, getEditableDocumentContent });
+    },
+    hasManagedVerificationAnchorBlock,
     hasRunDraftVerificationContent,
     mergeProofCheckDraft,
     mergeProofPathDraft,
@@ -696,7 +712,9 @@ if (typeof module !== "undefined" && module.exports) {
     formatVerificationPlannedCheck,
     getPendingProofPaths,
     getEditableDocumentConfig,
+    getEditableDocumentContent,
     hasRunDraftVerificationContent,
+    hasManagedVerificationAnchorBlock,
     matchesExecutorOutcomeFilter,
     mergeVerificationProofPlanDraft,
     mergeVerificationPlannedCheckDraft,

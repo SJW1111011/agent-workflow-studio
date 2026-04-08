@@ -9,29 +9,34 @@
   const RUN_PROOF_NOTE_BASE_TEXT =
     "Checks default to the selected run status when you omit an explicit status. Use `status | label | optional details | artifact1, artifact2` for richer entries. Shortcut buttons can prefill proof paths, draft one check per pending scoped file, or sync the current run draft into verification.md.";
 
-  function buildDocumentEditorView({ detail, activeDocumentName, editableConfig, pendingPaths }) {
+  function buildDocumentEditorView({ detail, activeDocumentName, editableConfig, pendingPaths, documentContent }) {
     const hasDetail = Boolean(detail && detail.meta);
     const config = editableConfig || {};
     const paths = Array.isArray(pendingPaths) ? pendingPaths : [];
     const canDraftVerificationProof = hasDetail && activeDocumentName === "verification.md" && paths.length > 0;
+    const canRefreshVerificationAnchors = hasDetail && activeDocumentName === "verification.md";
 
     return {
       hasDetail,
       taskId: hasDetail ? detail.meta.id : "",
       documentName: activeDocumentName,
-      content: hasDetail ? detail[config.detailField] || "" : "",
+      content: hasDetail ? String(documentContent !== undefined ? documentContent : detail[config.detailField] || "") : "",
       note: hasDetail ? config.note : "Select a task to edit its markdown bundle.",
       managedMarkup: renderGuidanceList(hasDetail ? config.managedSections : [], "No managed sections listed for this document."),
       freeMarkup: renderGuidanceList(hasDetail ? config.freeSections : [], "Select a task to view editable sections."),
       guardrailNote: hasDetail
         ? activeDocumentName === "verification.md" && paths.length > 0
-          ? "Managed markers are maintained automatically on save. The verification draft shortcut can add planned checks plus file placeholders, but you still need real Check/Result/Artifact content before treating it as evidence."
-          : "Managed markers are maintained automatically on save; you can focus on the surrounding markdown."
+          ? "Managed markers are maintained automatically on save. The verification draft shortcut can add planned checks plus file placeholders, but you still need real Check/Result/Artifact content before treating it as evidence. Save first before refreshing proof anchors so the managed anchor state matches the text you just reviewed."
+          : activeDocumentName === "verification.md"
+            ? "Managed markers are maintained automatically on save. Save first before refreshing proof anchors so the managed anchor state matches the current verification text."
+            : "Managed markers are maintained automatically on save; you can focus on the surrounding markdown."
         : "Select a task to view editor guardrails.",
       draftProofButtonDisabled: !canDraftVerificationProof,
       draftProofButtonText: canDraftVerificationProof
         ? `Draft Proof Plan From Pending Files (${paths.length})`
         : "Draft Proof Plan From Pending Files",
+      refreshProofAnchorsButtonDisabled: !canRefreshVerificationAnchors,
+      refreshProofAnchorsButtonText: "Refresh Proof Anchors",
       disableInputs: !hasDetail,
     };
   }
@@ -65,12 +70,15 @@
     };
   }
 
-  function getVerificationEditorBaseText({ activeDocumentName, currentEditorText, detail }) {
+  function getVerificationEditorBaseText({ activeDocumentName, currentEditorText, detail, getEditableDocumentContent }) {
     if (activeDocumentName === "verification.md") {
       return String(currentEditorText || "");
     }
 
-    return detail && typeof detail.verificationText === "string" ? detail.verificationText : "";
+    const verificationText = detail && typeof detail.verificationText === "string" ? detail.verificationText : "";
+    return typeof getEditableDocumentContent === "function"
+      ? getEditableDocumentContent("verification.md", verificationText)
+      : verificationText;
   }
 
   function normalizeOptionalPositiveInteger(value, fieldName) {

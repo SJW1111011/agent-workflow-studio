@@ -214,6 +214,7 @@
     const scopeCoverage = verificationGate.scopeCoverage || {};
     const proofCoverage = verificationGate.proofCoverage || {};
     const proofSignals = describeVerificationProofSignals(verificationGate, verificationText);
+    const proofFreshness = describeProofFreshnessModes(proofCoverage);
     const scopeHints = (verificationGate.scopeHints || []).length
       ? (verificationGate.scopeHints || [])
           .map(
@@ -237,6 +238,7 @@
                 <div class="tag-row">
                   <span class="tag ${changedFile.changeType === "deleted" ? "warn" : ""}">${escapeHtml(changedFile.changeType)}</span>
                   ${changedFile.gitState ? `<span class="tag">${escapeHtml(changedFile.gitState)}</span>` : ""}
+                  ${renderProofFreshnessSourceTag(changedFile.proofFreshnessSource)}
                   <span class="tag">${escapeHtml(formatTimestampLabel(changedFile.modifiedAt))}</span>
                 </div>
               </article>
@@ -253,6 +255,7 @@
                 <p>${escapeHtml(renderChangeMatchSummary(coveredFile))}</p>
                 <div class="tag-row">
                   <span class="tag">${escapeHtml("covered")}</span>
+                  ${renderProofFreshnessSourceTag(coveredFile.proofFreshnessSource)}
                   <span class="tag">${escapeHtml(formatTimestampLabel(coveredFile.proofUpdatedAt))}</span>
                 </div>
               </article>
@@ -343,6 +346,7 @@
                 ? "Strong proof ties repo-relative paths to checks or artifacts."
                 : "No strong proof items are currently recorded.",
           })}
+          ${renderStatusBanner("Proof freshness", proofFreshness)}
         </div>
       </article>
       <article class="list-item">
@@ -392,12 +396,54 @@
             <p class="subtle">${escapeHtml(item.artifacts && item.artifacts.length > 0 ? item.artifacts.join(", ") : "No artifact refs recorded.")}</p>
             <div class="tag-row">
               <span class="tag ${item.strong ? "" : "warn"}">${escapeHtml(item.strong ? "strong proof" : "weak proof")}</span>
+              ${
+                item.strong
+                  ? `<span class="tag ${item.anchorCount > 0 ? "" : "warn"}">${escapeHtml(
+                      item.anchorCount > 0 ? `${item.anchorCount} anchor(s)` : "compatibility-only"
+                    )}</span>`
+                  : ""
+              }
               <span class="tag">${escapeHtml(formatTimestampLabel(item.recordedAt))}</span>
             </div>
           </article>
         `
       )
       .join("");
+  }
+
+  function describeProofFreshnessModes(proofCoverage) {
+    const anchoredStrongProofCount = Number((proofCoverage && proofCoverage.anchoredStrongProofCount) || 0);
+    const compatibilityStrongProofCount = Number((proofCoverage && proofCoverage.compatibilityStrongProofCount) || 0);
+
+    if (anchoredStrongProofCount > 0 && compatibilityStrongProofCount > 0) {
+      return {
+        tone: "pending",
+        headline: `${anchoredStrongProofCount} anchor-backed, ${compatibilityStrongProofCount} compatibility-only`,
+        summary: "Some strong proof is content-anchored, but some still relies on compatibility timestamps rather than matching fingerprints.",
+      };
+    }
+
+    if (anchoredStrongProofCount > 0) {
+      return {
+        tone: "passed",
+        headline: `${anchoredStrongProofCount} anchor-backed strong proof item(s)`,
+        summary: "Current freshness is being validated by matching proof anchors against the current repository snapshot.",
+      };
+    }
+
+    if (compatibilityStrongProofCount > 0) {
+      return {
+        tone: "pending",
+        headline: `${compatibilityStrongProofCount} compatibility-only strong proof item(s)`,
+        summary: "Strong proof exists, but freshness still depends on recorded time rather than matching proof anchors.",
+      };
+    }
+
+    return {
+      tone: "idle",
+      headline: "No strong proof freshness mode yet",
+      summary: "Add strong proof first, then anchors can harden freshness beyond compatibility timestamps.",
+    };
   }
 
   function formatVerificationGateHeading(status) {
@@ -431,6 +477,22 @@
     }
 
     return `Matched by ${matchedBy.join(", ")}${changedFile.previousPath ? `; previous path ${changedFile.previousPath}` : ""}`;
+  }
+
+  function renderProofFreshnessSourceTag(source) {
+    if (source === "anchor-backed") {
+      return '<span class="tag">anchor-backed</span>';
+    }
+
+    if (source === "compatibility-only") {
+      return '<span class="tag warn">compatibility-only</span>';
+    }
+
+    if (source === "anchor-stale") {
+      return '<span class="tag warn">anchor stale</span>';
+    }
+
+    return "";
   }
 
   function renderStatusBannerFallback(label, presentation) {

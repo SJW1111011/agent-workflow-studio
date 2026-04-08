@@ -910,6 +910,34 @@ Ship a dashboard markdown editor.
     ) {
       throw new Error("Manual proof item was not parsed into strong scoped coverage.");
     }
+    const manualAnchorRefreshDetail = await requestJson(
+      `http://127.0.0.1:${port}/api/tasks/T-001/verification/anchors/refresh`,
+      "POST",
+      {}
+    );
+    if (
+      !manualAnchorRefreshDetail.manualProofAnchorRefresh ||
+      manualAnchorRefreshDetail.manualProofAnchorRefresh.refreshedCount !== 1 ||
+      !manualAnchorRefreshDetail.verificationText.includes("verification-manual-proof-anchors:start")
+    ) {
+      throw new Error("Manual proof anchor refresh did not persist the managed verification anchor block.");
+    }
+    const anchoredManualProofItem = ((manualAnchorRefreshDetail.verificationGate.proofCoverage || {}).items || []).find(
+      (item) => item.sourceType === "manual" && (item.paths || []).includes("docs/notes.md")
+    );
+    if (!anchoredManualProofItem || anchoredManualProofItem.anchorCount < 1) {
+      throw new Error("Manual proof anchors were not reflected in task detail proof coverage.");
+    }
+
+    fs.writeFileSync(
+      path.join(tempRoot, "docs", "notes.md"),
+      "# Notes\n\nThe scanner should discover this file.\n\nDiff-aware verification should detect this follow-up change.\n\nManual proof anchors should reopen proof after this fresh edit.\n",
+      "utf8"
+    );
+    const reopenedManualProofDetail = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-001`);
+    if (!reopenedManualProofDetail.verificationGate || reopenedManualProofDetail.verificationGate.summary.status !== "needs-proof") {
+      throw new Error("Manual proof anchors did not reopen proof after the scoped file changed again.");
+    }
     const structuredDashboardRun = parseRunEvidenceDraft({
       status: "passed",
       scopeProofPaths: "docs/notes.md",

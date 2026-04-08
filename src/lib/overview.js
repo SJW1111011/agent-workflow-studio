@@ -211,6 +211,8 @@ function enrichTask(workspaceRoot, task, repositorySnapshot) {
     plannedVerificationCheckCount: verificationSignal.plannedCheckCount,
     draftProofCount: verificationSignal.draftProofCount,
     strongProofCount: verificationSignal.strongProofCount,
+    anchorBackedStrongProofCount: verificationSignal.anchorBackedStrongProofCount,
+    compatibilityStrongProofCount: verificationSignal.compatibilityStrongProofCount,
   };
 }
 
@@ -240,14 +242,25 @@ function describeTaskVerificationSignal(verificationGate, verificationText) {
   const strongProofCount = items.filter((item) => item && item.strong).length;
   const draftProofCount = items.filter((item) => item && !item.strong).length;
   const plannedCheckCount = extractVerificationPlannedChecks(verificationText).length;
+  const anchorBackedStrongProofCount = Number(proofCoverage.anchoredStrongProofCount || 0);
+  const compatibilityStrongProofCount = Number(proofCoverage.compatibilityStrongProofCount || 0);
 
   if (strongProofCount > 0 && draftProofCount > 0) {
     return {
       status: "mixed",
-      summary: `${strongProofCount} strong proof item(s), ${draftProofCount} draft proof item(s).`,
+      summary: describeStrongProofFreshnessSummary({
+        strongProofCount,
+        draftProofCount,
+        anchorBackedStrongProofCount,
+        compatibilityStrongProofCount,
+        fallback: `${strongProofCount} strong proof item(s), ${draftProofCount} draft proof item(s).`,
+        suffix: ` ${draftProofCount} draft proof item(s) remain.`,
+      }),
       strongProofCount,
       draftProofCount,
       plannedCheckCount,
+      anchorBackedStrongProofCount,
+      compatibilityStrongProofCount,
     };
   }
 
@@ -258,19 +271,31 @@ function describeTaskVerificationSignal(verificationGate, verificationText) {
       strongProofCount,
       draftProofCount,
       plannedCheckCount,
+      anchorBackedStrongProofCount,
+      compatibilityStrongProofCount,
     };
   }
 
   if (strongProofCount > 0) {
     return {
       status: "strong",
-      summary:
-        plannedCheckCount > 0
-          ? `${strongProofCount} strong proof item(s); ${plannedCheckCount} planned check(s) remain as notes.`
-          : `${strongProofCount} strong proof item(s) recorded.`,
+      summary: describeStrongProofFreshnessSummary({
+        strongProofCount,
+        draftProofCount,
+        anchorBackedStrongProofCount,
+        compatibilityStrongProofCount,
+        fallback:
+          plannedCheckCount > 0
+            ? `${strongProofCount} strong proof item(s); ${plannedCheckCount} planned check(s) remain as notes.`
+            : `${strongProofCount} strong proof item(s) recorded.`,
+        suffix:
+          plannedCheckCount > 0 ? ` ${plannedCheckCount} planned check(s) remain as notes.` : "",
+      }),
       strongProofCount,
       draftProofCount,
       plannedCheckCount,
+      anchorBackedStrongProofCount,
+      compatibilityStrongProofCount,
     };
   }
 
@@ -281,6 +306,8 @@ function describeTaskVerificationSignal(verificationGate, verificationText) {
       strongProofCount,
       draftProofCount,
       plannedCheckCount,
+      anchorBackedStrongProofCount,
+      compatibilityStrongProofCount,
     };
   }
 
@@ -290,7 +317,32 @@ function describeTaskVerificationSignal(verificationGate, verificationText) {
     strongProofCount,
     draftProofCount,
     plannedCheckCount,
+    anchorBackedStrongProofCount,
+    compatibilityStrongProofCount,
   };
+}
+
+function describeStrongProofFreshnessSummary({
+  strongProofCount,
+  draftProofCount,
+  anchorBackedStrongProofCount,
+  compatibilityStrongProofCount,
+  fallback,
+  suffix = "",
+}) {
+  if (anchorBackedStrongProofCount > 0 && compatibilityStrongProofCount > 0) {
+    return `${strongProofCount} strong proof item(s): ${anchorBackedStrongProofCount} anchor-backed, ${compatibilityStrongProofCount} compatibility-only.${suffix}`.trim();
+  }
+
+  if (anchorBackedStrongProofCount > 0) {
+    return `${strongProofCount} strong proof item(s), all anchor-backed.${suffix}`.trim();
+  }
+
+  if (compatibilityStrongProofCount > 0 && draftProofCount >= 0) {
+    return `${strongProofCount} strong proof item(s), all compatibility-only.${suffix}`.trim();
+  }
+
+  return fallback;
 }
 
 function extractVerificationPlannedChecks(verificationText) {

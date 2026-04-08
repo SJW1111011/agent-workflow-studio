@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 
 const { buildTaskVerificationGate } = require("../src/lib/verification-gates");
+const { buildManualProofSignature } = require("../src/lib/verification-proof");
 const {
   buildRepositoryDiff,
   createTaskWorkspace,
@@ -57,8 +58,11 @@ const tests = [
       assert.equal(gate.summary.relevantChangeCount, 0);
       assert.equal(gate.coveredScopedFiles.length, 1);
       assert.equal(gate.coveredScopedFiles[0].path, "src/app.js");
+      assert.equal(gate.coveredScopedFiles[0].proofFreshnessSource, "compatibility-only");
       assert.equal(gate.proofCoverage.explicitProofCount, 1);
       assert.equal(gate.proofCoverage.weakProofCount, 0);
+      assert.equal(gate.proofCoverage.compatibilityStrongProofCount, 1);
+      assert.equal(gate.proofCoverage.anchoredStrongProofCount, 0);
       assert.equal(gate.coveredScopedFiles[0].proofItems[0].strong, true);
     },
   },
@@ -150,6 +154,163 @@ const tests = [
     },
   },
   {
+    name: "manual proof anchors keep coverage even when verification timestamps would otherwise be stale",
+    run() {
+      const { workspaceRoot, files } = createTaskWorkspace("verification-manual-anchors-covered");
+      const meta = prepareScopedTask(files, ["src/app.js"]);
+      const proofSignature = buildManualProofSignature({
+        paths: ["src/app.js"],
+        checks: ["npm test"],
+        artifacts: ["logs/app-proof.txt"],
+      });
+
+      writeTextFile(
+        files.verification,
+        [
+          "# T-001 Verification",
+          "",
+          "## Proof links",
+          "",
+          "### Proof 1",
+          "",
+          "- Files: src/app.js",
+          "- Check: npm test",
+          "- Artifact: logs/app-proof.txt",
+          "",
+          "## Evidence",
+          "",
+          "<!-- agent-workflow:managed:verification-manual-proof-anchors:start -->",
+          "### Manual proof anchors",
+          "",
+          "```json",
+          JSON.stringify(
+            {
+              version: 1,
+              manualProofAnchors: [
+                {
+                  proofSignature,
+                  capturedAt: "2026-01-02T00:00:00.000Z",
+                  paths: ["src/app.js"],
+                  anchors: [
+                    {
+                      path: "src/app.js",
+                      exists: true,
+                      contentFingerprint: "sha1:manual-same",
+                    },
+                  ],
+                },
+              ],
+            },
+            null,
+            2
+          ),
+          "```",
+          "<!-- agent-workflow:managed:verification-manual-proof-anchors:end -->",
+          "",
+        ].join("\n")
+      );
+      setFileModifiedAt(files.verification, "2026-01-01T00:00:00.000Z");
+
+      const gate = buildTaskVerificationGate(
+        workspaceRoot,
+        meta,
+        [],
+        buildRepositoryDiff([
+          {
+            path: "src/app.js",
+            modifiedAt: "2026-01-03T00:00:00.000Z",
+            contentFingerprint: "sha1:manual-same",
+          },
+        ])
+      );
+
+      assert.equal(gate.summary.status, "covered");
+      assert.equal(gate.summary.relevantChangeCount, 0);
+      assert.equal(gate.coveredScopedFiles.length, 1);
+      assert.equal(gate.coveredScopedFiles[0].path, "src/app.js");
+      assert.equal(gate.coveredScopedFiles[0].proofFreshnessSource, "anchor-backed");
+      assert.equal(gate.proofCoverage.items[0].sourceType, "manual");
+      assert.equal(gate.proofCoverage.items[0].anchorCount, 1);
+      assert.equal(gate.proofCoverage.anchoredStrongProofCount, 1);
+    },
+  },
+  {
+    name: "stale manual anchor metadata is ignored when the proof block signature changes",
+    run() {
+      const { workspaceRoot, files } = createTaskWorkspace("verification-manual-anchors-stale");
+      const meta = prepareScopedTask(files, ["src/app.js"]);
+      const staleProofSignature = buildManualProofSignature({
+        paths: ["src/app.js"],
+        checks: ["npm test"],
+        artifacts: ["logs/app-proof.txt"],
+      });
+
+      writeTextFile(
+        files.verification,
+        [
+          "# T-001 Verification",
+          "",
+          "## Proof links",
+          "",
+          "### Proof 1",
+          "",
+          "- Files: src/app.js",
+          "- Check: npm test --updated",
+          "- Artifact: logs/app-proof.txt",
+          "",
+          "## Evidence",
+          "",
+          "<!-- agent-workflow:managed:verification-manual-proof-anchors:start -->",
+          "### Manual proof anchors",
+          "",
+          "```json",
+          JSON.stringify(
+            {
+              version: 1,
+              manualProofAnchors: [
+                {
+                  proofSignature: staleProofSignature,
+                  capturedAt: "2026-01-02T00:00:00.000Z",
+                  paths: ["src/app.js"],
+                  anchors: [
+                    {
+                      path: "src/app.js",
+                      exists: true,
+                      contentFingerprint: "sha1:manual-old",
+                    },
+                  ],
+                },
+              ],
+            },
+            null,
+            2
+          ),
+          "```",
+          "<!-- agent-workflow:managed:verification-manual-proof-anchors:end -->",
+          "",
+        ].join("\n")
+      );
+      setFileModifiedAt(files.verification, "2026-01-03T00:00:00.000Z");
+
+      const gate = buildTaskVerificationGate(
+        workspaceRoot,
+        meta,
+        [],
+        buildRepositoryDiff([
+          {
+            path: "src/app.js",
+            modifiedAt: "2026-01-02T00:00:00.000Z",
+            contentFingerprint: "sha1:manual-new",
+          },
+        ])
+      );
+
+      assert.equal(gate.summary.status, "covered");
+      assert.equal(gate.proofCoverage.items[0].sourceType, "manual");
+      assert.equal(gate.proofCoverage.items[0].anchorCount, 0);
+    },
+  },
+  {
     name: "anchor mismatch reopens needs-proof even when timestamps would otherwise pass",
     run() {
       const { workspaceRoot, taskId, files } = createTaskWorkspace("verification-anchors-mismatch");
@@ -192,6 +353,7 @@ const tests = [
       assert.equal(gate.summary.relevantChangeCount, 1);
       assert.equal(gate.coveredScopedFiles.length, 0);
       assert.equal(gate.relevantChangedFiles[0].path, "src/app.js");
+      assert.equal(gate.relevantChangedFiles[0].proofFreshnessSource, "anchor-stale");
     },
   },
   {

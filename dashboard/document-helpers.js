@@ -7,6 +7,7 @@
   root.AgentWorkflowDashboardDocumentHelpers = factory();
 })(typeof globalThis !== "undefined" ? globalThis : this, () => {
   const CHECK_STATUSES = new Set(["passed", "failed", "recorded", "info"]);
+  const VERIFICATION_MANUAL_PROOF_ANCHOR_BLOCK_ID = "verification-manual-proof-anchors";
 
   const EDITABLE_DOCUMENTS = {
     "task.md": {
@@ -41,8 +42,11 @@
     },
     "verification.md": {
       detailField: "verificationText",
-      note: "Run evidence can still append to verification.md after edits. Use Proof links with repo-relative files plus check/result/artifact refs for stronger coverage. The draft shortcut can add planned manual checks and file-only Proof links, but it still stays non-authoritative until you complete the proof.",
-      managedSections: ["Heading from task id"],
+      note: "Run evidence can still append to verification.md after edits. Use Proof links with repo-relative files plus check/result/artifact refs for stronger coverage. The draft shortcut can add planned manual checks and file-only Proof links, but it still stays non-authoritative until you complete the proof. Refresh Proof Anchors only after saving the manual proof text you want to keep.",
+      managedSections: [
+        "Heading from task id",
+        "Manual proof anchor block under Evidence after an explicit local refresh",
+      ],
       freeSections: [
         "Planned checks",
         "Proof links",
@@ -511,6 +515,64 @@
     return EDITABLE_DOCUMENTS[documentName] || EDITABLE_DOCUMENTS["task.md"];
   }
 
+  function getEditableDocumentContent(documentName, content = "") {
+    if (documentName !== "verification.md") {
+      return String(content || "").replace(/\r\n/g, "\n");
+    }
+
+    return stripManagedVerificationAnchorBlock(content);
+  }
+
+  function stripManagedVerificationAnchorBlock(content = "") {
+    const normalized = String(content || "").replace(/\r\n/g, "\n").trim();
+    if (!normalized) {
+      return "";
+    }
+
+    const stripped = normalized
+      .replace(
+        new RegExp(
+          `(?:\\n)?${escapeRegex(managedBlockStart(VERIFICATION_MANUAL_PROOF_ANCHOR_BLOCK_ID))}[\\s\\S]*?${escapeRegex(
+            managedBlockEnd(VERIFICATION_MANUAL_PROOF_ANCHOR_BLOCK_ID)
+          )}(?:\\n)?`,
+          "m"
+        ),
+        "\n"
+      )
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+
+    const evidenceRange = findMarkdownSectionRange(stripped, "Evidence");
+    if (!evidenceRange) {
+      return stripped;
+    }
+
+    const evidenceBody = stripped.slice(evidenceRange.bodyStart, evidenceRange.end).trim();
+    if (evidenceBody) {
+      return stripped;
+    }
+
+    return [stripped.slice(0, evidenceRange.start).trimEnd(), stripped.slice(evidenceRange.end).trimStart()]
+      .filter(Boolean)
+      .join("\n\n");
+  }
+
+  function hasManagedVerificationAnchorBlock(content = "") {
+    return String(content || "").includes(managedBlockStart(VERIFICATION_MANUAL_PROOF_ANCHOR_BLOCK_ID));
+  }
+
+  function managedBlockStart(blockId) {
+    return `<!-- agent-workflow:managed:${blockId}:start -->`;
+  }
+
+  function managedBlockEnd(blockId) {
+    return `<!-- agent-workflow:managed:${blockId}:end -->`;
+  }
+
+  function escapeRegex(value) {
+    return String(value || "").replace(/[|\\{}()[\]^$+?.]/g, "\\$&");
+  }
+
   return {
     buildPendingProofCheckLines,
     buildVerificationPlannedCheckDraft,
@@ -524,10 +586,12 @@
     extractVerificationProofPaths,
     findMarkdownSectionRange,
     formatVerificationPlannedCheck,
+    getEditableDocumentContent,
     getEditableDocumentConfig,
     getMarkdownSection,
     getNextProofNumber,
     getPendingProofPaths,
+    hasManagedVerificationAnchorBlock,
     hasRunDraftVerificationContent,
     mergeProofCheckDraft,
     mergeProofPathDraft,
@@ -543,5 +607,6 @@
     parseRunEvidenceDraft,
     parseRunVerificationDraft,
     splitLineEntries,
+    stripManagedVerificationAnchorBlock,
   };
 });

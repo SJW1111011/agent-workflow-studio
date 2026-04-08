@@ -16,6 +16,7 @@ Status on 2026-04-07:
 - HTTP behavior for the local API is now explicitly typed instead of inferred from error text
 - transcript linking and richer resume metadata remain future work
 - the next step is design hardening first, not a second execution subsystem
+- as of 2026-04-08, that next hardening step is now explicitly scoped as shared preflight/readiness validation plus clearer lifecycle and failure categories before any broader runtime support is added
 
 ## Why this exists
 
@@ -364,6 +365,157 @@ Important failure classes:
 
 Each of these should produce a run record when execution actually started, or a clear CLI error when it never did.
 
+## Next hardening target: preflight before launch
+
+The next implementation step should add a shared preflight layer before process launch.
+
+This should stay inside the existing shared executor path instead of becoming a dashboard-only planner.
+
+### Why this comes next
+
+The current executor can already:
+
+- prepare artifacts
+- resolve adapter tokens
+- launch local processes
+- persist durable evidence
+- expose a thin dashboard bridge for `stdioMode: pipe`
+
+The next quality gap is not "more execution." It is "clearer readiness and clearer failure semantics."
+
+Without that layer:
+
+- CLI errors and dashboard rejections can drift apart
+- adapter misconfiguration is discovered later than necessary
+- future executor breadth risks outrunning the audit trail
+
+### Shared preflight responsibilities
+
+The shared preflight pass should validate four things before spawn:
+
+1. adapter capability readiness
+2. prepared artifact readiness
+3. runtime plan safety
+4. caller-specific launch compatibility
+
+#### 1) Adapter capability readiness
+
+Preflight should explicitly verify:
+
+- `commandMode` is `exec`
+- `runnerCommand` resolves to a non-empty argv array
+- declared `stdioMode` is supported by the calling surface
+- any future adapter capability flags remain consistent with the requested launch path
+
+This keeps adapter validation centralized instead of duplicating it in CLI code and `src/server.js`.
+
+#### 2) Prepared artifact readiness
+
+Preflight should explicitly confirm:
+
+- the task exists
+- `prompt.<adapter>.md` exists
+- `run-request.<adapter>.json` exists and parses
+- any referenced task-local artifacts remain repository-relative and resolvable
+
+If preparation must be regenerated, that should still happen through the existing `run:prepare` path instead of through ad hoc UI-only logic.
+
+#### 3) Runtime plan safety
+
+Preflight should reject plans that would violate the local-first contract, for example:
+
+- unresolved template tokens
+- a resolved cwd outside the workspace/task boundary
+- invalid timeout values
+- malformed success exit-code declarations
+- invalid environment allowlist shapes
+
+This is also the right place to classify "configuration is malformed" separately from "the process later failed."
+
+#### 4) Caller-specific launch compatibility
+
+The same shared preflight should let each caller ask, "Is this launch shape valid from here?"
+
+Examples:
+
+- CLI can allow both `stdioMode: inherit` and `stdioMode: pipe`
+- dashboard local API should continue rejecting `stdioMode: inherit`
+- future surfaces should only opt in by consuming the same shared readiness result
+
+That keeps the dashboard a thin control plane instead of a second execution rules engine.
+
+### Proposed shared preflight result
+
+The next pass should return a structured readiness result that both CLI and dashboard can use without reinterpreting error strings.
+
+Suggested shape:
+
+```json
+{
+  "ready": true,
+  "adapterId": "codex",
+  "taskId": "T-001",
+  "stdioMode": "pipe",
+  "cwdMode": "workspaceRoot",
+  "failureCategory": null,
+  "blockingIssues": [],
+  "advisories": [],
+  "executionPlan": {
+    "...": "existing resolved plan fields"
+  }
+}
+```
+
+When launch is rejected before spawn, prefer a normalized `failureCategory` plus machine-readable blocking issues instead of a free-form summary only.
+
+Good early categories:
+
+- `adapter-manual-only`
+- `adapter-invalid`
+- `prepared-artifacts-missing`
+- `plan-invalid`
+- `caller-not-supported`
+
+This result can still wrap the existing resolved execution plan so the implementation stays additive.
+
+## Lifecycle and failure taxonomy
+
+The next executor step should also make lifecycle states explicit without creating a second durable execution database.
+
+### Transient bridge state
+
+The local dashboard bridge can keep lightweight transient states such as:
+
+- `idle`
+- `preflight-failed`
+- `starting`
+- `running`
+- `cancel-requested`
+- `completed`
+- `failed-to-start`
+
+Those remain server-local and non-durable.
+
+### Durable run outcome
+
+Once a process actually starts, the durable truth should still land in `runs/<runId>.json` plus the existing task documents.
+
+The next hardening pass may add optional outcome metadata, but it should remain additive.
+
+Good candidates:
+
+- `outcome`: `passed`, `failed`, `timed-out`, `interrupted`, `cancelled`
+- `failureCategory`: `non-zero-exit`, `timeout`, `interrupted`, `launch-error`
+- `executionIntentId`: a lightweight identifier shared across transient bridge state and the final run record
+
+Important boundary:
+
+- preflight rejection should not create a fake run record
+- failed launch before spawn should remain a local API / CLI error with typed failure metadata
+- only real process starts should create durable run evidence
+
+That preserves the meaning of the run ledger as evidence, not merely attempted intent.
+
 ## Interaction model
 
 Interactive terminal-owned flows should stay CLI-first.
@@ -494,6 +646,8 @@ It should harden the current contract instead of adding a second execution produ
 - keep the existing pipeline: `task -> prompt/run-request -> execution plan -> local process -> run evidence -> verification/checkpoint refresh`
 - keep adapter config as the only vendor-specific launch contract
 - keep `src/lib/run-executor.js` as the shared execution implementation for both CLI and dashboard-triggered local runs
+- add a shared preflight/readiness result that both CLI and dashboard can consume before launch
+- make lifecycle and failure categories explicit before broadening runtime support
 - make long-running jobs easier to inspect and hand off by improving durable evidence, not by introducing hidden runtime state
 - extend tests and design constraints before expanding runtime breadth
 
@@ -530,6 +684,7 @@ Good candidates are fields that improve auditability without changing the source
 - an execution intent identifier shared across transient bridge state and the final run record
 - a normalized lifecycle state description
 - explicit failure category labels
+- a caller-visible preflight/readiness result that wraps the resolved plan without inventing a second source of truth
 - a sanitized execution summary that explains what happened without persisting machine-specific command strings
 
 Avoid fields that would make the task package depend on one machine's private environment.
@@ -550,9 +705,10 @@ It should not become the canonical execution state store.
 
 Before adding another execution capability, do this in order:
 
-1. document the lifecycle and failure semantics clearly
+1. document shared preflight/readiness, lifecycle, and failure semantics clearly
 2. lock them down with unit and smoke coverage
-3. only then add the smallest implementation needed on top of the shared executor
+3. implement the smallest shared preflight API on top of `src/lib/run-executor.js`
+4. only then add the next launch behavior that depends on that shared readiness result
 
 That sequence keeps automation aligned with the contract-first workflow model instead of letting orchestration details outrun the evidence model.
 
@@ -584,6 +740,8 @@ That sequence keeps automation aligned with the contract-first workflow model in
 ### Phase D: contract hardening before breadth
 
 - keep the execution lifecycle additive and explicit
+- add shared preflight/readiness validation before spawn
+- normalize failure categories so CLI and dashboard stop inferring launch semantics from ad hoc text
 - expand test coverage around execution states, failure categories, and local API contracts
 - only add new executor behaviors that still land in the same durable task artifacts
 

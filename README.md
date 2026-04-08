@@ -12,7 +12,7 @@ The product thesis is simple:
 Two verification ideas sit at the center of that thesis:
 
 - `verification gate`: compare repo-relative task scope against the current repository snapshot and explain which scoped files still need explicit proof
-- `proof anchor`: persist repo-relative content fingerprints with passed run evidence so freshness can survive misleading `mtime` churn, branch switches, and agent handoff noise
+- `proof anchor`: persist repo-relative content fingerprints with passed run evidence, and now also with explicitly refreshed manual proof, so freshness can survive misleading `mtime` churn, branch switches, and agent handoff noise
 
 Git mode gives the strongest version of this model because it carries dirty-state metadata plus current fingerprints for changed files. Filesystem fallback stays local-only and portable, but only hashes targeted proof paths instead of the whole workspace.
 
@@ -53,7 +53,7 @@ The current foundation includes:
 - `run:add`: append execution evidence to a task, including optional proof paths, checks, and artifact refs
 - `checkpoint`: build a resumable checkpoint for the current task
 - `validate`: run schema checks on project, adapters, tasks, and recorded runs
-- `dashboard`: open a local control plane for tasks, memory freshness, task doc freshness, Git-aware diff-aware verification gates, checkpoint detail, metadata edits, structured run evidence capture, a local execution bridge for `stdioMode: pipe` adapters, executor state/cancel flow, and markdown task doc edits
+- `dashboard`: open a local control plane for tasks, memory freshness, task doc freshness, Git-aware diff-aware verification gates, checkpoint detail, metadata edits, structured run evidence capture, manual proof-anchor refresh, a local execution bridge for `stdioMode: pipe` adapters, executor state/cancel flow, and markdown task doc edits
 - the dashboard frontend is now split across static helper modules for document editing/proof drafting, API client helpers, form/editor state derivation, form event flows, orchestration state derivation, task-board summaries, task-list rendering, execution/run detail presentation, task-detail/verification rendering, log-panel state/render helpers, and overview/list section rendering without introducing a bundler
 - server-facing mutations and log APIs now use explicit HTTP-aware errors, so the local control plane no longer guesses status codes from message text
 
@@ -164,11 +164,13 @@ The workflow layer now treats recipes as first-class metadata instead of loose m
 - Checkpoints now surface whether scoped files still need explicit proof before handoff
 - The dashboard can create tasks, update selected task metadata, edit `task.md` / `context.md` / `verification.md`, and record structured run evidence through local-only API endpoints
 - metadata-managed markdown blocks now stay pinned during edits, so task title / recipe / context recipe guidance / priority lines refresh without wiping nearby custom notes
-- the dashboard editor now explains which sections are managed on save versus free to edit, so those guardrails are visible before you type
+- the dashboard editor now explains which sections are managed on save versus free to edit, keeps the manual proof-anchor JSON out of the primary `verification.md` editing surface, and preserves that managed anchor block on save
 - the run evidence form can now prefill proof paths from the task's current pending scoped files
 - the run evidence form can now also draft one verification check per pending scoped file
 - the `verification.md` editor can now draft a pending proof plan from the current scoped file set by inserting planned manual checks plus file-only Proof links placeholders without falsely claiming completed verification
 - the run evidence form can now sync its drafted proof paths/checks into the `verification.md` editor as an unsaved proof-plan draft
+- the dashboard can now explicitly refresh manual proof anchors into a managed `## Evidence` block after you save strong manual proof, so anchor-backed freshness does not depend on run records alone
+- task detail and task cards now surface whether strong proof is `anchor-backed` or still `compatibility-only`, so operators can see which freshness path the gate is relying on
 
 Diff-aware verification stays intentionally lightweight in this pass:
 
@@ -181,7 +183,8 @@ Diff-aware verification stays intentionally lightweight in this pass:
 - it now tracks proof items as `paths + checks + artifacts`, so evidence can be audited instead of treated as a bare timestamp
 - it makes rename / delete / untracked state explicit in the verification summary when Git is available
 - a generic `verification.md` timestamp bump is no longer enough to cover scoped changes by itself
-- passed-run anchors now allow content-aware freshness when they are present, while legacy/manual proof still falls back to recorded time
+- passed-run anchors now allow content-aware freshness when they are present
+- manual proof now defaults to the compatibility timestamp path, but can opt into the same anchor-backed freshness model through a local-only refresh action that writes a managed block under `verification.md`
 - direct proof fingerprint reads now use a small in-memory cache keyed by file path plus `mtime`, so repeated overview/task-detail refreshes do not keep re-hashing unchanged proof files
 - filesystem fallback still avoids hashing the whole workspace; it only fingerprints the proof paths being anchored, so Git mode remains the strongest protection path
 - it does not try to replace human judgment or full CI evidence
@@ -190,11 +193,11 @@ See `docs/RECIPES_AND_SCHEMA.md`.
 
 ## Suggested next build steps
 
-1. Extend proof-anchor coverage beyond passed runs only, starting with an intentional manual-proof strategy instead of ad hoc markdown magic.
-2. Surface proof-anchor vs compatibility freshness more clearly in dashboard/task detail so operators can see which path a gate decision came from.
-3. Design the next `run:execute` local executor step without breaking the contract-first workflow boundary.
-4. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
-5. Keep `dashboard/app.js` focused on orchestration/event wiring if any new dashboard features land.
+1. Design the next `run:execute` local executor step without breaking the contract-first workflow boundary.
+2. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
+3. Keep `dashboard/app.js` focused on orchestration/event wiring if any new dashboard features land.
+4. Revisit adapter extensibility only after the verification/evidence model stays stable under the new manual-proof anchor path.
+5. Add more focused unit coverage around any future executor-planning contract before broadening adapter execution modes.
 
 ## Contributing
 

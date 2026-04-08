@@ -9,7 +9,7 @@ const { badRequest, getHttpStatusCode } = require("./lib/http-errors");
 const { buildOverview } = require("./lib/overview");
 const { listRecipes } = require("./lib/recipes");
 const { validateWorkspace } = require("./lib/schema-validator");
-const { saveTaskDocument } = require("./lib/task-documents");
+const { refreshManualProofAnchors, saveTaskDocument } = require("./lib/task-documents");
 const { createTask, getRunLog, getTaskDetail, recordRun, updateTaskMeta } = require("./lib/task-service");
 const { resolveWorkspaceRoot } = require("./lib/workspace");
 
@@ -95,6 +95,18 @@ function main() {
           saveTaskDocument(workspaceRoot, documentRoute.taskId, documentRoute.documentName, body.content);
           buildCheckpoint(workspaceRoot, documentRoute.taskId);
           return sendJson(response, 200, buildTaskResponse(workspaceRoot, documentRoute.taskId, executionBridge));
+        }
+
+        const manualProofAnchorRefreshRoute = parseTaskVerificationAnchorRefreshRoute(requestUrl.pathname);
+        if (manualProofAnchorRefreshRoute && request.method === "POST") {
+          const refreshSummary = refreshManualProofAnchors(workspaceRoot, manualProofAnchorRefreshRoute.taskId);
+          if (refreshSummary.changed) {
+            buildCheckpoint(workspaceRoot, manualProofAnchorRefreshRoute.taskId);
+          }
+          return sendJson(response, 200, {
+            ...buildTaskResponse(workspaceRoot, manualProofAnchorRefreshRoute.taskId, executionBridge),
+            manualProofAnchorRefresh: refreshSummary,
+          });
         }
 
         const taskExecuteRoute = parseTaskExecuteRoute(requestUrl.pathname);
@@ -298,6 +310,17 @@ function parseTaskRunLogRoute(pathname) {
     taskId: decodeURIComponent(matched[1]),
     runId: decodeURIComponent(matched[2]),
     stream: decodeURIComponent(matched[3]),
+  };
+}
+
+function parseTaskVerificationAnchorRefreshRoute(pathname) {
+  const matched = pathname.match(/^\/api\/tasks\/([^/]+)\/verification\/anchors\/refresh$/);
+  if (!matched) {
+    return null;
+  }
+
+  return {
+    taskId: decodeURIComponent(matched[1]),
   };
 }
 

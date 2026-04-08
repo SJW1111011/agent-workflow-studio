@@ -11,7 +11,9 @@ As of 2026-04-08:
 - Git mode prefers `git status --porcelain=v2`, with filesystem fallback preserved
 - Phase 2 has started: newly recorded passed runs can now persist optional `scopeProofAnchors`
 - the gate now prefers anchor comparison when those passed-run anchors are present
-- legacy/manual proof still uses the compatibility timestamp path
+- manual `verification.md` proof still defaults to the compatibility timestamp path until you explicitly refresh anchors
+- Phase 2b is now implemented: `POST /api/tasks/:taskId/verification/anchors/refresh` can persist managed manual proof anchors under `verification.md`
+- the dashboard verification editor now hides that managed anchor JSON from the primary editing surface and preserves it on save
 - direct proof fingerprint reads now use a small in-memory cache keyed by path plus `mtime`
 
 ## Why this exists
@@ -239,9 +241,9 @@ An anchor should count as matching when:
 
 If an anchored proof item disagrees with the current snapshot, treat that file as needing fresh proof even when timestamps would have looked acceptable.
 
-#### Scope of Phase 2
+#### Scope of Phase 2a
 
-Phase 2 should extend passed run evidence only.
+Phase 2a extends passed run evidence only.
 
 It should not yet:
 
@@ -251,6 +253,185 @@ It should not yet:
 - replace proof strength rules with Git metadata alone
 
 Manual `verification.md` can keep the current compatibility path until there is a separate managed-anchor design for human-authored proof.
+
+### Phase 2b: managed anchors for manual `verification.md` proof
+
+Phase 2b is now implemented as a local-only refresh flow. It still follows the same design constraint: do not try to infer durable anchors from arbitrary prose. Manual proof is valuable precisely because it stays editable and human-authored.
+
+Instead, Phase 2b should add an explicit managed-anchor layer inside `verification.md` itself:
+
+- humans continue to write proof in `## Proof links`
+- the system stores anchor metadata in a managed block under `## Evidence`
+- the gate attaches those anchors back onto manual proof items only when the current proof block still matches
+- manual proof without a matching managed anchor stays valid, but only on the compatibility timestamp path
+
+This keeps the durable source of truth in the task bundle instead of inventing a second database.
+
+#### Why a managed block is the right fit
+
+The current parser already strips everything from `## Evidence` onward before it extracts manual proof items:
+
+- human proof stays readable in `## Proof links`
+- managed metadata can live below that line without polluting proof parsing
+- older versions remain backward compatible because the existing proof parser already ignores the `## Evidence` section
+
+That makes `verification.md` the natural place to keep manual anchor metadata:
+
+- local-only
+- repo-relative
+- relocatable with the task bundle
+- inspectable in Git history
+
+#### Proposed storage shape
+
+The managed block should live inside `## Evidence` and remain fully owned by the system:
+
+````md
+## Evidence
+
+<!-- agent-workflow:managed:verification-manual-proof-anchors:start -->
+### Manual proof anchors
+
+```json
+{
+  "version": 1,
+  "manualProofAnchors": [
+    {
+      "proofSignature": "sha1:...",
+      "capturedAt": "2026-04-08T12:00:00.000Z",
+      "paths": ["src/server.js"],
+      "anchors": [
+        {
+          "path": "src/server.js",
+          "gitState": "M",
+          "previousPath": null,
+          "exists": true,
+          "contentFingerprint": "sha1:..."
+        }
+      ]
+    }
+  ]
+}
+```
+<!-- agent-workflow:managed:verification-manual-proof-anchors:end -->
+````
+
+Rules:
+
+- the block stays optional
+- all stored paths remain repo-relative
+- `anchors` reuse the same narrow durable shape already used by passed runs
+- no absolute paths, raw diffs, or machine-local temp files are persisted
+- surrounding human notes inside `## Evidence` should be preserved, just like other managed markdown sections in the project
+
+#### How manual proof blocks map to anchor records
+
+Manual proof blocks should not be matched by ordinal heading alone.
+
+`### Proof 1` is helpful for readers, but it is not a safe durable key because users can reorder or rename proof blocks. Instead, the gate should derive a normalized `proofSignature` from the current proof block content.
+
+Suggested input to `proofSignature`:
+
+- normalized proof paths
+- normalized checks
+- normalized artifacts
+
+The signature should ignore:
+
+- block heading text such as `### Proof 1`
+- blank lines
+- list marker style differences
+- surrounding whitespace
+
+That gives the desired behavior:
+
+- reordering proof blocks does not break anchors
+- small formatting edits do not break anchors
+- changing the actual proof content invalidates the old anchor attachment
+
+If two proof blocks are truly identical after normalization, they can share the same anchor lineage. That is acceptable because duplicate proof blocks do not represent distinct evidence.
+
+#### Capture and refresh flow
+
+Manual proof anchors are refreshed by an explicit local action, not silently minted on every document save.
+
+Current flow:
+
+1. `PUT /api/tasks/:taskId/docs/verification.md` keeps saving human-authored markdown only.
+2. The local-only action `POST /api/tasks/:taskId/verification/anchors/refresh` reads the current `verification.md`.
+3. The refresh step parses strong manual proof items from `## Proof links`.
+4. For each strong manual proof item, it computes `proofSignature`, builds targeted anchors for its normalized proof paths, and upserts the managed block in `## Evidence`.
+5. Stale managed anchor records whose `proofSignature` no longer matches any current strong manual proof item are dropped during refresh.
+
+Important guardrails:
+
+- weak proof placeholders must never receive authoritative anchors
+- saving text alone must not imply that proof was freshly re-verified
+- anchor capture failure for one path should not corrupt the rest of the document
+- if no safe anchors can be captured, the proof item stays on the compatibility path instead of failing the save flow
+
+This mirrors the passed-run design: anchors strengthen evidence, but anchor capture is additive and should not become a new availability risk.
+
+#### Gate behavior for manual proof
+
+Once the managed block exists, manual proof should follow the same preference order as run proof:
+
+1. parse manual proof blocks from `## Proof links`
+2. compute `proofSignature` for each parsed manual proof item
+3. attach managed anchors from `## Evidence` when `proofSignature` matches
+4. if attached anchors exist, prefer anchor comparison over timestamps
+5. if no attached anchors exist, keep using the current compatibility timestamp path
+
+Additional rules:
+
+- only strong manual proof items may participate in anchor-backed freshness
+- if the proof block is edited and the signature changes, the old managed record becomes non-authoritative until anchors are refreshed again
+- if the proof block disappears, its managed record should be ignored and later garbage-collected on refresh
+
+This keeps the proof model explainable:
+
+- the human proof block remains the visible evidence claim
+- the managed block only answers whether that claim still matches the current repository content
+
+#### Dashboard/editor expectations
+
+The dashboard should keep the editor experience lightweight:
+
+- continue treating `verification.md` as freeform text first
+- do not expose raw anchor JSON as the primary editing surface
+- add a small explicit action such as `Refresh proof anchors`
+- after a normal save, warn when strong manual proof exists but has no current managed anchor
+- in task detail, consider a concise presentation split between `anchor-backed proof` and `compatibility-only proof`
+
+That gives users a clear mental model:
+
+- writing proof is a human action
+- refreshing anchors is a local evidence-hardening action
+- both stay inside the same task document
+
+#### Backward compatibility and fallback behavior
+
+This design keeps existing behavior intact:
+
+- old `verification.md` files without `## Evidence` still work
+- old manual proof items still grade as weak/strong exactly as they do today
+- old proof items without managed anchors still participate through the timestamp fallback
+- non-Git workspaces can still build targeted fingerprints for the proof paths being refreshed, just like passed-run fallback capture
+
+This also preserves the current local-first constraint:
+
+- no new database
+- no remote sync
+- no absolute paths
+- no full-workspace hashing requirement
+
+#### Non-goals for Phase 2b
+
+- automatically anchoring every edit to `verification.md`
+- parsing anchors out of arbitrary prose outside `## Proof links`
+- making the managed block itself count as proof
+- replacing manual proof text with opaque machine metadata
+- introducing a second durable evidence store outside the task bundle
 
 ## Why not just use `git status --porcelain` everywhere
 
@@ -436,7 +617,8 @@ Before implementation, add or extend tests around these cases:
 4. Keep legacy time-based freshness as fallback. Still active for compatibility.
 5. Add optional `scopeProofAnchors` for newly recorded passed runs. Implemented.
 6. Teach the gate to prefer anchor comparison when those anchors exist. Implemented for passed-run anchors.
-7. Later decide whether manual `verification.md` needs a managed anchor strategy.
+7. Add managed manual-proof anchors in `verification.md` without inventing a second durable evidence store. Implemented.
+8. Add a local-only manual anchor refresh flow in `verification.md` once the explicit API/editor contract is ready. Implemented.
 
 ## Non-goals
 

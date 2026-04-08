@@ -42,7 +42,10 @@ const tests = [
             verificationGateStatus: "covered",
             relevantChangeCount: 0,
             verificationSignalStatus: "strong",
-            verificationSignalSummary: "Strong proof recorded.",
+            verificationSignalSummary: "1 strong proof item(s), all anchor-backed.",
+            strongProofCount: 1,
+            anchorBackedStrongProofCount: 1,
+            compatibilityStrongProofCount: 0,
             hasCodexPrompt: true,
             hasClaudePrompt: false,
           },
@@ -60,8 +63,11 @@ const tests = [
             staleDocCount: 2,
             verificationGateStatus: "needs-proof",
             relevantChangeCount: 1,
-            verificationSignalStatus: "draft",
-            verificationSignalSummary: "Draft proof exists.",
+            verificationSignalStatus: "strong",
+            verificationSignalSummary: "1 strong proof item(s), all compatibility-only.",
+            strongProofCount: 1,
+            anchorBackedStrongProofCount: 0,
+            compatibilityStrongProofCount: 1,
             hasCodexPrompt: false,
             hasClaudePrompt: true,
           },
@@ -79,6 +85,8 @@ const tests = [
       assert.match(view.markup, /task-card .*active/);
       assert.match(view.markup, /Cancelled from dashboard\./);
       assert.match(view.markup, /Proof needed \(1\)/);
+      assert.match(view.markup, /Proof freshness: 1 compatibility-only/);
+      assert.match(view.markup, /compatibility-only/);
       assert.doesNotMatch(view.markup, /T-001 - Passed task/);
     },
   },

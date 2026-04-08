@@ -71,6 +71,7 @@ The local HTTP server exposes:
 - `POST /api/tasks`
 - `POST /api/tasks/:taskId/execute`
 - `POST /api/tasks/:taskId/execution/cancel`
+- `POST /api/tasks/:taskId/verification/anchors/refresh`
 - `PATCH /api/tasks/:taskId`
 - `PUT /api/tasks/:taskId/documents/:documentName`
 - `POST /api/tasks/:taskId/runs`
@@ -90,9 +91,12 @@ The dashboard renders:
 - task board
 - task creation and task metadata editing forms
 - lightweight markdown editing for `task.md`, `context.md`, and `verification.md`
+- an explicit manual proof-anchor refresh action for `verification.md` that stays local-only
 - run evidence recording form with structured proof paths, checks, and artifact refs
 - metadata-managed markdown blocks for task title/recipe/context constraints that stay stable during edits
 - editor guidance that explains which sections are managed on save versus freeform
+- a verification editor flow that hides the managed manual proof-anchor JSON from the primary editing surface while still preserving that block on save
+- task detail and task cards now distinguish anchor-backed strong proof from compatibility-only strong proof so the freshness path is visible without reading raw markdown
 - run proof path shortcuts that can prefill pending scoped files from the current verification gate
 - run check shortcuts that can draft one verification check per pending scoped file
 - verification.md shortcuts that can draft a pending proof plan from the current scoped file set by inserting planned checks plus file-only Proof links placeholders
@@ -178,6 +182,8 @@ Each task folder contains:
 - `runs/*.json`
 
 This split allows both structured data and rich narrative context.
+
+`verification.md` can now also hold an optional managed `## Evidence` block for manual proof anchors, while keeping `## Proof links` human-authored.
 
 ### Validation report
 

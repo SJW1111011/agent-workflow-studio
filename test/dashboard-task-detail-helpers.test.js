@@ -49,6 +49,8 @@ const tests = [
           proofCoverage: {
             explicitProofCount: 2,
             weakProofCount: 1,
+            anchoredStrongProofCount: 1,
+            compatibilityStrongProofCount: 0,
             items: [
               {
                 sourceType: "manual",
@@ -64,6 +66,7 @@ const tests = [
                 sourceLabel: "run-1",
                 recordedAt: "2026-04-07T10:40:00.000Z",
                 paths: ["README.md"],
+                anchorCount: 1,
                 checks: ["[passed] Reviewed README.md diff"],
                 artifacts: [".agent-workflow/tasks/T-001/runs/run-1.stdout.log"],
                 strong: true,
@@ -85,6 +88,8 @@ const tests = [
       assert.match(markup, /1 planned check\(s\)/);
       assert.match(markup, /1 draft proof item\(s\)/);
       assert.match(markup, /1 strong proof item\(s\)/);
+      assert.match(markup, /1 anchor-backed strong proof item\(s\)/);
+      assert.match(markup, /Proof freshness/);
       assert.match(markup, /docs\/notes\.md/);
       assert.match(markup, /README\.md/);
       assert.match(markup, /Scope Entries To Tighten/);
@@ -198,18 +203,22 @@ const tests = [
               {
                 path: "dashboard/app.js",
                 proofUpdatedAt: "2026-04-07T11:06:00.000Z",
+                proofFreshnessSource: "compatibility-only",
                 matchedBy: [{ pattern: "dashboard/app.js", source: "task.md#scope" }],
               },
             ],
             proofCoverage: {
               explicitProofCount: 1,
               weakProofCount: 0,
+              anchoredStrongProofCount: 0,
+              compatibilityStrongProofCount: 1,
               items: [
                 {
                   sourceType: "run",
                   sourceLabel: "run-1",
                   recordedAt: "2026-04-07T11:06:00.000Z",
                   paths: ["dashboard/app.js"],
+                  anchorCount: 0,
                   checks: ["[passed] Reviewed dashboard/app.js diff"],
                   artifacts: [".agent-workflow/tasks/T-001/runs/run-1.stdout.log"],
                   strong: true,
@@ -237,6 +246,7 @@ const tests = [
       assert.match(markup, /Freshness/);
       assert.match(markup, /Verification Gate/);
       assert.match(markup, /Scoped diff is covered/);
+      assert.match(markup, /compatibility-only/);
       assert.match(markup, /task-missing-proof/);
     },
   },

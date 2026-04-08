@@ -1,5 +1,6 @@
 const assert = require("node:assert/strict");
 
+const { getEditableDocumentContent } = require("../dashboard/document-helpers.js");
 const {
   buildDocumentEditorView,
   buildRunProofNoteView,
@@ -31,9 +32,11 @@ const tests = [
       assert.equal(view.content, "# T-001 Verification");
       assert.equal(view.draftProofButtonDisabled, false);
       assert.match(view.draftProofButtonText, /2/);
+      assert.equal(view.refreshProofAnchorsButtonDisabled, false);
+      assert.equal(view.refreshProofAnchorsButtonText, "Refresh Proof Anchors");
       assert.match(view.managedMarkup, /Heading from task id/);
       assert.match(view.freeMarkup, /Proof links/);
-      assert.match(view.guardrailNote, /real Check\/Result\/Artifact content/);
+      assert.match(view.guardrailNote, /Save first before refreshing proof anchors/);
     },
   },
   {
@@ -76,9 +79,31 @@ const tests = [
         getVerificationEditorBaseText({
           activeDocumentName: "task.md",
           currentEditorText: "ignored",
-          detail: { verificationText: "saved verification" },
+          detail: {
+            verificationText: [
+              "# T-001 Verification",
+              "",
+              "## Proof links",
+              "",
+              "### Proof 1",
+              "",
+              "- Files: src/app.js",
+              "",
+              "## Evidence",
+              "",
+              "<!-- agent-workflow:managed:verification-manual-proof-anchors:start -->",
+              "### Manual proof anchors",
+              "",
+              "```json",
+              "{\"version\":1,\"manualProofAnchors\":[]}",
+              "```",
+              "<!-- agent-workflow:managed:verification-manual-proof-anchors:end -->",
+              "",
+            ].join("\n"),
+          },
+          getEditableDocumentContent,
         }),
-        "saved verification"
+        "# T-001 Verification\n\n## Proof links\n\n### Proof 1\n\n- Files: src/app.js"
       );
       assert.equal(normalizeOptionalPositiveInteger("250", "Execution timeout"), 250);
       assert.equal(normalizeOptionalPositiveInteger("", "Execution timeout"), undefined);

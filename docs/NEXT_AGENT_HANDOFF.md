@@ -62,11 +62,14 @@ As of 2026-04-08, the project already has a working MVP foundation:
 - the repo now also has focused zero-dependency `overview` tests for uninitialized workspaces plus executor outcome / verification signal aggregation, so board-level summary logic is no longer smoke-only
 - the repo now also has focused zero-dependency `server-api` tests for health plus representative 400 / 404 / 409 local API contracts, so `src/server.js` behavior is less dependent on smoke
 - verification freshness Phase 1 is now implemented behind `src/lib/repository-snapshot.js`, and the design note still scopes the later proof-anchor phase
-- the first Phase 2 proof-anchor pass is now implemented: passed runs can capture `scopeProofAnchors`, and the gate prefers anchor comparison for those runs while legacy/manual proof stays on the compatibility path
+- the first Phase 2 proof-anchor pass is now implemented: passed runs can capture `scopeProofAnchors`, and the gate prefers anchor comparison for those runs while manual proof defaults to the compatibility path until anchors are explicitly refreshed
 - direct proof fingerprint reads now use a small in-memory cache keyed by file path plus `mtime`, so repeated proof-anchor comparisons avoid re-hashing unchanged files
 - filesystem fallback is now documented more explicitly as the compatibility path: it fingerprints targeted proof paths on demand instead of trying to hash the whole workspace
+- manual `verification.md` proof can now also opt into anchor-backed freshness through `POST /api/tasks/:taskId/verification/anchors/refresh`, which writes a managed anchor block under `## Evidence`
+- the dashboard verification editor now hides that managed anchor JSON from the primary editing surface, preserves it on save, and exposes an explicit local `Refresh Proof Anchors` action
+- task detail and task cards now also call out whether strong proof is anchor-backed or compatibility-only, so the current freshness path is visible without reading raw proof JSON
 - `src/server.js` no longer infers HTTP status codes from `error.message.includes(...)`; server-facing libs now throw explicit HTTP-aware errors through `src/lib/http-errors.js`, while the JSON error payload contract stays unchanged
-- `docs/RUN_EXECUTE_DESIGN.md` now also scopes the next local executor step explicitly: harden the shared contract first, keep dashboard as a thin control plane, and avoid introducing a second execution database or chat-style runtime state
+- `docs/RUN_EXECUTE_DESIGN.md` now also narrows the next local executor step more explicitly: add a shared preflight/readiness layer plus normalized lifecycle/failure categories before broadening runtime support, keep dashboard as a thin control plane, and avoid introducing a second execution database or chat-style runtime state
 
 ## Important constraint
 
@@ -152,6 +155,7 @@ Current dashboard capabilities:
 - create tasks
 - update selected task metadata
 - edit `task.md`, `context.md`, and `verification.md`
+- refresh manual proof anchors for `verification.md`
 - record run evidence
 
 ### Documentation
@@ -190,7 +194,9 @@ The smoke test currently covers:
 - overview API
 - task detail API
 - dashboard write APIs for creating tasks, updating tasks, editing task docs, and recording runs
+- dashboard/local API refresh for manual proof anchors, including managed-block persistence and immediate task-detail re-read
 - markdown guardrails that keep managed task/context blocks synced without wiping nearby custom notes
+- markdown guardrails that preserve the managed manual proof-anchor block while the verification editor saves freeform proof text
 - CLI executor path for `run:execute`, including run ledger + verification/checkpoint refresh
 - dashboard executor bridge APIs for `POST /api/tasks/:taskId/execute` and `GET /api/tasks/:taskId/execution`
 - dashboard active execution log API for `GET /api/tasks/:taskId/execution/logs/:stream`
@@ -212,6 +218,7 @@ The smoke test currently covers:
 - unit-level `run:execute` lifecycle coverage for plan resolution, passed runs, timeout metadata, and interruption records
 - overview and task detail freshness heuristics for memory/task docs
 - diff-aware verification gate status transitions from "needs proof" to "covered"
+- manual proof-anchor refresh, managed block persistence, anchor-aware manual gate reopening, and editor-safe verification saves
 - checkpoint content for pending proof, covered proof, and weak scope hints
 - explicit proof linkage: generic verification text stays insufficient, but passed scoped evidence can cover files
 - structured run evidence: API/CLI run creation can persist scope proof paths plus concrete check/artifact refs
@@ -253,9 +260,9 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Continue Phase 2 of `docs/VERIFICATION_FRESHNESS_DESIGN.md`: decide whether manual `verification.md` gets a managed-anchor path and whether anchor-aware freshness should surface more directly in dashboard/task detail.
-2. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
-3. Design the next `run:execute` local executor step without breaking the contract-first workflow boundary.
+1. Design the next `run:execute` local executor step without breaking the contract-first workflow boundary.
+2. Implement shared executor preflight/readiness validation only after its lifecycle and failure taxonomy are locked down by tests.
+3. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 4. Keep `dashboard/app.js` focused on orchestration/event wiring if additional dashboard features land.
 5. Revisit adapter extensibility only after the verification/evidence model is stable enough to stay contract-first.
 
@@ -270,13 +277,15 @@ Recommended next sequence:
 
 Suggested first task:
 
-Resume the proof-anchor design work for manual verification paths, then decide whether anchor-aware freshness should surface more explicitly in dashboard/task detail. Keep building on the current anchor-aware contract instead of rewriting the proof model around raw Git state alone.
+Move to the next `run:execute` local executor design step now that manual proof anchors and freshness-path visibility are both in place. Keep building on the current anchor-aware contract instead of rewriting the proof model around raw Git state alone.
 
 Expected shape:
 
 - preserve the current local-only API contract and existing smoke coverage
+- keep manual proof human-authored in `## Proof links`, with machine-owned anchor metadata isolated under the managed `## Evidence` block
 - keep using `src/lib/http-errors.js` for any new server-facing route or local API surface
 - keep `docs/RUN_EXECUTE_DESIGN.md` as the boundary for any future `run:execute` work so executor breadth does not outrun the evidence model
+- if executor work resumes, start with a shared preflight/readiness result plus normalized failure categories instead of another launch surface
 - keep `dashboard/app.js` focused on orchestration, event wiring, and refresh flow
 - move pure rendering or parsing helpers into static modules that still work without a bundler
 - if verification evolves further, preserve backward compatibility for legacy/manual proof and keep anchors repo-relative only

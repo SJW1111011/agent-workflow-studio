@@ -181,6 +181,46 @@
       );
     });
 
+    doc.getElementById("document-refresh-proof-anchors").addEventListener("click", async () => {
+      try {
+        const detail = deps.getActiveTaskDetail();
+        const taskId = requireActiveTaskId(detail, "Select a task before refreshing manual proof anchors.");
+        if (deps.getActiveDocumentName() !== "verification.md") {
+          deps.setActionStatus("Switch the editor to verification.md before refreshing proof anchors.", "error");
+          return;
+        }
+
+        const editorContent = doc.getElementById("document-content").value;
+        if (
+          hasUnsavedVerificationEditorChanges(
+            deps.getActiveDocumentName(),
+            editorContent,
+            detail,
+            deps.getEditableDocumentContent
+          )
+        ) {
+          deps.setActionStatus(
+            "Save verification.md before refreshing proof anchors so the managed anchors match the latest proof text.",
+            "error"
+          );
+          return;
+        }
+
+        deps.setActionStatus(`Refreshing proof anchors for ${taskId}...`, "");
+        const response = await deps.postJson(
+          `/api/tasks/${encodeURIComponent(taskId)}/verification/anchors/refresh`,
+          {}
+        );
+        await deps.refreshDashboard(taskId);
+        deps.setActionStatus(
+          buildManualProofAnchorRefreshMessage(taskId, response && response.manualProofAnchorRefresh),
+          "success"
+        );
+      } catch (error) {
+        deps.setActionStatus(error.message, "error");
+      }
+    });
+
     doc.getElementById("document-editor-form").addEventListener("submit", async (event) => {
       event.preventDefault();
       const request = buildDocumentSavePayload(new deps.FormDataCtor(event.currentTarget));
@@ -256,6 +296,51 @@
     };
   }
 
+  function hasUnsavedVerificationEditorChanges(activeDocumentName, editorContent, detail, getEditableDocumentContent) {
+    if (activeDocumentName !== "verification.md") {
+      return false;
+    }
+
+    const savedContent =
+      detail && typeof detail.verificationText === "string"
+        ? typeof getEditableDocumentContent === "function"
+          ? getEditableDocumentContent("verification.md", detail.verificationText)
+          : detail.verificationText
+        : "";
+
+    return normalizeMultilineText(editorContent) !== normalizeMultilineText(savedContent);
+  }
+
+  function buildManualProofAnchorRefreshMessage(taskId, refreshSummary = {}) {
+    const strongProofCount = Number(refreshSummary.strongProofCount || 0);
+    const refreshedCount = Number(refreshSummary.refreshedCount || 0);
+    const skippedCount = Number(refreshSummary.skippedCount || 0);
+    const clearedCount = Number(refreshSummary.clearedCount || 0);
+    const changed = Boolean(refreshSummary.changed);
+
+    if (clearedCount > 0 && strongProofCount === 0) {
+      return `Cleared ${clearedCount} stale manual proof anchor record(s) for ${taskId}; no strong manual proof items remain.`;
+    }
+
+    if (refreshedCount > 0 && skippedCount > 0) {
+      return `Refreshed ${refreshedCount} manual proof anchor record(s) for ${taskId}; ${skippedCount} strong proof item(s) stay on compatibility-only freshness.`;
+    }
+
+    if (refreshedCount > 0 && !changed) {
+      return `Manual proof anchors are already current for ${taskId}.`;
+    }
+
+    if (refreshedCount > 0) {
+      return `Refreshed ${refreshedCount} manual proof anchor record(s) for ${taskId}.`;
+    }
+
+    if (skippedCount > 0) {
+      return `No manual proof anchors were captured for ${taskId}; ${skippedCount} strong proof item(s) stay on compatibility-only freshness.`;
+    }
+
+    return `Manual proof anchors are already current for ${taskId}.`;
+  }
+
   function requireActiveTaskId(activeTaskDetail, errorMessage) {
     if (!activeTaskDetail || !activeTaskDetail.meta || !activeTaskDetail.meta.id) {
       throw new Error(errorMessage);
@@ -284,12 +369,18 @@
     };
   }
 
+  function normalizeMultilineText(value) {
+    return String(value || "").replace(/\r\n/g, "\n").trim();
+  }
+
   return {
     bindDashboardForms,
+    buildManualProofAnchorRefreshMessage,
     buildDocumentSavePayload,
     buildRunCreatePayload,
     buildTaskCreatePayload,
     buildTaskUpdatePayload,
+    hasUnsavedVerificationEditorChanges,
     requireActiveTaskId,
     resolveExecutionRequest,
   };

@@ -197,6 +197,9 @@ const tests = [
       assert.equal(t001.latestExecutorAt, "2026-01-02T00:00:00.000Z");
       assert.equal(t001.verificationSignalStatus, "strong");
       assert.equal(t001.strongProofCount, 1);
+      assert.equal(t001.anchorBackedStrongProofCount, 1);
+      assert.equal(t001.compatibilityStrongProofCount, 0);
+      assert.match(t001.verificationSignalSummary, /anchor-backed/);
       assert.ok(readTextFile(taskFiles(workspaceRoot, "T-001").verification).includes(passedExecutorRun.summary));
 
       assert.equal(t002.latestExecutorOutcome, "timed-out");
@@ -211,6 +214,8 @@ const tests = [
       assert.equal(t004.verificationSignalStatus, "mixed");
       assert.equal(t004.strongProofCount, 1);
       assert.equal(t004.draftProofCount, 1);
+      assert.equal(t004.compatibilityStrongProofCount, 1);
+      assert.match(t004.verificationSignalSummary, /compatibility-only/);
 
       assert.equal(t005.latestExecutorOutcome, null);
       assert.equal(t005.verificationSignalStatus, "none");

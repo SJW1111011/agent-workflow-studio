@@ -74,6 +74,7 @@
   function renderTaskCard(task, activeTaskId) {
     const executorOutcome = describeExecutorOutcome(task && task.latestExecutorOutcome, task && task.latestExecutorSummary);
     const verificationSignal = describeTaskVerificationSignal(task);
+    const freshnessSummary = formatTaskVerificationFreshnessSummary(task);
     const cardToneClass = getTaskCardToneClass(task, executorOutcome);
 
     return `
@@ -82,6 +83,7 @@
         <p class="task-meta">Priority ${escapeHtml(task.priority || "P2")} | ${escapeHtml(task.status || "todo")} | Recipe ${escapeHtml(task.recipeId || "feature")}</p>
         <p>${escapeHtml(task.latestRunSummary || "No runs yet")}</p>
         <p class="subtle">Verification: ${escapeHtml(verificationSignal.summary)}</p>
+        ${freshnessSummary ? `<p class="subtle">Proof freshness: ${escapeHtml(freshnessSummary)}</p>` : ""}
         ${
           executorOutcome
             ? `<p class="subtle">Latest executor: ${escapeHtml(executorOutcome.summary)}${
@@ -97,6 +99,7 @@
             formatVerificationGateLabel(task.verificationGateStatus, task.relevantChangeCount || 0)
           )}</span>
           <span class="tag ${verificationSignal.warn ? "warn" : ""}">${escapeHtml(verificationSignal.label)}</span>
+          ${renderVerificationFreshnessTag(task)}
           <span class="tag ${task.latestRunStatus === "failed" ? "warn" : ""}">${escapeHtml(task.latestRunStatus)}</span>
           ${
             executorOutcome
@@ -125,6 +128,40 @@
     }
 
     return "";
+  }
+
+  function formatTaskVerificationFreshnessSummary(task) {
+    const strongProofCount = Number((task && task.strongProofCount) || 0);
+    if (strongProofCount <= 0) {
+      return "";
+    }
+
+    const anchorBackedStrongProofCount = Number((task && task.anchorBackedStrongProofCount) || 0);
+    const compatibilityStrongProofCount = Number((task && task.compatibilityStrongProofCount) || 0);
+
+    if (anchorBackedStrongProofCount > 0 && compatibilityStrongProofCount > 0) {
+      return `${anchorBackedStrongProofCount} anchor-backed, ${compatibilityStrongProofCount} compatibility-only`;
+    }
+
+    if (anchorBackedStrongProofCount > 0) {
+      return `${anchorBackedStrongProofCount} anchor-backed`;
+    }
+
+    if (compatibilityStrongProofCount > 0) {
+      return `${compatibilityStrongProofCount} compatibility-only`;
+    }
+
+    return "";
+  }
+
+  function renderVerificationFreshnessTag(task) {
+    const summary = formatTaskVerificationFreshnessSummary(task);
+    if (!summary) {
+      return "";
+    }
+
+    const compatibilityStrongProofCount = Number((task && task.compatibilityStrongProofCount) || 0);
+    return `<span class="tag ${compatibilityStrongProofCount > 0 ? "warn" : ""}">${escapeHtml(summary)}</span>`;
   }
 
   function escapeHtml(value) {

@@ -10,6 +10,7 @@ const {
 } = require("./evidence-utils");
 const { fileExists, readText } = require("./fs-utils");
 const { buildProofAnchor, loadRepositorySnapshot } = require("./repository-snapshot");
+const { parseManualProofItems } = require("./verification-proof");
 const { taskFiles } = require("./workspace");
 
 function loadRepositoryDiff(workspaceRoot, options = {}) {
@@ -43,9 +44,17 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
 
     if (anchorCoverage.hasAnchors) {
       if (anchorCoverage.matched) {
-        coveredScopedFiles.push(stripInternalFileFields(workspaceFile, proofAtMs, matchingProofItems));
+        coveredScopedFiles.push(
+          stripInternalFileFields(workspaceFile, proofAtMs, matchingProofItems, {
+            proofFreshnessSource: "anchor-backed",
+          })
+        );
       } else {
-        relevantChangedFiles.push(stripInternalFileFields(workspaceFile, proofAtMs, matchingProofItems));
+        relevantChangedFiles.push(
+          stripInternalFileFields(workspaceFile, proofAtMs, matchingProofItems, {
+            proofFreshnessSource: "anchor-stale",
+          })
+        );
       }
       return;
     }
@@ -56,7 +65,11 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
     }
 
     if (isScopedFileCoveredByProof(workspaceFile, proofAtMs)) {
-      coveredScopedFiles.push(stripInternalFileFields(workspaceFile, proofAtMs, matchingProofItems));
+      coveredScopedFiles.push(
+        stripInternalFileFields(workspaceFile, proofAtMs, matchingProofItems, {
+          proofFreshnessSource: "compatibility-only",
+        })
+      );
     }
   });
 
@@ -413,7 +426,7 @@ function summarizeScopeCoverage(scopeBundle) {
   };
 }
 
-function stripInternalFileFields(workspaceFile, proofAtMs, proofItems = []) {
+function stripInternalFileFields(workspaceFile, proofAtMs, proofItems = [], options = {}) {
   return {
     path: workspaceFile.path,
     modifiedAt: workspaceFile.modifiedAt,
@@ -422,6 +435,7 @@ function stripInternalFileFields(workspaceFile, proofAtMs, proofItems = []) {
     previousPath: workspaceFile.previousPath || null,
     matchedBy: workspaceFile.matchedBy,
     proofUpdatedAt: proofAtMs ? new Date(proofAtMs).toISOString() : null,
+    proofFreshnessSource: options.proofFreshnessSource || null,
     proofItems: proofItems.map(summarizeProofItem),
   };
 }
@@ -504,7 +518,7 @@ function matchesProofAnchor(anchor, currentAnchor) {
 }
 
 function buildProofCoverage(verificationText, verificationUpdatedAtMs, runs) {
-  const manualProofItems = parseManualProofItems(stripEvidenceBlocks(verificationText), verificationUpdatedAtMs);
+  const manualProofItems = parseManualProofItems(verificationText, verificationUpdatedAtMs);
   const runProofItems = buildRunProofItems(runs);
   const validItems = [];
   const weakItems = [];
@@ -524,114 +538,17 @@ function buildProofCoverage(verificationText, verificationUpdatedAtMs, runs) {
   };
 }
 
-function stripEvidenceBlocks(verificationText) {
-  const normalized = String(verificationText || "").replace(/\r\n/g, "\n");
-  const markerIndex = normalized.search(/(?:^|\n)## Evidence /m);
-  return markerIndex >= 0 ? normalized.slice(0, markerIndex).trim() : normalized.trim();
-}
-
 function summarizeProofCoverage(proofCoverage) {
+  const proofItems = proofCoverage.items.map(summarizeProofItem);
+  const strongItems = proofItems.filter((item) => item.strong);
+
   return {
     explicitProofCount: proofCoverage.validItems.length,
     weakProofCount: proofCoverage.weakItems.length,
-    items: proofCoverage.items.map(summarizeProofItem),
+    anchoredStrongProofCount: strongItems.filter((item) => item.anchorCount > 0).length,
+    compatibilityStrongProofCount: strongItems.filter((item) => item.anchorCount === 0).length,
+    items: proofItems,
   };
-}
-
-function parseManualProofItems(verificationText, verificationUpdatedAtMs) {
-  if (!verificationUpdatedAtMs) {
-    return [];
-  }
-
-  const proofSection = getMarkdownSection(verificationText, "Proof links") || getMarkdownSection(verificationText, "Proof Links");
-  if (!proofSection) {
-    return [];
-  }
-
-  return splitProofBlocks(proofSection)
-    .map((block, index) => parseProofBlock(block, {
-      sourceType: "manual",
-      sourceLabel: `verification.md#proof-${index + 1}`,
-      recordedAtMs: verificationUpdatedAtMs,
-    }))
-    .filter(hasAnyProofData);
-}
-
-function splitProofBlocks(sectionText) {
-  const normalized = String(sectionText || "").replace(/\r\n/g, "\n").trim();
-  if (!normalized) {
-    return [];
-  }
-
-  if (/^### /m.test(normalized)) {
-    return normalized
-      .split(/^### .+$/m)
-      .map((block) => block.trim())
-      .filter(Boolean);
-  }
-
-  return [normalized];
-}
-
-function parseProofBlock(blockText, options) {
-  const item = {
-    sourceType: options.sourceType,
-    sourceLabel: options.sourceLabel,
-    recordedAtMs: options.recordedAtMs,
-    paths: [],
-    checks: [],
-    artifacts: [],
-  };
-  let lastCheckIndex = -1;
-
-  String(blockText || "")
-    .split(/\r?\n/)
-    .map((line) => stripMarkdownDecorators(line))
-    .filter(Boolean)
-    .forEach((line) => {
-      const normalized = String(line).trim();
-      const lower = normalized.toLowerCase();
-
-      if (/^(?:files?|paths?)\s*:/.test(lower)) {
-        extractProofPaths(normalized).forEach((proofPath) => {
-          item.paths.push(proofPath);
-        });
-        return;
-      }
-
-      if (/^(?:check|checks|command|commands)\s*:/.test(lower)) {
-        const value = normalized.slice(normalized.indexOf(":") + 1).trim();
-        if (value) {
-          item.checks.push(value);
-          lastCheckIndex = item.checks.length - 1;
-        }
-        return;
-      }
-
-      if (/^(?:result|results?|status|outcome)\s*:/.test(lower)) {
-        const value = normalized.slice(normalized.indexOf(":") + 1).trim();
-        if (value) {
-          if (lastCheckIndex >= 0) {
-            item.checks[lastCheckIndex] = `${item.checks[lastCheckIndex]} (result: ${value})`;
-          } else {
-            item.checks.push(`result: ${value}`);
-            lastCheckIndex = item.checks.length - 1;
-          }
-        }
-        return;
-      }
-
-      if (/^(?:artifact|artifacts)\s*:/.test(lower)) {
-        extractArtifactRefs(normalized.slice(normalized.indexOf(":") + 1).trim()).forEach((artifact) => {
-          item.artifacts.push(artifact);
-        });
-      }
-    });
-
-  item.paths = uniqueStrings(item.paths);
-  item.checks = uniqueStrings(item.checks);
-  item.artifacts = uniqueStrings(item.artifacts);
-  return item;
 }
 
 function buildRunProofItems(runs) {
@@ -697,34 +614,6 @@ function summarizeProofItem(item) {
     artifacts: item.artifacts,
     strong: isStrongProofItem(item),
   };
-}
-
-function extractProofPaths(text) {
-  const directiveValues = extractDirectiveValues(text);
-  const backtickValues = Array.from(String(text || "").matchAll(/`([^`]+)`/g)).map((match) => match[1]);
-  const regexValues = String(text || "").match(/(?:\.{0,2}\/)?[A-Za-z0-9_.*-]+(?:[\\/][A-Za-z0-9_.*\-]+)+\/?/g) || [];
-
-  return uniqueStrings(
-    directiveValues
-      .concat(backtickValues)
-      .concat(regexValues)
-      .map(normalizeProofPath)
-      .filter(Boolean)
-  );
-}
-
-function extractArtifactRefs(text) {
-  const backtickValues = Array.from(String(text || "").matchAll(/`([^`]+)`/g)).map((match) => match[1]);
-  const regexValues = String(text || "").match(/(?:\.{0,2}\/)?[A-Za-z0-9_.*-]+(?:[\\/][A-Za-z0-9_.*\-]+)+\/?/g) || [];
-  const values = backtickValues.length > 0 ? backtickValues : regexValues.length > 0 ? regexValues : splitLooseValues(text);
-  return uniqueStrings(values.map(normalizeArtifactRef).filter(Boolean));
-}
-
-function splitLooseValues(text) {
-  return String(text || "")
-    .split(/[;,]/)
-    .map((value) => value.trim())
-    .filter(Boolean);
 }
 
 function uniqueStrings(values) {

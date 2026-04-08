@@ -1,7 +1,14 @@
 const fs = require("fs");
 const { fileExists, readJson, writeFile, writeJson } = require("./fs-utils");
 const { badRequest, notFound } = require("./http-errors");
+const { buildScopeProofAnchors, loadRepositorySnapshot } = require("./repository-snapshot");
 const { getRecipe } = require("./recipes");
+const {
+  parseManagedManualProofAnchors,
+  parseManualProofItems,
+  renderManagedManualProofAnchorLines,
+  VERIFICATION_MANUAL_PROOF_ANCHOR_BLOCK_ID,
+} = require("./verification-proof");
 const { taskFiles } = require("./workspace");
 
 const EDITABLE_TASK_DOCUMENTS = {
@@ -20,6 +27,7 @@ const MANAGED_BLOCKS = {
   taskRecipe: "task-recipe-meta",
   contextRecipe: "context-recipe-guidance",
   contextConstraints: "context-constraints-meta",
+  verificationManualProofAnchors: VERIFICATION_MANUAL_PROOF_ANCHOR_BLOCK_ID,
 };
 
 function renderTaskMarkdown(taskMeta, recipe) {
@@ -168,7 +176,8 @@ function saveTaskDocument(workspaceRoot, taskId, documentName, content) {
 
   const taskMeta = readJson(files.meta, {});
   const recipe = getRecipe(workspaceRoot, taskMeta.recipeId);
-  const normalizedContent = normalizeEditableDocument(documentName, taskMeta, recipe, content);
+  const existingContent = readFileWithFallback(files[documentConfig.fileKey]);
+  const normalizedContent = normalizeEditableDocument(documentName, taskMeta, recipe, content, existingContent);
 
   writeFile(files[documentConfig.fileKey], normalizedContent);
   taskMeta.updatedAt = new Date().toISOString();
@@ -181,7 +190,75 @@ function saveTaskDocument(workspaceRoot, taskId, documentName, content) {
   };
 }
 
-function normalizeEditableDocument(documentName, taskMeta, recipe, content) {
+function refreshManualProofAnchors(workspaceRoot, taskId) {
+  const files = taskFiles(workspaceRoot, taskId);
+  if (!fileExists(files.meta)) {
+    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
+  }
+
+  const taskMeta = readJson(files.meta, {});
+  const currentVerificationText = readFileWithFallback(files.verification);
+  const verificationUpdatedAtMs = fileExists(files.verification) ? fs.statSync(files.verification).mtimeMs : null;
+  const existingAnchorPayload = parseManagedManualProofAnchors(currentVerificationText);
+  const manualProofItems = parseManualProofItems(currentVerificationText, verificationUpdatedAtMs).filter(isStrongManualProofItem);
+
+  if (manualProofItems.length === 0 && !existingAnchorPayload.hasBlock) {
+    throw badRequest(
+      `verification.md has no strong manual proof items to anchor yet for task ${taskId}.`,
+      "manual_proof_anchors_unavailable"
+    );
+  }
+
+  const repositorySnapshot = loadRepositorySnapshot(workspaceRoot);
+  const capturedAt = new Date().toISOString();
+  const refreshedRecords = manualProofItems
+    .map((item) => {
+      const anchors = buildScopeProofAnchors(workspaceRoot, item.paths, repositorySnapshot);
+      if (anchors.length === 0) {
+        return null;
+      }
+
+      return {
+        proofSignature: item.proofSignature,
+        capturedAt,
+        paths: item.paths,
+        anchors,
+      };
+    })
+    .filter(Boolean);
+
+  const nextVerificationText =
+    refreshedRecords.length > 0
+      ? upsertVerificationManualProofAnchorSection(currentVerificationText, refreshedRecords)
+      : existingAnchorPayload.hasBlock
+        ? removeVerificationManualProofAnchorSection(currentVerificationText)
+        : ensureTrailingNewline(currentVerificationText);
+
+  const normalizedCurrentText = ensureTrailingNewline(currentVerificationText);
+  const changed = nextVerificationText !== normalizedCurrentText;
+  const existingSignatures = new Set(existingAnchorPayload.records.map((record) => record.proofSignature));
+  const refreshedSignatures = new Set(refreshedRecords.map((record) => record.proofSignature));
+  const clearedCount = Array.from(existingSignatures).filter((signature) => !refreshedSignatures.has(signature)).length;
+  const skippedCount = Math.max(0, manualProofItems.length - refreshedRecords.length);
+
+  if (changed) {
+    writeFile(files.verification, nextVerificationText);
+    taskMeta.updatedAt = new Date().toISOString();
+    writeJson(files.meta, taskMeta);
+  }
+
+  return {
+    changed,
+    strongProofCount: manualProofItems.length,
+    refreshedCount: refreshedRecords.length,
+    skippedCount,
+    clearedCount,
+    content: changed ? nextVerificationText : normalizedCurrentText,
+    updatedAt: changed ? taskMeta.updatedAt : taskMeta.updatedAt || null,
+  };
+}
+
+function normalizeEditableDocument(documentName, taskMeta, recipe, content, existingContent = "") {
   const text = typeof content === "string" ? content : "";
 
   if (documentName === "task.md") {
@@ -193,7 +270,7 @@ function normalizeEditableDocument(documentName, taskMeta, recipe, content) {
   }
 
   if (documentName === "verification.md") {
-    return normalizeVerificationMarkdown(taskMeta, text);
+    return normalizeVerificationMarkdown(taskMeta, text, existingContent);
   }
 
   throw badRequest(`Unsupported task document: ${documentName}`, "unsupported_task_document");
@@ -233,8 +310,17 @@ function normalizeContextMarkdown(taskMeta, recipe, content) {
   return ensureTrailingNewline(nextContent);
 }
 
-function normalizeVerificationMarkdown(taskMeta, content) {
-  return ensureTrailingNewline(ensureHeading(content, `# ${taskMeta.id} Verification`));
+function normalizeVerificationMarkdown(taskMeta, content, existingContent = "") {
+  let nextContent = ensureHeading(content, `# ${taskMeta.id} Verification`);
+  const existingAnchorPayload = parseManagedManualProofAnchors(existingContent);
+
+  if (existingAnchorPayload.hasBlock) {
+    nextContent = existingAnchorPayload.parseError
+      ? upsertVerificationManualProofAnchorSection(nextContent, [], existingAnchorPayload.rawBlockBody)
+      : upsertVerificationManualProofAnchorSection(nextContent, existingAnchorPayload.records);
+  }
+
+  return ensureTrailingNewline(nextContent);
 }
 
 function normalizeCheckpointMarkdown(taskMeta, content) {
@@ -269,13 +355,27 @@ function ensureHeading(content, expectedHeading) {
   return `${expectedHeading}\n\n${normalized}`;
 }
 
-function upsertSection(content, title, body) {
+function upsertSection(content, title, body, options = {}) {
   const section = getSection(content, title);
   const renderedSection = `## ${title}\n\n${normalizeText(body)}`;
 
   if (!section) {
     const normalized = normalizeText(content);
-    return normalized ? `${normalized}\n\n${renderedSection}` : renderedSection;
+    if (!normalized) {
+      return renderedSection;
+    }
+
+    const insertBeforePattern = options.insertBeforePattern instanceof RegExp ? options.insertBeforePattern : null;
+    if (insertBeforePattern) {
+      const matched = normalized.match(insertBeforePattern);
+      if (matched && typeof matched.index === "number") {
+        return [normalized.slice(0, matched.index).trimEnd(), renderedSection, normalized.slice(matched.index).trimStart()]
+          .filter(Boolean)
+          .join("\n\n");
+      }
+    }
+
+    return `${normalized}\n\n${renderedSection}`;
   }
 
   return joinBlocks(section.before, renderedSection, section.after);
@@ -301,7 +401,7 @@ function upsertManagedLinesInSection(content, title, blockId, lines, options = {
   const section = getSection(content, title);
   const renderedBlock = renderManagedLines(lines, blockId);
   if (!section) {
-    return upsertSection(content, title, renderedBlock);
+    return upsertSection(content, title, renderedBlock, options);
   }
 
   const replacedBody = replaceManagedBlock(section.body, blockId, renderedBlock);
@@ -311,6 +411,25 @@ function upsertManagedLinesInSection(content, title, blockId, lines, options = {
 
   const cleanedBody = stripLegacyManagedLines(section.body, options);
   return upsertSection(content, title, joinBlocks(renderedBlock, cleanedBody));
+}
+
+function removeManagedBlockInSection(content, title, blockId) {
+  const section = getSection(content, title);
+  if (!section) {
+    return ensureTrailingNewline(normalizeText(content));
+  }
+
+  const replacedBody = replaceManagedBlock(section.body, blockId, "");
+  if (replacedBody === null) {
+    return ensureTrailingNewline(normalizeText(content));
+  }
+
+  const cleanedBody = normalizeText(replacedBody);
+  if (!cleanedBody) {
+    return ensureTrailingNewline(joinBlocks(section.before, section.after));
+  }
+
+  return ensureTrailingNewline(upsertSection(content, title, cleanedBody));
 }
 
 function upsertLineInSection(content, title, linePrefix, nextLine, fallbackLine) {
@@ -382,6 +501,23 @@ function renderManagedLines(lines, blockId) {
   return [managedBlockStart(blockId), ...lines, managedBlockEnd(blockId)].join("\n");
 }
 
+function upsertVerificationManualProofAnchorSection(content, records, rawBlockBody = "") {
+  const managedLines =
+    rawBlockBody && !records.length
+      ? String(rawBlockBody).split("\n")
+      : renderManagedManualProofAnchorLines(records);
+
+  return ensureTrailingNewline(
+    upsertManagedLinesInSection(content, "Evidence", MANAGED_BLOCKS.verificationManualProofAnchors, managedLines, {
+      insertBeforePattern: /(?:^|\n)## Evidence /m,
+    })
+  );
+}
+
+function removeVerificationManualProofAnchorSection(content) {
+  return removeManagedBlockInSection(content, "Evidence", MANAGED_BLOCKS.verificationManualProofAnchors);
+}
+
 function stripLegacyManagedLines(content, options = {}) {
   const stripLinePrefixes = Array.isArray(options.stripLinePrefixes) ? options.stripLinePrefixes : [];
   const stripExactLines = new Set(Array.isArray(options.stripExactLines) ? options.stripExactLines : []);
@@ -438,6 +574,10 @@ function ensureTrailingNewline(content) {
   return `${String(content || "").replace(/\r\n/g, "\n").replace(/\s+$/, "")}\n`;
 }
 
+function isStrongManualProofItem(item) {
+  return Boolean(item && item.paths.length > 0 && (item.checks.length > 0 || item.artifacts.length > 0));
+}
+
 function readFileWithFallback(filePath) {
   return fileExists(filePath) ? fs.readFileSync(filePath, "utf8") : "";
 }
@@ -448,6 +588,7 @@ function escapeRegex(value) {
 
 module.exports = {
   EDITABLE_TASK_DOCUMENTS,
+  refreshManualProofAnchors,
   renderCheckpointSkeleton,
   renderContextMarkdown,
   renderTaskMarkdown,
