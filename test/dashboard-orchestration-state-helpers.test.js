@@ -76,7 +76,7 @@ const tests = [
     },
   },
   {
-    name: "buildExecutionCompletionStatus maps completed and failed-to-start states into action messages",
+    name: "buildExecutionCompletionStatus maps completed, preflight-failed, and failed-to-start states into action messages",
     run() {
       const passed = buildExecutionCompletionStatus(
         {
@@ -107,6 +107,13 @@ const tests = [
         },
         "T-003"
       );
+      const preflightFailed = buildExecutionCompletionStatus(
+        {
+          status: "preflight-failed",
+          error: "Dashboard does not support stdioMode inherit.",
+        },
+        "T-004"
+      );
 
       assert.equal(passed.tone, "success");
       assert.match(passed.message, /T-001/);
@@ -114,6 +121,8 @@ const tests = [
       assert.match(cancelled.message, /Cancelled from dashboard for T-002\./);
       assert.equal(failedToStart.tone, "error");
       assert.match(failedToStart.message, /Adapter command is missing\./);
+      assert.equal(preflightFailed.tone, "error");
+      assert.match(preflightFailed.message, /stdioMode inherit/);
     },
   },
 ];

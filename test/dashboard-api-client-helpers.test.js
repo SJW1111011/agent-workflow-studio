@@ -80,11 +80,28 @@ const tests = [
           },
         },
         async json() {
-          return { error: "Task does not exist." };
+          return {
+            error: "Task does not exist.",
+            code: "task_not_found",
+            failureCategory: "task-missing",
+            blockingIssues: [{ field: "taskId", message: "Task T-999 does not exist yet." }],
+          };
         },
       }));
 
-      await assert.rejects(() => client.loadTaskDetail("T-999"), /Task does not exist\./);
+      let error = null;
+      try {
+        await client.loadTaskDetail("T-999");
+      } catch (caught) {
+        error = caught;
+      }
+
+      assert.ok(error);
+      assert.match(error.message, /Task does not exist\./);
+      assert.equal(error.code, "task_not_found");
+      assert.equal(error.failureCategory, "task-missing");
+      assert.ok(Array.isArray(error.blockingIssues));
+      assert.equal(error.blockingIssues[0].field, "taskId");
     },
   },
 ];

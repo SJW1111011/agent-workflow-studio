@@ -6,6 +6,9 @@ const { listRecipes } = require("./recipes");
 const { listRuns, listTasks } = require("./task-service");
 const { projectConfigPath, taskRoot } = require("./workspace");
 
+const RUN_OUTCOMES = new Set(["passed", "failed", "timed-out", "interrupted", "cancelled"]);
+const RUN_FAILURE_CATEGORIES = new Set(["non-zero-exit", "timeout", "interrupted", "launch-error"]);
+
 function validateWorkspace(workspaceRoot) {
   const issues = [];
 
@@ -152,6 +155,22 @@ function validateTasks(workspaceRoot, issues) {
       }
       if (run.source !== undefined && !["manual", "executor"].includes(run.source)) {
         issues.push(issue("warning", "run.source", `Task ${task.id} has a run with unsupported source ${run.source}`, runPath));
+      }
+      if (run.outcome !== undefined && !RUN_OUTCOMES.has(String(run.outcome || "").trim().toLowerCase())) {
+        issues.push(issue("warning", "run.outcome", `Task ${task.id} has a run with unsupported outcome ${run.outcome}`, runPath));
+      }
+      if (
+        run.failureCategory !== undefined &&
+        !RUN_FAILURE_CATEGORIES.has(String(run.failureCategory || "").trim().toLowerCase())
+      ) {
+        issues.push(
+          issue(
+            "warning",
+            "run.failureCategory",
+            `Task ${task.id} has a run with unsupported failureCategory ${run.failureCategory}`,
+            runPath
+          )
+        );
       }
       if (run.exitCode !== undefined && run.exitCode !== null && !Number.isInteger(run.exitCode)) {
         issues.push(issue("warning", "run.exitCode", `Task ${task.id} has a run with non-numeric exitCode`, runPath));

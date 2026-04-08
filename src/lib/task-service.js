@@ -329,6 +329,7 @@ function renderVerificationEvidence(run) {
     ["Source", run.source],
     ["Adapter", run.adapterId],
     ["Status", run.status],
+    ["Outcome", run.outcome],
     ["Exit code", run.exitCode],
     ["Duration ms", run.durationMs],
     ["Timed out", run.timedOut],
@@ -344,6 +345,7 @@ function renderVerificationEvidence(run) {
     ["Scoped files covered", Array.isArray(run.scopeProofPaths) ? run.scopeProofPaths.join(", ") : undefined],
     ["Verification artifacts", verificationArtifacts.length > 0 ? verificationArtifacts.join(", ") : undefined],
     ["Proof artifacts", proofArtifacts.length > 0 ? proofArtifacts.join(", ") : undefined],
+    ["Failure category", run.failureCategory],
     ["Error", run.errorMessage],
     ["Summary", run.summary],
   ]

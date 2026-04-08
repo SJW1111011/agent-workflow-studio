@@ -8,6 +8,7 @@ Status on 2026-04-07:
 
 - Phase A is implemented
 - Phase B is largely implemented
+- Phase D has now started with shared preflight/readiness before launch
 - the first implementation supports `commandMode: exec`
 - the first implementation supports both `stdioMode: inherit` and `stdioMode: pipe`
 - stdout/stderr capture, timeout metadata, and interruption metadata are now implemented
@@ -16,7 +17,7 @@ Status on 2026-04-07:
 - HTTP behavior for the local API is now explicitly typed instead of inferred from error text
 - transcript linking and richer resume metadata remain future work
 - the next step is design hardening first, not a second execution subsystem
-- as of 2026-04-08, that next hardening step is now explicitly scoped as shared preflight/readiness validation plus clearer lifecycle and failure categories before any broader runtime support is added
+- as of 2026-04-08, that next hardening step is now partially implemented: CLI and dashboard share a preflight/readiness pass, and the local API can now surface normalized failure categories plus blocking issues without relying on message parsing
 
 ## Why this exists
 
@@ -477,6 +478,25 @@ Good early categories:
 - `caller-not-supported`
 
 This result can still wrap the existing resolved execution plan so the implementation stays additive.
+
+### Current implementation note
+
+The current code now implements the first pass of this shape:
+
+- `src/lib/run-executor.js` exports shared `preflightRunExecution(...)`
+- `planRunExecution(...)` now goes through that same readiness result instead of duplicating checks
+- the dashboard execution bridge uses the same preflight path with `caller: "dashboard"`
+- dashboard/API launch rejections can now expose:
+  - `code`
+  - `failureCategory`
+  - `blockingIssues`
+- the dashboard bridge can also keep a transient `preflight-failed` state locally without creating a fake durable run record
+
+What remains future work:
+
+- richer advisories beyond blocking issues
+- a reusable execution intent identifier across preflight, bridge state, and final run records
+- broader failure-category adoption in persisted run metadata beyond the current first-pass executor fields
 
 ## Lifecycle and failure taxonomy
 

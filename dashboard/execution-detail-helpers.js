@@ -21,7 +21,7 @@
     }
 
     if (state.status !== "completed") {
-      return state.status === "failed-to-start" ? "failed-to-start" : "";
+      return state.status === "failed-to-start" || state.status === "preflight-failed" ? state.status : "";
     }
 
     if (String(state.summary || "").includes("dashboard-cancel")) {
@@ -163,6 +163,14 @@
       };
     }
 
+    if (state.status === "preflight-failed") {
+      return {
+        statusLabel: "preflight failed",
+        warn: true,
+        summary: state.error || `Local ${adapterLabel} execution is blocked by preflight.`,
+      };
+    }
+
     if (state.status === "completed") {
       const resolvedOutcome =
         outcome === "cancelled"
@@ -220,6 +228,10 @@
       return { tone: "failed", headline: "Failed to start", summary: description.summary, warn: true };
     }
 
+    if (state.status === "preflight-failed") {
+      return { tone: "failed", headline: "Preflight blocked", summary: description.summary, warn: true };
+    }
+
     if (state.status === "completed") {
       const normalized = normalizePresentationTone(outcome || description.statusLabel);
       return {
@@ -250,7 +262,7 @@
     if (normalized === "cancel requested") {
       return "cancel-requested";
     }
-    if (normalized === "failed to start") {
+    if (normalized === "failed to start" || normalized === "preflight failed") {
       return "failed";
     }
     if (["cancelled", "timed-out", "interrupted", "failed", "passed", "running", "pending", "idle"].includes(normalized)) {
@@ -327,7 +339,13 @@
     const state = executionState && typeof executionState === "object" ? executionState : {};
     const activity = String(state.activity || "").trim().toLowerCase();
 
-    if (!activity || activity === "idle" || activity === "completed" || activity === "failed-to-start") {
+    if (
+      !activity ||
+      activity === "idle" ||
+      activity === "completed" ||
+      activity === "failed-to-start" ||
+      activity === "preflight-failed"
+    ) {
       return null;
     }
     if (activity === "awaiting-output") {
@@ -380,6 +398,7 @@
       createTag(description.statusLabel, description.warn),
       activityTag ? createTag(activityTag.label, activityTag.warn) : "",
       state.runStatus ? createTag(state.runStatus, state.runStatus === "failed") : "",
+      state.failureCategory ? createTag(state.failureCategory, true) : "",
       state.stdioMode ? createTag(`stdio ${state.stdioMode}`, false) : "",
       typeof state.exitCode === "number" ? createTag(`exit ${state.exitCode}`, state.runStatus === "failed") : "",
     ]
@@ -402,6 +421,11 @@
       renderExecutionStreamDetail(state.streams && state.streams.stderr),
       state.stdoutFile ? `<p class="subtle">stdout: ${escapeHtml(state.stdoutFile)}</p>` : "",
       state.stderrFile ? `<p class="subtle">stderr: ${escapeHtml(state.stderrFile)}</p>` : "",
+      Array.isArray(state.blockingIssues) && state.blockingIssues.length > 0
+        ? state.blockingIssues
+            .map((issue) => `<p class="subtle run-error">${escapeHtml(issue.message || "Execution preflight is blocked.")}</p>`)
+            .join("")
+        : "",
       state.status === "completed" && state.summary && state.summary !== description.summary
         ? `<p class="subtle">${escapeHtml(state.summary)}</p>`
         : "",

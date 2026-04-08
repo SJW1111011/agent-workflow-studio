@@ -51,7 +51,17 @@
       const payload = isJson ? await response.json() : null;
 
       if (!response.ok) {
-        throw new Error((payload && payload.error) || `Failed to load ${url}`);
+        const error = new Error((payload && payload.error) || `Failed to load ${url}`);
+        if (payload && typeof payload.code === "string" && payload.code.trim()) {
+          error.code = payload.code.trim();
+        }
+        if (payload && typeof payload.failureCategory === "string" && payload.failureCategory.trim()) {
+          error.failureCategory = payload.failureCategory.trim();
+        }
+        if (payload && Array.isArray(payload.blockingIssues) && payload.blockingIssues.length > 0) {
+          error.blockingIssues = payload.blockingIssues;
+        }
+        throw error;
       }
 
       return payload;

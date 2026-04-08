@@ -270,6 +270,10 @@ main().catch((error) => {
     outcome: "timed-out",
     summary: "Executor timed out after 50 ms.",
   });
+  const preflightFailedExecutionPresentation = describeExecutionPresentation({
+    status: "preflight-failed",
+    error: "Dashboard does not support stdioMode inherit.",
+  });
   const cancelledRunPresentation = describeRunPresentation({
     status: "failed",
     interrupted: true,
@@ -364,6 +368,9 @@ main().catch((error) => {
     !timedOutExecutionPresentation ||
     timedOutExecutionPresentation.tone !== "timed-out" ||
     timedOutExecutionPresentation.headline !== "Timed out" ||
+    !preflightFailedExecutionPresentation ||
+    preflightFailedExecutionPresentation.tone !== "failed" ||
+    preflightFailedExecutionPresentation.headline !== "Preflight blocked" ||
     !cancelledRunPresentation ||
     cancelledRunPresentation.tone !== "cancelled" ||
     !failedRunPresentation ||

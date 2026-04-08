@@ -2,7 +2,8 @@ const assert = require("node:assert/strict");
 const fs = require("fs");
 const path = require("path");
 
-const { executeRun, planRunExecution } = require("../src/lib/run-executor");
+const { executeRun, planRunExecution, preflightRunExecution } = require("../src/lib/run-executor");
+const { validateWorkspace } = require("../src/lib/schema-validator");
 const { listRuns } = require("../src/lib/task-service");
 const { adaptersRoot, taskFiles } = require("../src/lib/workspace");
 const { createTaskWorkspace, readJsonFile, readTextFile, writeJsonFile, writeTextFile } = require("./test-helpers");
@@ -143,6 +144,47 @@ const tests = [
     },
   },
   {
+    name: "preflightRunExecution returns caller-specific readiness for dashboard launches",
+    run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("run-executor-preflight-dashboard");
+
+      writeFakeRunner(workspaceRoot);
+      configureCodexExecutor(workspaceRoot, {
+        stdioMode: "inherit",
+      });
+
+      const readiness = preflightRunExecution(workspaceRoot, taskId, "codex", {
+        caller: "dashboard",
+      });
+
+      assert.equal(readiness.ready, false);
+      assert.equal(readiness.failureCategory, "caller-not-supported");
+      assert.equal(readiness.code, "unsupported_dashboard_stdio_mode");
+      assert.ok(Array.isArray(readiness.blockingIssues));
+      assert.match(readiness.message, /Use the CLI for interactive execution/);
+      assert.equal(readiness.blockingIssues[0].field, "stdioMode");
+    },
+  },
+  {
+    name: "preflightRunExecution rejects unsupported adapter template tokens before launch",
+    run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("run-executor-preflight-template");
+
+      writeFakeRunner(workspaceRoot);
+      configureCodexExecutor(workspaceRoot, {
+        argvTemplate: ["fake-runner.js", "{promptFile}", "{unknownToken}"],
+      });
+
+      const readiness = preflightRunExecution(workspaceRoot, taskId, "codex");
+
+      assert.equal(readiness.ready, false);
+      assert.equal(readiness.failureCategory, "plan-invalid");
+      assert.equal(readiness.code, "adapter_template_token_invalid");
+      assert.match(readiness.message, /unsupported template token/i);
+      assert.equal(readiness.blockingIssues[0].field, "argvTemplate");
+    },
+  },
+  {
     name: "executeRun persists a passed executor run with logs, artifacts, and checkpoint refresh",
     async run() {
       const { workspaceRoot, taskId, files } = createTaskWorkspace("run-executor-success");
@@ -157,6 +199,7 @@ const tests = [
       assert.equal(result.adapterId, "codex");
       assert.equal(result.run.source, "executor");
       assert.equal(result.run.status, "passed");
+      assert.equal(result.run.outcome, "passed");
       assert.equal(result.run.commandMode, "exec");
       assert.equal(result.run.exitCode, 0);
       assert.equal(result.checkpoint.latestRunStatus, "passed");
@@ -173,8 +216,13 @@ const tests = [
       assert.match(readTextFile(path.join(workspaceRoot, result.run.stdoutFile)), /stdout T-001 codex/);
       assert.match(readTextFile(path.join(workspaceRoot, result.run.stderrFile)), /stderr T-001 codex/);
       assert.match(readTextFile(files.verification), /Source: executor/);
+      assert.match(readTextFile(files.verification), /Outcome: passed/);
       assert.match(readTextFile(files.checkpoint), /Latest run status: passed/);
       assertFileExists(path.join(workspaceRoot, "T-001.cwd.txt"));
+
+      const validation = validateWorkspace(workspaceRoot);
+      assert.equal(validation.issues.some((issue) => issue.code === "run.outcome"), false);
+      assert.equal(validation.issues.some((issue) => issue.code === "run.failureCategory"), false);
     },
   },
   {
@@ -190,6 +238,8 @@ const tests = [
       const result = await executeRun(workspaceRoot, taskId, "codex", { timeoutMs: 50 });
 
       assert.equal(result.run.status, "failed");
+      assert.equal(result.run.outcome, "timed-out");
+      assert.equal(result.run.failureCategory, "timeout");
       assert.equal(result.run.timedOut, true);
       assert.equal(result.run.timeoutMs, 50);
       assert.match(result.run.summary, /timed out/i);
@@ -217,6 +267,8 @@ const tests = [
       });
 
       assert.equal(result.run.status, "failed");
+      assert.equal(result.run.outcome, "interrupted");
+      assert.equal(result.run.failureCategory, "interrupted");
       assert.equal(result.run.interrupted, true);
       assert.equal(result.run.interruptionSignal, "unit-cancel");
       assert.match(result.run.summary, /unit-cancel/);

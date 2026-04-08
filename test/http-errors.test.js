@@ -100,6 +100,7 @@ const tests = [
 
       const planError = captureError(() => planRunExecution(workspaceRoot, taskId, "codex"));
       assert.equal(planError.statusCode, 409);
+      assert.equal(planError.failureCategory, "adapter-manual-only");
       assert.match(planError.message, /manual handoff only/);
     },
   },

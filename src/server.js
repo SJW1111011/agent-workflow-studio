@@ -183,7 +183,7 @@ function main() {
         return serveStatic(dashboardRoot, requestUrl.pathname, response);
       })
       .catch((error) => {
-        sendJson(response, getHttpStatusCode(error), { error: error.message });
+        sendJson(response, getHttpStatusCode(error), buildErrorPayload(error));
       });
   });
 
@@ -217,6 +217,26 @@ function parseArgs(argv) {
 function sendJson(response, statusCode, payload) {
   response.writeHead(statusCode, { "Content-Type": MIME_TYPES[".json"] });
   response.end(`${JSON.stringify(payload, null, 2)}\n`);
+}
+
+function buildErrorPayload(error) {
+  const payload = {
+    error: error.message,
+  };
+
+  if (typeof error.code === "string" && error.code.trim()) {
+    payload.code = error.code.trim();
+  }
+
+  if (typeof error.failureCategory === "string" && error.failureCategory.trim()) {
+    payload.failureCategory = error.failureCategory.trim();
+  }
+
+  if (Array.isArray(error.blockingIssues) && error.blockingIssues.length > 0) {
+    payload.blockingIssues = error.blockingIssues;
+  }
+
+  return payload;
 }
 
 function readJsonBody(request) {

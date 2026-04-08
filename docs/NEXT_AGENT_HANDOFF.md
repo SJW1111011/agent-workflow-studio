@@ -61,6 +61,9 @@ As of 2026-04-08, the project already has a working MVP foundation:
 - the repo now also has focused zero-dependency `run-executor` contract tests for execution-plan resolution plus passed / timed-out / interrupted local runs, so executor lifecycle behavior no longer depends on smoke alone
 - the repo now also has focused zero-dependency `overview` tests for uninitialized workspaces plus executor outcome / verification signal aggregation, so board-level summary logic is no longer smoke-only
 - the repo now also has focused zero-dependency `server-api` tests for health plus representative 400 / 404 / 409 local API contracts, so `src/server.js` behavior is less dependent on smoke
+- `run:execute` now also has a first shared preflight/readiness pass in `src/lib/run-executor.js`, so CLI and dashboard both validate adapter config, prepared artifacts, runtime plan safety, and caller-specific stdio compatibility through the same contract
+- dashboard/API execution launch failures can now return additive `code`, `failureCategory`, and `blockingIssues` fields instead of relying on free-form error text only
+- the dashboard execution bridge now preserves a transient `preflight-failed` state locally when launch is blocked before spawn, while durable run evidence still remains reserved for real process starts
 - verification freshness Phase 1 is now implemented behind `src/lib/repository-snapshot.js`, and the design note still scopes the later proof-anchor phase
 - the first Phase 2 proof-anchor pass is now implemented: passed runs can capture `scopeProofAnchors`, and the gate prefers anchor comparison for those runs while manual proof defaults to the compatibility path until anchors are explicitly refreshed
 - direct proof fingerprint reads now use a small in-memory cache keyed by file path plus `mtime`, so repeated proof-anchor comparisons avoid re-hashing unchanged files
@@ -260,8 +263,8 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Design the next `run:execute` local executor step without breaking the contract-first workflow boundary.
-2. Implement shared executor preflight/readiness validation only after its lifecycle and failure taxonomy are locked down by tests.
+1. Keep future executor work additive on top of the new shared preflight/readiness contract instead of adding caller-specific launch logic.
+2. If executor metadata grows, decide whether `executionIntentId` or richer advisories belong in transient bridge state, durable run records, or both.
 3. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 4. Keep `dashboard/app.js` focused on orchestration/event wiring if additional dashboard features land.
 5. Revisit adapter extensibility only after the verification/evidence model is stable enough to stay contract-first.
@@ -285,7 +288,7 @@ Expected shape:
 - keep manual proof human-authored in `## Proof links`, with machine-owned anchor metadata isolated under the managed `## Evidence` block
 - keep using `src/lib/http-errors.js` for any new server-facing route or local API surface
 - keep `docs/RUN_EXECUTE_DESIGN.md` as the boundary for any future `run:execute` work so executor breadth does not outrun the evidence model
-- if executor work resumes, start with a shared preflight/readiness result plus normalized failure categories instead of another launch surface
+- executor work should now start from the shared `preflightRunExecution(...)` result plus normalized failure categories instead of another launch surface
 - keep `dashboard/app.js` focused on orchestration, event wiring, and refresh flow
 - move pure rendering or parsing helpers into static modules that still work without a bundler
 - if verification evolves further, preserve backward compatibility for legacy/manual proof and keep anchors repo-relative only

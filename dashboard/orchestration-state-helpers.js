@@ -81,9 +81,13 @@
       };
     }
 
-    if (state.status === "failed-to-start") {
+    if (state.status === "failed-to-start" || state.status === "preflight-failed") {
       return {
-        message: state.error || `Local execution failed to start for ${taskId}.`,
+        message:
+          state.error ||
+          (state.status === "preflight-failed"
+            ? `Local execution preflight failed for ${taskId}.`
+            : `Local execution failed to start for ${taskId}.`),
         tone: "error",
       };
     }

@@ -104,6 +104,11 @@ function main() {
           })
           .catch((error) => {
             console.error(error.message);
+            if (Array.isArray(error.blockingIssues) && error.blockingIssues.length > 0) {
+              error.blockingIssues.forEach((issue) => {
+                console.error(`- ${issue.message}`);
+              });
+            }
             process.exitCode = 1;
           });
         return;

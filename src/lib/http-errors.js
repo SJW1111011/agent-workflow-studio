@@ -6,6 +6,14 @@ function createHttpError(statusCode, message, options = {}) {
     error.code = options.code.trim();
   }
 
+  if (typeof options.failureCategory === "string" && options.failureCategory.trim()) {
+    error.failureCategory = options.failureCategory.trim();
+  }
+
+  if (Array.isArray(options.blockingIssues) && options.blockingIssues.length > 0) {
+    error.blockingIssues = options.blockingIssues;
+  }
+
   return error;
 }
 

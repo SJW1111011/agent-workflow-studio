@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { executeRun, planRunExecution } = require("./run-executor");
+const { executeRun, createRunExecutionPreflightError, preflightRunExecution } = require("./run-executor");
 const { fileExists } = require("./fs-utils");
 const { badRequest, conflict, notFound } = require("./http-errors");
 const { taskFiles } = require("./workspace");
@@ -86,13 +86,29 @@ function createDashboardExecutionBridge(workspaceRoot) {
       throw conflict(`Task ${taskId} already has an active dashboard execution.`, "dashboard_execution_active");
     }
 
-    const plan = planRunExecution(workspaceRoot, taskId, adapterInput || "codex", options);
-    if (plan.stdioMode !== "pipe") {
-      throw badRequest(
-        `Unsupported dashboard execution for ${plan.adapterId}: resolved stdioMode is ${plan.stdioMode}. Use the CLI for interactive execution.`,
-        "unsupported_dashboard_stdio_mode"
-      );
+    const readiness = preflightRunExecution(workspaceRoot, taskId, adapterInput || "codex", {
+      ...options,
+      caller: "dashboard",
+    });
+    if (!readiness.ready) {
+      const failedAt = new Date().toISOString();
+      taskStates.set(taskId, {
+        ...buildIdleExecutionState(taskId),
+        adapterId: readiness.adapterId,
+        status: "preflight-failed",
+        stdioMode: readiness.stdioMode,
+        updatedAt: failedAt,
+        completedAt: failedAt,
+        outcome: "preflight-failed",
+        summary: readiness.message,
+        error: readiness.message,
+        failureCategory: readiness.failureCategory,
+        blockingIssues: readiness.blockingIssues,
+      });
+      throw createRunExecutionPreflightError(readiness);
     }
+
+    const plan = readiness.executionPlan;
 
     const runId = `run-${Date.now()}`;
     const executionLogPaths = buildExecutionLogPaths(workspaceRoot, taskId, runId, plan.stdioMode);
@@ -111,6 +127,8 @@ function createDashboardExecutionBridge(workspaceRoot) {
       runStatus: null,
       summary: null,
       exitCode: null,
+      failureCategory: null,
+      blockingIssues: [],
       stdoutFile: executionLogPaths.stdoutFile,
       stderrFile: executionLogPaths.stderrFile,
       error: null,
@@ -146,6 +164,8 @@ function createDashboardExecutionBridge(workspaceRoot) {
               : result.run && result.run.exitCode === null
                 ? null
                 : null,
+          failureCategory: result.run && result.run.failureCategory ? result.run.failureCategory : null,
+          blockingIssues: [],
           stdoutFile: result.run && result.run.stdoutFile ? result.run.stdoutFile : nextState.stdoutFile,
           stderrFile: result.run && result.run.stderrFile ? result.run.stderrFile : nextState.stderrFile,
           error: null,
@@ -155,6 +175,8 @@ function createDashboardExecutionBridge(workspaceRoot) {
           status: "failed-to-start",
           completedAt: new Date().toISOString(),
           outcome: "failed-to-start",
+          failureCategory: error.failureCategory || "launch-error",
+          blockingIssues: Array.isArray(error.blockingIssues) ? error.blockingIssues : [],
           error: error.message,
         });
       } finally {
@@ -220,6 +242,8 @@ function buildIdleExecutionState(taskId) {
     runStatus: null,
     summary: null,
     exitCode: null,
+    failureCategory: null,
+    blockingIssues: [],
     stdoutFile: null,
     stderrFile: null,
     error: null,
@@ -340,7 +364,13 @@ function deriveExecutionActivity(state, streams) {
   }
 
   if (!isActiveExecutionStatus(state.status)) {
-    return state.status === "completed" ? "completed" : state.status === "failed-to-start" ? "failed-to-start" : "idle";
+    return state.status === "completed"
+      ? "completed"
+      : state.status === "failed-to-start"
+        ? "failed-to-start"
+        : state.status === "preflight-failed"
+          ? "preflight-failed"
+          : "idle";
   }
 
   const hasOutput = Object.values(streams).some((stream) => normalizeByteCount(stream.size) > 0);

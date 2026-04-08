@@ -53,7 +53,7 @@ The current foundation includes:
 - `run:add`: append execution evidence to a task, including optional proof paths, checks, and artifact refs
 - `checkpoint`: build a resumable checkpoint for the current task
 - `validate`: run schema checks on project, adapters, tasks, and recorded runs
-- `dashboard`: open a local control plane for tasks, memory freshness, task doc freshness, Git-aware diff-aware verification gates, checkpoint detail, metadata edits, structured run evidence capture, manual proof-anchor refresh, a local execution bridge for `stdioMode: pipe` adapters, executor state/cancel flow, and markdown task doc edits
+- `dashboard`: open a local control plane for tasks, memory freshness, task doc freshness, Git-aware diff-aware verification gates, checkpoint detail, metadata edits, structured run evidence capture, manual proof-anchor refresh, a local execution bridge for `stdioMode: pipe` adapters, shared execution preflight/readiness, executor state/cancel flow, and markdown task doc edits
 - the dashboard frontend is now split across static helper modules for document editing/proof drafting, API client helpers, form/editor state derivation, form event flows, orchestration state derivation, task-board summaries, task-list rendering, execution/run detail presentation, task-detail/verification rendering, log-panel state/render helpers, and overview/list section rendering without introducing a bundler
 - server-facing mutations and log APIs now use explicit HTTP-aware errors, so the local control plane no longer guesses status codes from message text
 
@@ -133,11 +133,14 @@ There is now a first local `run:execute` bridge for adapters that explicitly swi
 - `stdioMode: inherit` and `stdioMode: pipe` are supported
 - capture mode can persist stdout and stderr logs under the task run ledger
 - execution can record timeout and interruption metadata
+- CLI and dashboard now share the same preflight/readiness pass before launch, so adapter validation, artifact readiness, and caller-specific stdio checks do not drift apart
 - the dashboard task detail can inspect executor metadata and local run logs through local-only APIs
 - the CLI can launch both `inherit` and `pipe` modes through the shared executor
 - the dashboard now uses a thin local API over that same executor module for `stdioMode: pipe`
+- dashboard/CLI execution failures can now surface normalized `failureCategory` plus machine-readable blocking issues without parsing free-form summary text
 - the dashboard can request cancellation for an active local `pipe` execution, and the interrupted run still lands in the task ledger with evidence
 - the dashboard execution bridge now exposes a structured local outcome (`passed`, `timed-out`, `interrupted`, `cancelled`, `failed-to-start`) so task detail and recent runs do not need to guess from summary text
+- the dashboard bridge now also preserves preflight-blocked state locally (`preflight-failed`) when a launch is rejected before spawn, while durable run evidence remains reserved for real process starts
 - the dashboard execution panel can now tail the active local stdout/stderr logs through a local-only API while the shared executor is still running
 - the execution state payload now also derives lightweight stream observability from those same task-local logs, including activity (`awaiting-output` vs `streaming-output`), last output time, and byte counts
 - when that local execution finishes, the same dashboard log panel can now switch over to the persisted run log automatically instead of dropping the log view
@@ -193,7 +196,7 @@ See `docs/RECIPES_AND_SCHEMA.md`.
 
 ## Suggested next build steps
 
-1. Design the next `run:execute` local executor step without breaking the contract-first workflow boundary.
+1. Build any additional executor capability on top of the new shared preflight/readiness contract instead of adding caller-specific launch rules.
 2. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 3. Keep `dashboard/app.js` focused on orchestration/event wiring if any new dashboard features land.
 4. Revisit adapter extensibility only after the verification/evidence model stays stable under the new manual-proof anchor path.

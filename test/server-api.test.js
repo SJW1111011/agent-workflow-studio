@@ -31,6 +31,13 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function updateCodexAdapter(workspaceRoot, patch) {
+  const adapterPath = path.join(workspaceRoot, ".agent-workflow", "adapters", "codex.json");
+  const adapter = JSON.parse(fs.readFileSync(adapterPath, "utf8"));
+  Object.assign(adapter, patch || {});
+  fs.writeFileSync(adapterPath, `${JSON.stringify(adapter, null, 2)}\n`, "utf8");
+}
+
 function request(url, options = {}) {
   return new Promise((resolve, reject) => {
     const requestBody =
@@ -316,6 +323,41 @@ const tests = [
         );
         assert.equal(noStrongProof.statusCode, 400);
         assert.match(noStrongProof.json.error, /no strong manual proof items to anchor/i);
+      } finally {
+        await server.stop();
+      }
+    },
+  },
+  {
+    name: "server api exposes typed execution preflight failures and keeps dashboard state local-only",
+    async run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("server-api-execution-preflight");
+      updateCodexAdapter(workspaceRoot, {
+        commandMode: "exec",
+        runnerCommand: [process.execPath],
+        argvTemplate: ["-e", "console.log('noop')"],
+        stdioMode: "inherit",
+      });
+
+      const server = await startServer(workspaceRoot);
+
+      try {
+        const execute = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}/execute`, {
+          method: "POST",
+          body: {},
+        });
+        assert.equal(execute.statusCode, 400);
+        assert.equal(execute.json.code, "unsupported_dashboard_stdio_mode");
+        assert.equal(execute.json.failureCategory, "caller-not-supported");
+        assert.ok(Array.isArray(execute.json.blockingIssues));
+        assert.equal(execute.json.blockingIssues[0].field, "stdioMode");
+
+        const executionState = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}/execution`);
+        assert.equal(executionState.statusCode, 200);
+        assert.equal(executionState.json.status, "preflight-failed");
+        assert.equal(executionState.json.failureCategory, "caller-not-supported");
+        assert.ok(Array.isArray(executionState.json.blockingIssues));
+        assert.equal(executionState.json.blockingIssues[0].field, "stdioMode");
       } finally {
         await server.stop();
       }
