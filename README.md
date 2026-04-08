@@ -146,6 +146,8 @@ agent-workflow init --root ../some-repo
 
 Until the package is actually published, keep using the local `npm run ...` commands from this repository.
 
+See `docs/PUBLISHING.md` for the concrete release checklist and current npm preflight status.
+
 ## Relocatable by design
 
 This project is intentionally safe to move to another directory later.
