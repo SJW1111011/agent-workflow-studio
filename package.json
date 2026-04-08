@@ -30,7 +30,7 @@
     "CONTRIBUTING.md"
   ],
   "bin": {
-    "agent-workflow": "./src/cli.js"
+    "agent-workflow": "src/cli.js"
   },
   "scripts": {
     "test": "node scripts/unit-test.js",
@@ -56,4 +56,3 @@
     "node": ">=18"
   }
 }
-

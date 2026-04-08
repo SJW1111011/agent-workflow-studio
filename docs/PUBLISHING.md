@@ -1,6 +1,6 @@
 # Publishing
 
-This project is now structured so it can be published to npm without shipping repo-local dogfooding state, tests, or temporary files.
+This project is now published on npm as `agent-workflow-studio@0.1.0`, and the release flow is documented here so future publishes stay local-first, reproducible, and clean.
 
 ## Release checklist
 
@@ -25,31 +25,41 @@ Before publishing a new version:
    - `npm whoami --registry https://registry.npmjs.org/`
 5. Publish
    - `npm login`
-   - `npm publish --access public`
+   - `npm publish --access public --registry https://registry.npmjs.org/`
+6. Verify the published install surface
+   - `npm view agent-workflow-studio version name --json --registry https://registry.npmjs.org/`
+   - `npm install -g agent-workflow-studio`
+   - `agent-workflow --help`
+   - `npm install agent-workflow-studio`
+   - `npx agent-workflow --help`
 
-## Current pre-publish status
+## Current release status
 
-As of 2026-04-08:
+As of 2026-04-09:
 
-- `npm pack --dry-run` passes with the current `package.json.files` whitelist
-- `agent-workflow-studio` is not currently present in the npm registry
-- this machine is not currently logged into npm for publishing (`npm whoami` returns `ENEEDAUTH`)
+- `agent-workflow-studio@0.1.0` is live in the npm registry
+- `npm whoami --registry https://registry.npmjs.org/` returns `sjw1111011` on this machine
+- `npm view agent-workflow-studio version name --json --registry https://registry.npmjs.org/` confirms the published `0.1.0` package
+- future publishes still require npm 2FA-compatible auth, such as an OTP or a granular access token with bypass 2FA enabled
 
-That means the main remaining publish step is npm authentication, not package structure.
+The main remaining release work is now polish around the published install experience, not package structure.
 
 ## Expected install shapes
 
-After publishing:
+Current install and verification commands:
 
 ```bash
-npx agent-workflow-studio init --root ../some-repo
-npx agent-workflow-studio quick "Build the scanner" --task-id T-001 --priority P1 --recipe feature --agent codex --root ../some-repo
 npm install -g agent-workflow-studio
+agent-workflow --help
 agent-workflow init --root ../some-repo
+npm install agent-workflow-studio
+npx agent-workflow --help
+npx agent-workflow init --root ../some-repo
 ```
 
 ## Notes
 
 - The published CLI command remains `agent-workflow` because that is the `bin` entry.
-- `npx` uses the package name `agent-workflow-studio`.
+- `package.json.bin` now points at `src/cli.js` directly, which keeps `npm publish` from auto-cleaning that field during release.
+- because the package name and the executable name differ, the reliable `npx` form is `npx agent-workflow` after the package has been installed locally
 - Keep release steps local-first and avoid introducing publish-time absolute paths or generated machine-specific state.

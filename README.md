@@ -127,26 +127,29 @@ It still lands the same durable artifacts:
 - it does not call a cloud API or mutate the memory docs for you
 - it gives you a file-based handoff you can pass to Codex or Claude Code, then review before saving
 
-## npm-ready distribution
+## npm distribution
 
-The package metadata is now prepared for npm distribution:
+As of 2026-04-09, `agent-workflow-studio@0.1.0` is live on npm.
 
-- `package.json` exposes the CLI through the `agent-workflow` bin
-- the published package payload is scoped to runtime files (`src/`, `dashboard/`, docs, and top-level metadata) instead of shipping tests, tmp artifacts, or repo-local dogfooding state
-- local development still works the same way from this repository root
+- the package name is `agent-workflow-studio`
+- the installed CLI command is `agent-workflow`
+- the published payload stays scoped to runtime files (`src/`, `dashboard/`, docs, and top-level metadata) instead of shipping tests, tmp artifacts, or repo-local dogfooding state
+- local development from this repository root still works through the same `npm run ...` commands
 
-After publishing, the intended install shapes are:
+Install and verify it with:
 
 ```bash
-npx agent-workflow-studio init --root ../some-repo
-npx agent-workflow-studio quick "Build the scanner" --task-id T-001 --priority P1 --recipe feature --agent codex --root ../some-repo
 npm install -g agent-workflow-studio
+agent-workflow --help
 agent-workflow init --root ../some-repo
+npm install agent-workflow-studio
+npx agent-workflow --help
+npx agent-workflow init --root ../some-repo
 ```
 
-Until the package is actually published, keep using the local `npm run ...` commands from this repository.
+The package name and executable name are intentionally different, so the verified install flow is `npm install ...` followed by `agent-workflow` / `npx agent-workflow`.
 
-See `docs/PUBLISHING.md` for the concrete release checklist and current npm preflight status.
+See `docs/PUBLISHING.md` for the release checklist, current published status, and post-publish verification commands.
 
 ## Relocatable by design
 
