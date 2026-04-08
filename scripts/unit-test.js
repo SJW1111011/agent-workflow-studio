@@ -1,6 +1,7 @@
 const suites = [
   require("../test/http-errors.test.js"),
   require("../test/overview.test.js"),
+  require("../test/quick-task.test.js"),
   require("../test/run-executor.test.js"),
   require("../test/server-api.test.js"),
   require("../test/dashboard-document-helpers.test.js"),

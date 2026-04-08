@@ -5,6 +5,7 @@ const { buildCheckpoint } = require("./lib/checkpoint");
 const { listAdapters, normalizeAdapterId } = require("./lib/adapters");
 const { buildOverview } = require("./lib/overview");
 const { compilePrompt } = require("./lib/prompt-compiler");
+const { formatQuickTaskSummary, quickCreateTask } = require("./lib/quick-task");
 const { listRecipes } = require("./lib/recipes");
 const { executeRun } = require("./lib/run-executor");
 const { prepareRun } = require("./lib/run-preparer");
@@ -59,6 +60,21 @@ function main() {
           recipe: options.recipe,
         });
         print(`Created task ${task.id} at ${path.join(workspaceRoot, ".agent-workflow", "tasks", task.id)}`);
+        break;
+      }
+      case "quick": {
+        const title = positionals.join(" ").trim();
+        assert(
+          title,
+          "Usage: quick <title> [--task-id T-001] [--priority P1] [--recipe feature] [--agent codex|claude] [--root path]"
+        );
+        const result = quickCreateTask(workspaceRoot, title, {
+          taskId: options["task-id"],
+          priority: options.priority,
+          recipe: options.recipe,
+          agent: options.agent,
+        });
+        print(formatQuickTaskSummary(result));
         break;
       }
       case "task:list": {
@@ -235,6 +251,7 @@ Commands:
   scan [--root path]
   adapter:list [--root path]
   recipe:list [--root path]
+  quick <title> [--task-id T-001] [--priority P1] [--recipe feature] [--agent codex|claude] [--root path]
   task:new <taskId> <title> [--priority P1] [--recipe feature] [--root path]
   task:list [--root path]
   prompt:compile <taskId> [--agent codex|claude] [--root path]

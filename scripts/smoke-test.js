@@ -393,10 +393,28 @@ main().catch((error) => {
   runNode(cliPath, ["scan", "--root", tempRoot]);
   runNode(cliPath, ["adapter:list", "--root", tempRoot]);
   runNode(cliPath, ["recipe:list", "--root", tempRoot]);
-  runNode(cliPath, ["task:new", "T-001", "Build scanner foundation", "--priority", "P1", "--recipe", "feature", "--root", tempRoot]);
+  const quickOutput = runNodeOutput(cliPath, [
+    "quick",
+    "Build scanner foundation",
+    "--task-id",
+    "T-001",
+    "--priority",
+    "P1",
+    "--recipe",
+    "feature",
+    "--agent",
+    "codex",
+    "--root",
+    tempRoot,
+  ]);
+  if (
+    !quickOutput.includes("Quick task ready: T-001") ||
+    !quickOutput.includes("prompt.codex.md") ||
+    !quickOutput.includes("run-request.codex.json")
+  ) {
+    throw new Error("Quick command did not report the expected task bundle artifacts.");
+  }
   runNode(cliPath, ["task:new", "T-003", "Validate executor timeout handling", "--priority", "P2", "--recipe", "feature", "--root", tempRoot]);
-  runNode(cliPath, ["prompt:compile", "T-001", "--agent", "codex", "--root", tempRoot]);
-  runNode(cliPath, ["run:prepare", "T-001", "--agent", "codex", "--root", tempRoot]);
   runNode(cliPath, ["run:add", "T-001", "Smoke run completed.", "--status", "passed", "--agent", "codex", "--root", tempRoot]);
   runNode(cliPath, ["checkpoint", "T-001", "--root", tempRoot]);
   runNode(cliPath, ["validate", "--root", tempRoot]);
@@ -1162,6 +1180,23 @@ function runNode(scriptPath, args) {
   execFileSync(process.execPath, [scriptPath, ...args], {
     stdio: "ignore",
   });
+}
+
+function runNodeOutput(scriptPath, args) {
+  const captureRoot = path.join(__dirname, "..", "tmp", "smoke-command-output");
+  fs.mkdirSync(captureRoot, { recursive: true });
+  const outputPath = path.join(captureRoot, `${Date.now()}-${Math.random().toString(16).slice(2)}.log`);
+  const outputFd = fs.openSync(outputPath, "w");
+
+  try {
+    execFileSync(process.execPath, [scriptPath, ...args], {
+      stdio: ["ignore", outputFd, "ignore"],
+    });
+  } finally {
+    fs.closeSync(outputFd);
+  }
+
+  return fs.readFileSync(outputPath, "utf8");
 }
 
 function runNodeExpectFailure(scriptPath, args) {

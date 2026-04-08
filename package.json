@@ -14,6 +14,7 @@
     "scan": "node src/cli.js scan",
     "adapter:list": "node src/cli.js adapter:list",
     "recipe:list": "node src/cli.js recipe:list",
+    "quick": "node src/cli.js quick",
     "task:new": "node src/cli.js task:new",
     "task:list": "node src/cli.js task:list",
     "prompt:compile": "node src/cli.js prompt:compile",

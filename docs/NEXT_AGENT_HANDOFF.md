@@ -22,6 +22,7 @@ As of 2026-04-08, the project already has a working MVP foundation:
 - task creation with recipe support
 - Codex / Claude Code adapter contracts
 - prompt compilation
+- `quick` task bootstrap for the common local flow: scan -> task bundle -> prompt -> run-request/launch pack -> checkpoint
 - run preparation handoff packs
 - shared `run:execute` for adapters that opt into `commandMode: exec`
 - stdout/stderr capture plus timeout/interruption metadata for `run:execute`
@@ -156,6 +157,7 @@ Current dashboard capabilities:
 - show checkpoint detail in task detail
 - inspect executor metadata and local stdout/stderr logs in task detail
 - create tasks
+- quick-create a task bundle from the CLI without skipping durable artifacts
 - update selected task metadata
 - edit `task.md`, `context.md`, and `verification.md`
 - refresh manual proof anchors for `verification.md`
@@ -188,6 +190,7 @@ The smoke test currently covers:
 - adapter listing
 - recipe listing
 - task creation with recipe
+- quick task bootstrap from the CLI, including project-profile refresh plus prompt/run-request/launch-pack/checkpoint generation
 - prompt compilation
 - run preparation
 - run evidence recording
@@ -263,10 +266,10 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Keep future executor work additive on top of the new shared preflight/readiness contract instead of adding caller-specific launch logic.
-2. If executor metadata grows, decide whether `executionIntentId` or richer advisories belong in transient bridge state, durable run records, or both.
-3. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
-4. Keep `dashboard/app.js` focused on orchestration/event wiring if additional dashboard features land.
+1. Build the next onboarding shortcut around the new `quick` command, likely a bootstrap prompt for memory docs instead of embedded cloud AI calls.
+2. Keep future executor work additive on top of the shared preflight/readiness contract instead of adding caller-specific launch logic.
+3. If executor metadata grows, decide whether `executionIntentId` or richer advisories belong in transient bridge state, durable run records, or both.
+4. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 5. Revisit adapter extensibility only after the verification/evidence model is stable enough to stay contract-first.
 
 ## What not to do next

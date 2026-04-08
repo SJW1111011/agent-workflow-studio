@@ -46,6 +46,7 @@ The current foundation includes:
 - `scan`: generate a project profile from the target repository
 - `adapter:list`: inspect the built-in Codex and Claude Code adapter contracts
 - `recipe:list`: inspect the built-in workflow recipes
+- `quick`: create a task bundle fast by refreshing the project profile, creating the task, compiling the prompt, preparing the run-request/launch pack, and refreshing the checkpoint
 - `task:new`: create a structured task package with both machine-readable and human-readable context
 - `prompt:compile`: generate Codex or Claude Code prompts from workflow state
 - `run:prepare`: generate an execution handoff pack for a specific adapter
@@ -90,6 +91,7 @@ npm run init -- --root ../some-repo
 npm run scan -- --root ../some-repo
 npm run adapter:list
 npm run recipe:list -- --root ../some-repo
+npm run quick -- "Build the scanner" --task-id T-001 --priority P1 --recipe feature --agent codex --root ../some-repo
 npm run task:new -- T-001 "Build the scanner" --priority P1 --recipe feature --root ../some-repo
 npm run prompt:compile -- T-001 --agent codex --root ../some-repo
 npm run run:prepare -- T-001 --agent codex --root ../some-repo
@@ -102,6 +104,19 @@ npm run dashboard -- --root ../some-repo --port 4173
 ```
 
 Then open `http://localhost:4173`.
+
+`quick` is intentionally a shortcut over the existing file-based workflow, not a replacement for it.
+
+It still lands the same durable artifacts:
+
+- `.agent-workflow/project-profile.json` / `.agent-workflow/project-profile.md`
+- `.agent-workflow/tasks/<taskId>/task.md`
+- `.agent-workflow/tasks/<taskId>/context.md`
+- `.agent-workflow/tasks/<taskId>/verification.md`
+- `.agent-workflow/tasks/<taskId>/prompt.<agent>.md`
+- `.agent-workflow/tasks/<taskId>/run-request.<adapter>.json`
+- `.agent-workflow/tasks/<taskId>/launch.<adapter>.md`
+- `.agent-workflow/tasks/<taskId>/checkpoint.md`
 
 ## Relocatable by design
 

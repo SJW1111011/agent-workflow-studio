@@ -34,7 +34,7 @@ function scanWorkspace(workspaceRoot) {
     ? fs
         .readdirSync(docsDir, { withFileTypes: true })
         .filter((entry) => entry.isFile())
-        .map((entry) => path.join("docs", entry.name))
+        .map((entry) => path.join("docs", entry.name).replace(/\\/g, "/"))
         .sort((left, right) => left.localeCompare(right))
     : [];
 
