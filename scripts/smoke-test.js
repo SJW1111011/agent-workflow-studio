@@ -391,6 +391,13 @@ main().catch((error) => {
 
   runNode(cliPath, ["init", "--root", tempRoot]);
   runNode(cliPath, ["scan", "--root", tempRoot]);
+  const memoryBootstrapOutput = runNodeOutput(cliPath, ["memory:bootstrap", "--root", tempRoot]);
+  if (
+    !memoryBootstrapOutput.includes("Memory bootstrap prompt ready:") ||
+    !memoryBootstrapOutput.includes("memory-bootstrap.md")
+  ) {
+    throw new Error("memory:bootstrap did not report the expected prompt path.");
+  }
   runNode(cliPath, ["adapter:list", "--root", tempRoot]);
   runNode(cliPath, ["recipe:list", "--root", tempRoot]);
   const quickOutput = runNodeOutput(cliPath, [
@@ -497,6 +504,7 @@ Build the first scanner slice with explicit diff-aware verification.
   assertExists(path.join(tempRoot, ".agent-workflow", "adapters", "codex.json"));
   assertExists(path.join(tempRoot, ".agent-workflow", "recipes", "index.json"));
   assertExists(path.join(tempRoot, ".agent-workflow", "project-profile.json"));
+  assertExists(path.join(tempRoot, ".agent-workflow", "handoffs", "memory-bootstrap.md"));
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "prompt.codex.md"));
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "run-request.codex.json"));
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "launch.codex.md"));
@@ -518,6 +526,13 @@ Build the first scanner slice with explicit diff-aware verification.
   }
   if (!fs.readFileSync(path.join(tempRoot, "T-001.marker.txt"), "utf8").includes("executor-ok")) {
     throw new Error("Fake executor did not observe the prepared prompt.");
+  }
+  if (
+    !fs
+      .readFileSync(path.join(tempRoot, ".agent-workflow", "handoffs", "memory-bootstrap.md"), "utf8")
+      .includes("Do not fake verification, production state, or business context.")
+  ) {
+    throw new Error("memory:bootstrap did not write the expected onboarding prompt guidance.");
   }
   if (!fs.readFileSync(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "verification.md"), "utf8").includes("Source: executor")) {
     throw new Error("Executor evidence was not appended to verification.md.");

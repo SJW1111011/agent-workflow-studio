@@ -3,6 +3,7 @@
 const path = require("path");
 const { buildCheckpoint } = require("./lib/checkpoint");
 const { listAdapters, normalizeAdapterId } = require("./lib/adapters");
+const { formatMemoryBootstrapSummary, generateMemoryBootstrapPrompt } = require("./lib/memory-bootstrap");
 const { buildOverview } = require("./lib/overview");
 const { compilePrompt } = require("./lib/prompt-compiler");
 const { formatQuickTaskSummary, quickCreateTask } = require("./lib/quick-task");
@@ -29,6 +30,13 @@ function main() {
         const profile = scanWorkspace(workspaceRoot);
         print(`Scanned ${workspaceRoot}`);
         print(`Detected ${profile.topLevelDirectories.length} top-level directories and ${profile.docs.length} docs.`);
+        break;
+      }
+      case "memory:bootstrap": {
+        const result = generateMemoryBootstrapPrompt(workspaceRoot, {
+          outputPath: options.output,
+        });
+        print(formatMemoryBootstrapSummary(result, workspaceRoot));
         break;
       }
       case "adapter:list": {
@@ -249,6 +257,7 @@ function printUsage() {
 Commands:
   init [--root path]
   scan [--root path]
+  memory:bootstrap [--output .agent-workflow/handoffs/memory-bootstrap.md] [--root path]
   adapter:list [--root path]
   recipe:list [--root path]
   quick <title> [--task-id T-001] [--priority P1] [--recipe feature] [--agent codex|claude] [--root path]

@@ -12,6 +12,11 @@
 
 Status: in progress in this repository.
 
+Onboarding now also has first-pass shortcuts:
+
+- `quick` for the common task bootstrap flow
+- `memory:bootstrap` for generating a local-only memory bootstrap prompt instead of requiring embedded AI calls
+
 ## Phase 1 - Stronger prompt compiler
 
 - task-type presets for audit, feature, bugfix, and review

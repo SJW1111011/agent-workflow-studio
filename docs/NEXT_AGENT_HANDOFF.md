@@ -23,6 +23,7 @@ As of 2026-04-08, the project already has a working MVP foundation:
 - Codex / Claude Code adapter contracts
 - prompt compilation
 - `quick` task bootstrap for the common local flow: scan -> task bundle -> prompt -> run-request/launch pack -> checkpoint
+- `memory:bootstrap` for the common onboarding flow: scan -> refresh project profile -> write a reusable memory bootstrap prompt under `.agent-workflow/handoffs/`
 - run preparation handoff packs
 - shared `run:execute` for adapters that opt into `commandMode: exec`
 - stdout/stderr capture plus timeout/interruption metadata for `run:execute`
@@ -158,6 +159,7 @@ Current dashboard capabilities:
 - inspect executor metadata and local stdout/stderr logs in task detail
 - create tasks
 - quick-create a task bundle from the CLI without skipping durable artifacts
+- generate a local-only memory bootstrap prompt without embedding cloud AI calls
 - update selected task metadata
 - edit `task.md`, `context.md`, and `verification.md`
 - refresh manual proof anchors for `verification.md`
@@ -191,6 +193,7 @@ The smoke test currently covers:
 - recipe listing
 - task creation with recipe
 - quick task bootstrap from the CLI, including project-profile refresh plus prompt/run-request/launch-pack/checkpoint generation
+- memory bootstrap prompt generation from the CLI, including project-profile refresh plus a durable handoff prompt under `.agent-workflow/handoffs/memory-bootstrap.md`
 - prompt compilation
 - run preparation
 - run evidence recording
@@ -266,7 +269,7 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Build the next onboarding shortcut around the new `quick` command, likely a bootstrap prompt for memory docs instead of embedded cloud AI calls.
+1. Start dogfooding the new onboarding path: `memory:bootstrap` -> `quick` -> real agent run -> evidence -> checkpoint.
 2. Keep future executor work additive on top of the shared preflight/readiness contract instead of adding caller-specific launch logic.
 3. If executor metadata grows, decide whether `executionIntentId` or richer advisories belong in transient bridge state, durable run records, or both.
 4. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.

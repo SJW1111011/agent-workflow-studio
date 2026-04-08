@@ -47,6 +47,7 @@ The current foundation includes:
 - `adapter:list`: inspect the built-in Codex and Claude Code adapter contracts
 - `recipe:list`: inspect the built-in workflow recipes
 - `quick`: create a task bundle fast by refreshing the project profile, creating the task, compiling the prompt, preparing the run-request/launch pack, and refreshing the checkpoint
+- `memory:bootstrap`: generate a local-only bootstrap prompt for filling the scaffold memory docs through Codex or Claude Code without embedding cloud API calls
 - `task:new`: create a structured task package with both machine-readable and human-readable context
 - `prompt:compile`: generate Codex or Claude Code prompts from workflow state
 - `run:prepare`: generate an execution handoff pack for a specific adapter
@@ -91,6 +92,7 @@ npm run init -- --root ../some-repo
 npm run scan -- --root ../some-repo
 npm run adapter:list
 npm run recipe:list -- --root ../some-repo
+npm run memory:bootstrap -- --root ../some-repo
 npm run quick -- "Build the scanner" --task-id T-001 --priority P1 --recipe feature --agent codex --root ../some-repo
 npm run task:new -- T-001 "Build the scanner" --priority P1 --recipe feature --root ../some-repo
 npm run prompt:compile -- T-001 --agent codex --root ../some-repo
@@ -117,6 +119,13 @@ It still lands the same durable artifacts:
 - `.agent-workflow/tasks/<taskId>/run-request.<adapter>.json`
 - `.agent-workflow/tasks/<taskId>/launch.<adapter>.md`
 - `.agent-workflow/tasks/<taskId>/checkpoint.md`
+
+`memory:bootstrap` follows the same philosophy:
+
+- it refreshes the project profile locally
+- it writes a reusable prompt to `.agent-workflow/handoffs/memory-bootstrap.md`
+- it does not call a cloud API or mutate the memory docs for you
+- it gives you a file-based handoff you can pass to Codex or Claude Code, then review before saving
 
 ## Relocatable by design
 

@@ -1,6 +1,7 @@
 const { fileExists, readText } = require("./fs-utils");
 const { listAdapters } = require("./adapters");
 const { buildTaskFreshness, loadMemoryFreshness } = require("./freshness");
+const { MEMORY_PLACEHOLDERS } = require("./memory-placeholders");
 const { listRecipes } = require("./recipes");
 const { loadRepositorySnapshot } = require("./repository-snapshot");
 const { validateWorkspace } = require("./schema-validator");
@@ -14,13 +15,6 @@ const {
   taskFiles,
   workflowRoot,
 } = require("./workspace");
-
-const MEMORY_PLACEHOLDERS = [
-  "What user problem are we solving?",
-  "Core modules:",
-  "Rules that must stay true",
-  "what must be tested?",
-];
 
 function buildOverview(workspaceRoot) {
   const workflowDir = workflowRoot(workspaceRoot);

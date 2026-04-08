@@ -43,6 +43,7 @@ The CLI owns:
 - scaffold creation
 - repository scanning
 - quick task bootstrap over the existing file-based workflow
+- memory bootstrap prompt generation for scaffold docs
 - adapter contract generation
 - recipe registry generation
 - task creation
