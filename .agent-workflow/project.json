@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "repositoryName": "agent-workflow-studio",
+  "createdAt": "2026-04-08T11:30:03.403Z",
+  "adapters": [
+    "codex",
+    "claude-code"
+  ],
+  "dashboard": {
+    "defaultPort": 4173
+  },
+  "notes": "This file is portable and should not contain absolute paths."
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-001",
+  "adapterId": "codex",
+  "title": "Dogfood onboarding path on agent-workflow-studio itself",
+  "generatedAt": "2026-04-08T11:30:03.430Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-001",
+  "promptFile": ".agent-workflow/tasks/T-001/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-001/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "codex"
+  ],
+  "commandMode": "manual",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

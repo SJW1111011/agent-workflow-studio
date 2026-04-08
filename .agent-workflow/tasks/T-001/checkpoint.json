@@ -1,0 +1,21 @@
+{
+  "taskId": "T-001",
+  "generatedAt": "2026-04-08T11:38:19.726Z",
+  "latestRunStatus": "passed",
+  "runCount": 1,
+  "risks": [],
+  "completed": [
+    "Prompt compiled",
+    "1 run(s) recorded",
+    "Task context captured",
+    "Scoped verification evidence looks current"
+  ],
+  "verificationGate": {
+    "status": "covered",
+    "message": "Explicit verification now covers the current scoped file set.",
+    "relevantChangeCount": 0,
+    "scopeHintCount": 6,
+    "ambiguousScopeCount": 0,
+    "relevantChangedFiles": []
+  }
+}

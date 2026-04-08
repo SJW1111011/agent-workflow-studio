@@ -1,0 +1,74 @@
+{
+  "id": "run-1775648132754",
+  "taskId": "T-001",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Dogfooded onboarding path on the repository itself and validated the generated workflow state.",
+  "createdAt": "2026-04-08T11:35:32.753Z",
+  "scopeProofPaths": [
+    ".agent-workflow/memory/product.md",
+    ".agent-workflow/memory/architecture.md",
+    ".agent-workflow/memory/domain-rules.md",
+    ".agent-workflow/memory/runbook.md",
+    ".agent-workflow/tasks/T-001/task.md",
+    ".agent-workflow/tasks/T-001/context.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "Reviewed generated onboarding artifacts and grounded memory docs",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-001/checkpoint.md"
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": ".agent-workflow/memory/product.md",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:7a76097506ab917958fd2931d564d132404a84da"
+    },
+    {
+      "path": ".agent-workflow/memory/architecture.md",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:cad59966ca71fa39874c3b2ebec32a0ab826c137"
+    },
+    {
+      "path": ".agent-workflow/memory/domain-rules.md",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:555263c0ca40643fec342609995263f0ab27395d"
+    },
+    {
+      "path": ".agent-workflow/memory/runbook.md",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:e6dbb86e1850ce12d2a8b234400d8195b309b55f"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-001/task.md",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:8f0a6470c9b046086b4c3cc44dc175428d1a25f3"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-001/context.md",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:d9acadf11f058276165ba45b70e71cd2bbf6710e"
+    }
+  ]
+}

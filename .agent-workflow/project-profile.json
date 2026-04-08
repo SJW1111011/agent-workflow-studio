@@ -1,0 +1,49 @@
+{
+  "generatedAt": "2026-04-08T11:30:03.419Z",
+  "repositoryName": "agent-workflow-studio",
+  "topLevelDirectories": [
+    "dashboard",
+    "docs",
+    "scripts",
+    "src",
+    "test",
+    "tmp"
+  ],
+  "docs": [
+    "README.md",
+    "docs/ADAPTERS.md",
+    "docs/ARCHITECTURE.md",
+    "docs/ISSUE_BACKLOG.md",
+    "docs/NEXT_AGENT_HANDOFF.md",
+    "docs/PRD.md",
+    "docs/RECIPES_AND_SCHEMA.md",
+    "docs/RELOCATABLE_DESIGN.md",
+    "docs/ROADMAP.md",
+    "docs/RUN_EXECUTE_DESIGN.md",
+    "docs/VERIFICATION_FRESHNESS_DESIGN.md"
+  ],
+  "packageManagers": [],
+  "scripts": {
+    "test": "node scripts/unit-test.js",
+    "cli": "node src/cli.js",
+    "init": "node src/cli.js init",
+    "scan": "node src/cli.js scan",
+    "memory:bootstrap": "node src/cli.js memory:bootstrap",
+    "adapter:list": "node src/cli.js adapter:list",
+    "recipe:list": "node src/cli.js recipe:list",
+    "quick": "node src/cli.js quick",
+    "task:new": "node src/cli.js task:new",
+    "task:list": "node src/cli.js task:list",
+    "prompt:compile": "node src/cli.js prompt:compile",
+    "run:prepare": "node src/cli.js run:prepare",
+    "run:execute": "node src/cli.js run:execute",
+    "checkpoint": "node src/cli.js checkpoint",
+    "run:add": "node src/cli.js run:add",
+    "validate": "node src/cli.js validate",
+    "dashboard": "node src/server.js",
+    "smoke": "node scripts/smoke-test.js"
+  },
+  "recommendations": [
+    "Add an agent-facing root document such as AGENTS.md or CLAUDE.md."
+  ]
+}

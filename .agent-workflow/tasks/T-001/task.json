@@ -1,0 +1,14 @@
+{
+  "id": "T-001",
+  "title": "Dogfood onboarding path on agent-workflow-studio itself",
+  "recipeId": "review",
+  "priority": "P1",
+  "status": "in_progress",
+  "createdAt": "2026-04-08T11:30:03.420Z",
+  "updatedAt": "2026-04-08T11:38:09.156Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}
