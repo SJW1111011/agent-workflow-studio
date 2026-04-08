@@ -3,11 +3,12 @@ const path = require("path");
 const { spawn } = require("child_process");
 const { getAdapter, normalizeAdapterId } = require("./adapters");
 const { buildCheckpoint } = require("./checkpoint");
-const { fileExists, readJson } = require("./fs-utils");
+const { fileExists, readJson, readText } = require("./fs-utils");
 const { badRequest, conflict, createHttpError, getHttpStatusCode } = require("./http-errors");
 const { loadGitRepositorySnapshot } = require("./repository-snapshot");
 const { prepareRun } = require("./run-preparer");
 const { createRunRecord, persistRunRecord } = require("./task-service");
+const { buildTaskVerificationGate } = require("./verification-gates");
 const { taskFiles } = require("./workspace");
 
 const CORE_ENV_KEYS = [
@@ -155,7 +156,7 @@ function preflightRunExecution(workspaceRoot, taskId, adapterInput, options = {}
     const runnerAvailability = inspectRunnerCommandAvailability(plan.command, plan.cwd);
     advisories = advisories.concat(buildRunnerAvailabilityAdvisories(plan.adapterId, runnerAvailability));
     advisories = advisories.concat(buildMissingEnvAdvisories(plan.adapterId, plan.envAllowlist, plan.env));
-    advisories = advisories.concat(buildDirtyRepositoryAdvisories(workspaceRoot));
+    advisories = advisories.concat(buildDirtyRepositoryAdvisories(workspaceRoot, taskId));
     if (!runnerAvailability.available) {
       throw createExecutionPreflightError(
         409,
@@ -1057,36 +1058,135 @@ function buildMissingEnvAdvisories(adapterId, envAllowlist, childEnv) {
   });
 }
 
-function buildDirtyRepositoryAdvisories(workspaceRoot) {
+function buildDirtyRepositoryAdvisories(workspaceRoot, taskId = null) {
   try {
     const snapshot = loadGitRepositorySnapshot(workspaceRoot);
     if (!snapshot || !Array.isArray(snapshot.files) || snapshot.files.length === 0) {
       return [];
     }
 
-    const samplePaths = snapshot.files
-      .map((entry) => normalizeSnapshotPath(entry.path))
-      .filter(isNonEmptyString)
-      .slice(0, 3);
-    const remainingCount = Math.max(snapshot.files.length - samplePaths.length, 0);
-    const sampleSuffix =
-      samplePaths.length === 0
-        ? ""
-        : ` Example path${samplePaths.length === 1 ? "" : "s"}: ${samplePaths.join(", ")}${
-            remainingCount > 0 ? ` (+${remainingCount} more)` : ""
-          }.`;
+    const changedPaths = snapshot.files.map((entry) => normalizeSnapshotPath(entry.path)).filter(isNonEmptyString);
+    const taskContext = buildTaskDirtyRepositoryContext(workspaceRoot, taskId, snapshot);
+    const message = taskContext
+      ? buildTaskAwareDirtyRepositoryMessage(changedPaths, taskContext)
+      : buildGenericDirtyRepositoryMessage(changedPaths);
 
     return normalizeAdvisories({
       advisories: [
         {
           code: "repository-dirty-state",
-          message: `Repository currently has ${snapshot.files.length} changed path(s) in Git mode; a real agent may stop on a dirty worktree or limit edits.${sampleSuffix}`,
+          message,
         },
       ],
     });
   } catch (error) {
     return [];
   }
+}
+
+function buildTaskDirtyRepositoryContext(workspaceRoot, taskId, snapshot) {
+  if (!isNonEmptyString(taskId)) {
+    return null;
+  }
+
+  const files = taskFiles(workspaceRoot, taskId);
+  if (!fileExists(files.meta)) {
+    return null;
+  }
+
+  const taskMeta = readJson(files.meta, {});
+  const taskText = readText(files.task, "");
+  const verificationGate = buildTaskVerificationGate(workspaceRoot, taskMeta, [], snapshot, taskText);
+  const scopedPaths = uniqueNormalizedPaths(
+    []
+      .concat((verificationGate.relevantChangedFiles || []).map((entry) => entry.path))
+      .concat((verificationGate.coveredScopedFiles || []).map((entry) => entry.path))
+  );
+  const workflowPaths = uniqueNormalizedPaths(
+    (Array.isArray(snapshot.files) ? snapshot.files : [])
+      .map((entry) => entry.path)
+      .filter((entry) => isWorkflowInternalPath(entry))
+  );
+  const taskScopedPaths = uniqueNormalizedPaths(scopedPaths.filter((entry) => !isWorkflowInternalPath(entry)));
+  const outsideTaskPaths = uniqueNormalizedPaths(
+    (Array.isArray(snapshot.files) ? snapshot.files : [])
+      .map((entry) => entry.path)
+      .filter((entry) => !isWorkflowInternalPath(entry))
+      .filter((entry) => !taskScopedPaths.includes(normalizeSnapshotPath(entry)))
+  );
+
+  return {
+    taskId,
+    workflowPaths,
+    taskScopedPaths,
+    outsideTaskPaths,
+    scopeHintCount: Array.isArray(verificationGate.scopeHints) ? verificationGate.scopeHints.length : 0,
+  };
+}
+
+function buildGenericDirtyRepositoryMessage(changedPaths) {
+  return (
+    `Repository currently has ${changedPaths.length} changed path(s) in Git mode; a real agent may stop on a dirty worktree or limit edits.` +
+    buildPathSampleSentence("Example path", changedPaths)
+  );
+}
+
+function buildTaskAwareDirtyRepositoryMessage(changedPaths, taskContext) {
+  const messageParts = [
+    `Repository currently has ${changedPaths.length} changed path(s) in Git mode; a real agent may stop on a dirty worktree or limit edits.`,
+    `Task-aware breakdown for ${taskContext.taskId}: ${taskContext.taskScopedPaths.length} task-scoped, ${taskContext.workflowPaths.length} workflow bookkeeping, ${taskContext.outsideTaskPaths.length} outside current task scope.`,
+  ];
+
+  const taskScopedSentence = buildPathSampleSentence("Task-scoped example", taskContext.taskScopedPaths);
+  if (taskScopedSentence) {
+    messageParts.push(taskScopedSentence.trim());
+  }
+
+  const outsideScopeSentence = buildPathSampleSentence("Outside-scope example", taskContext.outsideTaskPaths);
+  if (outsideScopeSentence) {
+    messageParts.push(outsideScopeSentence.trim());
+  }
+
+  const workflowSentence = buildPathSampleSentence("Workflow example", taskContext.workflowPaths);
+  if (workflowSentence) {
+    messageParts.push(workflowSentence.trim());
+  }
+
+  if (taskContext.outsideTaskPaths.length === 0 && taskContext.taskScopedPaths.length === 0 && taskContext.workflowPaths.length > 0) {
+    messageParts.push("This dirty state currently looks like workflow bookkeeping only.");
+  } else if (taskContext.outsideTaskPaths.length === 0 && taskContext.taskScopedPaths.length > 0) {
+    messageParts.push("The dirty state is limited to the current task scope plus workflow bookkeeping.");
+  } else if (taskContext.outsideTaskPaths.length > 0) {
+    messageParts.push("Changes outside the current task scope may cause a cautious real agent to stop before editing.");
+  }
+
+  if (taskContext.scopeHintCount === 0 && taskContext.outsideTaskPaths.length > 0) {
+    messageParts.push(`Current task scope still lacks explicit repo-relative matches, so non-workflow changes cannot be confidently tied to ${taskContext.taskId}.`);
+  }
+
+  return messageParts.join(" ");
+}
+
+function buildPathSampleSentence(label, paths) {
+  const samplePaths = uniqueNormalizedPaths(paths).slice(0, 3);
+  if (samplePaths.length === 0) {
+    return "";
+  }
+
+  const remainingCount = Math.max(uniqueNormalizedPaths(paths).length - samplePaths.length, 0);
+  return ` ${label}${samplePaths.length === 1 ? "" : "s"}: ${samplePaths.join(", ")}${
+    remainingCount > 0 ? ` (+${remainingCount} more)` : ""
+  }.`;
+}
+
+function isWorkflowInternalPath(value) {
+  return normalizeSnapshotPath(value).startsWith(".agent-workflow/");
+}
+
+function uniqueNormalizedPaths(values) {
+  return Array.from(
+    new Set((Array.isArray(values) ? values : []).map((value) => normalizeSnapshotPath(value)).filter(isNonEmptyString))
+  );
 }
 
 function normalizeExecutionFailureCategory(error, statusCode) {

@@ -321,6 +321,70 @@ const tests = [
     },
   },
   {
+    name: "preflightRunExecution distinguishes workflow-only dirty state from product code edits",
+    run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("run-executor-preflight-dirty-workflow-only");
+
+      writeFakeRunner(workspaceRoot);
+      configureCodexExecutor(workspaceRoot);
+
+      initializeGitRepository(workspaceRoot);
+      runCommand("git", ["add", "."], workspaceRoot);
+      runCommand("git", ["commit", "-m", "Initial fixture"], workspaceRoot);
+
+      writeTextFile(
+        path.join(workspaceRoot, ".agent-workflow", "tasks", taskId, "checkpoint.md"),
+        "# Updated checkpoint\n",
+      );
+
+      const readiness = preflightRunExecution(workspaceRoot, taskId, "codex");
+      const dirtyAdvisory = readiness.advisories.find((entry) => entry.code === "repository-dirty-state");
+
+      assert.equal(readiness.ready, true);
+      assert.ok(dirtyAdvisory);
+      assert.match(dirtyAdvisory.message, /workflow bookkeeping only/i);
+      assert.match(dirtyAdvisory.message, /\.agent-workflow\/tasks\/T-001\/checkpoint\.md/);
+      assert.match(dirtyAdvisory.message, /0 task-scoped, \d+ workflow bookkeeping, 0 outside current task scope/i);
+    },
+  },
+  {
+    name: "preflightRunExecution distinguishes task-scoped changes from outside-scope dirty paths",
+    run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("run-executor-preflight-dirty-task-aware");
+
+      writeFakeRunner(workspaceRoot);
+      configureCodexExecutor(workspaceRoot);
+      writeTextFile(path.join(workspaceRoot, "src", "feature.js"), "module.exports = 'feature';\n");
+      writeTextFile(path.join(workspaceRoot, "notes.txt"), "unrelated note\n");
+
+      const taskMeta = readJsonFile(files.meta);
+      taskMeta.scope = ["src/feature.js"];
+      writeJsonFile(files.meta, taskMeta);
+
+      initializeGitRepository(workspaceRoot);
+      runCommand("git", ["add", "."], workspaceRoot);
+      runCommand("git", ["commit", "-m", "Initial fixture"], workspaceRoot);
+
+      writeTextFile(path.join(workspaceRoot, "src", "feature.js"), "module.exports = 'feature v2';\n");
+      writeTextFile(path.join(workspaceRoot, "notes.txt"), "unrelated note\nchanged\n");
+      writeTextFile(
+        path.join(workspaceRoot, ".agent-workflow", "tasks", taskId, "checkpoint.md"),
+        "# Updated checkpoint\n",
+      );
+
+      const readiness = preflightRunExecution(workspaceRoot, taskId, "codex");
+      const dirtyAdvisory = readiness.advisories.find((entry) => entry.code === "repository-dirty-state");
+
+      assert.equal(readiness.ready, true);
+      assert.ok(dirtyAdvisory);
+      assert.match(dirtyAdvisory.message, /1 task-scoped, \d+ workflow bookkeeping, 1 outside current task scope/i);
+      assert.match(dirtyAdvisory.message, /Task-scoped example: src\/feature\.js/i);
+      assert.match(dirtyAdvisory.message, /Outside-scope example: notes\.txt/i);
+      assert.match(dirtyAdvisory.message, /Workflow examples?: \.agent-workflow\/tasks\/T-001\/checkpoint\.md/i);
+      assert.match(dirtyAdvisory.message, /cautious real agent to stop before editing/i);
+    },
+  },
+  {
     name: "executeRun persists a passed executor run with logs, artifacts, and checkpoint refresh",
     async run() {
       const { workspaceRoot, taskId, files } = createTaskWorkspace("run-executor-success");

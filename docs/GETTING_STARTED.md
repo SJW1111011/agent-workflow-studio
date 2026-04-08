@@ -26,6 +26,12 @@ npx agent-workflow --help
 
 If you prefer a global install, the equivalent command name is `agent-workflow`.
 
+## Platform notes
+
+- macOS/Linux: the commands below assume `node` and `npm` are already installed in the same shell session
+- Windows PowerShell/CMD: use the same CLI arguments, but the examples in this guide are written in npm-first / POSIX-friendly style
+- WSL on Windows: the bash-style onboarding flow was validated on this machine, but the shell did not have native `node` / `npm` on `PATH`; if you want to run the Linux-style commands directly inside WSL, install Node inside WSL first, otherwise use the Windows shell flow
+
 ## 5-minute npm-first start
 
 1. Create or choose a repository

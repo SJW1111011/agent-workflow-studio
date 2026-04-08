@@ -494,6 +494,7 @@ The current code now implements the first pass of this shape:
   - additive `advisories`
 - shared preflight can now also surface first-pass local runner readiness, so the operator can distinguish "manual by design" from "exec was requested but the local command is unavailable"
 - shared preflight can now also add non-blocking Git dirty-worktree advisories plus missing adapter-owned `envAllowlist` entries when those conditions are detectable before launch
+- that dirty-worktree advisory can now break the current Git state into task-scoped paths, workflow bookkeeping paths, and outside-scope paths, so the operator can tell whether the repo is dirty because of task evidence churn or unrelated code edits
 - the dashboard bridge can also keep a transient `preflight-failed` state locally without creating a fake durable run record
 
 What remains future work:

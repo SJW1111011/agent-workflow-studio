@@ -68,6 +68,7 @@ As of 2026-04-09, the project already has a working MVP foundation:
 - dashboard/API execution launch failures can now return additive `code`, `failureCategory`, and `blockingIssues` fields instead of relying on free-form error text only
 - preflight/readiness now also returns additive `advisories`, including adapter notes plus first-pass local runner-availability guidance for real CLI pilot work
 - that same shared preflight can now also add non-blocking dirty-worktree advisories in Git mode plus missing adapter-owned `envAllowlist` hints before launch
+- dirty-worktree advisories are now task-aware enough to distinguish task-scoped paths, workflow bookkeeping churn under `.agent-workflow/`, and changed paths outside the current task scope
 - adapters can now also opt into `stdinMode: promptFile`, and the executor can stream the compiled prompt into stdin for non-interactive real-CLI style profiles without shell redirection
 - the first repo-local real Codex dogfooding attempt reached the actual child process and persisted executor evidence, but it failed fast because the locally observed `codex exec` CLI rejected `--ask-for-approval`; the recommended template now stays within the confirmed `codex exec --sandbox workspace-write -` flag shape
 - a follow-up real Codex launch then reached Codex itself and confirmed stdin prompt delivery plus durable run logs, but it still failed before model work because the repo-local dogfooding adapter had not forwarded `OPENAI_API_KEY` into the child process; the local profile now allowlists that env var
