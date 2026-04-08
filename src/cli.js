@@ -11,12 +11,13 @@ const { listRecipes } = require("./lib/recipes");
 const { executeRun } = require("./lib/run-executor");
 const { prepareRun } = require("./lib/run-preparer");
 const { scanWorkspace } = require("./lib/scanner");
+const { startDashboardServer } = require("./server");
 const { validateWorkspace } = require("./lib/schema-validator");
 const { createTask, listTasks, recordRun } = require("./lib/task-service");
 const { ensureWorkflowScaffold, resolveWorkspaceRoot } = require("./lib/workspace");
 
-function main() {
-  const { command, positionals, options } = parseCommand(process.argv.slice(2));
+function main(argv = process.argv.slice(2)) {
+  const { command, positionals, options } = parseCommand(argv);
   const workspaceRoot = resolveWorkspaceRoot(options.root);
 
   try {
@@ -38,6 +39,12 @@ function main() {
         });
         print(formatMemoryBootstrapSummary(result, workspaceRoot));
         break;
+      }
+      case "dashboard": {
+        startDashboardServer(workspaceRoot, {
+          port: options.port,
+        });
+        return;
       }
       case "adapter:list": {
         ensureWorkflowScaffold(workspaceRoot);
@@ -263,6 +270,7 @@ Commands:
   init [--root path]
   scan [--root path]
   memory:bootstrap [--output .agent-workflow/handoffs/memory-bootstrap.md] [--root path]
+  dashboard [--root path] [--port 4173]
   adapter:list [--root path]
   recipe:list [--root path]
   quick <title> [--task-id T-001] [--priority P1] [--recipe feature] [--agent codex|claude] [--root path]
@@ -278,5 +286,12 @@ Commands:
 `);
 }
 
-main();
+module.exports = {
+  main,
+  parseCommand,
+};
+
+if (require.main === module) {
+  main();
+}
 

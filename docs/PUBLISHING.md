@@ -1,6 +1,6 @@
 # Publishing
 
-This project is now published on npm as `agent-workflow-studio@0.1.0`, and the release flow is documented here so future publishes stay local-first, reproducible, and clean.
+This project is now published on npm as `agent-workflow-studio@0.1.1`, and the release flow is documented here so future publishes stay local-first, reproducible, and clean.
 
 ## Release checklist
 
@@ -30,16 +30,19 @@ Before publishing a new version:
    - `npm view agent-workflow-studio version name --json --registry https://registry.npmjs.org/`
    - `npm install -g agent-workflow-studio`
    - `agent-workflow --help`
+   - `agent-workflow dashboard --root ../some-repo --port 4173`
    - `npm install agent-workflow-studio`
    - `npx agent-workflow --help`
+   - `npx agent-workflow dashboard --root ../some-repo --port 4173`
 
 ## Current release status
 
 As of 2026-04-09:
 
-- `agent-workflow-studio@0.1.0` is live in the npm registry
+- `agent-workflow-studio@0.1.1` is live in the npm registry
 - `npm whoami --registry https://registry.npmjs.org/` returns `sjw1111011` on this machine
-- `npm view agent-workflow-studio version name --json --registry https://registry.npmjs.org/` confirms the published `0.1.0` package
+- `npm view agent-workflow-studio version name --json --registry https://registry.npmjs.org/` confirms the published `0.1.1` package
+- a clean temp install of `agent-workflow-studio@0.1.1` now verifies `npx agent-workflow --help`, `init`, `scan`, `memory:bootstrap`, `quick`, `validate`, and `npx agent-workflow dashboard --root ... --port 4175`
 - future publishes still require npm 2FA-compatible auth, such as an OTP or a granular access token with bypass 2FA enabled
 
 The main remaining release work is now polish around the published install experience, not package structure.
@@ -52,9 +55,11 @@ Current install and verification commands:
 npm install -g agent-workflow-studio
 agent-workflow --help
 agent-workflow init --root ../some-repo
+agent-workflow dashboard --root ../some-repo --port 4173
 npm install agent-workflow-studio
 npx agent-workflow --help
 npx agent-workflow init --root ../some-repo
+npx agent-workflow dashboard --root ../some-repo --port 4173
 ```
 
 ## Notes

@@ -20,10 +20,16 @@ const MIME_TYPES = {
   ".json": "application/json; charset=utf-8",
 };
 
-function main() {
-  const { options } = parseArgs(process.argv.slice(2));
+function main(argv = process.argv.slice(2)) {
+  const { options } = parseArgs(argv);
   const workspaceRoot = resolveWorkspaceRoot(options.root);
-  const port = Number(options.port || 4173);
+  return startDashboardServer(workspaceRoot, {
+    port: options.port,
+  });
+}
+
+function startDashboardServer(workspaceRoot, options = {}) {
+  const port = normalizeServerPort(options.port);
   const dashboardRoot = path.join(__dirname, "..", "dashboard");
   const executionBridge = createDashboardExecutionBridge(workspaceRoot);
 
@@ -192,6 +198,8 @@ function main() {
       `Agent Workflow Studio dashboard is running at http://localhost:${port}\nTarget repository: ${workspaceRoot}\n`
     );
   });
+
+  return server;
 }
 
 function parseArgs(argv) {
@@ -312,6 +320,19 @@ function normalizePositiveInteger(value) {
   return Number.isInteger(numeric) && numeric > 0 ? numeric : null;
 }
 
+function normalizeServerPort(value) {
+  if (value === undefined || value === null || value === "") {
+    return 4173;
+  }
+
+  const numeric = Number(value);
+  if (!Number.isInteger(numeric) || numeric <= 0) {
+    throw new Error("Usage: dashboard [--root path] [--port 4173]");
+  }
+
+  return numeric;
+}
+
 function parseTaskDocumentRoute(pathname) {
   const matched = pathname.match(/^\/api\/tasks\/([^/]+)\/documents\/([^/]+)$/);
   if (!matched) {
@@ -393,5 +414,13 @@ function parseTaskExecutionCancelRoute(pathname) {
   };
 }
 
-main();
+module.exports = {
+  main,
+  parseArgs,
+  startDashboardServer,
+};
+
+if (require.main === module) {
+  main();
+}
 

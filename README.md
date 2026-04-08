@@ -48,6 +48,7 @@ The current foundation includes:
 - `recipe:list`: inspect the built-in workflow recipes
 - `quick`: create a task bundle fast by refreshing the project profile, creating the task, compiling the prompt, preparing the run-request/launch pack, and refreshing the checkpoint
 - `memory:bootstrap`: generate a local-only bootstrap prompt for filling the scaffold memory docs through Codex or Claude Code without embedding cloud API calls
+- `dashboard`: launch the local control plane directly from the CLI or published package
 - `task:new`: create a structured task package with both machine-readable and human-readable context
 - `prompt:compile`: generate Codex or Claude Code prompts from workflow state
 - `run:prepare`: generate an execution handoff pack for a specific adapter
@@ -95,6 +96,7 @@ npm run recipe:list -- --root ../some-repo
 npm run memory:bootstrap -- --root ../some-repo
 npm run quick -- "Build the scanner" --task-id T-001 --priority P1 --recipe feature --agent codex --root ../some-repo
 npm run task:new -- T-001 "Build the scanner" --priority P1 --recipe feature --root ../some-repo
+npm run dashboard -- --root ../some-repo --port 4173
 npm run prompt:compile -- T-001 --agent codex --root ../some-repo
 npm run run:prepare -- T-001 --agent codex --root ../some-repo
 npm run run:execute -- T-001 --agent codex --root ../some-repo
@@ -102,7 +104,6 @@ npm run run:add -- T-001 "Initial scanner pass completed." --status passed --roo
 npm run checkpoint -- T-001 --root ../some-repo
 npm run validate -- --root ../some-repo
 npm test
-npm run dashboard -- --root ../some-repo --port 4173
 ```
 
 Then open `http://localhost:4173`.
@@ -129,7 +130,7 @@ It still lands the same durable artifacts:
 
 ## npm distribution
 
-As of 2026-04-09, `agent-workflow-studio@0.1.0` is live on npm.
+As of 2026-04-09, `agent-workflow-studio@0.1.1` is live on npm.
 
 - the package name is `agent-workflow-studio`
 - the installed CLI command is `agent-workflow`
@@ -142,9 +143,11 @@ Install and verify it with:
 npm install -g agent-workflow-studio
 agent-workflow --help
 agent-workflow init --root ../some-repo
+agent-workflow dashboard --root ../some-repo --port 4173
 npm install agent-workflow-studio
 npx agent-workflow --help
 npx agent-workflow init --root ../some-repo
+npx agent-workflow dashboard --root ../some-repo --port 4173
 ```
 
 The package name and executable name are intentionally different, so the verified install flow is `npm install ...` followed by `agent-workflow` / `npx agent-workflow`.

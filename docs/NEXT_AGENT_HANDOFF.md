@@ -72,8 +72,10 @@ As of 2026-04-09, the project already has a working MVP foundation:
 - the first repo-local real Codex dogfooding attempt reached the actual child process and persisted executor evidence, but it failed fast because the locally observed `codex exec` CLI rejected `--ask-for-approval`; the recommended template now stays within the confirmed `codex exec --sandbox workspace-write -` flag shape
 - a follow-up real Codex launch then reached Codex itself and confirmed stdin prompt delivery plus durable run logs, but it still failed before model work because the repo-local dogfooding adapter had not forwarded `OPENAI_API_KEY` into the child process; the local profile now allowlists that env var
 - a subsequent real Codex launch now completes with exit code 0 and lands durable task-local evidence, proving the local `run:execute` path end to end; in this repository state the child agent then stopped honestly on the already-dirty working tree instead of making further edits
-- package metadata is now exercised by a real npm release: `agent-workflow-studio@0.1.0` is published, the payload is scoped through `package.json.files`, and the CLI is exposed through the `agent-workflow` bin without npm auto-cleanup warnings
+- package metadata is now exercised by a real npm release: `agent-workflow-studio@0.1.1` is published, the payload is scoped through `package.json.files`, and the CLI is exposed through the `agent-workflow` bin without npm auto-cleanup warnings
 - the published install surface is now partially verified on this Windows machine: `npm install agent-workflow-studio` followed by `npx agent-workflow --help` works from a clean temp directory, while docs now avoid the misleading package-name-as-command shortcut
+- the published package now also exposes dashboard launch through the main CLI (`agent-workflow dashboard` / `npx agent-workflow dashboard`), so first-time users no longer need to know the internal `src/server.js` path just to open the local control plane
+- a clean temp install of `agent-workflow-studio@0.1.1` has now re-verified the npm-first bootstrap path end to end: `init`, `scan`, `memory:bootstrap`, `quick`, `validate`, and dashboard launch all work from the published package
 - `docs/PUBLISHING.md` now records both the release checklist and the current published status, including the requirement that future publishes still use OTP or bypass-2FA-compatible token auth
 - the dashboard execution bridge now preserves a transient `preflight-failed` state locally when launch is blocked before spawn, while durable run evidence still remains reserved for real process starts
 - verification freshness Phase 1 is now implemented behind `src/lib/repository-snapshot.js`, and the design note still scopes the later proof-anchor phase
@@ -281,7 +283,7 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Tighten the published getting-started flow by verifying the real npm install surface (`npx` plus optionally global install) and making sure the README matches what a first-time user actually sees.
+1. Re-run the now-complete published-package path in a truly external clean directory and decide whether the getting-started docs should grow a short npm-first tutorial.
 2. Decide whether dirty-worktree advisories should stay generic or become task-aware enough to distinguish harmless local evidence files from riskier unreviewed code edits.
 3. Decide whether auth/provider prerequisites for real local CLIs should stay documented as operator setup or grow into richer additive adapter preflight hints without hard-coding vendor assumptions globally.
 4. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
@@ -298,7 +300,7 @@ Recommended next sequence:
 
 Suggested first task:
 
-Exercise the newly published package the way a first-time operator would. The highest-value follow-up is now to validate the install-and-first-task path (`npx`, `quick`, `memory:bootstrap`, dashboard launch) and trim any remaining repo-insider assumptions from the docs before broadening executor behavior further.
+Now that the published package can cover init, quick bootstrap, memory bootstrap, validation, and dashboard launch through one CLI surface, the next highest-value task is to run that flow from a truly external clean directory and turn the observed first-time-user steps into a short npm-first onboarding recipe.
 
 Expected shape:
 
