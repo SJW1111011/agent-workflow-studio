@@ -78,6 +78,7 @@ As of 2026-04-09, the project already has a working MVP foundation:
 - the Claude Code T-003 dogfooding pilot is now also proven end to end: the repo-local `claude-code.json` adapter uses `cmd.exe /d /s /c claude --model sonnet --bare --output-format json -p --permission-mode bypassPermissions` with `stdinMode: promptFile`; the first run failed with "Not logged in" confirming that `ANTHROPIC_AUTH_TOKEN` and `ANTHROPIC_BASE_URL` must be in the child `envAllowlist`; after that fix the launched Claude agent ran all automated checks (npm test 82 passed, smoke passed, validate errors=0) and left durable evidence; built-in generated scaffolds still default to `commandMode: manual`
 - package metadata is now exercised by a real npm release: `agent-workflow-studio@0.1.1` is published, the payload is primarily scoped through `package.json.files`, root `.npmignore` now mirrors the non-runtime repo directories as a release backstop, and the CLI is exposed through the `agent-workflow` bin without npm auto-cleanup warnings
 - the repo now also includes a first GitHub Actions matrix under `.github/workflows/ci.yml`, configured to run `npm test`, `npm run validate -- --root .`, and `npm run smoke` across `windows-latest`, `ubuntu-latest`, and `macos-latest`
+- the first three GitHub Actions CI runs have now completed successfully across all three matrix platforms (`windows-latest`, `ubuntu-latest`, `macos-latest`), so the initial cross-platform shell/path assumptions appear stable under hosted runners
 - the published install surface is now partially verified on this Windows machine: `npm install agent-workflow-studio` followed by `npx agent-workflow --help` works from a clean temp directory, while docs now avoid the misleading package-name-as-command shortcut
 - the published package now also exposes dashboard launch through the main CLI (`agent-workflow dashboard` / `npx agent-workflow dashboard`), so first-time users no longer need to know the internal `src/server.js` path just to open the local control plane
 - a clean temp install of `agent-workflow-studio@0.1.1` has now re-verified the npm-first bootstrap path end to end: `init`, `scan`, `memory:bootstrap`, `quick`, `validate`, and dashboard launch all work from the published package
@@ -294,11 +295,11 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Check the first GitHub Actions matrix runs for `.github/workflows/ci.yml` and fix any platform-specific issues that surface on macOS or Linux.
-2. Revisit adapter extensibility only after the executor/evidence model is proven stable in dogfooding; prefer a small `adapter:create` or dynamic-discovery path over hard-coded growth.
-3. Decide whether the dashboard should grow a thin `quick` entrypoint over the existing CLI contract without inventing a second task-creation path.
-4. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
-5. Preserve the current contract-first split between adapter config, prepared run artifacts, preflight, and durable evidence instead of introducing dashboard-only runtime state.
+1. Revisit adapter extensibility only after the executor/evidence model is proven stable in dogfooding; prefer a small `adapter:create` or dynamic-discovery path over hard-coded growth.
+2. Decide whether the dashboard should grow a thin `quick` entrypoint over the existing CLI contract without inventing a second task-creation path.
+3. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
+4. Preserve the current contract-first split between adapter config, prepared run artifacts, preflight, and durable evidence instead of introducing dashboard-only runtime state.
+5. Keep watching the GitHub Actions matrix after executor or packaging changes so hosted-runner portability does not silently regress.
 
 ## What not to do next
 
@@ -311,12 +312,12 @@ Recommended next sequence:
 
 Suggested first task:
 
-Now that npm publishing, external onboarding validation, cross-platform CI scaffolding, and the `memory:bootstrap` -> `memory:validate` loop are all in place, the next highest-value task is to inspect the first GitHub Actions matrix runs and fix any platform-specific issues that surface on macOS or Linux.
+Now that npm publishing, external onboarding validation, cross-platform CI verification, and the `memory:bootstrap` -> `memory:validate` loop are all in place, the next highest-value task is to improve adapter extensibility without breaking the current contract-first execution model.
 
 Expected shape:
 
 - preserve the current local-only API contract and existing smoke coverage
-- prefer small portability fixes over platform-specific branching unless a real shell/runtime difference forces it
+- prefer a small `adapter:create` or dynamic-discovery path over a plugin system or hard-coded adapter growth
 - keep the next executor slice focused on one real local CLI path before broadening defaults or adapter breadth
 - keep manual proof human-authored in `## Proof links`, with machine-owned anchor metadata isolated under the managed `## Evidence` block
 - keep using `src/lib/http-errors.js` for any new server-facing route or local API surface
