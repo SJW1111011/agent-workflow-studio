@@ -64,7 +64,7 @@ As of 2026-04-09, the project already has a working MVP foundation:
 - the repo now also has focused zero-dependency `run-executor` contract tests for execution-plan resolution plus passed / timed-out / interrupted local runs, so executor lifecycle behavior no longer depends on smoke alone
 - the repo now also has focused zero-dependency `overview` tests for uninitialized workspaces plus executor outcome / verification signal aggregation, so board-level summary logic is no longer smoke-only
 - the repo now also has focused zero-dependency `server-api` tests for health plus representative 400 / 404 / 409 local API contracts, so `src/server.js` behavior is less dependent on smoke
-- `run:execute` now also has a first shared preflight/readiness pass in `src/lib/run-executor.js`, so CLI and dashboard both validate adapter config, prepared artifacts, runtime plan safety, and caller-specific stdio compatibility through the same contract
+- `run:execute` now also has a first shared preflight/readiness pass split across `src/lib/run-preflight.js` and `src/lib/run-plan.js`, while `src/lib/run-executor.js` stays focused on spawn/evidence lifecycle; CLI and dashboard still validate adapter config, prepared artifacts, runtime plan safety, and caller-specific stdio compatibility through the same shared contract
 - dashboard/API execution launch failures can now return additive `code`, `failureCategory`, and `blockingIssues` fields instead of relying on free-form error text only
 - preflight/readiness now also returns additive `advisories`, including adapter notes plus first-pass local runner-availability guidance for real CLI pilot work
 - that same shared preflight can now also add non-blocking dirty-worktree advisories in Git mode plus missing adapter-owned `envAllowlist` hints before launch
@@ -116,6 +116,8 @@ Files:
 - `src/lib/repository-snapshot.js`
 - `src/lib/prompt-compiler.js`
 - `src/lib/run-preparer.js`
+- `src/lib/run-plan.js`
+- `src/lib/run-preflight.js`
 - `src/lib/checkpoint.js`
 - `src/lib/http-errors.js`
 - `src/lib/adapters.js`

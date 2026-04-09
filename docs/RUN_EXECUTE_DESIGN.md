@@ -488,6 +488,7 @@ This result can still wrap the existing resolved execution plan so the implement
 The current code now implements the first pass of this shape:
 
 - `src/lib/run-executor.js` exports shared `preflightRunExecution(...)`
+- the shared execution code is now split internally: `src/lib/run-preflight.js` owns readiness/advisories, `src/lib/run-plan.js` owns execution-plan normalization, and `src/lib/run-executor.js` stays focused on spawn plus evidence persistence
 - `planRunExecution(...)` now goes through that same readiness result instead of duplicating checks
 - the dashboard execution bridge uses the same preflight path with `caller: "dashboard"`
 - dashboard/API launch rejections can now expose:
@@ -564,7 +565,7 @@ It keeps a thin local bridge over the same executor path that the CLI already us
 
 That means:
 
-- `src/lib/run-executor.js` stays the single execution implementation
+- `src/lib/run-executor.js` stays the single spawn/evidence implementation, while `src/lib/run-preflight.js` and `src/lib/run-plan.js` keep readiness and plan-shaping logic modular
 - the dashboard only talks to a local server endpoint
 - `src/server.js` should stay a thin request/response wrapper, or delegate to a small execution-focused module if the flow grows
 - adapter argv resolution, process spawning, evidence writing, and checkpoint refresh must remain shared behavior
@@ -673,7 +674,7 @@ It should harden the current contract instead of adding a second execution produ
 
 - keep the existing pipeline: `task -> prompt/run-request -> execution plan -> local process -> run evidence -> verification/checkpoint refresh`
 - keep adapter config as the only vendor-specific launch contract
-- keep `src/lib/run-executor.js` as the shared execution implementation for both CLI and dashboard-triggered local runs
+- keep the shared execution stack (`src/lib/run-plan.js`, `src/lib/run-preflight.js`, `src/lib/run-executor.js`) as the common implementation for both CLI and dashboard-triggered local runs
 - add a shared preflight/readiness result that both CLI and dashboard can consume before launch
 - make lifecycle and failure categories explicit before broadening runtime support
 - make long-running jobs easier to inspect and hand off by improving durable evidence, not by introducing hidden runtime state
@@ -736,7 +737,7 @@ Before adding another execution capability, do this in order:
 
 1. document shared preflight/readiness, lifecycle, and failure semantics clearly
 2. lock them down with unit and smoke coverage
-3. implement the smallest shared preflight API on top of `src/lib/run-executor.js`
+3. implement the smallest shared preflight API on top of the shared execution stack
 4. only then add the next launch behavior that depends on that shared readiness result
 
 That sequence keeps automation aligned with the contract-first workflow model instead of letting orchestration details outrun the evidence model.
