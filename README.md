@@ -101,6 +101,28 @@ Agent Workflow Studio is designed to become that missing layer.
 - **Adapters:** `adapter:list`, `adapter:create`
 - **Execution:** `prompt:compile`, `run:prepare`, `run:execute`, `run:add`, `checkpoint`
 - **Inspection:** `dashboard`, `validate`
+- **Skills:** `skills:generate`
+
+## Agent skills
+
+Agent Workflow Studio ships with an [AGENT_GUIDE.md](AGENT_GUIDE.md) that teaches any coding agent the full workflow — from initialization to evidence recording.
+
+Generate agent-specific files in your repo:
+
+```bash
+npx agent-workflow skills:generate --root .
+```
+
+This creates:
+
+- `CLAUDE.md` — full workflow guide, auto-loaded by Claude Code
+- `AGENTS.md` — same guide, auto-loaded by Codex
+- `.claude/commands/workflow-init.md` — `/workflow-init`
+- `.claude/commands/workflow-task.md` — `/workflow-task <title>`
+- `.claude/commands/workflow-done.md` — `/workflow-done`
+- `.claude/commands/workflow-status.md` — `/workflow-status`
+
+After running `skills:generate`, both Claude Code and Codex automatically know how to use the workflow — no manual setup needed.
 
 ## Adapter layer
 

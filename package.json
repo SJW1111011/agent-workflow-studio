@@ -25,6 +25,7 @@
     "dashboard",
     "docs",
     "README.md",
+    "AGENT_GUIDE.md",
     "LICENSE",
     "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md"
@@ -51,6 +52,7 @@
     "checkpoint": "node src/cli.js checkpoint",
     "run:add": "node src/cli.js run:add",
     "validate": "node src/cli.js validate",
+    "skills:generate": "node src/cli.js skills:generate",
     "dashboard": "node src/server.js",
     "verify:onboarding": "node scripts/npm-onboarding-check.js",
     "smoke": "node scripts/smoke-test.js"

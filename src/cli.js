@@ -8,6 +8,7 @@ const { formatMemoryValidationSummary, validateMemoryDocs } = require("./lib/mem
 const { buildOverview } = require("./lib/overview");
 const { compilePrompt } = require("./lib/prompt-compiler");
 const { formatQuickTaskSummary, quickCreateTask } = require("./lib/quick-task");
+const { formatSkillsSummary, generateSkills } = require("./lib/skill-generator");
 const { listRecipes } = require("./lib/recipes");
 const { executeRun } = require("./lib/run-executor");
 const { prepareRun } = require("./lib/run-preparer");
@@ -57,6 +58,11 @@ function main(argv = process.argv.slice(2)) {
           port: options.port,
         });
         return;
+      }
+      case "skills:generate": {
+        const result = generateSkills(workspaceRoot);
+        print(formatSkillsSummary(result));
+        break;
       }
       case "adapter:list": {
         ensureWorkflowScaffold(workspaceRoot);
@@ -317,6 +323,7 @@ Commands:
   memory:bootstrap [--output .agent-workflow/handoffs/memory-bootstrap.md] [--root path]
   memory:validate [--root path]
   dashboard [--root path] [--port 4173]
+  skills:generate [--root path]
   adapter:list [--root path]
   adapter:create <adapterId> [--name "My Agent"] [--runner "npx my-agent-cli"] [--argv-template "exec -"] [--prompt-target codex|claude] [--root path]
   recipe:list [--root path]
