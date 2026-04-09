@@ -138,7 +138,7 @@ As of 2026-04-09, `agent-workflow-studio@0.1.1` is live on npm.
 
 - the package name is `agent-workflow-studio`
 - the installed CLI command is `agent-workflow`
-- the published payload stays scoped to runtime files (`src/`, `dashboard/`, docs, and top-level metadata) instead of shipping tests, tmp artifacts, or repo-local dogfooding state
+- the published payload stays scoped to runtime files (`src/`, `dashboard/`, docs, and top-level metadata) instead of shipping tests, tmp artifacts, or repo-local dogfooding state; `package.json.files` is the primary whitelist and root `.npmignore` now mirrors the non-runtime directories as an explicit release guardrail
 - local development from this repository root still works through the same `npm run ...` commands
 
 Install and verify it with:

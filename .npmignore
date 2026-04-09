@@ -1,0 +1,10 @@
+# Primary publish scoping still comes from package.json#files.
+# Keep this list as a secondary guardrail for non-runtime repo state.
+.agent-workflow/
+.github/
+.npm-cache-tmp/
+node_modules/
+scripts/
+test/
+tmp/
+*.tgz

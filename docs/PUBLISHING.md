@@ -14,19 +14,21 @@ Before publishing a new version:
    - `homepage`
    - `bugs`
    - `files`
-2. Run local verification
+2. Confirm publish guardrails
+   - root `.npmignore` still mirrors non-runtime repo directories such as `.agent-workflow/`, `test/`, `scripts/`, and `tmp/`
+3. Run local verification
    - `npm test`
    - `npm run smoke`
    - `npm run validate -- --root .`
-3. Inspect the publish payload
+4. Inspect the publish payload
    - `npm pack --dry-run --json --cache ./.npm-cache-tmp`
-4. Confirm npm registry readiness
+5. Confirm npm registry readiness
    - `npm view agent-workflow-studio version name --json --registry https://registry.npmjs.org/`
    - `npm whoami --registry https://registry.npmjs.org/`
-5. Publish
+6. Publish
    - `npm login`
    - `npm publish --access public --registry https://registry.npmjs.org/`
-6. Verify the published install surface
+7. Verify the published install surface
    - `npm view agent-workflow-studio version name --json --registry https://registry.npmjs.org/`
    - `npm install -g agent-workflow-studio`
    - `agent-workflow --help`
@@ -42,6 +44,7 @@ As of 2026-04-09:
 - `agent-workflow-studio@0.1.1` is live in the npm registry
 - `npm whoami --registry https://registry.npmjs.org/` returns `sjw1111011` on this machine
 - `npm view agent-workflow-studio version name --json --registry https://registry.npmjs.org/` confirms the published `0.1.1` package
+- the release surface is now guarded two ways: `package.json.files` remains the primary whitelist, and root `.npmignore` mirrors non-runtime repo state as an explicit packaging backstop
 - a clean temp install of `agent-workflow-studio@0.1.1` now verifies `npx agent-workflow --help`, `init`, `scan`, `memory:bootstrap`, `quick`, `validate`, and `npx agent-workflow dashboard --root ... --port 4175`
 - future publishes still require npm 2FA-compatible auth, such as an OTP or a granular access token with bypass 2FA enabled
 
@@ -68,5 +71,6 @@ npx agent-workflow dashboard --root ../some-repo --port 4173
 
 - The published CLI command remains `agent-workflow` because that is the `bin` entry.
 - `package.json.bin` now points at `src/cli.js` directly, which keeps `npm publish` from auto-cleaning that field during release.
+- `package.json.files` remains the primary publish whitelist; `.npmignore` is kept in sync as a repo-level guardrail for directories that should never ship.
 - because the package name and the executable name differ, the reliable `npx` form is `npx agent-workflow` after the package has been installed locally
 - Keep release steps local-first and avoid introducing publish-time absolute paths or generated machine-specific state.
