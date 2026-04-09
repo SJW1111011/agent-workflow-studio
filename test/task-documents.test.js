@@ -211,6 +211,36 @@ const tests = [
     },
   },
   {
+    name: "refreshManualProofAnchors keeps task.json updatedAt stable while only rewriting verification.md",
+    run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("task-doc-refresh-task-meta");
+
+      writeTextFile(`${workspaceRoot}/src/app.js`, "module.exports = 'stable-task-meta';\n");
+      writeTextFile(
+        files.verification,
+        [
+          "# T-001 Verification",
+          "",
+          "## Proof links",
+          "",
+          "### Proof 1",
+          "",
+          "- Files: src/app.js",
+          "- Check: npm test",
+          "- Artifact: logs/test.txt",
+          "",
+        ].join("\n")
+      );
+
+      const taskMetaBefore = readJsonFile(files.meta);
+      const refreshSummary = refreshManualProofAnchors(workspaceRoot, taskId);
+      const taskMetaAfter = readJsonFile(files.meta);
+
+      assert.equal(refreshSummary.changed, true);
+      assert.equal(taskMetaAfter.updatedAt, taskMetaBefore.updatedAt);
+    },
+  },
+  {
     name: "syncManagedTaskDocs refreshes task, context, and checkpoint metadata while keeping custom notes",
     run() {
       const { workspaceRoot, files } = createTaskWorkspace("task-doc-sync");

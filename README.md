@@ -13,6 +13,7 @@ Two verification ideas sit at the center of that thesis:
 
 - `verification gate`: compare repo-relative task scope against the current repository snapshot and explain which scoped files still need explicit proof
 - `proof anchor`: persist repo-relative content fingerprints with passed run evidence, and now also with explicitly refreshed manual proof, so freshness can survive misleading `mtime` churn, branch switches, and agent handoff noise
+- workflow-managed proof fingerprints now normalize away pure bookkeeping churn such as `task.json.updatedAt` and appended `verification.md` evidence blocks, so evidence refresh does not reopen proof by itself
 
 Git mode gives the strongest version of this model because it carries dirty-state metadata plus current fingerprints for changed files. Filesystem fallback stays local-only and portable, but only hashes targeted proof paths instead of the whole workspace.
 

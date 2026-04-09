@@ -1,13 +1,12 @@
 # T-003 Checkpoint
 
-Generated at: 2026-04-09T01:57:41.826Z
+Generated at: 2026-04-09T02:30:08.604Z
 
 ## Completed
 
 - Prompt compiled
 - 2 run(s) recorded
 - Task context captured
-- Some scoped files are already linked to explicit proof
 
 ## Confirmed facts
 
@@ -19,37 +18,20 @@ Generated at: 2026-04-09T01:57:41.826Z
 
 ## Verification gate
 
-- Status: partially-covered
-- Summary: Some scoped files are explicitly covered, but newer scoped changes still need proof.
+- Status: needs-proof
+- Summary: Scoped files are newer than the latest explicit proof linked in verification evidence.
 - Scope hints: 12
 - Ambiguous scope entries: 0
 - Scoped files awaiting proof: 2
 
 ### Scoped files awaiting proof
 
-- .agent-workflow/tasks/T-003/task.json
-- .agent-workflow/tasks/T-003/verification.md
+- README.md
+- docs/NEXT_AGENT_HANDOFF.md
 
 ### Scoped files already linked to proof
 
-- .agent-workflow/adapters/claude-code.json
-- README.md
-- docs/ADAPTERS.md
-- docs/NEXT_AGENT_HANDOFF.md
-- docs/RUN_EXECUTE_DESIGN.md
-- .agent-workflow/tasks/T-003/checkpoint.json
-- .agent-workflow/tasks/T-003/checkpoint.md
-- .agent-workflow/tasks/T-003/context.md
-- .agent-workflow/tasks/T-003/launch.claude-code.md
-- .agent-workflow/tasks/T-003/prompt.claude.md
-- .agent-workflow/tasks/T-003/run-request.claude-code.json
-- .agent-workflow/tasks/T-003/runs/run-1775698767859.json
-- .agent-workflow/tasks/T-003/runs/run-1775698767859.stderr.log
-- .agent-workflow/tasks/T-003/runs/run-1775698767859.stdout.log
-- .agent-workflow/tasks/T-003/runs/run-1775699218129.json
-- .agent-workflow/tasks/T-003/runs/run-1775699218129.stderr.log
-- .agent-workflow/tasks/T-003/runs/run-1775699218129.stdout.log
-- .agent-workflow/tasks/T-003/task.md
+- None
 
 ### Explicit proof items
 
@@ -63,7 +45,7 @@ Generated at: 2026-04-09T01:57:41.826Z
 
 ## Risks
 
-- Some scoped files still need proof: .agent-workflow/tasks/T-003/task.json, .agent-workflow/tasks/T-003/verification.md
+- Scoped files need explicit proof: README.md, docs/NEXT_AGENT_HANDOFF.md
 
 ## Latest evidence
 
@@ -74,5 +56,5 @@ Generated at: 2026-04-09T01:57:41.826Z
 
 1. Read task.md, context.md, and verification.md.
 2. Review the latest prompt and decide whether it still reflects scope.
-3. Keep the existing proof, then add explicit coverage for .agent-workflow/tasks/T-003/task.json before handoff.
+3. Refresh verification.md after checking README.md, then rebuild or confirm checkpoint.md.
 4. Continue only after acknowledging the risks above.

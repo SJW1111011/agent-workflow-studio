@@ -4,7 +4,7 @@ This note describes how `agent-workflow-studio` should evolve verification fresh
 
 ## Status
 
-As of 2026-04-08:
+As of 2026-04-09:
 
 - Phase 1 is implemented through `src/lib/repository-snapshot.js`
 - overview and task detail now reuse a normalized repository snapshot
@@ -15,6 +15,7 @@ As of 2026-04-08:
 - Phase 2b is now implemented: `POST /api/tasks/:taskId/verification/anchors/refresh` can persist managed manual proof anchors under `verification.md`
 - the dashboard verification editor now hides that managed anchor JSON from the primary editing surface and preserves it on save
 - direct proof fingerprint reads now use a small in-memory cache keyed by path plus `mtime`
+- workflow-managed proof fingerprints now normalize away pure bookkeeping churn for `.agent-workflow/tasks/*/task.json` (`updatedAt`) and `verification.md` evidence sections, so proof does not reopen just because anchors or run evidence were refreshed
 
 ## Why this exists
 

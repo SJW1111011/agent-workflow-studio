@@ -3,6 +3,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { execFileSync } = require("child_process");
+const { normalizeVerificationMarkdownForFingerprint } = require("./verification-proof");
 
 const FILE_FINGERPRINT_CACHE_LIMIT = 256;
 const fileFingerprintCache = new Map();
@@ -299,7 +300,7 @@ function buildSnapshotFile(workspaceRoot, relativePath, options = {}) {
     exists: Boolean(fileStats),
     modifiedAt: fileStats ? new Date(fileStats.mtimeMs).toISOString() : null,
     modifiedAtMs: fileStats ? fileStats.mtimeMs : null,
-    contentFingerprint: fileStats ? hashFileWithCache(absolutePath, fileStats) : null,
+    contentFingerprint: fileStats ? hashFileWithCache(absolutePath, fileStats, normalizedPath) : null,
   };
 }
 
@@ -312,7 +313,7 @@ function getSnapshotFileStats(absolutePath) {
   return stats.isFile() ? stats : null;
 }
 
-function hashFileWithCache(filePath, stats = null) {
+function hashFileWithCache(filePath, stats = null, relativePath = null) {
   const fileStats = stats || getSnapshotFileStats(filePath);
   if (!fileStats) {
     return null;
@@ -326,7 +327,8 @@ function hashFileWithCache(filePath, stats = null) {
     return cachedFingerprint;
   }
 
-  const fingerprint = `sha1:${crypto.createHash("sha1").update(fs.readFileSync(filePath)).digest("hex")}`;
+  const fingerprintSource = readFingerprintSource(filePath, relativePath);
+  const fingerprint = `sha1:${crypto.createHash("sha1").update(fingerprintSource).digest("hex")}`;
   fileFingerprintCache.set(cacheKey, fingerprint);
   trimFingerprintCache();
   return fingerprint;
@@ -345,8 +347,56 @@ function buildDirectProofAnchor(workspaceRoot, relativePath) {
   return {
     path: normalizedPath,
     exists: true,
-    contentFingerprint: hashFileWithCache(absolutePath, stats),
+    contentFingerprint: hashFileWithCache(absolutePath, stats, normalizedPath),
   };
+}
+
+function readFingerprintSource(filePath, relativePath) {
+  const content = fs.readFileSync(filePath, "utf8");
+  const normalized = normalizeFingerprintContent(relativePath, content);
+  return normalized === null || normalized === undefined ? content : normalized;
+}
+
+function normalizeFingerprintContent(relativePath, content) {
+  const normalizedPath = normalizeSnapshotPath(relativePath);
+  if (!normalizedPath) {
+    return content;
+  }
+
+  if (isTaskMetaPath(normalizedPath)) {
+    return normalizeJsonFingerprintContent(content, ["updatedAt"]);
+  }
+
+  if (isTaskVerificationPath(normalizedPath)) {
+    return normalizeVerificationMarkdownForFingerprint(content);
+  }
+
+  return content;
+}
+
+function normalizeJsonFingerprintContent(content, volatileKeys) {
+  try {
+    const parsed = JSON.parse(String(content || ""));
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return content;
+    }
+
+    (Array.isArray(volatileKeys) ? volatileKeys : []).forEach((key) => {
+      delete parsed[key];
+    });
+
+    return JSON.stringify(parsed);
+  } catch (error) {
+    return content;
+  }
+}
+
+function isTaskMetaPath(relativePath) {
+  return /^\.agent-workflow\/tasks\/[^/]+\/task\.json$/i.test(String(relativePath || ""));
+}
+
+function isTaskVerificationPath(relativePath) {
+  return /^\.agent-workflow\/tasks\/[^/]+\/verification\.md$/i.test(String(relativePath || ""));
 }
 
 function buildFingerprintCacheKey(filePath, stats) {

@@ -86,6 +86,7 @@ As of 2026-04-09, the project already has a working MVP foundation:
 - direct proof fingerprint reads now use a small in-memory cache keyed by file path plus `mtime`, so repeated proof-anchor comparisons avoid re-hashing unchanged files
 - filesystem fallback is now documented more explicitly as the compatibility path: it fingerprints targeted proof paths on demand instead of trying to hash the whole workspace
 - manual `verification.md` proof can now also opt into anchor-backed freshness through `POST /api/tasks/:taskId/verification/anchors/refresh`, which writes a managed anchor block under `## Evidence`
+- workflow-managed proof fingerprints now normalize away pure bookkeeping churn in task-local `task.json.updatedAt` and appended `verification.md` evidence sections, so anchor refresh/evidence refresh does not reopen proof by itself
 - the dashboard verification editor now hides that managed anchor JSON from the primary editing surface, preserves it on save, and exposes an explicit local `Refresh Proof Anchors` action
 - task detail and task cards now also call out whether strong proof is anchor-backed or compatibility-only, so the current freshness path is visible without reading raw proof JSON
 - `src/server.js` no longer infers HTTP status codes from `error.message.includes(...)`; server-facing libs now throw explicit HTTP-aware errors through `src/lib/http-errors.js`, while the JSON error payload contract stays unchanged

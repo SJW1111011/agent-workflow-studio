@@ -6,7 +6,9 @@ const { buildScopeProofAnchors, loadRepositorySnapshot } = require("../src/lib/r
 const {
   createTaskWorkspace,
   initializeGitRepository,
+  readJsonFile,
   runCommand,
+  writeJsonFile,
   writeTextFile,
 } = require("./test-helpers");
 
@@ -128,6 +130,102 @@ const tests = [
       writeTextFile(proofPath, "updated\n");
       const refreshedAnchors = buildScopeProofAnchors(workspaceRoot, ["plain.txt"], snapshot);
       assert.notEqual(refreshedAnchors[0].contentFingerprint, firstAnchors[0].contentFingerprint);
+    },
+  },
+  {
+    name: "task.json proof fingerprints ignore updatedAt churn but still detect semantic task changes",
+    run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("repository-snapshot-task-meta");
+      const relativeTaskMetaPath = `.agent-workflow/tasks/${taskId}/task.json`;
+      const firstFingerprint = buildScopeProofAnchors(workspaceRoot, [relativeTaskMetaPath])[0].contentFingerprint;
+
+      const taskMeta = readJsonFile(files.meta);
+      taskMeta.updatedAt = "2026-04-09T02:10:00.000Z";
+      writeJsonFile(files.meta, taskMeta);
+
+      const updatedAtOnlyFingerprint = buildScopeProofAnchors(workspaceRoot, [relativeTaskMetaPath])[0].contentFingerprint;
+      assert.equal(updatedAtOnlyFingerprint, firstFingerprint);
+
+      taskMeta.goal = "A materially different task goal.";
+      writeJsonFile(files.meta, taskMeta);
+
+      const semanticChangeFingerprint = buildScopeProofAnchors(workspaceRoot, [relativeTaskMetaPath])[0].contentFingerprint;
+      assert.notEqual(semanticChangeFingerprint, firstFingerprint);
+    },
+  },
+  {
+    name: "verification proof fingerprints ignore evidence churn but still detect proof-link edits",
+    run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("repository-snapshot-verification");
+      const relativeVerificationPath = `.agent-workflow/tasks/${taskId}/verification.md`;
+
+      writeTextFile(
+        files.verification,
+        [
+          "# T-001 Verification",
+          "",
+          "## Proof links",
+          "",
+          "### Proof 1",
+          "",
+          "- Files: src/app.js",
+          "- Check: npm test",
+          "",
+        ].join("\n")
+      );
+
+      const baseFingerprint = buildScopeProofAnchors(workspaceRoot, [relativeVerificationPath])[0].contentFingerprint;
+
+      writeTextFile(
+        files.verification,
+        [
+          "# T-001 Verification",
+          "",
+          "## Proof links",
+          "",
+          "### Proof 1",
+          "",
+          "- Files: src/app.js",
+          "- Check: npm test",
+          "",
+          "## Evidence",
+          "",
+          "<!-- agent-workflow:managed:verification-manual-proof-anchors:start -->",
+          "### Manual proof anchors",
+          "",
+          "```json",
+          JSON.stringify({ version: 1, manualProofAnchors: [] }, null, 2),
+          "```",
+          "<!-- agent-workflow:managed:verification-manual-proof-anchors:end -->",
+          "",
+          "## Evidence 2026-04-09T02:00:00.000Z",
+          "",
+          "- Source: executor",
+          "- Summary: Completed",
+          "",
+        ].join("\n")
+      );
+
+      const evidenceOnlyFingerprint = buildScopeProofAnchors(workspaceRoot, [relativeVerificationPath])[0].contentFingerprint;
+      assert.equal(evidenceOnlyFingerprint, baseFingerprint);
+
+      writeTextFile(
+        files.verification,
+        [
+          "# T-001 Verification",
+          "",
+          "## Proof links",
+          "",
+          "### Proof 1",
+          "",
+          "- Files: src/app.js",
+          "- Check: npm test --changed",
+          "",
+        ].join("\n")
+      );
+
+      const proofEditFingerprint = buildScopeProofAnchors(workspaceRoot, [relativeVerificationPath])[0].contentFingerprint;
+      assert.notEqual(proofEditFingerprint, baseFingerprint);
     },
   },
 ];

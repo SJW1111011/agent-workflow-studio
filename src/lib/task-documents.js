@@ -243,8 +243,6 @@ function refreshManualProofAnchors(workspaceRoot, taskId) {
 
   if (changed) {
     writeFile(files.verification, nextVerificationText);
-    taskMeta.updatedAt = new Date().toISOString();
-    writeJson(files.meta, taskMeta);
   }
 
   return {
@@ -254,7 +252,7 @@ function refreshManualProofAnchors(workspaceRoot, taskId) {
     skippedCount,
     clearedCount,
     content: changed ? nextVerificationText : normalizedCurrentText,
-    updatedAt: changed ? taskMeta.updatedAt : taskMeta.updatedAt || null,
+    updatedAt: taskMeta.updatedAt || null,
   };
 }
 

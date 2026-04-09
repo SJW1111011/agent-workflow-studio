@@ -224,6 +224,10 @@ function stripEvidenceBlocks(verificationText) {
   return markerIndex >= 0 ? normalized.slice(0, markerIndex).trim() : normalized.trim();
 }
 
+function normalizeVerificationMarkdownForFingerprint(verificationText) {
+  return normalizeText(stripEvidenceBlocks(verificationText));
+}
+
 function extractManagedBlockBody(content, blockId) {
   const normalized = String(content || "").replace(/\r\n/g, "\n");
   const matched = normalized.match(
@@ -426,6 +430,7 @@ module.exports = {
   buildManualProofSignature,
   findMarkdownSectionRange,
   getMarkdownSection,
+  normalizeVerificationMarkdownForFingerprint,
   parseManagedManualProofAnchors,
   parseManualProofItems,
   renderManagedManualProofAnchorLines,
