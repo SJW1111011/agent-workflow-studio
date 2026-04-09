@@ -320,6 +320,18 @@ Diff-aware verification stays intentionally lightweight in this pass:
 
 See `docs/RECIPES_AND_SCHEMA.md`.
 
+## Learn more
+
+This README is the short visitor-facing entrypoint. For deeper reading:
+
+- [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md) - the full npm-first onboarding flow
+- [`docs/README.md`](docs/README.md) - the documentation map for architecture, execution, verification, publishing, and roadmap docs
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - how the workflow scaffold, dashboard, adapters, and evidence model fit together
+- [`docs/VERIFICATION_FRESHNESS_DESIGN.md`](docs/VERIFICATION_FRESHNESS_DESIGN.md) - verification gates, proof anchors, and freshness rules
+- [`docs/RUN_EXECUTE_DESIGN.md`](docs/RUN_EXECUTE_DESIGN.md) - local executor planning, preflight, and evidence capture
+- [`docs/ADAPTERS.md`](docs/ADAPTERS.md) - built-in adapters and custom adapter scaffolding
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) - the likely next build steps
+
 ## Suggested next build steps
 
 1. Build any additional executor capability on top of the new shared preflight/readiness contract instead of adding caller-specific launch rules.
