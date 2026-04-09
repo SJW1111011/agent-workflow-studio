@@ -1,32 +1,87 @@
 # Agent Workflow Studio
 
-Agent Workflow Studio is a local-first workflow OS and project control plane for Codex and Claude Code.
+<p align="center">
+  <a href="https://www.npmjs.com/package/agent-workflow-studio"><img src="https://img.shields.io/npm/v/agent-workflow-studio?style=for-the-badge" alt="npm version"></a>
+  <a href="https://github.com/SJW1111011/agent-workflow-studio/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/SJW1111011/agent-workflow-studio/ci.yml?branch=main&style=for-the-badge&label=CI" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="MIT license"></a>
+  <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=for-the-badge" alt="Node 18+"></a>
+  <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=for-the-badge" alt="Zero dependencies">
+</p>
 
-The product thesis is simple:
+Make every Codex and Claude Code run leave an auditable evidence trail.
 
-- tasks should compile into strong prompts
-- runs should leave evidence
-- evidence should refresh docs and checkpoints
-- long jobs should survive context compaction and agent handoff
+Zero dependencies - local-first - Git-native - npm-installable
 
-Two verification ideas sit at the center of that thesis:
+Agent Workflow Studio turns:
+
+- tasks into strong prompts
+- runs into evidence
+- evidence into refreshed docs and checkpoints
+- long jobs into resumable handoffs instead of lost context
+
+## Try it in 1 minute
+
+Fastest scratch-repo path:
+
+```bash
+npm install agent-workflow-studio
+npx agent-workflow init --root .
+npx agent-workflow quick "My first task" --task-id T-001 --agent codex --root .
+npx agent-workflow dashboard --root . --port 4173
+```
+
+Then open `http://localhost:4173`.
+
+If you want the cleaner helper-directory install flow instead of adding `node_modules/` to the target repo, see `docs/GETTING_STARTED.md`. If you are contributing from this repository checkout, jump to `Contributor workflow` below.
+
+## Core capabilities
+
+- **`quick`** - create a durable task bundle in one step: profile refresh, task docs, prompt, run request, launch pack, and checkpoint
+- **`memory:bootstrap`** - generate a local-only handoff prompt that helps Codex or Claude Code fill grounded project memory
+- **`run:execute`** - launch a local adapter when you explicitly opt into `commandMode: exec`, with shared preflight, logs, and evidence capture
+- **`verification gate`** - compare repo-relative task scope against the current repository snapshot and show which scoped files still need explicit proof
+- **`proof anchors`** - keep passed evidence and refreshed manual proof tied to content fingerprints, not fragile `mtime` alone
+- **`dashboard`** - inspect tasks, evidence, freshness, risks, execution state, and quick-create flows from a local control plane at `localhost:4173`
+
+## Architecture at a glance
+
+```text
+Task creation          Agent execution           Evidence + resume
+     |                       |                         |
+     v                       v                         v
++-------------------------------------------------------------------+
+|                        .agent-workflow/                           |
+|                                                                   |
+|  memory/            tasks/T-001/                 adapters/         |
+|  - product.md       - task.md                    - codex.json      |
+|  - architecture.md  - context.md                 - claude-code.json|
+|  - rules.md         - verification.md            - custom *.json   |
+|                      - prompt.codex.md                              |
+|                      - run-request.codex.json                       |
+|                      - launch.codex.md                              |
+|                      - checkpoint.md                                |
+|                      - runs/ evidence + proof anchors               |
++-------------------------------------------------------------------+
+         |                                         |
+         v                                         v
+   Git-trackable repo                        Dashboard / CLI
+```
+
+## Daily workflow
+
+1. Create a task with `quick` or `task:new`.
+2. Hand the compiled prompt to Codex or Claude Code, or use `run:execute` when a local adapter is ready.
+3. Review proof in `verification.md` and recorded runs under `.agent-workflow/tasks/<taskId>/runs/`.
+4. Refresh `checkpoint.md`, keep moving, and resume later without losing context.
+
+## Verification model
+
+Two verification ideas sit at the center of the project:
 
 - `verification gate`: compare repo-relative task scope against the current repository snapshot and explain which scoped files still need explicit proof
 - `proof anchor`: persist repo-relative content fingerprints with passed run evidence, and now also with explicitly refreshed manual proof, so freshness can survive misleading `mtime` churn, branch switches, and agent handoff noise
 - workflow-managed proof fingerprints now normalize away pure bookkeeping churn such as `task.json.updatedAt` and appended `verification.md` evidence blocks, so evidence refresh does not reopen proof by itself
-
-Git mode gives the strongest version of this model because it carries dirty-state metadata plus current fingerprints for changed files. Filesystem fallback stays local-only and portable, but only hashes targeted proof paths instead of the whole workspace.
-
-This repository starts with a relocatable foundation:
-
-- a headless workflow scaffold in `.agent-workflow/`
-- a zero-dependency CLI to initialize, scan, create tasks, compile prompts, and record runs
-- a lightweight dashboard that reads the workflow state from any repository root
-- a zero-dependency test layer with focused unit coverage plus a smoke test that proves the project still works when nested under a non-English path
-- a GitHub Actions matrix is now configured and externally verified to run `npm test`, `npm run validate -- --root .`, and `npm run smoke` on Windows, macOS, and Linux
-- executor contract coverage now includes focused unit tests for plan resolution plus passed / timed-out / interrupted local runs, so `run:execute` lifecycle rules do not live in smoke alone
-- overview aggregation now also has focused unit coverage for uninitialized workspaces plus task-level executor outcome / verification signal summaries
-- local server/API coverage now also has focused tests for health, 400 validation paths, 404 missing-resource paths, and 409 inactive-execution conflicts
+- Git mode gives the strongest version of this model because it carries dirty-state metadata plus current fingerprints for changed files; filesystem fallback stays local-only and portable, but only hashes targeted proof paths instead of the whole workspace
 
 ## Why this exists
 
@@ -40,28 +95,17 @@ Most teams using coding agents still lack:
 
 Agent Workflow Studio is designed to become that missing layer.
 
-## Current MVP
+## Command surface
 
 The current foundation includes:
 
-- `init`: create `.agent-workflow/` with memory docs, recipes, decisions, handoffs, and task folders
-- `scan`: generate a project profile from the target repository
-- `adapter:list`: inspect the built-in Codex and Claude Code adapter contracts
-- `adapter:create`: generate a portable custom adapter config under `.agent-workflow/adapters/` and add it to `project.json`
-- `recipe:list`: inspect the built-in workflow recipes
-- `quick`: create a task bundle fast by refreshing the project profile, creating the task, compiling the prompt, preparing the run-request/launch pack, and refreshing the checkpoint
-- `memory:bootstrap`: generate a local-only bootstrap prompt for filling the scaffold memory docs through Codex or Claude Code without embedding cloud API calls
-- `memory:validate`: verify that saved memory docs no longer look scaffold-like and warn on obviously empty sections or machine-specific absolute paths
-- `dashboard`: launch the local control plane directly from the CLI or published package
-- `task:new`: create a structured task package with both machine-readable and human-readable context
-- `prompt:compile`: generate Codex or Claude Code prompts from workflow state
-- `run:prepare`: generate an execution handoff pack for a specific adapter
-- `run:execute`: launch a local adapter when its config explicitly opts into `commandMode: exec`
-- `run:add`: append execution evidence to a task, including optional proof paths, checks, and artifact refs
-- `checkpoint`: build a resumable checkpoint for the current task
-- `validate`: run schema checks on project, adapters, tasks, and recorded runs
-- `dashboard`: open a local control plane for quick task bootstrapping, tasks, memory freshness, task doc freshness, Git-aware diff-aware verification gates, checkpoint detail, metadata edits, structured run evidence capture, manual proof-anchor refresh, a local execution bridge for `stdioMode: pipe` adapters, shared execution preflight/readiness, executor state/cancel flow, and markdown task doc edits
-- the dashboard frontend is now split across static helper modules for document editing/proof drafting, API client helpers, form/editor state derivation, form event flows, orchestration state derivation, task-board summaries, task-list rendering, execution/run detail presentation, task-detail/verification rendering, log-panel state/render helpers, and overview/list section rendering without introducing a bundler
+- onboarding: `init`, `scan`, `memory:bootstrap`, `memory:validate`
+- tasking: `recipe:list`, `quick`, `task:new`, `task:list`
+- adapters: `adapter:list`, `adapter:create`
+- execution prep: `prompt:compile`, `run:prepare`
+- execution + evidence: `run:execute`, `run:add`, `checkpoint`
+- inspection: `dashboard`, `validate`
+- the dashboard frontend is split across static helper modules for document editing/proof drafting, API client helpers, form/editor state derivation, form event flows, orchestration state derivation, task-board summaries, task-list rendering, execution/run detail presentation, task-detail/verification rendering, log-panel state/render helpers, and overview/list section rendering without introducing a bundler
 - server-facing mutations and log APIs now use explicit HTTP-aware errors, so the local control plane no longer guesses status codes from message text
 
 ## Layout
@@ -88,7 +132,7 @@ Once initialized against a target repository, that repository receives:
   tasks/
 ```
 
-## Quick start
+## Contributor workflow
 
 Run everything from this project root:
 
