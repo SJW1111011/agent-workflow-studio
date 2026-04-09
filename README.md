@@ -23,6 +23,7 @@ This repository starts with a relocatable foundation:
 - a zero-dependency CLI to initialize, scan, create tasks, compile prompts, and record runs
 - a lightweight dashboard that reads the workflow state from any repository root
 - a zero-dependency test layer with focused unit coverage plus a smoke test that proves the project still works when nested under a non-English path
+- a GitHub Actions matrix is now configured to run `npm test`, `npm run validate -- --root .`, and `npm run smoke` on Windows, macOS, and Linux
 - executor contract coverage now includes focused unit tests for plan resolution plus passed / timed-out / interrupted local runs, so `run:execute` lifecycle rules do not live in smoke alone
 - overview aggregation now also has focused unit coverage for uninitialized workspaces plus task-level executor outcome / verification signal summaries
 - local server/API coverage now also has focused tests for health, 400 validation paths, 404 missing-resource paths, and 409 inactive-execution conflicts
