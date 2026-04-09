@@ -131,6 +131,7 @@ const tests = [
       }
 
       assert.match(output, /memory:validate \[--root path\]/);
+      assert.match(output, /adapter:create <adapterId>/);
       assert.match(output, /dashboard \[--root path\] \[--port 4173\]/);
     },
   },

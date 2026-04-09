@@ -2,6 +2,8 @@
 
 The adapter layer is the bridge between workflow state and a concrete agent runtime such as Codex or Claude Code.
 
+Built-in scaffolds still ship for Codex and Claude Code, but the adapters directory is no longer effectively hard-coded: any additional repo-local `*.json` config under `.agent-workflow/adapters/` is now discovered automatically.
+
 ## Current goal
 
 The current version still focuses on a safe contract first:
@@ -23,6 +25,7 @@ Inside the target repository:
     README.md
     codex.json
     claude-code.json
+    demo-agent.json
 ```
 
 Inside each task folder after `run:prepare`:
@@ -35,6 +38,15 @@ Inside each task folder after `run:prepare`:
 ```
 
 The same pattern exists for Claude Code.
+
+Custom adapters follow the same pattern:
+
+```text
+.agent-workflow/tasks/T-001/
+  prompt.demo-agent.md
+  launch.demo-agent.md
+  run-request.demo-agent.json
+```
 
 ## Why a contract-first adapter layer
 
@@ -59,6 +71,7 @@ That remains true even after adding `run:execute`:
 
 - `adapterId`: stable identifier
 - `name`: human-readable name
+- `promptTarget`: prompt flavor to compile (`codex` or `claude`) when the adapter uses a custom prompt file name
 - `promptFile`: task-local prompt file name
 - `runRequestFile`: machine-readable execution handoff
 - `launchPackFile`: human-readable execution handoff
@@ -72,6 +85,51 @@ That remains true even after adding `run:execute`:
 - `timeoutMs`: optional adapter-level timeout
 - `envAllowlist`: optional environment keys to forward
 - `capabilities`: lightweight feature flags for the adapter
+
+## Creating a custom adapter
+
+The new `adapter:create` command generates a portable starter config and records the adapter in `.agent-workflow/project.json`.
+
+Example:
+
+```bash
+agent-workflow adapter:create demo-agent \
+  --name "Demo Agent" \
+  --runner "npx demo-agent-cli" \
+  --argv-template "exec --json" \
+  --prompt-target claude \
+  --stdin-mode promptFile \
+  --env DEMO_AGENT_TOKEN \
+  --root ../some-repo
+```
+
+That immediately writes:
+
+- `.agent-workflow/adapters/demo-agent.json`
+
+Then `run:prepare --adapter demo-agent` materializes:
+
+- `prompt.demo-agent.md`
+- `run-request.demo-agent.json`
+- `launch.demo-agent.md`
+
+Current defaults for generated custom adapters:
+
+- `commandMode: "manual"`
+- `cwdMode: "workspaceRoot"`
+- `stdioMode: "pipe"`
+- `stdinMode: "none"`
+- `successExitCodes: [0]`
+
+You are expected to review and edit the generated config before enabling `exec`.
+
+## Discovery rules
+
+- built-in `codex.json` and `claude-code.json` remain scaffolded by `init`
+- additional `*.json` files under `.agent-workflow/adapters/` are discovered automatically
+- `adapter:list` now reports `ready`, `missing`, or `invalid`
+- `run:prepare` and `run:execute` now accept any discovered adapter id through `--adapter` or `--agent`
+- task detail generated-file summaries are built from the discovered adapter configs instead of a built-in two-adapter list
 
 ## Current real-CLI pilots
 

@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { appendText, fileExists, readJson, writeFile, writeJson } = require("./fs-utils");
+const { listAdapters } = require("./adapters");
 const { buildTaskFreshness } = require("./freshness");
 const { badRequest, notFound } = require("./http-errors");
 const { getRecipe, normalizeRecipeId } = require("./recipes");
@@ -132,18 +133,7 @@ function getTaskDetail(workspaceRoot, taskId) {
     runs,
     freshness: buildTaskFreshness(workspaceRoot, meta, runs),
     verificationGate: buildTaskVerificationGate(workspaceRoot, meta, runs, repositorySnapshot, taskText),
-    generatedFiles: [
-      describeFile("prompt.codex.md", files.promptCodex),
-      describeFile("prompt.claude.md", files.promptClaude),
-      describeFile("run-request.codex.json", path.join(files.root, "run-request.codex.json")),
-      describeFile("run-request.claude-code.json", path.join(files.root, "run-request.claude-code.json")),
-      describeFile("launch.codex.md", path.join(files.root, "launch.codex.md")),
-      describeFile("launch.claude-code.md", path.join(files.root, "launch.claude-code.md")),
-      describeFile("checkpoint.md", files.checkpoint),
-      describeFile("task.md", files.task),
-      describeFile("context.md", files.context),
-      describeFile("verification.md", files.verification),
-    ],
+    generatedFiles: buildGeneratedFiles(workspaceRoot, files),
   };
 }
 
@@ -227,6 +217,30 @@ function describeFile(name, absolutePath) {
     name,
     exists: fileExists(absolutePath),
   };
+}
+
+function buildGeneratedFiles(workspaceRoot, files) {
+  const adapterFiles = listAdapters(workspaceRoot)
+    .filter((adapter) => adapter && adapter.exists && adapter.config)
+    .flatMap((adapter) => {
+      const config = adapter.config;
+      return [
+        describeFile(config.promptFile, path.join(files.root, config.promptFile)),
+        describeFile(config.runRequestFile, path.join(files.root, config.runRequestFile)),
+        describeFile(config.launchPackFile, path.join(files.root, config.launchPackFile)),
+      ];
+    });
+
+  const staticFiles = [
+    describeFile("checkpoint.md", files.checkpoint),
+    describeFile("task.md", files.task),
+    describeFile("context.md", files.context),
+    describeFile("verification.md", files.verification),
+  ];
+
+  return Array.from(
+    new Map(adapterFiles.concat(staticFiles).map((file) => [file.name, file])).values()
+  );
 }
 
 function createRunRecord(taskId, fields = {}) {

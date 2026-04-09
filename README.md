@@ -47,6 +47,7 @@ The current foundation includes:
 - `init`: create `.agent-workflow/` with memory docs, recipes, decisions, handoffs, and task folders
 - `scan`: generate a project profile from the target repository
 - `adapter:list`: inspect the built-in Codex and Claude Code adapter contracts
+- `adapter:create`: generate a portable custom adapter config under `.agent-workflow/adapters/` and add it to `project.json`
 - `recipe:list`: inspect the built-in workflow recipes
 - `quick`: create a task bundle fast by refreshing the project profile, creating the task, compiling the prompt, preparing the run-request/launch pack, and refreshing the checkpoint
 - `memory:bootstrap`: generate a local-only bootstrap prompt for filling the scaffold memory docs through Codex or Claude Code without embedding cloud API calls
@@ -95,6 +96,7 @@ Run everything from this project root:
 npm run init -- --root ../some-repo
 npm run scan -- --root ../some-repo
 npm run adapter:list
+npm run adapter:create -- demo-agent --runner "npx demo-agent-cli" --prompt-target claude --root ../some-repo
 npm run recipe:list -- --root ../some-repo
 npm run memory:bootstrap -- --root ../some-repo
 # after saving grounded notes under .agent-workflow/memory/*.md
@@ -182,9 +184,18 @@ The first adapter pass does not hard-wire a specific vendor launch flow into the
 Instead it provides:
 
 - stable adapter contracts under `.agent-workflow/adapters/`
+- dynamic discovery of additional repo-local `*.json` adapter configs beyond the built-in Codex and Claude Code scaffolds
 - agent-specific prompt targets
 - execution handoff packs such as `run-request.codex.json` and `launch.codex.md`
 - a place to customize local runner commands after you confirm your environment
+
+You can now scaffold a custom adapter locally with:
+
+```bash
+npm run adapter:create -- demo-agent --runner "npx demo-agent-cli" --prompt-target claude --stdin-mode promptFile --env DEMO_AGENT_TOKEN --root ../some-repo
+```
+
+That writes `.agent-workflow/adapters/demo-agent.json`, updates `.agent-workflow/project.json`, and makes the new adapter visible to `adapter:list`, `run:prepare`, `run:execute`, overview metadata, and task-detail generated files.
 
 There is now a first local `run:execute` bridge for adapters that explicitly switch to `commandMode: exec`.
 

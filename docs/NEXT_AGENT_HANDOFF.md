@@ -21,6 +21,7 @@ As of 2026-04-09, the project already has a working MVP foundation:
 - repository scanning and project profile generation
 - task creation with recipe support
 - Codex / Claude Code adapter contracts
+- dynamic adapter discovery plus `adapter:create` for portable repo-local custom adapter scaffolds
 - prompt compilation
 - `quick` task bootstrap for the common local flow: scan -> task bundle -> prompt -> run-request/launch pack -> checkpoint
 - `memory:bootstrap` for the common onboarding flow: scan -> refresh project profile -> write a reusable memory bootstrap prompt under `.agent-workflow/handoffs/`
@@ -137,6 +138,7 @@ Supported commands:
 - `memory:bootstrap`
 - `memory:validate`
 - `adapter:list`
+- `adapter:create`
 - `recipe:list`
 - `task:new`
 - `quick`
@@ -216,9 +218,11 @@ The smoke test currently covers:
 - CLI initialization
 - repository scan
 - adapter listing
+- custom adapter creation plus dynamic adapter discovery
 - recipe listing
 - task creation with recipe
 - quick task bootstrap from the CLI, including project-profile refresh plus prompt/run-request/launch-pack/checkpoint generation
+- custom-adapter `run:prepare`, including prompt materialization into adapter-owned prompt file names
 - memory bootstrap prompt generation from the CLI, including project-profile refresh plus a durable handoff prompt under `.agent-workflow/handoffs/memory-bootstrap.md`
 - prompt compilation
 - run preparation
@@ -295,11 +299,11 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Revisit adapter extensibility only after the executor/evidence model is proven stable in dogfooding; prefer a small `adapter:create` or dynamic-discovery path over hard-coded growth.
-2. Decide whether the dashboard should grow a thin `quick` entrypoint over the existing CLI contract without inventing a second task-creation path.
-3. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
-4. Preserve the current contract-first split between adapter config, prepared run artifacts, preflight, and durable evidence instead of introducing dashboard-only runtime state.
-5. Keep watching the GitHub Actions matrix after executor or packaging changes so hosted-runner portability does not silently regress.
+1. Decide whether the dashboard should grow a thin `quick` entrypoint over the existing CLI contract without inventing a second task-creation path.
+2. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
+3. Preserve the current contract-first split between adapter config, prepared run artifacts, preflight, and durable evidence instead of introducing dashboard-only runtime state.
+4. Keep watching the GitHub Actions matrix after executor or packaging changes so hosted-runner portability does not silently regress.
+5. Revisit adapter polish only if dogfooding reveals missing defaults or validation gaps in `adapter:create`; avoid jumping to a plugin system.
 
 ## What not to do next
 
@@ -312,12 +316,12 @@ Recommended next sequence:
 
 Suggested first task:
 
-Now that npm publishing, external onboarding validation, cross-platform CI verification, and the `memory:bootstrap` -> `memory:validate` loop are all in place, the next highest-value task is to improve adapter extensibility without breaking the current contract-first execution model.
+Now that dynamic adapter discovery and `adapter:create` are in place, the next highest-value task is to decide whether the dashboard should expose a thin `quick` entrypoint over the existing CLI contract without inventing a second task-creation path.
 
 Expected shape:
 
 - preserve the current local-only API contract and existing smoke coverage
-- prefer a small `adapter:create` or dynamic-discovery path over a plugin system or hard-coded adapter growth
+- keep dashboard writes thin and route them through the existing task/bootstrap services instead of introducing a dashboard-only task model
 - keep the next executor slice focused on one real local CLI path before broadening defaults or adapter breadth
 - keep manual proof human-authored in `## Proof links`, with machine-owned anchor metadata isolated under the managed `## Evidence` block
 - keep using `src/lib/http-errors.js` for any new server-facing route or local API surface
@@ -336,6 +340,7 @@ npm run smoke
 npm run dashboard -- --root ../some-target-repo --port 4173
 npm run init -- --root ../some-target-repo
 npm run scan -- --root ../some-target-repo
+npm run adapter:create -- demo-agent --runner "npx demo-agent-cli" --prompt-target claude --root ../some-target-repo
 npm run task:new -- T-001 "Example task" --priority P1 --recipe feature --root ../some-target-repo
 npm run validate -- --root ../some-target-repo
 ```

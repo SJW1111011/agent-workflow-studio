@@ -1,4 +1,5 @@
 const suites = [
+  require("../test/adapters.test.js"),
   require("../test/cli.test.js"),
   require("../test/http-errors.test.js"),
   require("../test/memory-bootstrap.test.js"),

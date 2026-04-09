@@ -1,6 +1,6 @@
 const path = require("path");
 const { fileExists, readJson, writeFile, writeJson } = require("./fs-utils");
-const { getAdapter, normalizeAdapterId } = require("./adapters");
+const { getAdapter, normalizeAdapterId, resolvePromptTargetForAdapter } = require("./adapters");
 const { compilePrompt } = require("./prompt-compiler");
 const { notFound } = require("./http-errors");
 const { taskFiles } = require("./workspace");
@@ -14,10 +14,13 @@ function prepareRun(workspaceRoot, taskId, adapterInput) {
     throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
   }
 
-  const agent = adapterId === "claude-code" ? "claude" : "codex";
-  const promptPath = agent === "claude" ? files.promptClaude : files.promptCodex;
+  const promptTarget = resolvePromptTargetForAdapter(adapter);
+  const promptPath = path.join(files.root, adapter.promptFile);
   if (!fileExists(promptPath)) {
-    compilePrompt(workspaceRoot, taskId, agent);
+    const compiledPrompt = compilePrompt(workspaceRoot, taskId, promptTarget);
+    if (path.resolve(compiledPrompt.outputPath) !== path.resolve(promptPath)) {
+      writeFile(promptPath, compiledPrompt.prompt);
+    }
   }
 
   const task = readJson(files.meta, {});

@@ -73,7 +73,14 @@ function validateRecipes(workspaceRoot, issues) {
 function validateAdapters(workspaceRoot, issues) {
   listAdapters(workspaceRoot).forEach((adapter) => {
     if (!adapter.exists || !adapter.config) {
-      issues.push(issue("error", "adapter.missing", `Adapter config missing: ${adapter.adapterId}`, adapter.adapterPath));
+      issues.push(
+        issue(
+          "error",
+          "adapter.missing",
+          `${adapter.exists ? "Adapter config is invalid" : "Adapter config missing"}: ${adapter.adapterId}`,
+          adapter.adapterPath
+        )
+      );
       return;
     }
 
@@ -83,6 +90,16 @@ function validateAdapters(workspaceRoot, issues) {
     }
     if (!isNonEmptyString(config.promptFile)) {
       issues.push(issue("error", "adapter.promptFile", `Adapter ${adapter.adapterId} must include promptFile`, adapter.adapterPath));
+    }
+    if (config.promptTarget !== undefined && !["codex", "claude"].includes(String(config.promptTarget || "").trim())) {
+      issues.push(
+        issue(
+          "error",
+          "adapter.promptTarget",
+          `Adapter ${adapter.adapterId} has unsupported promptTarget ${config.promptTarget}`,
+          adapter.adapterPath
+        )
+      );
     }
     if (!Array.isArray(config.runnerCommand)) {
       issues.push(issue("warning", "adapter.runnerCommand", `Adapter ${adapter.adapterId} should include runnerCommand array`, adapter.adapterPath));

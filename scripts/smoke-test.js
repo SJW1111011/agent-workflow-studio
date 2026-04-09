@@ -398,7 +398,32 @@ main().catch((error) => {
   ) {
     throw new Error("memory:bootstrap did not report the expected prompt path.");
   }
-  runNode(cliPath, ["adapter:list", "--root", tempRoot]);
+  const adapterCreateOutput = runNodeOutput(cliPath, [
+    "adapter:create",
+    "demo-agent",
+    "--name",
+    "Demo Agent",
+    "--runner",
+    `"${process.execPath}" fake-runner.js`,
+    "--argv-template",
+    "{promptFile} {runRequestFile}",
+    "--prompt-target",
+    "claude",
+    "--stdin-mode",
+    "none",
+    "--root",
+    tempRoot,
+  ]);
+  if (
+    !adapterCreateOutput.includes("Created adapter demo-agent") ||
+    !adapterCreateOutput.includes("Prompt target: claude")
+  ) {
+    throw new Error("adapter:create did not report the expected adapter summary.");
+  }
+  const adapterListOutput = runNodeOutput(cliPath, ["adapter:list", "--root", tempRoot]);
+  if (!adapterListOutput.includes("demo-agent | ready")) {
+    throw new Error("adapter:list did not include the created custom adapter.");
+  }
   runNode(cliPath, ["recipe:list", "--root", tempRoot]);
   const quickOutput = runNodeOutput(cliPath, [
     "quick",
@@ -421,6 +446,7 @@ main().catch((error) => {
   ) {
     throw new Error("Quick command did not report the expected task bundle artifacts.");
   }
+  runNode(cliPath, ["run:prepare", "T-001", "--adapter", "demo-agent", "--root", tempRoot]);
   runNode(cliPath, ["task:new", "T-003", "Validate executor timeout handling", "--priority", "P2", "--recipe", "feature", "--root", tempRoot]);
   runNode(cliPath, ["run:add", "T-001", "Smoke run completed.", "--status", "passed", "--agent", "codex", "--root", tempRoot]);
   runNode(cliPath, ["checkpoint", "T-001", "--root", tempRoot]);
@@ -506,8 +532,11 @@ Build the first scanner slice with explicit diff-aware verification.
   assertExists(path.join(tempRoot, ".agent-workflow", "project-profile.json"));
   assertExists(path.join(tempRoot, ".agent-workflow", "handoffs", "memory-bootstrap.md"));
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "prompt.codex.md"));
+  assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "prompt.demo-agent.md"));
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "run-request.codex.json"));
+  assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "run-request.demo-agent.json"));
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "launch.codex.md"));
+  assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "launch.demo-agent.md"));
   assertExists(path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "checkpoint.md"));
   assertExists(path.join(tempRoot, "T-001.marker.txt"));
 

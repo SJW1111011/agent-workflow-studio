@@ -40,6 +40,7 @@
     "memory:bootstrap": "node src/cli.js memory:bootstrap",
     "memory:validate": "node src/cli.js memory:validate",
     "adapter:list": "node src/cli.js adapter:list",
+    "adapter:create": "node src/cli.js adapter:create",
     "recipe:list": "node src/cli.js recipe:list",
     "quick": "node src/cli.js quick",
     "task:new": "node src/cli.js task:new",

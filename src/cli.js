@@ -2,7 +2,7 @@
 
 const path = require("path");
 const { buildCheckpoint } = require("./lib/checkpoint");
-const { listAdapters, normalizeAdapterId } = require("./lib/adapters");
+const { createAdapter, listAdapters, normalizeAdapterId } = require("./lib/adapters");
 const { formatMemoryBootstrapSummary, generateMemoryBootstrapPrompt } = require("./lib/memory-bootstrap");
 const { formatMemoryValidationSummary, validateMemoryDocs } = require("./lib/memory-validator");
 const { buildOverview } = require("./lib/overview");
@@ -62,12 +62,42 @@ function main(argv = process.argv.slice(2)) {
         ensureWorkflowScaffold(workspaceRoot);
         const adapters = listAdapters(workspaceRoot);
         adapters.forEach((adapter) => {
-          const status = adapter.exists ? "ready" : "missing";
+          const status = adapter.status || (adapter.exists ? "ready" : "missing");
           const runner = adapter.config && Array.isArray(adapter.config.runnerCommand)
             ? adapter.config.runnerCommand.join(" ")
             : "";
           print(`${adapter.adapterId} | ${status} | ${runner}`);
         });
+        break;
+      }
+      case "adapter:create": {
+        const [adapterId] = positionals;
+        assert(
+          adapterId,
+          "Usage: adapter:create <adapterId> [--name \"My Agent\"] [--runner \"npx my-agent-cli\"] [--argv-template \"exec -\"] [--prompt-target codex|claude] [--command-mode manual|exec] [--cwd-mode workspaceRoot|taskRoot] [--stdio-mode inherit|pipe] [--stdin-mode none|promptFile] [--env KEY] [--root path]"
+        );
+        const result = createAdapter(workspaceRoot, adapterId, {
+          name: options.name,
+          runnerCommand: options.runner,
+          argvTemplate: options["argv-template"],
+          promptTarget: options["prompt-target"],
+          promptFile: options["prompt-file"],
+          runRequestFile: options["run-request-file"],
+          launchPackFile: options["launch-pack-file"],
+          commandMode: options["command-mode"],
+          cwdMode: options["cwd-mode"],
+          stdioMode: options["stdio-mode"],
+          stdinMode: options["stdin-mode"],
+          timeoutMs: options["timeout-ms"],
+          envAllowlist: getOptionList(options, "env"),
+          notes: getOptionList(options, "note"),
+          successExitCodes: getOptionList(options, "success-exit-code"),
+        });
+        print(`Created adapter ${result.adapterId} at ${result.adapterPath}`);
+        print(`- Prompt target: ${result.config.promptTarget}`);
+        print(`- Runner command: ${result.config.runnerCommand.join(" ")}`);
+        print(`- Command mode: ${result.config.commandMode}`);
+        print(`- Stdio: ${result.config.stdioMode} | stdin: ${result.config.stdinMode}`);
         break;
       }
       case "recipe:list": {
@@ -125,7 +155,7 @@ function main(argv = process.argv.slice(2)) {
       case "run:prepare": {
         const [taskId] = positionals;
         const adapterId = normalizeAdapterId(options.agent || options.adapter || "codex");
-        assert(taskId, "Usage: run:prepare <taskId> [--agent codex|claude] [--root path]");
+        assert(taskId, "Usage: run:prepare <taskId> [--adapter <adapterId>] [--agent <adapterId>] [--root path]");
         const result = prepareRun(workspaceRoot, taskId, adapterId);
         print(`Prepared ${adapterId} launch pack at ${result.launchPackPath}`);
         print(`Prepared ${adapterId} run request at ${result.runRequestPath}`);
@@ -134,7 +164,10 @@ function main(argv = process.argv.slice(2)) {
       case "run:execute": {
         const [taskId] = positionals;
         const adapterId = normalizeAdapterId(options.agent || options.adapter || "codex");
-        assert(taskId, "Usage: run:execute <taskId> [--agent codex|claude] [--timeout-ms 300000] [--root path]");
+        assert(
+          taskId,
+          "Usage: run:execute <taskId> [--adapter <adapterId>] [--agent <adapterId>] [--timeout-ms 300000] [--root path]"
+        );
         executeRun(workspaceRoot, taskId, adapterId, {
           timeoutMs: options["timeout-ms"],
         })
@@ -285,13 +318,14 @@ Commands:
   memory:validate [--root path]
   dashboard [--root path] [--port 4173]
   adapter:list [--root path]
+  adapter:create <adapterId> [--name "My Agent"] [--runner "npx my-agent-cli"] [--argv-template "exec -"] [--prompt-target codex|claude] [--root path]
   recipe:list [--root path]
   quick <title> [--task-id T-001] [--priority P1] [--recipe feature] [--agent codex|claude] [--root path]
   task:new <taskId> <title> [--priority P1] [--recipe feature] [--root path]
   task:list [--root path]
   prompt:compile <taskId> [--agent codex|claude] [--root path]
-  run:prepare <taskId> [--agent codex|claude] [--root path]
-  run:execute <taskId> [--agent codex|claude] [--timeout-ms 300000] [--root path]
+  run:prepare <taskId> [--adapter <adapterId>] [--agent <adapterId>] [--root path]
+  run:execute <taskId> [--adapter <adapterId>] [--agent <adapterId>] [--timeout-ms 300000] [--root path]
   run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--root path]
   checkpoint <taskId> [--root path]
   overview [--root path]
