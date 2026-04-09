@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-003",
+  "adapterId": "claude-code",
+  "title": "Dogfood Claude Code run execute pilot on this repository",
+  "generatedAt": "2026-04-09T01:46:57.826Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-003",
+  "promptFile": ".agent-workflow/tasks/T-003/prompt.claude.md",
+  "launchPackFile": ".agent-workflow/tasks/T-003/launch.claude-code.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "claude"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

@@ -1,6 +1,6 @@
 # Project Profile
 
-Generated at: 2026-04-08T13:19:58.166Z
+Generated at: 2026-04-09T01:28:25.979Z
 
 ## Repository
 
@@ -20,9 +20,11 @@ Generated at: 2026-04-08T13:19:58.166Z
 - README.md
 - docs/ADAPTERS.md
 - docs/ARCHITECTURE.md
+- docs/GETTING_STARTED.md
 - docs/ISSUE_BACKLOG.md
 - docs/NEXT_AGENT_HANDOFF.md
 - docs/PRD.md
+- docs/PUBLISHING.md
 - docs/RECIPES_AND_SCHEMA.md
 - docs/RELOCATABLE_DESIGN.md
 - docs/ROADMAP.md

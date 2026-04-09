@@ -1,0 +1,165 @@
+{
+  "id": "run-1775699218129",
+  "taskId": "T-003",
+  "agent": "claude-code",
+  "status": "passed",
+  "summary": "Executor completed with exit code 0.",
+  "createdAt": "2026-04-09T01:46:58.129Z",
+  "adapterId": "claude-code",
+  "source": "executor",
+  "outcome": "passed",
+  "startedAt": "2026-04-09T01:46:58.129Z",
+  "completedAt": "2026-04-09T01:52:16.548Z",
+  "durationMs": 318419,
+  "exitCode": 0,
+  "commandMode": "exec",
+  "promptFile": ".agent-workflow/tasks/T-003/prompt.claude.md",
+  "runRequestFile": ".agent-workflow/tasks/T-003/run-request.claude-code.json",
+  "launchPackFile": ".agent-workflow/tasks/T-003/launch.claude-code.md",
+  "stdoutFile": ".agent-workflow/tasks/T-003/runs/run-1775699218129.stdout.log",
+  "stderrFile": ".agent-workflow/tasks/T-003/runs/run-1775699218129.stderr.log",
+  "verificationChecks": [
+    {
+      "label": "Local claude-code executor result",
+      "status": "passed",
+      "details": "exitCode=0; stdio=pipe; stdin=promptFile",
+      "artifacts": [
+        ".agent-workflow/tasks/T-003/prompt.claude.md",
+        ".agent-workflow/tasks/T-003/run-request.claude-code.json",
+        ".agent-workflow/tasks/T-003/launch.claude-code.md",
+        ".agent-workflow/tasks/T-003/runs/run-1775699218129.stdout.log",
+        ".agent-workflow/tasks/T-003/runs/run-1775699218129.stderr.log"
+      ]
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-003/prompt.claude.md",
+    ".agent-workflow/tasks/T-003/run-request.claude-code.json",
+    ".agent-workflow/tasks/T-003/launch.claude-code.md",
+    ".agent-workflow/tasks/T-003/runs/run-1775699218129.stdout.log",
+    ".agent-workflow/tasks/T-003/runs/run-1775699218129.stderr.log"
+  ],
+  "scopeProofPaths": [
+    "docs/ADAPTERS.md",
+    "docs/NEXT_AGENT_HANDOFF.md",
+    ".agent-workflow/tasks/T-003/checkpoint.json",
+    ".agent-workflow/tasks/T-003/checkpoint.md",
+    ".agent-workflow/tasks/T-003/launch.claude-code.md",
+    ".agent-workflow/tasks/T-003/prompt.claude.md",
+    ".agent-workflow/tasks/T-003/run-request.claude-code.json",
+    ".agent-workflow/tasks/T-003/runs/run-1775698767859.json",
+    ".agent-workflow/tasks/T-003/runs/run-1775698767859.stderr.log",
+    ".agent-workflow/tasks/T-003/runs/run-1775698767859.stdout.log",
+    ".agent-workflow/tasks/T-003/runs/run-1775699218129.stderr.log",
+    ".agent-workflow/tasks/T-003/runs/run-1775699218129.stdout.log",
+    ".agent-workflow/tasks/T-003/task.json",
+    ".agent-workflow/adapters/claude-code.json",
+    ".agent-workflow/tasks/T-003/context.md",
+    ".agent-workflow/tasks/T-003/task.md",
+    ".agent-workflow/tasks/T-003/verification.md"
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "docs/ADAPTERS.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:3d872d492662ec7d949500350f17829aa474259c"
+    },
+    {
+      "path": "docs/NEXT_AGENT_HANDOFF.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:1e5fe9b022711cd4343291c5a8fbf8dfb2acd573"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-003/checkpoint.json",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:08a5eed32cf03fe46abdf2eb1caddce0d3fb74fd"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-003/checkpoint.md",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:bd85503e52ba59cab039b8b0a231c0f5be9acd0e"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-003/launch.claude-code.md",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:8cc512d79404a0528439a72069578204cba49fe6"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-003/prompt.claude.md",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:3ca59fe3d6d2cf001a13ab7bd180edf0db35f332"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-003/run-request.claude-code.json",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:f21c599855300f777cbdb2124c0207defa0c4cd7"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-003/runs/run-1775698767859.json",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:b31d4e546592e959f6572c60ea6484ea4ba925b8"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-003/runs/run-1775698767859.stderr.log",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:da39a3ee5e6b4b0d3255bfef95601890afd80709"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-003/runs/run-1775698767859.stdout.log",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:ee4376b5614b00032e7ff79fb468e774b3e78843"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-003/runs/run-1775699218129.stderr.log",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:da39a3ee5e6b4b0d3255bfef95601890afd80709"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-003/runs/run-1775699218129.stdout.log",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:d122fe0a592ce1f196c37708eac9fab6f1eb7dea"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-003/task.json",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:31c88818e8eeb4005d875eea8febb9727515dc85"
+    },
+    {
+      "path": ".agent-workflow/adapters/claude-code.json",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:e44cb5e1989d538342e3b849497ab3d03f6d763a"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-003/context.md",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:0c2efdf0ff7ad984e93278829fd789eafe189e0e"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-003/task.md",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:84c8a7dc08e7cfa69e7746d586735136b0064f48"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-003/verification.md",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:054f6ed16ad19c8c228df93212312ed4c3bb995f"
+    }
+  ]
+}

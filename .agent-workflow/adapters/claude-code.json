@@ -6,22 +6,43 @@
   "runRequestFile": "run-request.claude-code.json",
   "launchPackFile": "launch.claude-code.md",
   "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
     "claude"
   ],
-  "argvTemplate": [],
-  "commandMode": "manual",
+  "argvTemplate": [
+    "--model",
+    "sonnet",
+    "--bare",
+    "--output-format",
+    "json",
+    "-p",
+    "--permission-mode",
+    "bypassPermissions"
+  ],
+  "commandMode": "exec",
   "cwdMode": "workspaceRoot",
-  "stdioMode": "inherit",
+  "stdioMode": "pipe",
+  "stdinMode": "promptFile",
   "successExitCodes": [
     0
   ],
-  "envAllowlist": [],
+  "envAllowlist": [
+    "ANTHROPIC_AUTH_TOKEN",
+    "ANTHROPIC_BASE_URL"
+  ],
   "capabilities": {
     "interactive": true,
     "multiAgent": true,
     "resumable": true
   },
   "notes": [
-    "Confirm the local Claude Code invocation for this machine before automating process launch."
+    "This repository's dogfooding workspace opts the local Claude Code adapter into exec mode for the narrow T-003 pilot; generated scaffolds should still stay manual by default.",
+    "On this Windows machine the repo-local dogfooding profile uses `cmd.exe /d /s /c claude ...` because direct PowerShell invocation of the local shim resolves to `claude.ps1`, which is blocked by script-execution policy.",
+    "The locally confirmed non-interactive shape is `claude --model sonnet --bare --output-format json -p` with `stdinMode: promptFile`, and `--permission-mode bypassPermissions` allows the inspection-first pilot to read scoped repo files without interactive permission prompts.",
+    "A real T-003 launch showed that `claude auth status` alone was not enough under the executor's stripped child env: forwarding `ANTHROPIC_AUTH_TOKEN` plus `ANTHROPIC_BASE_URL` is required on this machine for the non-interactive print-mode path to stay logged in.",
+    "Keep this profile narrow and local-only until the real run path is proven stable through task-local evidence."
   ]
 }

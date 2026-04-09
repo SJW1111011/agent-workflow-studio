@@ -1,0 +1,38 @@
+{
+  "id": "T-003",
+  "title": "Dogfood Claude Code run execute pilot on this repository",
+  "recipeId": "feature",
+  "priority": "P0",
+  "status": "in_progress",
+  "createdAt": "2026-04-09T01:28:25.987Z",
+  "updatedAt": "2026-04-09T01:57:30.332Z",
+  "goal": "Prove one narrow real local `run:execute` path for Claude Code on this repository without broadening generated defaults. The pilot should use a repo-local adapter profile only, consume the compiled prompt through the existing contract-first pipeline, stay inspection-first, and leave durable run evidence plus refreshed task docs/checkpoint even if the child agent decides not to edit because of local workspace conditions.",
+  "scope": [
+    ".agent-workflow/adapters/claude-code.json",
+    ".agent-workflow/tasks/T-003/",
+    "README.md",
+    "docs/ADAPTERS.md",
+    "docs/RUN_EXECUTE_DESIGN.md",
+    "docs/NEXT_AGENT_HANDOFF.md"
+  ],
+  "nonGoals": [
+    "default auto-enable of executor mode for generated adapters",
+    "browser terminal emulation or dashboard-owned process state",
+    "cloud execution, sync, or auth redesign",
+    "broad adapter/plugin extensibility work"
+  ],
+  "requiredDocs": [
+    ".agent-workflow/project-profile.md",
+    ".agent-workflow/memory/product.md",
+    ".agent-workflow/memory/architecture.md",
+    "docs/ADAPTERS.md",
+    "docs/RUN_EXECUTE_DESIGN.md",
+    "docs/NEXT_AGENT_HANDOFF.md"
+  ],
+  "verificationCommands": [
+    "npm test",
+    "npm run smoke",
+    "npm run validate -- --root .",
+    "npm run run:execute -- T-003 --agent claude --root ."
+  ]
+}

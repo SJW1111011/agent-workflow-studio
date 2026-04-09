@@ -184,12 +184,14 @@ There is now a first local `run:execute` bridge for adapters that explicitly swi
 
 - built-in adapters still default to `manual`
 - the built-in Codex adapter now also carries a recommended non-interactive `codex exec --sandbox workspace-write -` profile, but it still stays `manual` until you explicitly opt in
+- the repo-local Claude dogfooding profile is now also proven on this Windows machine with `cmd.exe /d /s /c claude --model sonnet --bare --output-format json -p --permission-mode bypassPermissions`, but that remains a narrow local override rather than a generated default
 - the first executable pass keeps the contract-first structure
 - execution writes evidence back into `runs/*.json`, `verification.md`, and `checkpoint.md`
 - `stdioMode: inherit` and `stdioMode: pipe` are supported
 - adapters can now also declare `stdinMode: promptFile`, so non-interactive CLIs can receive the compiled prompt over stdin without shell glue
 - on the locally observed Codex CLI surface from 2026-04-08, `codex exec` accepted `--sandbox` but rejected `--ask-for-approval`, so the recommended template stays aligned to that narrower flag set until broader confirmation exists
 - even after runner shape is confirmed, a real local CLI may still need separate auth/provider readiness before model execution succeeds
+- the real Claude pilot also confirmed that non-interactive child launches may require adapter-owned env forwarding even when a standalone auth check looks healthy; on this machine the child process needed `ANTHROPIC_AUTH_TOKEN` plus `ANTHROPIC_BASE_URL`
 - capture mode can persist stdout and stderr logs under the task run ledger
 - execution can record timeout and interruption metadata
 - CLI and dashboard now share the same preflight/readiness pass before launch, so adapter validation, artifact readiness, and caller-specific stdio checks do not drift apart

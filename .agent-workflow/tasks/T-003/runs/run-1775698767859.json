@@ -1,0 +1,53 @@
+{
+  "id": "run-1775698767859",
+  "taskId": "T-003",
+  "agent": "claude-code",
+  "status": "failed",
+  "summary": "Executor failed with exit code 1.",
+  "createdAt": "2026-04-09T01:39:27.859Z",
+  "adapterId": "claude-code",
+  "source": "executor",
+  "outcome": "failed",
+  "startedAt": "2026-04-09T01:39:27.859Z",
+  "completedAt": "2026-04-09T01:39:29.887Z",
+  "durationMs": 2028,
+  "exitCode": 1,
+  "commandMode": "exec",
+  "promptFile": ".agent-workflow/tasks/T-003/prompt.claude.md",
+  "runRequestFile": ".agent-workflow/tasks/T-003/run-request.claude-code.json",
+  "launchPackFile": ".agent-workflow/tasks/T-003/launch.claude-code.md",
+  "stdoutFile": ".agent-workflow/tasks/T-003/runs/run-1775698767859.stdout.log",
+  "stderrFile": ".agent-workflow/tasks/T-003/runs/run-1775698767859.stderr.log",
+  "failureCategory": "non-zero-exit",
+  "verificationChecks": [
+    {
+      "label": "Local claude-code executor result",
+      "status": "failed",
+      "details": "exitCode=1; stdio=pipe; stdin=promptFile",
+      "artifacts": [
+        ".agent-workflow/tasks/T-003/prompt.claude.md",
+        ".agent-workflow/tasks/T-003/run-request.claude-code.json",
+        ".agent-workflow/tasks/T-003/launch.claude-code.md",
+        ".agent-workflow/tasks/T-003/runs/run-1775698767859.stdout.log",
+        ".agent-workflow/tasks/T-003/runs/run-1775698767859.stderr.log"
+      ]
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-003/prompt.claude.md",
+    ".agent-workflow/tasks/T-003/run-request.claude-code.json",
+    ".agent-workflow/tasks/T-003/launch.claude-code.md",
+    ".agent-workflow/tasks/T-003/runs/run-1775698767859.stdout.log",
+    ".agent-workflow/tasks/T-003/runs/run-1775698767859.stderr.log"
+  ],
+  "scopeProofPaths": [
+    ".agent-workflow/tasks/T-003/checkpoint.json",
+    ".agent-workflow/tasks/T-003/checkpoint.md",
+    ".agent-workflow/tasks/T-003/launch.claude-code.md",
+    ".agent-workflow/tasks/T-003/prompt.claude.md",
+    ".agent-workflow/tasks/T-003/run-request.claude-code.json",
+    ".agent-workflow/tasks/T-003/runs/run-1775698767859.stderr.log",
+    ".agent-workflow/tasks/T-003/runs/run-1775698767859.stdout.log",
+    ".agent-workflow/tasks/T-003/task.json"
+  ]
+}

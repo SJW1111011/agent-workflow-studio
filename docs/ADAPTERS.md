@@ -73,20 +73,29 @@ That remains true even after adding `run:execute`:
 - `envAllowlist`: optional environment keys to forward
 - `capabilities`: lightweight feature flags for the adapter
 
-## Current real-CLI pilot
+## Current real-CLI pilots
 
-The current narrow pilot is Codex-first:
+Two narrow local pilots have been validated through the `run:execute` contract. Both are opt-in and repo-local; built-in generated adapter scaffolds still default to `commandMode: manual`.
+
+### Codex pilot
 
 - the built-in Codex adapter still defaults to `commandMode: manual`
 - it now also carries a recommended non-interactive `codex exec --sandbox workspace-write -` argv template
 - that template uses `stdinMode: promptFile`, so the compiled prompt can be streamed to Codex over stdin instead of relying on shell redirection
-- this keeps the adapter contract file-based and portable while avoiding a dashboard-only launch path
+- on the locally observed Codex CLI surface from 2026-04-08, `codex exec` accepted `--sandbox` but rejected `--ask-for-approval`, so the current recommended template stays within that confirmed flag shape
 
-This is intentionally still opt-in:
+### Claude Code pilot (T-003)
+
+- the repo-local Claude Code adapter (`claude-code.json`) opts into `commandMode: exec` and `stdinMode: promptFile` for dogfooding only
+- the locally confirmed non-interactive shape is `cmd.exe /d /s /c claude --model sonnet --bare --output-format json -p --permission-mode bypassPermissions` on Windows
+- direct PowerShell invocation resolves to `claude.ps1`, which is blocked by script-execution policy on this machine; the `cmd.exe` wrapper avoids that issue
+- the first run attempt revealed that `claude auth status` alone is not sufficient under the executor's stripped child env: the adapter `envAllowlist` must include `ANTHROPIC_AUTH_TOKEN` and `ANTHROPIC_BASE_URL` for non-interactive print mode to stay authenticated
+- the pilot is kept inspection-first: the launched Claude process reads scoped docs, runs automated checks, and reports truthfully without making broad repo edits
+
+This is intentionally still opt-in across both pilots:
 
 - local environments vary
-- on the locally observed Codex CLI surface from 2026-04-08, `codex exec` accepted `--sandbox` but rejected `--ask-for-approval`, so the current recommended template stays within that confirmed flag shape
-- Windows may still need a wrapper such as `cmd.exe` if direct `codex` spawning is not available on that machine
+- Windows may still need a wrapper such as `cmd.exe` if direct CLI spawning is not available on that machine
 - even after runner shape is confirmed, a real local CLI may still require separate auth/provider readiness before model execution succeeds, and that may depend on adapter-owned `envAllowlist` entries for the child process
 - preflight now surfaces those readiness issues as typed blocking issues plus advisories instead of silently failing at spawn time
 - in Git mode, preflight can also add a non-blocking dirty-worktree advisory when the repository already has local changes before launch

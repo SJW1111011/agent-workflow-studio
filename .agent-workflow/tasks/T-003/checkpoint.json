@@ -1,0 +1,187 @@
+{
+  "taskId": "T-003",
+  "generatedAt": "2026-04-09T01:57:41.826Z",
+  "latestRunStatus": "passed",
+  "runCount": 2,
+  "risks": [
+    "Some scoped files still need proof: .agent-workflow/tasks/T-003/task.json, .agent-workflow/tasks/T-003/verification.md"
+  ],
+  "completed": [
+    "Prompt compiled",
+    "2 run(s) recorded",
+    "Task context captured",
+    "Some scoped files are already linked to explicit proof"
+  ],
+  "verificationGate": {
+    "status": "partially-covered",
+    "message": "Some scoped files are explicitly covered, but newer scoped changes still need proof.",
+    "relevantChangeCount": 2,
+    "scopeHintCount": 12,
+    "ambiguousScopeCount": 0,
+    "relevantChangedFiles": [
+      {
+        "path": ".agent-workflow/tasks/T-003/task.json",
+        "modifiedAt": "2026-04-09T01:57:30.333Z",
+        "changeType": "untracked",
+        "gitState": "??",
+        "previousPath": null,
+        "matchedBy": [
+          {
+            "pattern": ".agent-workflow/tasks/T-003/",
+            "source": "task.json"
+          },
+          {
+            "pattern": ".agent-workflow/tasks/T-003/",
+            "source": "task.md"
+          }
+        ],
+        "proofUpdatedAt": "2026-04-09T01:57:30.320Z",
+        "proofFreshnessSource": "anchor-stale",
+        "proofItems": [
+          {
+            "sourceType": "run",
+            "sourceLabel": "run-1775699218129",
+            "recordedAt": "2026-04-09T01:52:16.548Z",
+            "paths": [
+              "docs/ADAPTERS.md",
+              "docs/NEXT_AGENT_HANDOFF.md",
+              ".agent-workflow/tasks/T-003/checkpoint.json",
+              ".agent-workflow/tasks/T-003/checkpoint.md",
+              ".agent-workflow/tasks/T-003/launch.claude-code.md",
+              ".agent-workflow/tasks/T-003/prompt.claude.md",
+              ".agent-workflow/tasks/T-003/run-request.claude-code.json",
+              ".agent-workflow/tasks/T-003/runs/run-1775698767859.json",
+              ".agent-workflow/tasks/T-003/runs/run-1775698767859.stderr.log",
+              ".agent-workflow/tasks/T-003/runs/run-1775698767859.stdout.log",
+              ".agent-workflow/tasks/T-003/runs/run-1775699218129.stderr.log",
+              ".agent-workflow/tasks/T-003/runs/run-1775699218129.stdout.log",
+              ".agent-workflow/tasks/T-003/task.json",
+              ".agent-workflow/adapters/claude-code.json",
+              ".agent-workflow/tasks/T-003/context.md",
+              ".agent-workflow/tasks/T-003/task.md",
+              ".agent-workflow/tasks/T-003/verification.md"
+            ],
+            "anchorCount": 17,
+            "checks": [
+              "[passed] Local claude-code executor result - exitCode=0; stdio=pipe; stdin=promptFile"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-003/runs/run-1775699218129.stdout.log",
+              ".agent-workflow/tasks/T-003/runs/run-1775699218129.stderr.log",
+              ".agent-workflow/tasks/T-003/prompt.claude.md",
+              ".agent-workflow/tasks/T-003/run-request.claude-code.json",
+              ".agent-workflow/tasks/T-003/launch.claude-code.md"
+            ],
+            "strong": true
+          },
+          {
+            "sourceType": "manual",
+            "sourceLabel": "verification.md#proof-2",
+            "recordedAt": "2026-04-09T01:57:30.320Z",
+            "paths": [
+              "README.md",
+              "docs/ADAPTERS.md",
+              "docs/RUN_EXECUTE_DESIGN.md",
+              "docs/NEXT_AGENT_HANDOFF.md",
+              ".agent-workflow/adapters/claude-code.json",
+              ".agent-workflow/tasks/T-003/task.json",
+              ".agent-workflow/tasks/T-003/checkpoint.md",
+              ".agent-workflow/tasks/T-003/checkpoint.json",
+              ".agent-workflow/tasks/T-003/runs/run-1775698767859.json",
+              ".agent-workflow/tasks/T-003/runs/run-1775698767859.stdout.log",
+              ".agent-workflow/tasks/T-003/runs/run-1775699218129.json",
+              ".agent-workflow/tasks/T-003/runs/run-1775699218129.stdout.log"
+            ],
+            "anchorCount": 12,
+            "checks": [
+              "A real local `run:execute` for T-003 via the Claude Code adapter (`cmd.exe /d /s /c claude --model sonnet --bare --output-format json -p --permission-mode bypassPermissions` + `stdinMode: promptFile` + `envAllowlist: [ANTHROPIC_AUTH_TOKEN, ANTHROPIC_BASE_URL]`) reached the child Claude process, passed automated validation, and left durable task-local evidence plus scoped documentation updates describing the confirmed launcher shape. (result: `npm test` passed with 82 tests; `npm run smoke` passed; `npm run validate -- --root .` returned ok=true with 0 errors and 0 warnings. The first Claude run failed with exit code 1 and `Not logged in`, which confirmed that the stripped child env still needed `ANTHROPIC_AUTH_TOKEN` plus `ANTHROPIC_BASE_URL`. After allowlisting those env vars, the next real Claude run exited 0, produced a durable run record, refreshed the checkpoint, and updated the scoped adapter/design docs without broad repo edits.)"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-003/runs/run-1775698767859.stdout.log",
+              ".agent-workflow/tasks/T-003/runs/run-1775699218129.json",
+              ".agent-workflow/tasks/T-003/runs/run-1775699218129.stdout.log",
+              ".agent-workflow/tasks/T-003/checkpoint.md"
+            ],
+            "strong": true
+          }
+        ]
+      },
+      {
+        "path": ".agent-workflow/tasks/T-003/verification.md",
+        "modifiedAt": "2026-04-09T01:57:30.332Z",
+        "changeType": "untracked",
+        "gitState": "??",
+        "previousPath": null,
+        "matchedBy": [
+          {
+            "pattern": ".agent-workflow/tasks/T-003/",
+            "source": "task.json"
+          },
+          {
+            "pattern": ".agent-workflow/tasks/T-003/",
+            "source": "task.md"
+          }
+        ],
+        "proofUpdatedAt": "2026-04-09T01:57:30.320Z",
+        "proofFreshnessSource": "anchor-stale",
+        "proofItems": [
+          {
+            "sourceType": "run",
+            "sourceLabel": "run-1775699218129",
+            "recordedAt": "2026-04-09T01:52:16.548Z",
+            "paths": [
+              "docs/ADAPTERS.md",
+              "docs/NEXT_AGENT_HANDOFF.md",
+              ".agent-workflow/tasks/T-003/checkpoint.json",
+              ".agent-workflow/tasks/T-003/checkpoint.md",
+              ".agent-workflow/tasks/T-003/launch.claude-code.md",
+              ".agent-workflow/tasks/T-003/prompt.claude.md",
+              ".agent-workflow/tasks/T-003/run-request.claude-code.json",
+              ".agent-workflow/tasks/T-003/runs/run-1775698767859.json",
+              ".agent-workflow/tasks/T-003/runs/run-1775698767859.stderr.log",
+              ".agent-workflow/tasks/T-003/runs/run-1775698767859.stdout.log",
+              ".agent-workflow/tasks/T-003/runs/run-1775699218129.stderr.log",
+              ".agent-workflow/tasks/T-003/runs/run-1775699218129.stdout.log",
+              ".agent-workflow/tasks/T-003/task.json",
+              ".agent-workflow/adapters/claude-code.json",
+              ".agent-workflow/tasks/T-003/context.md",
+              ".agent-workflow/tasks/T-003/task.md",
+              ".agent-workflow/tasks/T-003/verification.md"
+            ],
+            "anchorCount": 17,
+            "checks": [
+              "[passed] Local claude-code executor result - exitCode=0; stdio=pipe; stdin=promptFile"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-003/runs/run-1775699218129.stdout.log",
+              ".agent-workflow/tasks/T-003/runs/run-1775699218129.stderr.log",
+              ".agent-workflow/tasks/T-003/prompt.claude.md",
+              ".agent-workflow/tasks/T-003/run-request.claude-code.json",
+              ".agent-workflow/tasks/T-003/launch.claude-code.md"
+            ],
+            "strong": true
+          },
+          {
+            "sourceType": "manual",
+            "sourceLabel": "verification.md#proof-1",
+            "recordedAt": "2026-04-09T01:57:30.320Z",
+            "paths": [
+              ".agent-workflow/adapters/claude-code.json",
+              ".agent-workflow/tasks/T-003/task.md",
+              ".agent-workflow/tasks/T-003/context.md",
+              ".agent-workflow/tasks/T-003/verification.md"
+            ],
+            "anchorCount": 4,
+            "checks": [
+              "Scoped the repo-local Claude dogfooding adapter and task docs so one real Claude Code run can be attempted through the existing `run:execute` contract. (result: The task bundle now defines a narrow, local-only Claude executor pilot with explicit checks and boundaries.)"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-003/checkpoint.md"
+            ],
+            "strong": true
+          }
+        ]
+      }
+    ]
+  }
+}

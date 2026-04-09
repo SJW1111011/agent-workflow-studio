@@ -4,7 +4,7 @@ This document defines the first local executor design for `run:execute`.
 
 The goal is to add real local execution without breaking the project's contract-first architecture.
 
-Status on 2026-04-07:
+Status on 2026-04-09:
 
 - Phase A is implemented
 - Phase B is largely implemented
@@ -18,6 +18,9 @@ Status on 2026-04-07:
 - transcript linking and richer resume metadata remain future work
 - the next step is design hardening first, not a second execution subsystem
 - as of 2026-04-08, that next hardening step is now partially implemented: CLI and dashboard share a preflight/readiness pass, and the local API can now surface normalized failure categories plus blocking issues without relying on message parsing
+- a real local Codex dogfooding path is proven end to end
+- a repo-local Claude Code dogfooding path is now also proven end to end on this Windows machine via `cmd.exe /d /s /c claude --model sonnet --bare --output-format json -p --permission-mode bypassPermissions`
+- that Claude pilot also confirmed that child-process auth/provider readiness can diverge from a standalone CLI auth check; the stripped executor env had to forward `ANTHROPIC_AUTH_TOKEN` plus `ANTHROPIC_BASE_URL` before non-interactive print mode stopped reporting `Not logged in`
 
 ## Why this exists
 
