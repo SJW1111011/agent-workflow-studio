@@ -39,6 +39,29 @@
       }
     });
 
+    doc.getElementById("task-quick-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = buildQuickCreatePayload(new deps.FormDataCtor(event.currentTarget));
+
+      try {
+        deps.setActionStatus("Creating quick task...", "");
+        const quickTask =
+          typeof deps.quickCreateTask === "function"
+            ? await deps.quickCreateTask(payload)
+            : await deps.postJson("/api/quick", payload);
+        const quickTaskId = String((quickTask && quickTask.taskId) || "").trim();
+        const quickAdapterId = String((quickTask && quickTask.adapterId) || payload.agent || "codex").trim() || "codex";
+        event.currentTarget.reset();
+        doc.getElementById("quick-priority").value = payload.priority || "P2";
+        doc.getElementById("quick-recipe").value = payload.recipeId || "feature";
+        doc.getElementById("quick-agent").value = payload.agent || "codex";
+        await deps.refreshDashboard(quickTaskId);
+        deps.setActionStatus(`Quick task ${quickTaskId} is ready for ${quickAdapterId}.`, "success");
+      } catch (error) {
+        deps.setActionStatus(error.message, "error");
+      }
+    });
+
     doc.getElementById("task-update-form").addEventListener("submit", async (event) => {
       event.preventDefault();
       const request = buildTaskUpdatePayload(new deps.FormDataCtor(event.currentTarget));
@@ -256,6 +279,16 @@
     };
   }
 
+  function buildQuickCreatePayload(formData) {
+    return {
+      taskId: String(formData.get("taskId") || "").trim(),
+      title: String(formData.get("title") || "").trim(),
+      priority: String(formData.get("priority") || "").trim(),
+      recipeId: String(formData.get("recipeId") || "").trim(),
+      agent: String(formData.get("agent") || "").trim(),
+    };
+  }
+
   function buildTaskUpdatePayload(formData) {
     return {
       taskId: String(formData.get("taskId") || "").trim(),
@@ -377,6 +410,7 @@
     bindDashboardForms,
     buildManualProofAnchorRefreshMessage,
     buildDocumentSavePayload,
+    buildQuickCreatePayload,
     buildRunCreatePayload,
     buildTaskCreatePayload,
     buildTaskUpdatePayload,

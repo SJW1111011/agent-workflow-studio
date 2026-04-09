@@ -54,6 +54,7 @@ As of 2026-04-09, the project already has a working MVP foundation:
 - proof items now carry paths plus check/artifact refs, and the gate can report `partially-covered`
 - passed runs can now persist structured `verificationChecks`, `verificationArtifacts`, and optional `scopeProofAnchors`
 - dashboard write actions for task creation, task metadata updates, markdown task doc edits, and structured run evidence creation
+- the dashboard can now also quick-create the same durable bundle as CLI `quick` through a thin local API over `src/lib/quick-task.js`
 - metadata-managed task/context markdown blocks now stay stable during richer edits
 - the dashboard editor now explains managed vs free-edit sections for each task document
 - the dashboard run form can now prefill proof paths from pending scoped files
@@ -299,10 +300,10 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Decide whether the dashboard should grow a thin `quick` entrypoint over the existing CLI contract without inventing a second task-creation path.
+1. Keep extending the GitHub Actions matrix around npm-first onboarding plus dashboard quick flows so hosted-runner portability stays visible.
 2. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 3. Preserve the current contract-first split between adapter config, prepared run artifacts, preflight, and durable evidence instead of introducing dashboard-only runtime state.
-4. Keep watching the GitHub Actions matrix after executor or packaging changes so hosted-runner portability does not silently regress.
+4. Keep watching the GitHub Actions matrix after executor, packaging, or dashboard quick changes so hosted-runner portability does not silently regress.
 5. Revisit adapter polish only if dogfooding reveals missing defaults or validation gaps in `adapter:create`; avoid jumping to a plugin system.
 
 ## What not to do next
@@ -316,12 +317,13 @@ Recommended next sequence:
 
 Suggested first task:
 
-Now that dynamic adapter discovery and `adapter:create` are in place, the next highest-value task is to decide whether the dashboard should expose a thin `quick` entrypoint over the existing CLI contract without inventing a second task-creation path.
+Now that dynamic adapter discovery and the dashboard `quick` entrypoint are in place, the next highest-value task is to keep hosted-runner portability honest by extending the GitHub Actions matrix around the npm-first and dashboard-quick paths.
 
 Expected shape:
 
 - preserve the current local-only API contract and existing smoke coverage
 - keep dashboard writes thin and route them through the existing task/bootstrap services instead of introducing a dashboard-only task model
+- make cross-platform verification additive around the existing CLI/dashboard contracts rather than inventing platform-specific forks
 - keep the next executor slice focused on one real local CLI path before broadening defaults or adapter breadth
 - keep manual proof human-authored in `## Proof links`, with machine-owned anchor metadata isolated under the managed `## Evidence` block
 - keep using `src/lib/http-errors.js` for any new server-facing route or local API surface

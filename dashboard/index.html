@@ -77,9 +77,43 @@
         <section class="panel panel-wide">
           <div class="panel-head">
             <h2>Task Actions</h2>
-            <p>Create tasks, update selected task metadata, and record new run evidence without leaving the dashboard.</p>
+            <p>Quick-create a full task bundle, create bare tasks, update task metadata, and record run evidence without leaving the dashboard.</p>
           </div>
           <div class="action-grid">
+            <form class="form-card" id="task-quick-form">
+              <h3>Quick Create</h3>
+              <p class="subtle">Thin dashboard entrypoint over the same durable `quick` flow: scan, task bundle, prompt, run request, launch pack, and checkpoint.</p>
+              <label>
+                <span>Task ID (Optional)</span>
+                <input type="text" name="taskId" id="quick-task-id" placeholder="T-002">
+              </label>
+              <label>
+                <span>Title</span>
+                <input type="text" name="title" placeholder="Ship the onboarding slice" required>
+              </label>
+              <label>
+                <span>Priority</span>
+                <select name="priority" id="quick-priority">
+                  <option value="P1">P1</option>
+                  <option value="P2" selected>P2</option>
+                  <option value="P3">P3</option>
+                  <option value="P0">P0</option>
+                </select>
+              </label>
+              <label>
+                <span>Recipe</span>
+                <select name="recipeId" id="quick-recipe"></select>
+              </label>
+              <label>
+                <span>Agent</span>
+                <select name="agent" id="quick-agent">
+                  <option value="codex" selected>codex</option>
+                  <option value="claude-code">claude-code</option>
+                </select>
+              </label>
+              <button type="submit">Quick Create</button>
+            </form>
+
             <form class="form-card" id="task-create-form">
               <h3>Create Task</h3>
               <label>

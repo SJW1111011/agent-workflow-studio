@@ -22,6 +22,9 @@
       putJson(url, body) {
         return request(url, createJsonRequestOptions("PUT", body));
       },
+      quickCreateTask(body) {
+        return request("/api/quick", createJsonRequestOptions("POST", body));
+      },
       loadOverview() {
         return request("/api/overview");
       },

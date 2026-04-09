@@ -7,6 +7,7 @@ const { buildCheckpoint } = require("./lib/checkpoint");
 const { createDashboardExecutionBridge } = require("./lib/dashboard-execution");
 const { badRequest, getHttpStatusCode } = require("./lib/http-errors");
 const { buildOverview } = require("./lib/overview");
+const { quickCreateTask } = require("./lib/quick-task");
 const { listRecipes } = require("./lib/recipes");
 const { validateWorkspace } = require("./lib/schema-validator");
 const { refreshManualProofAnchors, saveTaskDocument } = require("./lib/task-documents");
@@ -64,6 +65,31 @@ function startDashboardServer(workspaceRoot, options = {}) {
             recipe: body.recipeId || body.recipe,
           });
           return sendJson(response, 201, task);
+        }
+
+        if (requestUrl.pathname === "/api/quick" && request.method === "POST") {
+          const body = await readJsonBody(request);
+          const quickResult = quickCreateTask(workspaceRoot, body.title, {
+            taskId: body.taskId,
+            priority: body.priority,
+            recipe: body.recipeId || body.recipe,
+            agent: body.agent || body.adapterId,
+          });
+          return sendJson(response, 201, {
+            taskId: quickResult.taskId,
+            title: quickResult.title,
+            priority: quickResult.priority,
+            recipeId: quickResult.recipeId,
+            agent: quickResult.agent,
+            adapterId: quickResult.adapterId,
+            promptPath: toRepositoryRelativePath(workspaceRoot, quickResult.prompt.outputPath),
+            runRequestPath: toRepositoryRelativePath(workspaceRoot, quickResult.prepared.runRequestPath),
+            launchPackPath: toRepositoryRelativePath(workspaceRoot, quickResult.prepared.launchPackPath),
+            checkpointPath: toRepositoryRelativePath(
+              workspaceRoot,
+              path.join(quickResult.workflowRoot, "tasks", quickResult.taskId, "checkpoint.md")
+            ),
+          });
         }
 
         if (requestUrl.pathname.startsWith("/api/tasks/") && request.method === "POST" && requestUrl.pathname.endsWith("/runs")) {
@@ -309,6 +335,10 @@ function buildTaskResponse(workspaceRoot, taskId, executionBridge) {
     executionState: executionBridge ? executionBridge.getTaskExecution(taskId) : undefined,
     schemaIssues: validation.issues.filter((item) => String(item.target).includes(taskTarget)),
   };
+}
+
+function toRepositoryRelativePath(workspaceRoot, value) {
+  return path.relative(workspaceRoot, value).replace(/\\/g, "/");
 }
 
 function isNonEmptyString(value) {

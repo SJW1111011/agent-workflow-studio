@@ -60,7 +60,7 @@ The current foundation includes:
 - `run:add`: append execution evidence to a task, including optional proof paths, checks, and artifact refs
 - `checkpoint`: build a resumable checkpoint for the current task
 - `validate`: run schema checks on project, adapters, tasks, and recorded runs
-- `dashboard`: open a local control plane for tasks, memory freshness, task doc freshness, Git-aware diff-aware verification gates, checkpoint detail, metadata edits, structured run evidence capture, manual proof-anchor refresh, a local execution bridge for `stdioMode: pipe` adapters, shared execution preflight/readiness, executor state/cancel flow, and markdown task doc edits
+- `dashboard`: open a local control plane for quick task bootstrapping, tasks, memory freshness, task doc freshness, Git-aware diff-aware verification gates, checkpoint detail, metadata edits, structured run evidence capture, manual proof-anchor refresh, a local execution bridge for `stdioMode: pipe` adapters, shared execution preflight/readiness, executor state/cancel flow, and markdown task doc edits
 - the dashboard frontend is now split across static helper modules for document editing/proof drafting, API client helpers, form/editor state derivation, form event flows, orchestration state derivation, task-board summaries, task-list rendering, execution/run detail presentation, task-detail/verification rendering, log-panel state/render helpers, and overview/list section rendering without introducing a bundler
 - server-facing mutations and log APIs now use explicit HTTP-aware errors, so the local control plane no longer guesses status codes from message text
 
@@ -246,7 +246,7 @@ The workflow layer now treats recipes as first-class metadata instead of loose m
 - The dashboard applies lightweight freshness heuristics to memory docs and task markdown bundles
 - The dashboard applies a Git-aware verification gate by matching repo-relative task scope hints against a reusable repository snapshot
 - Checkpoints now surface whether scoped files still need explicit proof before handoff
-- The dashboard can create tasks, update selected task metadata, edit `task.md` / `context.md` / `verification.md`, and record structured run evidence through local-only API endpoints
+- The dashboard can quick-create the same durable bundle as CLI `quick`, create bare tasks, update selected task metadata, edit `task.md` / `context.md` / `verification.md`, and record structured run evidence through local-only API endpoints
 - metadata-managed markdown blocks now stay pinned during edits, so task title / recipe / context recipe guidance / priority lines refresh without wiping nearby custom notes
 - the dashboard editor now explains which sections are managed on save versus free to edit, keeps the manual proof-anchor JSON out of the primary `verification.md` editing surface, and preserves that managed anchor block on save
 - the run evidence form can now prefill proof paths from the task's current pending scoped files

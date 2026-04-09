@@ -609,6 +609,7 @@ async function refreshDashboard(nextTaskId) {
   renderAdapters(overview.adapters || []);
   renderRecipes(overview.recipes || []);
   renderValidation(overview.validation || { ok: true, issues: [], errorCount: 0, warningCount: 0 });
+  populateRecipeSelect("quick-recipe", overview.recipes || [], document.getElementById("quick-recipe").value || "feature");
   populateRecipeSelect("create-recipe", overview.recipes || [], document.getElementById("create-recipe").value || "feature");
   populateRecipeSelect("selected-task-recipe", overview.recipes || [], document.getElementById("selected-task-recipe").value || "feature");
   renderTasks(overview.tasks || []);
@@ -661,6 +662,7 @@ function bindForms() {
     patchJson: dashboardApi.patchJson,
     populateDocumentEditor,
     postJson: dashboardApi.postJson,
+    quickCreateTask: dashboardApi.quickCreateTask,
     putJson: dashboardApi.putJson,
     refreshDashboard,
     renderTaskDetail,
@@ -682,6 +684,7 @@ async function bootstrap() {
     const overview = await loadOverview();
     window.__overview = overview;
     document.getElementById("workspace-root").textContent = overview.workspaceRoot;
+    populateRecipeSelect("quick-recipe", overview.recipes || [], "feature");
     populateRecipeSelect("create-recipe", overview.recipes || [], "feature");
     populateRecipeSelect("selected-task-recipe", overview.recipes || [], "feature");
     bindForms();

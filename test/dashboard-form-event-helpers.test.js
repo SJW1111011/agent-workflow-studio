@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const {
   buildManualProofAnchorRefreshMessage,
   buildDocumentSavePayload,
+  buildQuickCreatePayload,
   buildRunCreatePayload,
   buildTaskCreatePayload,
   buildTaskUpdatePayload,
@@ -23,6 +24,15 @@ const tests = [
   {
     name: "build task payload helpers trim values consistently",
     run() {
+      const quickPayload = buildQuickCreatePayload(
+        createFormData({
+          taskId: " ",
+          title: " Ship onboarding ",
+          priority: " P2 ",
+          recipeId: " feature ",
+          agent: " claude-code ",
+        })
+      );
       const createPayload = buildTaskCreatePayload(
         createFormData({
           taskId: " T-001 ",
@@ -46,6 +56,13 @@ const tests = [
         title: "Refactor dashboard",
         priority: "P1",
         recipeId: "feature",
+      });
+      assert.deepEqual(quickPayload, {
+        taskId: "",
+        title: "Ship onboarding",
+        priority: "P2",
+        recipeId: "feature",
+        agent: "claude-code",
       });
       assert.deepEqual(updatePayload, {
         taskId: "T-002",

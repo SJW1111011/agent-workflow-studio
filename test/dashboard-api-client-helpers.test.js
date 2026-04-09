@@ -50,6 +50,7 @@ const tests = [
       });
 
       await client.postJson("/api/tasks", { taskId: "T-001" });
+      await client.quickCreateTask({ title: "Ship onboarding" });
       await client.patchJson("/api/tasks/T-001", { status: "done" });
       await client.putJson("/api/tasks/T-001/documents/task.md", { content: "# updated" });
       await client.loadOverview();
@@ -60,13 +61,15 @@ const tests = [
 
       assert.equal(calls[0].url, "/api/tasks");
       assert.equal(calls[0].options.method, "POST");
-      assert.equal(calls[1].options.method, "PATCH");
-      assert.equal(calls[2].options.method, "PUT");
-      assert.equal(calls[3].url, "/api/overview");
-      assert.equal(calls[4].url, "/api/tasks/T%20002");
-      assert.equal(calls[5].url, "/api/tasks/T%20002/execution");
-      assert.equal(calls[6].url, "/api/tasks/T%20002/execution/logs/stdout?maxChars=2048");
-      assert.equal(calls[7].url, "/api/tasks/T%20002/runs/run%207/logs/stderr");
+      assert.equal(calls[1].url, "/api/quick");
+      assert.equal(calls[1].options.method, "POST");
+      assert.equal(calls[2].options.method, "PATCH");
+      assert.equal(calls[3].options.method, "PUT");
+      assert.equal(calls[4].url, "/api/overview");
+      assert.equal(calls[5].url, "/api/tasks/T%20002");
+      assert.equal(calls[6].url, "/api/tasks/T%20002/execution");
+      assert.equal(calls[7].url, "/api/tasks/T%20002/execution/logs/stdout?maxChars=2048");
+      assert.equal(calls[8].url, "/api/tasks/T%20002/runs/run%207/logs/stderr");
     },
   },
   {

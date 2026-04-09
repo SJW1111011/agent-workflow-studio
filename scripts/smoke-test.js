@@ -622,12 +622,21 @@ Build the first scanner slice with explicit diff-aware verification.
       throw new Error("Overview did not expose diff-aware verification proof requirements.");
     }
 
-    await requestJson(`http://127.0.0.1:${port}/api/tasks`, "POST", {
+    const quickTask = await requestJson(`http://127.0.0.1:${port}/api/quick`, "POST", {
       taskId: "T-002",
       title: "Create from dashboard api",
       priority: "P2",
       recipeId: "review",
+      agent: "codex",
     });
+    if (
+      quickTask.taskId !== "T-002" ||
+      quickTask.adapterId !== "codex" ||
+      !String(quickTask.promptPath || "").endsWith("prompt.codex.md") ||
+      !String(quickTask.runRequestPath || "").endsWith("run-request.codex.json")
+    ) {
+      throw new Error("Dashboard quick API did not create the expected prompt and run-request artifacts.");
+    }
     await requestJson(`http://127.0.0.1:${port}/api/tasks/T-002`, "PATCH", {
       status: "in_progress",
       priority: "P1",

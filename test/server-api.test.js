@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
 
-const { createTaskWorkspace } = require("./test-helpers");
+const { createTaskWorkspace, writeTextFile } = require("./test-helpers");
 
 const SERVER_PATH = path.join(__dirname, "..", "src", "server.js");
 
@@ -175,6 +175,59 @@ const tests = [
         });
         assert.equal(duplicate.statusCode, 409);
         assert.match(duplicate.json.error, /Task already exists: T-002/);
+      } finally {
+        await server.stop();
+      }
+    },
+  },
+  {
+    name: "server api quick route reuses the shared quick task flow and materializes generated artifacts",
+    async run() {
+      const { workspaceRoot } = createTaskWorkspace("server-api-quick");
+      writeTextFile(
+        path.join(workspaceRoot, "package.json"),
+        `${JSON.stringify(
+          {
+            name: "server-api-quick",
+            version: "0.0.1",
+            scripts: {
+              test: "node -e \"console.log('ok')\"",
+            },
+          },
+          null,
+          2
+        )}\n`
+      );
+      writeTextFile(path.join(workspaceRoot, "README.md"), "# Server quick\n");
+      const server = await startServer(workspaceRoot);
+
+      try {
+        const quick = await request(`http://127.0.0.1:${server.port}/api/quick`, {
+          method: "POST",
+          body: {
+            title: "Ship dashboard quick entrypoint",
+            priority: "P0",
+            recipeId: "review",
+            agent: "claude-code",
+          },
+        });
+        assert.equal(quick.statusCode, 201);
+        assert.equal(quick.json.taskId, "T-002");
+        assert.equal(quick.json.adapterId, "claude-code");
+        assert.equal(quick.json.priority, "P0");
+        assert.equal(quick.json.recipeId, "review");
+        assert.match(quick.json.promptPath, /prompt\.claude\.md$/);
+        assert.match(quick.json.runRequestPath, /run-request\.claude-code\.json$/);
+        assert.match(quick.json.launchPackPath, /launch\.claude-code\.md$/);
+        assert.ok(fs.existsSync(path.join(workspaceRoot, quick.json.promptPath)));
+        assert.ok(fs.existsSync(path.join(workspaceRoot, quick.json.runRequestPath)));
+        assert.ok(fs.existsSync(path.join(workspaceRoot, quick.json.launchPackPath)));
+        assert.ok(fs.existsSync(path.join(workspaceRoot, quick.json.checkpointPath)));
+
+        const task = await request(`http://127.0.0.1:${server.port}/api/tasks/T-002`);
+        assert.equal(task.statusCode, 200);
+        assert.equal(task.json.meta.id, "T-002");
+        assert.equal(task.json.meta.recipeId, "review");
       } finally {
         await server.stop();
       }

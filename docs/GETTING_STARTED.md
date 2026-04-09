@@ -90,6 +90,7 @@ npx agent-workflow dashboard --root ../demo-repo --port 4173
 ```
 
 Then open `http://localhost:4173`.
+The Task Actions panel now also includes a `Quick Create` card that uses the same durable quick-task service as the CLI, so browser-driven bootstrapping still produces the same prompt, run-request, launch pack, and checkpoint files.
 
 ## What you should see
 
