@@ -80,6 +80,7 @@ As of 2026-04-09, the project already has a working MVP foundation:
 - the Claude Code T-003 dogfooding pilot is now also proven end to end: the repo-local `claude-code.json` adapter uses `cmd.exe /d /s /c claude --model sonnet --bare --output-format json -p --permission-mode bypassPermissions` with `stdinMode: promptFile`; the first run failed with "Not logged in" confirming that `ANTHROPIC_AUTH_TOKEN` and `ANTHROPIC_BASE_URL` must be in the child `envAllowlist`; after that fix the launched Claude agent ran all automated checks (npm test 82 passed, smoke passed, validate errors=0) and left durable evidence; built-in generated scaffolds still default to `commandMode: manual`
 - package metadata is now exercised by a real npm release: `agent-workflow-studio@0.1.1` is published, the payload is primarily scoped through `package.json.files`, root `.npmignore` now mirrors the non-runtime repo directories as a release backstop, and the CLI is exposed through the `agent-workflow` bin without npm auto-cleanup warnings
 - the repo now also includes a first GitHub Actions matrix under `.github/workflows/ci.yml`, configured to run `npm test`, `npm run validate -- --root .`, and `npm run smoke` across `windows-latest`, `ubuntu-latest`, and `macos-latest`
+- that GitHub Actions matrix is now also wired to run `npm run verify:onboarding`, which packs the local repo, installs it into a clean helper directory, boots a demo repo through `init`/`scan`/`memory:bootstrap`/`quick`, launches the published dashboard, and exercises dashboard `Quick Create`
 - the first three GitHub Actions CI runs have now completed successfully across all three matrix platforms (`windows-latest`, `ubuntu-latest`, `macos-latest`), so the initial cross-platform shell/path assumptions appear stable under hosted runners
 - the published install surface is now partially verified on this Windows machine: `npm install agent-workflow-studio` followed by `npx agent-workflow --help` works from a clean temp directory, while docs now avoid the misleading package-name-as-command shortcut
 - the published package now also exposes dashboard launch through the main CLI (`agent-workflow dashboard` / `npx agent-workflow dashboard`), so first-time users no longer need to know the internal `src/server.js` path just to open the local control plane
@@ -300,11 +301,11 @@ npm run smoke
 
 Recommended next sequence:
 
-1. Keep extending the GitHub Actions matrix around npm-first onboarding plus dashboard quick flows so hosted-runner portability stays visible.
+1. Watch the updated GitHub Actions matrix after the new packed-tarball onboarding check lands, and fix any hosted-runner path issues before widening executor surface area again.
 2. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 3. Preserve the current contract-first split between adapter config, prepared run artifacts, preflight, and durable evidence instead of introducing dashboard-only runtime state.
-4. Keep watching the GitHub Actions matrix after executor, packaging, or dashboard quick changes so hosted-runner portability does not silently regress.
-5. Revisit adapter polish only if dogfooding reveals missing defaults or validation gaps in `adapter:create`; avoid jumping to a plugin system.
+4. Revisit adapter polish only if dogfooding reveals missing defaults or validation gaps in `adapter:create`; avoid jumping to a plugin system.
+5. If onboarding churn continues, decide whether the next highest-leverage polish is a short demo GIF or a small validator around memory bootstrap output.
 
 ## What not to do next
 
@@ -317,7 +318,7 @@ Recommended next sequence:
 
 Suggested first task:
 
-Now that dynamic adapter discovery and the dashboard `quick` entrypoint are in place, the next highest-value task is to keep hosted-runner portability honest by extending the GitHub Actions matrix around the npm-first and dashboard-quick paths.
+Now that the packed-tarball onboarding check is wired into the matrix, the next highest-value task is to watch the first hosted runs closely and fix any cross-platform path or process-lifecycle mismatches that only appear under GitHub-hosted runners.
 
 Expected shape:
 

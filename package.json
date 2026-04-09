@@ -52,6 +52,7 @@
     "run:add": "node src/cli.js run:add",
     "validate": "node src/cli.js validate",
     "dashboard": "node src/server.js",
+    "verify:onboarding": "node scripts/npm-onboarding-check.js",
     "smoke": "node scripts/smoke-test.js"
   },
   "engines": {

@@ -70,6 +70,7 @@ The local HTTP server exposes:
 - `GET /api/recipes`
 - `GET /api/runs`
 - `GET /api/validate`
+- `POST /api/quick`
 - `POST /api/tasks`
 - `POST /api/tasks/:taskId/execute`
 - `POST /api/tasks/:taskId/execution/cancel`

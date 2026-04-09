@@ -145,6 +145,7 @@ As of 2026-04-09, `agent-workflow-studio@0.1.1` is live on npm.
 - the package name is `agent-workflow-studio`
 - the installed CLI command is `agent-workflow`
 - the published payload stays scoped to runtime files (`src/`, `dashboard/`, docs, and top-level metadata) instead of shipping tests, tmp artifacts, or repo-local dogfooding state; `package.json.files` is the primary whitelist and root `.npmignore` now mirrors the non-runtime directories as an explicit release guardrail
+- GitHub Actions now also verifies a packed-tarball install plus dashboard quick-create flow across Windows, macOS, and Linux, so npm-first onboarding regressions are less likely to hide behind repo-only tests
 - local development from this repository root still works through the same `npm run ...` commands
 
 Install and verify it with:
@@ -289,7 +290,7 @@ If you want to help shape this into a serious open source workflow layer, start 
 
 - read `CONTRIBUTING.md`
 - keep changes local-first, relocatable, and schema-aware
-- run `npm test` and `npm run smoke` before opening a PR
+- run `npm test`, `npm run smoke`, and `npm run verify:onboarding` before opening a PR when you touch packaging, onboarding, or dashboard quick flows
 
 ## Community
 

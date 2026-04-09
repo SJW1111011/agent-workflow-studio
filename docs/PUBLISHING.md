@@ -20,6 +20,7 @@ Before publishing a new version:
    - `npm test`
    - `npm run smoke`
    - `npm run validate -- --root .`
+   - `npm run verify:onboarding`
 4. Inspect the publish payload
    - `npm pack --dry-run --json --cache ./.npm-cache-tmp`
 5. Confirm npm registry readiness
@@ -46,6 +47,7 @@ As of 2026-04-09:
 - `npm view agent-workflow-studio version name --json --registry https://registry.npmjs.org/` confirms the published `0.1.1` package
 - the release surface is now guarded two ways: `package.json.files` remains the primary whitelist, and root `.npmignore` mirrors non-runtime repo state as an explicit packaging backstop
 - a clean temp install of `agent-workflow-studio@0.1.1` now verifies `npx agent-workflow --help`, `init`, `scan`, `memory:bootstrap`, `quick`, `validate`, and `npx agent-workflow dashboard --root ... --port 4175`
+- local CI now also exercises the packed-tarball install path plus dashboard `Quick Create`, so publish regressions are less likely to hide behind repo-root smoke coverage
 - future publishes still require npm 2FA-compatible auth, such as an OTP or a granular access token with bypass 2FA enabled
 
 The main remaining release work is now polish around the published install experience, not package structure.

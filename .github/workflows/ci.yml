@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  test-and-smoke:
+  test-smoke-and-onboarding:
     name: ${{ matrix.os }} / node-${{ matrix.node }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
@@ -43,3 +43,6 @@ jobs:
 
       - name: Run smoke test
         run: npm run smoke
+
+      - name: Verify npm-first onboarding and dashboard quick flow
+        run: npm run verify:onboarding
