@@ -7,7 +7,7 @@ const MEMORY_STALE_MS = 7 * 24 * 60 * 60 * 1000;
 const TASK_DOC_STALE_MS = 7 * 24 * 60 * 60 * 1000;
 const SYNC_GRACE_MS = 60 * 1000;
 
-function loadMemoryFreshness(workspaceRoot, placeholderMarkers = []) {
+function loadMemoryFreshness(workspaceRoot, placeholderDetector = []) {
   const root = memoryRoot(workspaceRoot);
   if (!fs.existsSync(root)) {
     return [];
@@ -19,7 +19,7 @@ function loadMemoryFreshness(workspaceRoot, placeholderMarkers = []) {
     .map((entry) => {
       const absolutePath = path.join(root, entry.name);
       const content = readText(absolutePath, "");
-      const placeholder = placeholderMarkers.some((marker) => content.includes(marker));
+      const placeholder = detectPlaceholder(content, placeholderDetector);
       const stats = fs.statSync(absolutePath);
       const ageMs = Date.now() - stats.mtimeMs;
       const freshnessStatus = placeholder ? "placeholder" : ageMs > MEMORY_STALE_MS ? "stale" : "fresh";
@@ -40,6 +40,18 @@ function loadMemoryFreshness(workspaceRoot, placeholderMarkers = []) {
       };
     })
     .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function detectPlaceholder(content, placeholderDetector) {
+  if (typeof placeholderDetector === "function") {
+    return placeholderDetector(content);
+  }
+
+  if (Array.isArray(placeholderDetector)) {
+    return placeholderDetector.some((marker) => content.includes(marker));
+  }
+
+  return false;
 }
 
 function buildTaskFreshness(workspaceRoot, taskMeta, runs = []) {

@@ -24,6 +24,7 @@ As of 2026-04-09, the project already has a working MVP foundation:
 - prompt compilation
 - `quick` task bootstrap for the common local flow: scan -> task bundle -> prompt -> run-request/launch pack -> checkpoint
 - `memory:bootstrap` for the common onboarding flow: scan -> refresh project profile -> write a reusable memory bootstrap prompt under `.agent-workflow/handoffs/`
+- `memory:validate` for the onboarding follow-through: fail on unchanged scaffold memory lines and warn on obviously empty sections or absolute machine paths before those notes become durable project memory
 - the repo now also has a checked-in `.agent-workflow/` dogfooding state with grounded memory docs plus a real `T-001` onboarding task bundle, checkpoint, and run evidence
 - run preparation handoff packs
 - shared `run:execute` for adapters that opt into `commandMode: exec`
@@ -44,6 +45,7 @@ As of 2026-04-09, the project already has a working MVP foundation:
 - schema validation
 - local dashboard
 - lightweight freshness detection for memory docs and task markdown bundles
+- memory placeholder detection is now line-based instead of heading-fragment based, so grounded memory docs no longer stay falsely flagged just for keeping stable section titles
 - Git-aware diff-aware verification gates using a reusable repository snapshot with filesystem fallback
 - stronger scope hint extraction for `task.md` markers like `path:` / `files:` / `dirs:`
 - checkpoint refresh rules that now surface scoped files awaiting proof
@@ -132,6 +134,7 @@ Supported commands:
 - `init`
 - `scan`
 - `memory:bootstrap`
+- `memory:validate`
 - `adapter:list`
 - `recipe:list`
 - `task:new`
@@ -201,9 +204,10 @@ Start here:
 
 ## What was validated locally
 
-Verified on 2026-04-08:
+Verified on 2026-04-09:
 
 - `npm test`
+- `npm run memory:validate -- --root .`
 - `npm run smoke`
 
 The smoke test currently covers:
@@ -291,8 +295,8 @@ npm run smoke
 Recommended next sequence:
 
 1. Check the first GitHub Actions matrix runs for `.github/workflows/ci.yml` and fix any platform-specific issues that surface on macOS or Linux.
-2. Add a small `memory:validate` follow-through so `memory:bootstrap` can be verified for placeholder cleanup and obviously weak scaffold output.
-3. Revisit adapter extensibility only after the executor/evidence model is proven stable in dogfooding; prefer a small `adapter:create` or dynamic-discovery path over hard-coded growth.
+2. Revisit adapter extensibility only after the executor/evidence model is proven stable in dogfooding; prefer a small `adapter:create` or dynamic-discovery path over hard-coded growth.
+3. Decide whether the dashboard should grow a thin `quick` entrypoint over the existing CLI contract without inventing a second task-creation path.
 4. Keep interactive `stdioMode: inherit` flows CLI-only until there is a real terminal-ownership design.
 5. Preserve the current contract-first split between adapter config, prepared run artifacts, preflight, and durable evidence instead of introducing dashboard-only runtime state.
 
@@ -307,12 +311,12 @@ Recommended next sequence:
 
 Suggested first task:
 
-Now that npm publishing, external onboarding validation, and cross-platform CI are in place, the next highest-value task is to close the loop on `memory:bootstrap` with a lightweight `memory:validate` command that catches unchanged placeholders and clearly incomplete memory docs before they become stale workflow baggage.
+Now that npm publishing, external onboarding validation, cross-platform CI scaffolding, and the `memory:bootstrap` -> `memory:validate` loop are all in place, the next highest-value task is to inspect the first GitHub Actions matrix runs and fix any platform-specific issues that surface on macOS or Linux.
 
 Expected shape:
 
 - preserve the current local-only API contract and existing smoke coverage
-- keep the validation local-only and file-based; do not embed cloud calls or auto-rewrite memory docs
+- prefer small portability fixes over platform-specific branching unless a real shell/runtime difference forces it
 - keep the next executor slice focused on one real local CLI path before broadening defaults or adapter breadth
 - keep manual proof human-authored in `## Proof links`, with machine-owned anchor metadata isolated under the managed `## Evidence` block
 - keep using `src/lib/http-errors.js` for any new server-facing route or local API surface

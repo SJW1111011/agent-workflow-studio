@@ -2,6 +2,7 @@ const suites = [
   require("../test/cli.test.js"),
   require("../test/http-errors.test.js"),
   require("../test/memory-bootstrap.test.js"),
+  require("../test/memory-validator.test.js"),
   require("../test/overview.test.js"),
   require("../test/quick-task.test.js"),
   require("../test/run-executor.test.js"),

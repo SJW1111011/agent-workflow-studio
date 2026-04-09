@@ -50,6 +50,7 @@ The current foundation includes:
 - `recipe:list`: inspect the built-in workflow recipes
 - `quick`: create a task bundle fast by refreshing the project profile, creating the task, compiling the prompt, preparing the run-request/launch pack, and refreshing the checkpoint
 - `memory:bootstrap`: generate a local-only bootstrap prompt for filling the scaffold memory docs through Codex or Claude Code without embedding cloud API calls
+- `memory:validate`: verify that saved memory docs no longer look scaffold-like and warn on obviously empty sections or machine-specific absolute paths
 - `dashboard`: launch the local control plane directly from the CLI or published package
 - `task:new`: create a structured task package with both machine-readable and human-readable context
 - `prompt:compile`: generate Codex or Claude Code prompts from workflow state
@@ -96,6 +97,8 @@ npm run scan -- --root ../some-repo
 npm run adapter:list
 npm run recipe:list -- --root ../some-repo
 npm run memory:bootstrap -- --root ../some-repo
+# after saving grounded notes under .agent-workflow/memory/*.md
+npm run memory:validate -- --root ../some-repo
 npm run quick -- "Build the scanner" --task-id T-001 --priority P1 --recipe feature --agent codex --root ../some-repo
 npm run task:new -- T-001 "Build the scanner" --priority P1 --recipe feature --root ../some-repo
 npm run dashboard -- --root ../some-repo --port 4173
@@ -131,6 +134,7 @@ It still lands the same durable artifacts:
 - it writes a reusable prompt to `.agent-workflow/handoffs/memory-bootstrap.md`
 - it does not call a cloud API or mutate the memory docs for you
 - it gives you a file-based handoff you can pass to Codex or Claude Code, then review before saving
+- once those docs are saved, `memory:validate` gives you a local-only check for leftover scaffold lines, obviously empty sections, and absolute machine paths
 
 ## npm distribution
 

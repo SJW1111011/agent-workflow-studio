@@ -4,6 +4,7 @@ const path = require("path");
 const { buildCheckpoint } = require("./lib/checkpoint");
 const { listAdapters, normalizeAdapterId } = require("./lib/adapters");
 const { formatMemoryBootstrapSummary, generateMemoryBootstrapPrompt } = require("./lib/memory-bootstrap");
+const { formatMemoryValidationSummary, validateMemoryDocs } = require("./lib/memory-validator");
 const { buildOverview } = require("./lib/overview");
 const { compilePrompt } = require("./lib/prompt-compiler");
 const { formatQuickTaskSummary, quickCreateTask } = require("./lib/quick-task");
@@ -38,6 +39,17 @@ function main(argv = process.argv.slice(2)) {
           outputPath: options.output,
         });
         print(formatMemoryBootstrapSummary(result, workspaceRoot));
+        break;
+      }
+      case "memory:validate": {
+        const report = validateMemoryDocs(workspaceRoot);
+        print(formatMemoryValidationSummary(report));
+        report.issues.forEach((item) => {
+          print(`${item.level.toUpperCase()} | ${item.code} | ${item.target} | ${item.message}`);
+        });
+        if (!report.ok) {
+          process.exitCode = 1;
+        }
         break;
       }
       case "dashboard": {
@@ -270,6 +282,7 @@ Commands:
   init [--root path]
   scan [--root path]
   memory:bootstrap [--output .agent-workflow/handoffs/memory-bootstrap.md] [--root path]
+  memory:validate [--root path]
   dashboard [--root path] [--port 4173]
   adapter:list [--root path]
   recipe:list [--root path]

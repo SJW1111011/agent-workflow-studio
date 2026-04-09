@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { readText, writeFile } = require("./fs-utils");
-const { MEMORY_PLACEHOLDERS } = require("./memory-placeholders");
+const { hasMemoryPlaceholder } = require("./memory-placeholders");
 const { scanWorkspace } = require("./scanner");
 const { ensureWorkflowScaffold, handoffsRoot, memoryRoot, projectConfigPath, projectProfileMarkdownPath } = require("./workspace");
 
@@ -47,7 +47,7 @@ function loadMemoryBootstrapDocs(workspaceRoot) {
       return {
         name: entry.name,
         relativePath: path.join(".agent-workflow", "memory", entry.name).replace(/\\/g, "/"),
-        placeholder: MEMORY_PLACEHOLDERS.some((marker) => content.includes(marker)),
+        placeholder: hasMemoryPlaceholder(content),
         excerpt: excerptMarkdown(content),
       };
     })
@@ -186,6 +186,7 @@ function isNonEmptyString(value) {
 }
 
 module.exports = {
+  MEMORY_DOC_ORDER,
   formatMemoryBootstrapSummary,
   generateMemoryBootstrapPrompt,
   loadMemoryBootstrapDocs,

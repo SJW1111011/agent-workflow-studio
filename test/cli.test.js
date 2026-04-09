@@ -130,6 +130,7 @@ const tests = [
         process.stdout.write = originalWrite;
       }
 
+      assert.match(output, /memory:validate \[--root path\]/);
       assert.match(output, /dashboard \[--root path\] \[--port 4173\]/);
     },
   },

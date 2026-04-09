@@ -38,6 +38,7 @@
     "init": "node src/cli.js init",
     "scan": "node src/cli.js scan",
     "memory:bootstrap": "node src/cli.js memory:bootstrap",
+    "memory:validate": "node src/cli.js memory:validate",
     "adapter:list": "node src/cli.js adapter:list",
     "recipe:list": "node src/cli.js recipe:list",
     "quick": "node src/cli.js quick",

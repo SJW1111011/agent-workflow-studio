@@ -17,9 +17,9 @@
 
 ## Forbidden shortcuts
 
-- placeholder APIs
-- fake verification
-- hidden production toggles
+- stubbed adapter surfaces that pretend the real runtime exists
+- fabricated verification evidence or implied proof without links
+- undocumented production-only toggles that bypass the workflow contract
 - absolute machine paths in durable workflow artifacts
 - second durable execution databases or hidden background ledgers
 - bypassing task / prompt / run-request contracts with ad hoc UI-only state

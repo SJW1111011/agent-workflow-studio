@@ -1,7 +1,7 @@
 const { fileExists, readText } = require("./fs-utils");
 const { listAdapters } = require("./adapters");
 const { buildTaskFreshness, loadMemoryFreshness } = require("./freshness");
-const { MEMORY_PLACEHOLDERS } = require("./memory-placeholders");
+const { hasMemoryPlaceholder } = require("./memory-placeholders");
 const { listRecipes } = require("./recipes");
 const { loadRepositorySnapshot } = require("./repository-snapshot");
 const { validateWorkspace } = require("./schema-validator");
@@ -47,7 +47,7 @@ function buildOverview(workspaceRoot) {
   const repositorySnapshot = loadRepositorySnapshot(workspaceRoot);
   const tasks = listTasks(workspaceRoot).map((task) => enrichTask(workspaceRoot, task, repositorySnapshot));
   const runs = tasks.flatMap((task) => listRuns(workspaceRoot, task.id));
-  const memory = loadMemoryFreshness(workspaceRoot, MEMORY_PLACEHOLDERS);
+  const memory = loadMemoryFreshness(workspaceRoot, hasMemoryPlaceholder);
   const validation = validateWorkspace(workspaceRoot);
   const risks = deriveOverviewRisks(workspaceRoot, tasks, memory, validation);
   const verification = deriveVerification(tasks);

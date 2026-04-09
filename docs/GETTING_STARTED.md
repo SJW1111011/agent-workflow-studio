@@ -116,6 +116,7 @@ After the verified quick-start flow, the repo should contain:
 ## What to do next
 
 - review `.agent-workflow/handoffs/memory-bootstrap.md` and give it to Codex or Claude Code
+- after saving grounded memory notes, run `npx agent-workflow memory:validate --root ../demo-repo`
 - review `task.md`, `context.md`, and `verification.md`
 - give `prompt.codex.md` or `prompt.claude.md` to your agent
 - after the run, record evidence and refresh the checkpoint
@@ -123,5 +124,6 @@ After the verified quick-start flow, the repo should contain:
 ## Notes
 
 - keep everything repo-relative; do not hard-code machine paths into workflow files
+- `memory:validate` is expected to fail until you replace scaffold memory lines with repo-grounded notes
 - Git mode gives the strongest verification view, so initializing a Git repo early is recommended
 - `quick` is a shortcut over the same durable task artifacts, not a separate hidden runtime
