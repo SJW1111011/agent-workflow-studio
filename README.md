@@ -8,7 +8,8 @@
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=for-the-badge" alt="Zero dependencies">
 </p>
 
-> **Built entirely by Codex in a single session (default 258k context), with Claude Code providing evaluation, suggestions, and code review.**
+> **Built largely by Codex across a long-running, repeatedly compacted workflow, with Claude Code providing evaluation, suggestions, and code review.**
+> Large context provided speed; repo-local tasks, evidence, verification, and checkpoints kept the work coherent across multi-day iteration.
 > This project is both the tool and the proof that structured agent workflows work.
 
 Make every Codex and Claude Code run leave an auditable evidence trail.
