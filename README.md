@@ -42,7 +42,20 @@ For the cleaner helper-directory install flow, see [docs/GETTING_STARTED.md](doc
 - **`run:execute`** - launch a local adapter when you explicitly opt into `commandMode: exec`, with shared preflight, logs, and evidence capture
 - **`verification gate`** - compare repo-relative task scope against the current repository snapshot and show which scoped files still need explicit proof
 - **`proof anchors`** - keep passed evidence and refreshed manual proof tied to content fingerprints, not fragile `mtime` alone
+- **`skills:generate`** - write `AGENTS.md`, `CLAUDE.md`, and Claude slash commands so the workflow becomes part of the agent's default context
 - **`dashboard`** - inspect tasks, evidence, freshness, risks, execution state, and quick-create flows from a local control plane at `localhost:4173`
+
+## Built for agents too
+
+Teach Codex and Claude Code the workflow automatically:
+
+```bash
+npx agent-workflow skills:generate --root .
+```
+
+This writes `AGENTS.md`, `CLAUDE.md`, and Claude slash commands so the agent can follow the same task/evidence/checkpoint flow without manual setup.
+
+See [AGENT_GUIDE.md](AGENT_GUIDE.md) for the full workflow guide.
 
 ## Architecture at a glance
 
@@ -102,27 +115,6 @@ Agent Workflow Studio is designed to become that missing layer.
 - **Execution:** `prompt:compile`, `run:prepare`, `run:execute`, `run:add`, `checkpoint`
 - **Inspection:** `dashboard`, `validate`
 - **Skills:** `skills:generate`
-
-## Agent skills
-
-Agent Workflow Studio ships with an [AGENT_GUIDE.md](AGENT_GUIDE.md) that teaches any coding agent the full workflow — from initialization to evidence recording.
-
-Generate agent-specific files in your repo:
-
-```bash
-npx agent-workflow skills:generate --root .
-```
-
-This creates:
-
-- `CLAUDE.md` — full workflow guide, auto-loaded by Claude Code
-- `AGENTS.md` — same guide, auto-loaded by Codex
-- `.claude/commands/workflow-init.md` — `/workflow-init`
-- `.claude/commands/workflow-task.md` — `/workflow-task <title>`
-- `.claude/commands/workflow-done.md` — `/workflow-done`
-- `.claude/commands/workflow-status.md` — `/workflow-status`
-
-After running `skills:generate`, both Claude Code and Codex automatically know how to use the workflow — no manual setup needed.
 
 ## Adapter layer
 
