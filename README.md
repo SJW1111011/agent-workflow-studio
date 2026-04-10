@@ -9,8 +9,6 @@
 </p>
 
 > **Built largely by Codex in a single session (default 258k context, repeatedly compacted and spanning more than 50 commits over 7 days), with Claude Code providing evaluation, suggestions, and code review.**
-> Large context provided speed; repeated compaction plus repo-local tasks, evidence, verification, and checkpoints kept the work coherent across multi-day iteration.
-> This project is both the tool and the proof that structured agent workflows work.
 
 Make every Codex and Claude Code run leave an auditable evidence trail.
 
