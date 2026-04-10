@@ -19,6 +19,7 @@ Use this directory in layers instead of reading every file front to back.
 
 - [`ADAPTERS.md`](ADAPTERS.md) - built-in adapters, custom adapter scaffolding, and adapter contract notes
 - [`PUBLISHING.md`](PUBLISHING.md) - release checklist, npm publishing notes, and post-publish verification
+- [`RELEASE_NOTES_0.1.2.md`](RELEASE_NOTES_0.1.2.md) - the published summary of the current npm release
 - [`../CHANGELOG.md`](../CHANGELOG.md) - released changes plus the current unreleased docs track
 
 ## Product and backlog docs

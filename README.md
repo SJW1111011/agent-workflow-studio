@@ -211,6 +211,7 @@ npm test
 
 - [Getting Started](docs/GETTING_STARTED.md) - the full npm-first onboarding flow
 - [Documentation Index](docs/README.md) - the map for all design and reference docs
+- [Release Notes 0.1.2](docs/RELEASE_NOTES_0.1.2.md) - the published release summary for the current npm version
 - [Architecture](docs/ARCHITECTURE.md) - how the scaffold, dashboard, adapters, and evidence model fit together
 - [Verification Design](docs/VERIFICATION_FRESHNESS_DESIGN.md) - verification gates, proof anchors, and freshness rules
 - [Executor Design](docs/RUN_EXECUTE_DESIGN.md) - local executor planning, preflight, and evidence capture

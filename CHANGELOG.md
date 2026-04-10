@@ -12,6 +12,8 @@ This project keeps a lightweight changelog focused on user-visible changes and r
 
 ## [0.1.2] - 2026-04-10
 
+See [`docs/RELEASE_NOTES_0.1.2.md`](docs/RELEASE_NOTES_0.1.2.md) for the longer release summary.
+
 ### Dashboard
 
 - added tab navigation and collapsible panels to the local dashboard so the control plane is easier to scan during day-to-day use
