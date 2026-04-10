@@ -74,25 +74,25 @@
           <div class="list">${generatedFiles}</div>
         </article>
 
-        <article class="detail-card wide">
-          <h3>Task Brief</h3>
-          <pre class="detail-pre">${escapeHtml(detail.taskText || "No task.md content.")}</pre>
-        </article>
+        <details class="collapsible-panel detail-card wide">
+          <summary>Task Brief</summary>
+          <div class="collapsible-body"><pre class="detail-pre">${escapeHtml(detail.taskText || "No task.md content.")}</pre></div>
+        </details>
 
-        <article class="detail-card">
-          <h3>Context</h3>
-          <pre class="detail-pre">${escapeHtml(detail.contextText || "No context.md content.")}</pre>
-        </article>
+        <details class="collapsible-panel detail-card">
+          <summary>Context</summary>
+          <div class="collapsible-body"><pre class="detail-pre">${escapeHtml(detail.contextText || "No context.md content.")}</pre></div>
+        </details>
 
-        <article class="detail-card">
-          <h3>Verification</h3>
-          <pre class="detail-pre">${escapeHtml(detail.verificationText || "No verification.md content.")}</pre>
-        </article>
+        <details class="collapsible-panel detail-card">
+          <summary>Verification</summary>
+          <div class="collapsible-body"><pre class="detail-pre">${escapeHtml(detail.verificationText || "No verification.md content.")}</pre></div>
+        </details>
 
-        <article class="detail-card">
-          <h3>Checkpoint</h3>
-          <pre class="detail-pre">${escapeHtml(detail.checkpointText || "No checkpoint.md content.")}</pre>
-        </article>
+        <details class="collapsible-panel detail-card">
+          <summary>Checkpoint</summary>
+          <div class="collapsible-body"><pre class="detail-pre">${escapeHtml(detail.checkpointText || "No checkpoint.md content.")}</pre></div>
+        </details>
 
         <article class="detail-card">
           <h3>Runs</h3>

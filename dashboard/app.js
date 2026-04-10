@@ -2,6 +2,7 @@ let activeTaskId = null;
 let activeTaskDetail = null;
 let activeDocumentName = "task.md";
 let activeExecutorOutcomeFilter = "all";
+let activeTab = "overview";
 let executionPollHandle = null;
 let executionPollTaskId = null;
 let executionLogState = null;
@@ -679,6 +680,33 @@ function bindForms() {
   });
 }
 
+function switchTab(tabName) {
+  activeTab = tabName;
+  document.querySelectorAll("[data-tab]").forEach((section) => {
+    if (section.getAttribute("data-tab") === tabName) {
+      section.classList.remove("tab-hidden");
+    } else {
+      section.classList.add("tab-hidden");
+    }
+  });
+  document.querySelectorAll("[data-tab-target]").forEach((button) => {
+    if (button.getAttribute("data-tab-target") === tabName) {
+      button.classList.add("active");
+    } else {
+      button.classList.remove("active");
+    }
+  });
+}
+
+function bindTabs() {
+  document.querySelectorAll("[data-tab-target]").forEach((button) => {
+    button.addEventListener("click", () => {
+      switchTab(button.getAttribute("data-tab-target"));
+    });
+  });
+  switchTab(activeTab);
+}
+
 async function bootstrap() {
   try {
     const overview = await loadOverview();
@@ -687,6 +715,7 @@ async function bootstrap() {
     populateRecipeSelect("quick-recipe", overview.recipes || [], "feature");
     populateRecipeSelect("create-recipe", overview.recipes || [], "feature");
     populateRecipeSelect("selected-task-recipe", overview.recipes || [], "feature");
+    bindTabs();
     bindForms();
     await refreshDashboard();
     setActionStatus("Ready.", "");

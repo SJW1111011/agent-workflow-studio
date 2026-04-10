@@ -22,10 +22,18 @@
         </div>
       </header>
 
-      <main class="layout">
-        <section class="stats" id="stats"></section>
+      <nav class="tab-bar">
+        <button class="tab-button active" data-tab-target="overview">Overview</button>
+        <button class="tab-button" data-tab-target="tasks">Tasks</button>
+        <button class="tab-button" data-tab-target="actions">Actions</button>
+        <button class="tab-button" data-tab-target="verification">Verification</button>
+        <button class="tab-button" data-tab-target="runs">Runs</button>
+      </nav>
 
-        <section class="panel panel-wide">
+      <main class="layout">
+        <section class="stats" id="stats" data-tab="overview"></section>
+
+        <section class="panel panel-wide" data-tab="overview">
           <div class="panel-head">
             <h2>Adapters</h2>
             <p>The runtime contracts that bridge workflow state into Codex and Claude Code sessions.</p>
@@ -33,7 +41,7 @@
           <div class="list" id="adapters"></div>
         </section>
 
-        <section class="panel">
+        <section class="panel" data-tab="overview">
           <div class="panel-head">
             <h2>Recipes</h2>
             <p>Structured task intents that keep prompts and task records aligned.</p>
@@ -41,7 +49,7 @@
           <div class="list" id="recipes"></div>
         </section>
 
-        <section class="panel">
+        <section class="panel" data-tab="overview">
           <div class="panel-head">
             <h2>Schema</h2>
             <p>Structural checks for workflow trustworthiness.</p>
@@ -49,7 +57,7 @@
           <div class="list" id="validation"></div>
         </section>
 
-        <section class="panel panel-wide">
+        <section class="panel panel-wide" data-tab="tasks">
           <div class="panel-head">
             <div>
               <h2>Tasks</h2>
@@ -74,7 +82,7 @@
           <div class="task-grid" id="tasks"></div>
         </section>
 
-        <section class="panel panel-wide">
+        <section class="panel panel-wide" data-tab="actions">
           <div class="panel-head">
             <h2>Task Actions</h2>
             <p>Quick-create a full task bundle, create bare tasks, update task metadata, and record run evidence without leaving the dashboard.</p>
@@ -295,7 +303,7 @@
           <div class="action-status" id="action-status">Ready.</div>
         </section>
 
-        <section class="panel panel-wide">
+        <section class="panel panel-wide" data-tab="tasks">
           <div class="panel-head">
             <h2>Task Detail</h2>
             <p>Live detail view for the selected task, including recipe, generated files, evidence, and task-level schema issues.</p>
@@ -303,7 +311,7 @@
           <div id="task-detail"></div>
         </section>
 
-        <section class="panel">
+        <section class="panel" data-tab="overview">
           <div class="panel-head">
             <h2>Memory</h2>
             <p>Stable docs that future agents should trust.</p>
@@ -311,7 +319,7 @@
           <div class="list" id="memory"></div>
         </section>
 
-        <section class="panel">
+        <section class="panel" data-tab="verification">
           <div class="panel-head">
             <h2>Verify</h2>
             <p>What has evidence and what still needs proof.</p>
@@ -319,7 +327,7 @@
           <div class="list" id="verification"></div>
         </section>
 
-        <section class="panel panel-wide">
+        <section class="panel panel-wide" data-tab="overview">
           <div class="panel-head">
             <h2>Risk Queue</h2>
             <p>Things you should not ignore before trusting the current state.</p>
@@ -327,7 +335,7 @@
           <div class="list" id="risks"></div>
         </section>
 
-        <section class="panel panel-wide">
+        <section class="panel panel-wide" data-tab="runs">
           <div class="panel-head">
             <h2>Recent Runs</h2>
             <p>Execution evidence recorded by the workflow layer.</p>
