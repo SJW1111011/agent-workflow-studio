@@ -8,3 +8,4 @@ scripts/
 test/
 tmp/
 *.tgz
+docs/assets/

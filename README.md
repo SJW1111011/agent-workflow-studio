@@ -28,7 +28,7 @@ A local-first workflow loop for turning messy agent sessions into bundled tasks,
 
 <p align="center">
   <img
-    src="docs/assets/agent-workflow-hero.png"
+    src="https://raw.githubusercontent.com/SJW1111011/agent-workflow-studio/main/docs/assets/agent-workflow-hero.png"
     alt="Agent Workflow Studio workflow diagram showing quick creation, execution and verification, proof anchors, checkpoints, and the local dashboard"
     width="1100"
   />
@@ -53,7 +53,7 @@ Track tasks, runs, risks, executor outcomes, and verification signals from one l
 
 <p align="center">
   <img
-    src="docs/assets/dashboard.png"
+    src="https://raw.githubusercontent.com/SJW1111011/agent-workflow-studio/main/docs/assets/dashboard.png"
     alt="Agent Workflow Studio dashboard overview showing task counts, runs, risks, executor outcomes, and verification signals"
     width="1100"
   />
@@ -215,6 +215,7 @@ npm test
 - [Verification Design](docs/VERIFICATION_FRESHNESS_DESIGN.md) - verification gates, proof anchors, and freshness rules
 - [Executor Design](docs/RUN_EXECUTE_DESIGN.md) - local executor planning, preflight, and evidence capture
 - [Adapters](docs/ADAPTERS.md) - built-in adapters and custom adapter scaffolding
+- [Changelog](CHANGELOG.md) - released changes plus current unreleased docs polish
 - [Roadmap](docs/ROADMAP.md) - the likely next build steps
 - [Publishing](docs/PUBLISHING.md) - npm release checklist
 

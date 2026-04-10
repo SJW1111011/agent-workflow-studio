@@ -14,6 +14,7 @@ Before publishing a new version:
    - `homepage`
    - `bugs`
    - `files`
+   - update `CHANGELOG.md` with the new release entry before publish
 2. Confirm publish guardrails
    - root `.npmignore` still mirrors non-runtime repo directories such as `.agent-workflow/`, `test/`, `scripts/`, and `tmp/`
 3. Run local verification

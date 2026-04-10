@@ -23,8 +23,9 @@
   "files": [
     "src",
     "dashboard",
-    "docs",
+    "docs/*.md",
     "README.md",
+    "CHANGELOG.md",
     "AGENT_GUIDE.md",
     "LICENSE",
     "CODE_OF_CONDUCT.md",
