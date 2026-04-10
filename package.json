@@ -1,6 +1,6 @@
 {
   "name": "agent-workflow-studio",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Local-first workflow OS and project control plane for Codex and Claude Code.",
   "license": "MIT",
   "type": "commonjs",

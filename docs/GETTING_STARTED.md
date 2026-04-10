@@ -6,7 +6,7 @@ It is written for the published package, not for contributors working from this 
 
 ## Verified path
 
-As of 2026-04-09, the following flow was re-validated from a truly external clean temp directory on Windows against `agent-workflow-studio@0.1.1`:
+As of 2026-04-10, the following flow was re-validated from a truly external clean temp directory on Windows against `agent-workflow-studio@0.1.2`:
 
 - install the published package locally into a separate tool directory
 - run `init`
