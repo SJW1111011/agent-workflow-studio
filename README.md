@@ -22,6 +22,18 @@ Agent Workflow Studio turns:
 - evidence into refreshed docs and checkpoints
 - long jobs into resumable handoffs instead of lost context
 
+## How it works
+
+A local-first workflow loop for turning messy agent sessions into bundled tasks, auditable evidence, and durable checkpoints.
+
+<p align="center">
+  <img
+    src="docs/assets/agent-workflow-hero.png"
+    alt="Agent Workflow Studio workflow diagram showing quick creation, execution and verification, proof anchors, checkpoints, and the local dashboard"
+    width="1100"
+  />
+</p>
+
 ## Try it in 1 minute
 
 ```bash
