@@ -35,6 +35,18 @@ Then open `http://localhost:4173`.
 
 For the cleaner helper-directory install flow, see [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md).
 
+## See the dashboard
+
+Local-first overview for tasks, runs, verification signals, and executor outcomes.
+
+<p align="center">
+  <img
+    src="docs/assets/dashboard-overview.svg"
+    alt="Agent Workflow Studio dashboard overview preview showing tasks, runs, verification signals, and executor outcomes"
+    width="1100"
+  />
+</p>
+
 ## Core capabilities
 
 - **`quick`** - create a durable task bundle in one step: profile refresh, task docs, prompt, run request, launch pack, and checkpoint
