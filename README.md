@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=for-the-badge" alt="Zero dependencies">
 </p>
 
-> **Built largely by Codex with the default 258k context window, across a long-running, repeatedly compacted workflow and more than 50 commits over 7 days, with Claude Code providing evaluation, suggestions, and code review.**
+> **Built largely by Codex in a single session (default 258k context, repeatedly compacted and spanning more than 50 commits over 7 days), with Claude Code providing evaluation, suggestions, and code review.**
 > Large context provided speed; repeated compaction plus repo-local tasks, evidence, verification, and checkpoints kept the work coherent across multi-day iteration.
 > This project is both the tool and the proof that structured agent workflows work.
 
