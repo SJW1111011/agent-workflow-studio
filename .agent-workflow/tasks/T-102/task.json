@@ -1,0 +1,14 @@
+{
+  "id": "T-102",
+  "title": "Vitest migration — replace hand-rolled test runner, maintain ≥85% coverage",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-12T17:22:00.224Z",
+  "updatedAt": "2026-04-12T17:22:00.224Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

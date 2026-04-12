@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-103",
+  "adapterId": "codex",
+  "title": "CI matrix — GitHub Actions for Node 18/20/22, coverage, automated npm publish",
+  "generatedAt": "2026-04-12T17:22:15.017Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-103",
+  "promptFile": ".agent-workflow/tasks/T-103/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-103/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

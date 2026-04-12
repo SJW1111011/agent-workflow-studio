@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-102",
+  "adapterId": "codex",
+  "title": "Vitest migration — replace hand-rolled test runner, maintain ≥85% coverage",
+  "generatedAt": "2026-04-12T17:22:00.234Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-102",
+  "promptFile": ".agent-workflow/tasks/T-102/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-102/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

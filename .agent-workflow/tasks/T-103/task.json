@@ -1,0 +1,14 @@
+{
+  "id": "T-103",
+  "title": "CI matrix — GitHub Actions for Node 18/20/22, coverage, automated npm publish",
+  "recipeId": "feature",
+  "priority": "P2",
+  "status": "todo",
+  "createdAt": "2026-04-12T17:22:15.007Z",
+  "updatedAt": "2026-04-12T17:22:15.007Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

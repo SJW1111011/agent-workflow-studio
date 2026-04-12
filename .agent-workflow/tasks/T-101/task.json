@@ -1,0 +1,14 @@
+{
+  "id": "T-101",
+  "title": "ESM dual-package — exports field, CJS backward-compat preserved",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-12T17:21:26.895Z",
+  "updatedAt": "2026-04-12T17:21:26.895Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

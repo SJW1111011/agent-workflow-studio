@@ -1,0 +1,22 @@
+{
+  "taskId": "T-102",
+  "generatedAt": "2026-04-12T17:22:00.367Z",
+  "latestRunStatus": "none",
+  "runCount": 0,
+  "risks": [
+    "No execution evidence recorded yet.",
+    "Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths."
+  ],
+  "completed": [
+    "Prompt compiled",
+    "Task context captured"
+  ],
+  "verificationGate": {
+    "status": "ready",
+    "message": "Add explicit repo-relative paths in the task scope to enable stronger verification gates.",
+    "relevantChangeCount": 0,
+    "scopeHintCount": 0,
+    "ambiguousScopeCount": 1,
+    "relevantChangedFiles": []
+  }
+}

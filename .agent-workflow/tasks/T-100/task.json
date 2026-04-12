@@ -1,0 +1,14 @@
+{
+  "id": "T-100",
+  "title": "TypeScript migration skeleton — tsconfig, build pipeline, first module converted",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-12T17:20:56.487Z",
+  "updatedAt": "2026-04-12T17:20:56.487Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}
