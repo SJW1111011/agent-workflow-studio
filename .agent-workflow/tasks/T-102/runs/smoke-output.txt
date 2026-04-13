@@ -1,0 +1,4 @@
+> agent-workflow-studio@0.1.2 smoke
+> node scripts/smoke-test.js
+
+Smoke test passed.

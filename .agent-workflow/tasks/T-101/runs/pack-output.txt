@@ -1,0 +1,506 @@
+[
+  {
+    "id": "agent-workflow-studio@0.1.2",
+    "name": "agent-workflow-studio",
+    "version": "0.1.2",
+    "size": 168956,
+    "unpackedSize": 906513,
+    "shasum": "a3322f19c5341bb33d3f54f773dd0a1881bf7621",
+    "integrity": "sha512-Rihml0qoonO5sPK5Mcb74d7q17exdIVVCF7vVtQSbAvVK7b1CK222RZgTTdwEnUhAOlfHYjA3XQkvFcKlrvZEg==",
+    "filename": "agent-workflow-studio-0.1.2.tgz",
+    "files": [
+      {
+        "path": "AGENT_GUIDE.md",
+        "size": 4010,
+        "mode": 420
+      },
+      {
+        "path": "CHANGELOG.md",
+        "size": 1267,
+        "mode": 420
+      },
+      {
+        "path": "CODE_OF_CONDUCT.md",
+        "size": 1648,
+        "mode": 420
+      },
+      {
+        "path": "CONTRIBUTING.md",
+        "size": 2527,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE",
+        "size": 1067,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 11479,
+        "mode": 420
+      },
+      {
+        "path": "dashboard/api-client-helpers.js",
+        "size": 3520,
+        "mode": 420
+      },
+      {
+        "path": "dashboard/app.js",
+        "size": 25437,
+        "mode": 420
+      },
+      {
+        "path": "dashboard/document-helpers.js",
+        "size": 20846,
+        "mode": 420
+      },
+      {
+        "path": "dashboard/execution-detail-helpers.js",
+        "size": 25753,
+        "mode": 420
+      },
+      {
+        "path": "dashboard/form-event-helpers.js",
+        "size": 17422,
+        "mode": 420
+      },
+      {
+        "path": "dashboard/form-state-helpers.js",
+        "size": 5859,
+        "mode": 420
+      },
+      {
+        "path": "dashboard/index.html",
+        "size": 16691,
+        "mode": 420
+      },
+      {
+        "path": "dashboard/log-panel-helpers.js",
+        "size": 5648,
+        "mode": 420
+      },
+      {
+        "path": "dashboard/orchestration-state-helpers.js",
+        "size": 3635,
+        "mode": 420
+      },
+      {
+        "path": "dashboard/overview-render-helpers.js",
+        "size": 7869,
+        "mode": 420
+      },
+      {
+        "path": "dashboard/styles.css",
+        "size": 15108,
+        "mode": 420
+      },
+      {
+        "path": "dashboard/task-board-helpers.js",
+        "size": 8486,
+        "mode": 420
+      },
+      {
+        "path": "dashboard/task-detail-helpers.js",
+        "size": 22798,
+        "mode": 420
+      },
+      {
+        "path": "dashboard/task-list-render-helpers.js",
+        "size": 8019,
+        "mode": 420
+      },
+      {
+        "path": "dist/cli.js",
+        "size": 15379,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js",
+        "size": 153,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/adapters.js",
+        "size": 12455,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/checkpoint.js",
+        "size": 7962,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/dashboard-execution.js",
+        "size": 15114,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/evidence-utils.js",
+        "size": 5834,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/freshness.js",
+        "size": 5812,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/fs-utils.js",
+        "size": 1802,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/http-errors.js",
+        "size": 1386,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/memory-bootstrap.js",
+        "size": 6355,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/memory-placeholders.js",
+        "size": 862,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/memory-validator.js",
+        "size": 8241,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/overview.js",
+        "size": 17428,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/prompt-compiler.js",
+        "size": 3425,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/quick-task.js",
+        "size": 4165,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/recipes.js",
+        "size": 934,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/repository-snapshot.js",
+        "size": 14056,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/run-executor.js",
+        "size": 12444,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/run-plan.js",
+        "size": 13178,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/run-preflight.js",
+        "size": 17996,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/run-preparer.js",
+        "size": 3739,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/scanner.js",
+        "size": 3485,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/schema-validator.js",
+        "size": 14982,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/skill-generator.js",
+        "size": 4894,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/task-documents.js",
+        "size": 17837,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/task-service.js",
+        "size": 15169,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/verification-gates.js",
+        "size": 22859,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/verification-proof.js",
+        "size": 13481,
+        "mode": 420
+      },
+      {
+        "path": "dist/lib/workspace.js",
+        "size": 9630,
+        "mode": 420
+      },
+      {
+        "path": "dist/server.js",
+        "size": 16989,
+        "mode": 420
+      },
+      {
+        "path": "docs/ADAPTERS.md",
+        "size": 7247,
+        "mode": 420
+      },
+      {
+        "path": "docs/ARCHITECTURE.md",
+        "size": 10643,
+        "mode": 420
+      },
+      {
+        "path": "docs/GETTING_STARTED.md",
+        "size": 4068,
+        "mode": 420
+      },
+      {
+        "path": "docs/ISSUE_BACKLOG.md",
+        "size": 4171,
+        "mode": 420
+      },
+      {
+        "path": "docs/NEXT_AGENT_HANDOFF.md",
+        "size": 27900,
+        "mode": 420
+      },
+      {
+        "path": "docs/PRD.md",
+        "size": 2427,
+        "mode": 420
+      },
+      {
+        "path": "docs/PUBLISHING.md",
+        "size": 4187,
+        "mode": 420
+      },
+      {
+        "path": "docs/README.md",
+        "size": 2039,
+        "mode": 420
+      },
+      {
+        "path": "docs/RECIPES_AND_SCHEMA.md",
+        "size": 6247,
+        "mode": 420
+      },
+      {
+        "path": "docs/RELEASE_NOTES_0.1.2.md",
+        "size": 2419,
+        "mode": 420
+      },
+      {
+        "path": "docs/RELOCATABLE_DESIGN.md",
+        "size": 1307,
+        "mode": 420
+      },
+      {
+        "path": "docs/ROADMAP.md",
+        "size": 8146,
+        "mode": 420
+      },
+      {
+        "path": "docs/RUN_EXECUTE_DESIGN.md",
+        "size": 31086,
+        "mode": 420
+      },
+      {
+        "path": "docs/VERIFICATION_FRESHNESS_DESIGN.md",
+        "size": 23061,
+        "mode": 420
+      },
+      {
+        "path": "index.js",
+        "size": 60,
+        "mode": 420
+      },
+      {
+        "path": "index.mjs",
+        "size": 172,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 2600,
+        "mode": 420
+      },
+      {
+        "path": "src/cli.js",
+        "size": 13594,
+        "mode": 420
+      },
+      {
+        "path": "src/index.ts",
+        "size": 46,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/adapters.js",
+        "size": 11797,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/checkpoint.js",
+        "size": 7662,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/dashboard-execution.js",
+        "size": 13518,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/evidence-utils.js",
+        "size": 5519,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/freshness.js",
+        "size": 5383,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/fs-utils.js",
+        "size": 375,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/fs-utils.ts",
+        "size": 1694,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/http-errors.js",
+        "size": 1325,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/memory-bootstrap.js",
+        "size": 6148,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/memory-placeholders.js",
+        "size": 801,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/memory-validator.js",
+        "size": 8094,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/overview.js",
+        "size": 15819,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/prompt-compiler.js",
+        "size": 3332,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/quick-task.js",
+        "size": 3955,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/recipes.js",
+        "size": 881,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/repository-snapshot.js",
+        "size": 13099,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/run-executor.js",
+        "size": 11109,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/run-plan.js",
+        "size": 13153,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/run-preflight.js",
+        "size": 17189,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/run-preparer.js",
+        "size": 3570,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/scanner.js",
+        "size": 3362,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/schema-validator.js",
+        "size": 14298,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/skill-generator.js",
+        "size": 4784,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/task-documents.js",
+        "size": 17322,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/task-service.js",
+        "size": 14537,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/verification-gates.js",
+        "size": 21280,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/verification-proof.js",
+        "size": 12780,
+        "mode": 420
+      },
+      {
+        "path": "src/lib/workspace.js",
+        "size": 9257,
+        "mode": 420
+      },
+      {
+        "path": "src/server.js",
+        "size": 15915,
+        "mode": 420
+      }
+    ],
+    "entryCount": 98,
+    "bundled": []
+  }
+]

@@ -1,14 +1,40 @@
 {
   "id": "T-103",
-  "title": "CI matrix — GitHub Actions for Node 18/20/22, coverage, automated npm publish",
+  "title": "CI matrix - GitHub Actions for Node 18/20/22, coverage, automated npm publish",
   "recipeId": "feature",
   "priority": "P2",
-  "status": "todo",
+  "status": "done",
   "createdAt": "2026-04-12T17:22:15.007Z",
-  "updatedAt": "2026-04-12T17:22:15.007Z",
-  "goal": "",
-  "scope": [],
-  "nonGoals": [],
-  "requiredDocs": [],
-  "verificationCommands": []
+  "updatedAt": "2026-04-13T06:56:31.235Z",
+  "goal": "Add a real GitHub Actions CI/release pipeline that validates the package on supported Node versions, publishes coverage from CI, and automates npm publishes on version tags without changing production runtime code.",
+  "scope": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/publish.yml",
+    "package.json",
+    "package-lock.json",
+    "vitest.config.ts",
+    "eslint.config.mjs",
+    "README.md",
+    "docs/PUBLISHING.md"
+  ],
+  "nonGoals": [
+    "src/",
+    "dashboard/",
+    "test/",
+    "remote GitHub/Codecov/npm settings changes"
+  ],
+  "requiredDocs": [
+    ".agent-workflow/project-profile.md",
+    "docs/ROADMAP.md",
+    "docs/PUBLISHING.md"
+  ],
+  "verificationCommands": [
+    "npm run lint",
+    "npm run format:check",
+    "npm test",
+    "npm run test:coverage",
+    "npm run smoke",
+    "npm run validate -- --root .",
+    "npm run verify:onboarding"
+  ]
 }

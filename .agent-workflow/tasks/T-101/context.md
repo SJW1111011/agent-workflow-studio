@@ -14,14 +14,15 @@ Node.js ecosystem has moved to ESM. Libraries that only export CJS are increasin
 ## Facts
 
 - Current: `"type": "commonjs"`, `"main": "index.js"`, no `exports` field
-- The `bin` entry (`"agent-workflow": "src/cli.js"`) must stay CJS — `npx` runs bin scripts synchronously
+- The `bin` entry (`"agent-workflow": "src/cli.js"`) must stay CJS so `npx` keeps working
 - Node.js conditional exports (`exports` field) is stable since Node 12.11
 - The project has zero runtime dependencies, so no transitive CJS/ESM conflicts
+- The current TypeScript build already emits CommonJS from `src/` into `dist/`, so a CJS barrel can be added without a second build config
+- The safest route is the Node wrapper pattern: keep the package CommonJS, expose `require()` through a small bridge, and expose ESM through an `.mjs` wrapper that re-exports the same CJS instance
 
 ## Open questions
 
-- Should we use the "wrapper" pattern (ESM wrapper imports CJS) or true dual compilation (two tsc outputs)?
-- Is a separate `tsconfig.esm.json` needed or can one config handle both?
+- No open design questions remain for this slice; use the wrapper pattern and verify the shared singleton behavior explicitly.
 
 ## Constraints
 

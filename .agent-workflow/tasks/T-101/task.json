@@ -1,14 +1,35 @@
 {
   "id": "T-101",
-  "title": "ESM dual-package — exports field, CJS backward-compat preserved",
+  "title": "ESM dual-package - exports field, CJS backward-compat preserved",
   "recipeId": "feature",
   "priority": "P1",
-  "status": "todo",
+  "status": "done",
   "createdAt": "2026-04-12T17:21:26.895Z",
-  "updatedAt": "2026-04-12T17:21:26.895Z",
-  "goal": "",
-  "scope": [],
-  "nonGoals": [],
-  "requiredDocs": [],
-  "verificationCommands": []
+  "updatedAt": "2026-04-13T06:55:45.608Z",
+  "goal": "Expose a package entry that supports both ESM import and CommonJS require without flipping the CLI or the existing internal .js modules to ESM.",
+  "scope": [
+    "package.json",
+    "src/index.ts",
+    "index.js",
+    "index.mjs"
+  ],
+  "nonGoals": [
+    "src/cli.js",
+    "src/server.js",
+    "dashboard/",
+    "test/",
+    "true dual compilation"
+  ],
+  "requiredDocs": [
+    ".agent-workflow/project-profile.md",
+    "docs/ROADMAP.md",
+    "https://nodejs.org/api/packages.html"
+  ],
+  "verificationCommands": [
+    "npm test",
+    "node -e \"import('agent-workflow-studio').then((m) => console.log(Object.keys(m).sort().join(',')))\"",
+    "node -e \"console.log(Object.keys(require('agent-workflow-studio')).sort().join(','))\"",
+    "node --input-type=module -e \"import pkg, { workspace } from 'agent-workflow-studio'; import { createRequire } from 'node:module'; const require = createRequire(import.meta.url); const cjs = require('agent-workflow-studio'); if (workspace !== cjs.workspace || pkg.workspace !== cjs.workspace) { throw new Error('dual-package hazard detected'); } console.log('shared-singleton-ok');\"",
+    "npx agent-workflow --help"
+  ]
 }

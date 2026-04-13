@@ -1,0 +1,6 @@
+RUN  v4.1.4 C:/Users/lenovo/Desktop/agent-workflow-studio
+
+Test Files  25 passed (25)
+     Tests  99 passed (99)
+  Start at  02:56:04
+  Duration  31.66s (transform 144ms, setup 0ms, import 555ms, tests 26.06s, environment 2ms)

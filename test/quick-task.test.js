@@ -83,7 +83,13 @@ const tests = [
   },
 ];
 
-module.exports = {
+const suite = {
   name: "quick-task",
   tests,
 };
+
+describe(suite.name, () => {
+  suite.tests.forEach((testCase) => {
+    it(testCase.name, testCase.run);
+  });
+});

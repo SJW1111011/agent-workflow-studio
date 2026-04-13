@@ -1,0 +1,77 @@
+{
+  "id": "run-1776063345609",
+  "taskId": "T-101",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: ESM dual-package, singleton identity verified, no dual-package hazard, all 7 review dimensions green",
+  "createdAt": "2026-04-13T06:55:45.608Z",
+  "scopeProofPaths": [
+    "package.json",
+    "src/index.ts",
+    "index.js",
+    "index.mjs"
+  ],
+  "verificationChecks": [
+    {
+      "label": "require('agent-workflow-studio') returns {workspace}",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "import('agent-workflow-studio') returns {default,workspace}",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "singleton identity test: true (no dual-package hazard)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (25 files, 99 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "CLI still works",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "smoke test passes",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "zero runtime dependencies",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "package.json",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:2f75f86604808beb780246276ae1a9ae664acaed"
+    },
+    {
+      "path": "src/index.ts",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:ad2557b6a0e03c25de5e06d74760c0f0c031885b"
+    },
+    {
+      "path": "index.js",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:500eac2e7935d3cb3c23762c05b1fbd7b0bd7abf"
+    },
+    {
+      "path": "index.mjs",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:4d1b06ffcfe72ada20672607fe450c6b125370b4"
+    }
+  ]
+}

@@ -457,7 +457,13 @@ const tests = [
   },
 ];
 
-module.exports = {
+const suite = {
   name: "server-api",
   tests,
 };
+
+describe(suite.name, () => {
+  suite.tests.forEach((testCase) => {
+    it(testCase.name, testCase.run);
+  });
+});

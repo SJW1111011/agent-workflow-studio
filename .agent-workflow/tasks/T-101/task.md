@@ -1,4 +1,4 @@
-# T-101 - ESM dual-package — exports field, CJS backward-compat preserved
+# T-101 - ESM dual-package - exports field, CJS backward-compat preserved
 
 ## Goal
 
@@ -14,36 +14,40 @@ Configure the package for ESM + CJS dual publishing so downstream consumers can 
 ## Scope
 
 - In scope:
-  - repo path: package.json (`exports` field, `type` field adjustment)
-  - repo path: tsconfig.json (if ESM output needs separate config)
-  - repo path: src/index.ts or index.js (public API barrel export)
+  - repo path: `package.json`
+  - repo path: `src/index.ts`
+  - repo path: `index.js`
+  - repo path: `index.mjs`
 - Out of scope:
-  - repo path: dashboard/ (browser code, not npm-published as module)
-  - repo path: src/cli.js (CLI entry point stays CJS bin)
-  - repo path: test/ (tests can stay CJS)
+  - repo path: `dashboard/` (browser code, not npm-published as module)
+  - repo path: `src/cli.js` (CLI entry point stays CJS bin)
+  - repo path: `src/server.js`
+  - repo path: `test/` (tests can stay CJS)
+  - repo path: `tsconfig.esm.json`
 
 ## Required docs
 
-- .agent-workflow/project-profile.md
-- docs/ROADMAP.md (Phase 0 context)
-- Node.js dual-package documentation (https://nodejs.org/api/packages.html#dual-commonjses-module-packages)
+- `.agent-workflow/project-profile.md`
+- `docs/ROADMAP.md` (Phase 0 context)
+- Node.js dual-package documentation (`https://nodejs.org/api/packages.html#dual-commonjses-module-packages`)
 
 ## Deliverables
 
-- `package.json` with conditional `exports` map (`import` → ESM, `require` → CJS)
-- Public API barrel file exporting key modules
-- Verification: both `import` and `require` work in a test script
+- `package.json` with a conditional `exports` map (`import` -> `index.mjs`, `require` -> `index.js`)
+- `src/index.ts` as the public CommonJS-backed API barrel
+- `index.js` and `index.mjs` entry shims that preserve one shared module instance
+- verification artifacts proving both `import` and `require` work from the package name
 
 ## Risks
 
 - Dual-package hazard: same module loaded twice (ESM + CJS) causes identity issues
-- `"type": "module"` change could break internal `require()` calls across 27 modules
+- `"type": "module"` would break internal `require()` calls across the existing `.js` modules
 - Bin entry (`src/cli.js`) must remain CJS-compatible for global `npx` usage
 
 ## Acceptance Criteria
 
-- `node -e "import('agent-workflow-studio').then(m => console.log(Object.keys(m)))"` succeeds
+- `node -e "import('agent-workflow-studio').then((m) => console.log(Object.keys(m)))"` succeeds
 - `node -e "console.log(Object.keys(require('agent-workflow-studio')))"` succeeds
+- `node --input-type=module -e "import pkg, { workspace } from 'agent-workflow-studio'; import { createRequire } from 'node:module'; const require = createRequire(import.meta.url); const cjs = require('agent-workflow-studio'); console.log(workspace === cjs.workspace && pkg.workspace === cjs.workspace)"` prints `true`
 - `npx agent-workflow --help` still works
 - `npm test` passes
-- No dual-package hazard (singleton test)

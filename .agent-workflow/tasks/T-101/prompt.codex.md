@@ -27,7 +27,7 @@ Complete the task truthfully and leave the repository easier for the next agent 
 
 ## Goal
 
-State the user outcome in one paragraph.
+Configure the package for ESM + CJS dual publishing so downstream consumers can use either `import` or `require()`. After this task, `import { workspace } from 'agent-workflow-studio'` works in ESM projects while existing `require()` users are unaffected.
 
 <!-- agent-workflow:managed:task-recipe-meta:start -->
 ## Recipe
@@ -39,27 +39,23 @@ State the user outcome in one paragraph.
 ## Scope
 
 - In scope:
-  - repo path:
+  - repo path: package.json (`exports` field, `type` field adjustment)
+  - repo path: tsconfig.json (if ESM output needs separate config)
+  - repo path: src/index.ts or index.js (public API barrel export)
 - Out of scope:
-  - repo path:
+  - repo path: dashboard/ (browser code, not npm-published as module)
+  - repo path: src/cli.js (CLI entry point stays CJS bin)
+  - repo path: test/ (tests can stay CJS)
 
 ## Required docs
 
 - .agent-workflow/project-profile.md
-- .agent-workflow/memory/product.md
-- .agent-workflow/memory/architecture.md
+- docs/ROADMAP.md (Phase 0 context)
+- Node.js dual-package documentation (https://nodejs.org/api/packages.html#dual-commonjses-module-packages)
 
 ## Deliverables
 
-- code or config changes
-- updated docs
-- verification evidence
-
-## Risks
-
-- contract mismatches
-- fake implementations
-- unverified assumptions
+- `package.json...
 
 ## Working context
 
@@ -67,7 +63,7 @@ State the user outcome in one paragraph.
 
 ## Why now
 
-Describe why this task matters.
+Node.js ecosystem has moved to ESM. Libraries that only export CJS are increasingly friction for downstream consumers using `import` syntax. This must land alongside or shortly after T-100 (TypeScript migration) so the TypeScript compiler can output both formats from the start.
 
 <!-- agent-workflow:managed:context-recipe-guidance:start -->
 ## Recipe guidance
@@ -78,18 +74,21 @@ Describe why this task matters.
 
 ## Facts
 
-- 
+- Current: `"type": "commonjs"`, `"main": "index.js"`, no `exports` field
+- The `bin` entry (`"agent-workflow": "src/cli.js"`) must stay CJS — `npx` runs bin scripts synchronously
+- Node.js conditional exports (`exports` field) is stable since Node 12.11
+- The project has zero runtime dependencies, so no transitive CJS/ESM conflicts
 
 ## Open questions
 
-- 
+- Should we use the "wrapper" pattern (ESM wrapper imports CJS) or true dual compilation (two tsc outputs)?
+- Is a separate `tsconfig.esm.json` needed or can one config handle both?
 
 ## Constraints
 
 <!-- agent-workflow:managed:context-constraints-meta:start -->
 - Priority: P1
-- Keep the workflow docs current.
-<!-- agent-workflow:managed:context-constraints-meta:end -->
+- Kee...
 
 ## Verification expectations
 

@@ -9,7 +9,7 @@ function createTempDir(prefix) {
   return fs.mkdtempSync(path.join(TEST_TMP_ROOT, `${prefix}-`));
 }
 
-module.exports = {
+const suite = {
   name: "skill-generator",
   tests: [
     {
@@ -114,3 +114,9 @@ module.exports = {
     },
   ],
 };
+
+describe(suite.name, () => {
+  suite.tests.forEach((testCase) => {
+    it(testCase.name, testCase.run);
+  });
+});

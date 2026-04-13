@@ -2,7 +2,7 @@
 
 ## Why now
 
-This is the first task in Phase 0 (Infrastructure Modernization). All subsequent phases depend on a typed codebase — TypeScript catches contract mismatches at compile time, enables IDE support, and makes the 27-module `src/lib/` surface area maintainable. Without this foundation, Phases 1–5 will accumulate technical debt faster than they deliver value.
+This is the first task in Phase 0 (Infrastructure Modernization). Later phases need a typed codebase, but the migration has to stay incremental so current CommonJS tooling, local-first workflows, and existing npm consumers keep working while the repository starts emitting compiled JavaScript from TypeScript sources.
 
 <!-- agent-workflow:managed:context-recipe-guidance:start -->
 ## Recipe guidance
@@ -13,17 +13,15 @@ This is the first task in Phase 0 (Infrastructure Modernization). All subsequent
 
 ## Facts
 
-- Current codebase: ~17k lines of pure JavaScript across 27 `src/lib/` modules
-- No type annotations, no `tsconfig.json`, no build step
-- Zero runtime dependencies — TypeScript is devDep only, does not violate this principle
-- `src/lib/fs-utils.js` is the smallest module (~80 lines) with the fewest dependents — ideal first conversion target
-- Project uses CommonJS (`"type": "commonjs"` in package.json)
+- The repository is still CommonJS (`"type": "commonjs"` in `package.json`), so the first TypeScript step has to preserve `require()` compatibility.
+- `allowJs: true` lets unconverted `src/` modules continue to emit into `dist/` while `strict: true` applies to the converted TypeScript module.
+- `src/lib/fs-utils.js` now acts as a narrow bridge to `dist/lib/fs-utils.js`, which keeps existing `require('./fs-utils')` call sites stable.
+- The publish whitelist now includes `dist/`, and repo-local tests rebuild before execution so the bridge always points at fresh compiled output.
+- No runtime dependencies were added; the migration uses `typescript` and `@types/node` as devDependencies only.
 
 ## Open questions
 
-- Should `allowJs: true` be set so unconverted modules coexist without errors?
-- Should output go to `dist/` or compile in-place? `dist/` is cleaner but changes import paths.
-- Does `prepublishOnly` or `prepare` better fit the npm publish flow?
+- Future migration tasks should decide whether repo-local scripts eventually execute from `dist/` directly instead of relying on source-side bridges.
 
 ## Constraints
 
@@ -31,6 +29,6 @@ This is the first task in Phase 0 (Infrastructure Modernization). All subsequent
 - Priority: P1
 - Keep the workflow docs current.
 <!-- agent-workflow:managed:context-constraints-meta:end -->
-- Must not add any runtime dependencies
-- Must not break `npm test` or existing CLI behavior
-- Must not require contributors to install TypeScript globally
+- Must not add any runtime dependencies.
+- Must not break `npm test` or existing CommonJS imports.
+- Must not require contributors to install TypeScript globally.

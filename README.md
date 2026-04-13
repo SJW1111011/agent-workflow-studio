@@ -3,6 +3,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/agent-workflow-studio"><img src="https://img.shields.io/npm/v/agent-workflow-studio?style=for-the-badge" alt="npm version"></a>
   <a href="https://github.com/SJW1111011/agent-workflow-studio/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/SJW1111011/agent-workflow-studio/ci.yml?branch=main&style=for-the-badge&label=CI" alt="CI"></a>
+  <a href="https://codecov.io/gh/SJW1111011/agent-workflow-studio"><img src="https://codecov.io/gh/SJW1111011/agent-workflow-studio/graph/badge.svg" alt="Coverage"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="MIT license"></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=for-the-badge" alt="Node 18+"></a>
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=for-the-badge" alt="Zero dependencies">
@@ -195,6 +196,8 @@ Initialized target repository:
 From this project root:
 
 ```bash
+npm install
+npm run build
 npm run init -- --root ../some-repo
 npm run scan -- --root ../some-repo
 npm run memory:bootstrap -- --root ../some-repo
@@ -206,6 +209,8 @@ npm run checkpoint -- T-001 --root ../some-repo
 npm run validate -- --root ../some-repo
 npm test
 ```
+
+`npm run build` now emits `dist/` from `src/` and compiles `src/lib/fs-utils.ts` for the CommonJS bridge at `src/lib/fs-utils.js`. Re-run it after editing `.ts` files, or let `npm test` rebuild automatically via `pretest`.
 
 ## Learn more
 
@@ -222,7 +227,9 @@ npm test
 
 ## Contributing
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md). Keep changes local-first, relocatable, and schema-aware. Run `npm test` and `npm run smoke` before opening a PR.
+Read [CONTRIBUTING.md](CONTRIBUTING.md). Keep changes local-first, relocatable, and schema-aware. Run `npm run lint`, `npm run format:check`, `npm test`, and `npm run smoke` before opening a PR; `npm test` now rebuilds `dist/` first so repo-local TypeScript bridges stay current.
+
+GitHub Actions now also enforces the Node 18/20/22 matrix, uploads the Node 22 coverage run to Codecov, and uses tag-only publish automation for npm releases.
 
 ## Community
 

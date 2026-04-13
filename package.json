@@ -21,6 +21,9 @@
     "url": "https://github.com/SJW1111011/agent-workflow-studio/issues"
   },
   "files": [
+    "index.js",
+    "index.mjs",
+    "dist",
     "src",
     "dashboard",
     "docs/*.md",
@@ -35,7 +38,14 @@
     "agent-workflow": "src/cli.js"
   },
   "scripts": {
-    "test": "node scripts/unit-test.js",
+    "build": "tsc --project tsconfig.json",
+    "lint": "eslint \"*.js\" \"*.mjs\" \"dashboard/**/*.js\" \"scripts/**/*.js\" \"src/**/*.js\" \"test/**/*.js\"",
+    "format:check": "prettier --check \".github/**/*.yml\" \"README.md\" \"docs/PUBLISHING.md\" \"package.json\" \"eslint.config.mjs\" \"vitest.config.ts\"",
+    "pretest": "npm run build",
+    "test": "vitest run",
+    "pretest:coverage": "npm run build",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest --watch",
     "cli": "node src/cli.js",
     "init": "node src/cli.js init",
     "scan": "node src/cli.js scan",
@@ -56,12 +66,32 @@
     "skills:generate": "node src/cli.js skills:generate",
     "dashboard": "node src/server.js",
     "verify:onboarding": "node scripts/npm-onboarding-check.js",
-    "smoke": "node scripts/smoke-test.js"
+    "smoke": "node scripts/smoke-test.js",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^4.1.4",
+    "eslint": "^9.39.4",
+    "globals": "^17.5.0",
+    "prettier": "^3.8.2",
+    "typescript": "^5.0.0",
+    "vitest": "^4.1.4"
   },
   "engines": {
     "node": ">=18"
   },
-  "main": "index.js",
+  "main": "./index.js",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.js"
+    },
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    "./dist/*": "./dist/*"
+  },
   "directories": {
     "doc": "docs",
     "test": "test"

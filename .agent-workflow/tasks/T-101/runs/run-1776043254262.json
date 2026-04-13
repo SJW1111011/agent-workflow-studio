@@ -1,0 +1,80 @@
+{
+  "id": "run-1776043254262",
+  "taskId": "T-101",
+  "agent": "codex",
+  "status": "passed",
+  "summary": "Verified the dual-package wrapper entrypoints for import, require, singleton identity, CLI help, and packed publish contents.",
+  "createdAt": "2026-04-13T01:20:54.261Z",
+  "scopeProofPaths": [
+    "package.json",
+    "src/index.ts",
+    "index.js",
+    "index.mjs"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test - 25 files and 99 tests passed after the pretest build",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "import('agent-workflow-studio') - exported keys were default,workspace",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "require('agent-workflow-studio') - exported key was workspace",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "shared singleton probe - import and require resolved the same workspace object",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npx agent-workflow --help - CLI help output still works",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm pack --dry-run --json --cache ./.npm-cache-tmp - tarball includes index.js, index.mjs, and dist/index.js",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-101/runs/test-output.txt",
+    ".agent-workflow/tasks/T-101/runs/import-output.txt",
+    ".agent-workflow/tasks/T-101/runs/require-output.txt",
+    ".agent-workflow/tasks/T-101/runs/singleton-output.txt",
+    ".agent-workflow/tasks/T-101/runs/npx-help.txt",
+    ".agent-workflow/tasks/T-101/runs/pack-output.txt"
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "package.json",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:a9b772e347174f85cb541b2ea5a18eb9b4a40649"
+    },
+    {
+      "path": "src/index.ts",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:ad2557b6a0e03c25de5e06d74760c0f0c031885b"
+    },
+    {
+      "path": "index.js",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:500eac2e7935d3cb3c23762c05b1fbd7b0bd7abf"
+    },
+    {
+      "path": "index.mjs",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:4d1b06ffcfe72ada20672607fe450c6b125370b4"
+    }
+  ]
+}

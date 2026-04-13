@@ -8,4 +8,6 @@ scripts/
 test/
 tmp/
 *.tgz
+*.tsbuildinfo
+dist/*.tsbuildinfo
 docs/assets/

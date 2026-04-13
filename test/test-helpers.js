@@ -6,11 +6,24 @@ const { ensureWorkflowScaffold, taskFiles } = require("../src/lib/workspace");
 
 const REPO_ROOT = path.resolve(__dirname, "..");
 const TEST_TMP_ROOT = path.join(REPO_ROOT, "tmp", "unit-tests");
+const TEMP_DIRECTORIES = new Set();
+
+afterEach(() => {
+  TEMP_DIRECTORIES.forEach((dirPath) => {
+    fs.rmSync(dirPath, { recursive: true, force: true });
+  });
+  TEMP_DIRECTORIES.clear();
+});
+
+function trackTempDirectory(dirPath) {
+  TEMP_DIRECTORIES.add(dirPath);
+  return dirPath;
+}
 
 function createTaskWorkspace(prefix, options = {}) {
   fs.mkdirSync(TEST_TMP_ROOT, { recursive: true });
 
-  const workspaceRoot = fs.mkdtempSync(path.join(TEST_TMP_ROOT, `${prefix}-`));
+  const workspaceRoot = trackTempDirectory(fs.mkdtempSync(path.join(TEST_TMP_ROOT, `${prefix}-`)));
   const taskId = options.taskId || "T-001";
   const title = options.title || "Test task";
 
@@ -104,6 +117,7 @@ module.exports = {
   runCommand,
   runCommandOutput,
   setFileModifiedAt,
+  trackTempDirectory,
   writeJsonFile,
   writeTextFile,
 };

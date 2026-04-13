@@ -1,22 +1,246 @@
 {
   "taskId": "T-100",
-  "generatedAt": "2026-04-12T17:20:56.616Z",
-  "latestRunStatus": "none",
-  "runCount": 0,
+  "generatedAt": "2026-04-13T00:59:01.310Z",
+  "latestRunStatus": "passed",
+  "runCount": 3,
   "risks": [
-    "No execution evidence recorded yet.",
-    "Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths."
+    "Some scoped files still need proof: scripts/unit-test.js, test/fs-utils.test.js"
   ],
   "completed": [
     "Prompt compiled",
-    "Task context captured"
+    "3 run(s) recorded",
+    "Task context captured",
+    "Some scoped files are already linked to explicit proof"
   ],
   "verificationGate": {
-    "status": "ready",
-    "message": "Add explicit repo-relative paths in the task scope to enable stronger verification gates.",
-    "relevantChangeCount": 0,
-    "scopeHintCount": 0,
-    "ambiguousScopeCount": 1,
-    "relevantChangedFiles": []
+    "status": "partially-covered",
+    "message": "Some scoped files are explicitly covered, but newer scoped changes still need proof.",
+    "relevantChangeCount": 2,
+    "scopeHintCount": 20,
+    "ambiguousScopeCount": 0,
+    "relevantChangedFiles": [
+      {
+        "path": "scripts/unit-test.js",
+        "modifiedAt": "2026-04-12T18:54:55.146Z",
+        "changeType": "modified",
+        "gitState": "M",
+        "previousPath": null,
+        "matchedBy": [
+          {
+            "pattern": "scripts/unit-test.js",
+            "source": "task.json"
+          },
+          {
+            "pattern": "scripts/unit-test.js",
+            "source": "task.md"
+          }
+        ],
+        "proofUpdatedAt": "2026-04-13T00:58:32.774Z",
+        "proofFreshnessSource": "anchor-stale",
+        "proofItems": [
+          {
+            "sourceType": "run",
+            "sourceLabel": "run-1776016332324",
+            "recordedAt": "2026-04-12T17:52:12.323Z",
+            "paths": [
+              "tsconfig.json",
+              "package.json",
+              ".gitignore",
+              ".npmignore",
+              "src/lib/fs-utils.ts",
+              "src/lib/fs-utils.js",
+              "scripts/unit-test.js",
+              "test/fs-utils.test.js",
+              "README.md",
+              "docs/PUBLISHING.md"
+            ],
+            "anchorCount": 10,
+            "checks": [
+              "[passed] npm run build - tsc completed successfully",
+              "[passed] npm test - 98 unit tests passed after the pretest build",
+              "[passed] npm pack --dry-run --json --cache ./.npm-cache-tmp - packed payload includes dist/ and omits tsbuildinfo",
+              "[passed] require('./src/lib/fs-utils') - the bridge resolved the compiled helper exports"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-100/runs/build-output.txt",
+              ".agent-workflow/tasks/T-100/runs/test-output.txt",
+              ".agent-workflow/tasks/T-100/runs/pack-output.json",
+              ".agent-workflow/tasks/T-100/runs/require-output.txt"
+            ],
+            "strong": true
+          },
+          {
+            "sourceType": "run",
+            "sourceLabel": "run-1776016483902",
+            "recordedAt": "2026-04-12T17:54:43.900Z",
+            "paths": [
+              "tsconfig.json",
+              "package.json",
+              ".gitignore",
+              ".npmignore",
+              "src/lib/fs-utils.ts",
+              "src/lib/fs-utils.js",
+              "scripts/unit-test.js",
+              "test/fs-utils.test.js",
+              "README.md",
+              "docs/PUBLISHING.md"
+            ],
+            "anchorCount": 10,
+            "checks": [
+              "[passed] npm run build - tsc completed successfully",
+              "[passed] npm test - 98 unit tests passed after the pretest build",
+              "[passed] npm pack --dry-run --json --cache ./.npm-cache-tmp - packed payload includes dist/ and omits tsbuildinfo",
+              "[passed] require('./src/lib/fs-utils') - the bridge resolved the compiled helper exports"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-100/runs/build-output.txt",
+              ".agent-workflow/tasks/T-100/runs/test-output.txt",
+              ".agent-workflow/tasks/T-100/runs/pack-output.json",
+              ".agent-workflow/tasks/T-100/runs/require-output.txt"
+            ],
+            "strong": true
+          },
+          {
+            "sourceType": "manual",
+            "sourceLabel": "verification.md#proof-1",
+            "recordedAt": "2026-04-13T00:58:32.774Z",
+            "paths": [
+              "tsconfig.json",
+              "package.json",
+              ".gitignore",
+              ".npmignore",
+              "src/lib/fs-utils.ts",
+              "src/lib/fs-utils.js",
+              "scripts/unit-test.js",
+              "test/fs-utils.test.js",
+              "README.md",
+              "docs/PUBLISHING.md"
+            ],
+            "anchorCount": 0,
+            "checks": [
+              "Build the repository, run the JS test suite through the new `pretest` hook, inspect the packed payload for `dist/`, confirm `require('./src/lib/fs-utils')` resolves through the CommonJS bridge, and keep local build and pack artifacts ignored in Git. (result: Passed on 2026-04-13.)"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-100/runs/build-output.txt",
+              ".agent-workflow/tasks/T-100/runs/test-output.txt",
+              ".agent-workflow/tasks/T-100/runs/pack-output.json",
+              ".agent-workflow/tasks/T-100/runs/require-output.txt"
+            ],
+            "strong": true
+          }
+        ]
+      },
+      {
+        "path": "test/fs-utils.test.js",
+        "modifiedAt": "2026-04-12T18:44:31.258Z",
+        "changeType": "untracked",
+        "gitState": "??",
+        "previousPath": null,
+        "matchedBy": [
+          {
+            "pattern": "test/fs-utils.test.js",
+            "source": "task.json"
+          },
+          {
+            "pattern": "test/fs-utils.test.js",
+            "source": "task.md"
+          }
+        ],
+        "proofUpdatedAt": "2026-04-13T00:58:32.774Z",
+        "proofFreshnessSource": "anchor-stale",
+        "proofItems": [
+          {
+            "sourceType": "run",
+            "sourceLabel": "run-1776016332324",
+            "recordedAt": "2026-04-12T17:52:12.323Z",
+            "paths": [
+              "tsconfig.json",
+              "package.json",
+              ".gitignore",
+              ".npmignore",
+              "src/lib/fs-utils.ts",
+              "src/lib/fs-utils.js",
+              "scripts/unit-test.js",
+              "test/fs-utils.test.js",
+              "README.md",
+              "docs/PUBLISHING.md"
+            ],
+            "anchorCount": 10,
+            "checks": [
+              "[passed] npm run build - tsc completed successfully",
+              "[passed] npm test - 98 unit tests passed after the pretest build",
+              "[passed] npm pack --dry-run --json --cache ./.npm-cache-tmp - packed payload includes dist/ and omits tsbuildinfo",
+              "[passed] require('./src/lib/fs-utils') - the bridge resolved the compiled helper exports"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-100/runs/build-output.txt",
+              ".agent-workflow/tasks/T-100/runs/test-output.txt",
+              ".agent-workflow/tasks/T-100/runs/pack-output.json",
+              ".agent-workflow/tasks/T-100/runs/require-output.txt"
+            ],
+            "strong": true
+          },
+          {
+            "sourceType": "run",
+            "sourceLabel": "run-1776016483902",
+            "recordedAt": "2026-04-12T17:54:43.900Z",
+            "paths": [
+              "tsconfig.json",
+              "package.json",
+              ".gitignore",
+              ".npmignore",
+              "src/lib/fs-utils.ts",
+              "src/lib/fs-utils.js",
+              "scripts/unit-test.js",
+              "test/fs-utils.test.js",
+              "README.md",
+              "docs/PUBLISHING.md"
+            ],
+            "anchorCount": 10,
+            "checks": [
+              "[passed] npm run build - tsc completed successfully",
+              "[passed] npm test - 98 unit tests passed after the pretest build",
+              "[passed] npm pack --dry-run --json --cache ./.npm-cache-tmp - packed payload includes dist/ and omits tsbuildinfo",
+              "[passed] require('./src/lib/fs-utils') - the bridge resolved the compiled helper exports"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-100/runs/build-output.txt",
+              ".agent-workflow/tasks/T-100/runs/test-output.txt",
+              ".agent-workflow/tasks/T-100/runs/pack-output.json",
+              ".agent-workflow/tasks/T-100/runs/require-output.txt"
+            ],
+            "strong": true
+          },
+          {
+            "sourceType": "manual",
+            "sourceLabel": "verification.md#proof-1",
+            "recordedAt": "2026-04-13T00:58:32.774Z",
+            "paths": [
+              "tsconfig.json",
+              "package.json",
+              ".gitignore",
+              ".npmignore",
+              "src/lib/fs-utils.ts",
+              "src/lib/fs-utils.js",
+              "scripts/unit-test.js",
+              "test/fs-utils.test.js",
+              "README.md",
+              "docs/PUBLISHING.md"
+            ],
+            "anchorCount": 0,
+            "checks": [
+              "Build the repository, run the JS test suite through the new `pretest` hook, inspect the packed payload for `dist/`, confirm `require('./src/lib/fs-utils')` resolves through the CommonJS bridge, and keep local build and pack artifacts ignored in Git. (result: Passed on 2026-04-13.)"
+            ],
+            "artifacts": [
+              ".agent-workflow/tasks/T-100/runs/build-output.txt",
+              ".agent-workflow/tasks/T-100/runs/test-output.txt",
+              ".agent-workflow/tasks/T-100/runs/pack-output.json",
+              ".agent-workflow/tasks/T-100/runs/require-output.txt"
+            ],
+            "strong": true
+          }
+        ]
+      }
+    ]
   }
 }

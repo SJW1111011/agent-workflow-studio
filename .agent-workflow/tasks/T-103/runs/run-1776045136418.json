@@ -1,0 +1,125 @@
+{
+  "id": "run-1776045136418",
+  "taskId": "T-103",
+  "agent": "codex",
+  "status": "passed",
+  "summary": "Verified the CI matrix, publish workflow, lint/format tooling, and release docs with the local CI-equivalent command set; remote GitHub/Codecov/npm execution still requires a hosted run.",
+  "createdAt": "2026-04-13T01:52:16.417Z",
+  "scopeProofPaths": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/publish.yml",
+    "package.json",
+    "package-lock.json",
+    "vitest.config.ts",
+    "eslint.config.mjs",
+    "README.md",
+    "docs/PUBLISHING.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm run lint - ESLint passed on the configured JS/MJS surface",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run format:check - Prettier passed on the CI-owned workflow/doc/config files",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test - 25 files and 99 tests passed",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run test:coverage - 25 files and 99 tests passed with 85.67% lines and coverage/lcov.info emitted",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run validate -- --root . - workspace validation returned ok=true errors=0 warnings=0",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke - smoke test passed",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run verify:onboarding - npm-first onboarding check passed",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "manual workflow inspection - ci.yml defines the Node 18/20/22 matrix and publish.yml only triggers on v* tags with a tag/version match guard",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm pack --dry-run --json --cache ./.npm-cache-tmp - publish payload still includes the built package surface",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-103/runs/lint-output.txt",
+    ".agent-workflow/tasks/T-103/runs/format-output.txt",
+    ".agent-workflow/tasks/T-103/runs/test-output.txt",
+    ".agent-workflow/tasks/T-103/runs/coverage-output.txt",
+    ".agent-workflow/tasks/T-103/runs/validate-output.txt",
+    ".agent-workflow/tasks/T-103/runs/smoke-output.txt",
+    ".agent-workflow/tasks/T-103/runs/onboarding-output.txt",
+    ".agent-workflow/tasks/T-103/runs/pack-output.txt"
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:9fc8d99052800bf099700da06dc15aa330e6f292"
+    },
+    {
+      "path": ".github/workflows/publish.yml",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:6d4a6f0264c0673bb3457b7f9d5b99c6747ff6d2"
+    },
+    {
+      "path": "package.json",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:2f75f86604808beb780246276ae1a9ae664acaed"
+    },
+    {
+      "path": "package-lock.json",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:aa5510bd612596f6d6ba75b6c5e8568968e66925"
+    },
+    {
+      "path": "vitest.config.ts",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:90c73f6768b9f4fda59e573e8473f2f1091824f9"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:6741cb44da658db3f22d56ab201bb7459ea9f887"
+    },
+    {
+      "path": "README.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:914e65991ac9e911cb480415adb35bc092e9146e"
+    },
+    {
+      "path": "docs/PUBLISHING.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:95c7da3a4440a4390a2729a506f713cf0da3e873"
+    }
+  ]
+}

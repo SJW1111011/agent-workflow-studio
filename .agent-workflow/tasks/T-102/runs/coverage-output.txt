@@ -1,0 +1,18 @@
+> agent-workflow-studio@0.1.2 test:coverage
+> vitest run --coverage
+
+ RUN  v4.1.4 C:/Users/lenovo/Desktop/agent-workflow-studio
+      Coverage enabled with v8
+
+ Test Files  25 passed (25)
+      Tests  99 passed (99)
+   Start at  02:48:35
+   Duration  32.35s (transform 138ms, setup 0ms, import 592ms, tests 26.05s, environment 2ms)
+
+Coverage summary
+- Statements: 85.68% (1910/2229)
+- Branches: 73.27% (1478/2017)
+- Functions: 92.07% (488/530)
+- Lines: 85.67% (1848/2157)
+
+See coverage/coverage-summary.json for the full per-file report.

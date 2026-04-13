@@ -1,0 +1,64 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  publish-to-npm:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Show tool versions
+        run: |
+          node --version
+          npm --version
+
+      - name: Verify tag matches package version
+        run: |
+          node -e "const pkg = require('./package.json'); const expected = `refs/tags/v${pkg.version}`; if (process.env.GITHUB_REF !== expected) { console.error(`Expected ${expected} but received ${process.env.GITHUB_REF}`); process.exit(1); } console.log(`Publishing ${pkg.name}@${pkg.version}`);"
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Run workspace validation
+        run: npm run validate -- --root .
+
+      - name: Run smoke test
+        run: npm run smoke
+
+      - name: Verify npm-first onboarding and dashboard quick flow
+        run: npm run verify:onboarding
+
+      - name: Inspect the publish payload
+        run: npm pack --dry-run --json --cache ./.npm-cache-tmp
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

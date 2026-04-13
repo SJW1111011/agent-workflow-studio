@@ -1,0 +1,3 @@
+
+> agent-workflow-studio@0.1.2 lint
+> eslint "*.js" "*.mjs" "dashboard/**/*.js" "scripts/**/*.js" "src/**/*.js" "test/**/*.js"

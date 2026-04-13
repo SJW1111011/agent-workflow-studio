@@ -1,14 +1,35 @@
 {
   "id": "T-102",
-  "title": "Vitest migration — replace hand-rolled test runner, maintain ≥85% coverage",
+  "title": "Vitest migration - replace hand-rolled test runner, maintain >=85% coverage",
   "recipeId": "feature",
   "priority": "P1",
-  "status": "todo",
+  "status": "done",
   "createdAt": "2026-04-12T17:22:00.224Z",
-  "updatedAt": "2026-04-12T17:22:00.224Z",
-  "goal": "",
-  "scope": [],
-  "nonGoals": [],
-  "requiredDocs": [],
-  "verificationCommands": []
+  "updatedAt": "2026-04-13T00:58:46.702Z",
+  "goal": "Replace the hand-rolled test runner with Vitest, preserve the existing unit suite under the new runner, add enforced coverage reporting, and keep smoke coverage plus production behavior unchanged.",
+  "scope": [
+    "package.json",
+    "package-lock.json",
+    ".gitignore",
+    "vitest.config.ts",
+    "scripts/unit-test.js",
+    "test/*.test.js",
+    "test/test-helpers.js"
+  ],
+  "nonGoals": [
+    "src/",
+    "dashboard/app.js",
+    "scripts/smoke-test.js"
+  ],
+  "requiredDocs": [
+    ".agent-workflow/project-profile.md",
+    ".agent-workflow/memory/product.md",
+    ".agent-workflow/memory/architecture.md",
+    "docs/ROADMAP.md"
+  ],
+  "verificationCommands": [
+    "npm test",
+    "npm run test:coverage",
+    "npm run smoke"
+  ]
 }

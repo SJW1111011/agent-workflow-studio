@@ -124,7 +124,13 @@ const tests = [
   },
 ];
 
-module.exports = {
+const suite = {
   name: "dashboard-log-panel-helpers",
   tests,
 };
+
+describe(suite.name, () => {
+  suite.tests.forEach((testCase) => {
+    it(testCase.name, testCase.run);
+  });
+});

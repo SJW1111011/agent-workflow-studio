@@ -1,0 +1,59 @@
+
+> agent-workflow-studio@0.1.2 pretest:coverage
+> npm run build
+
+
+> agent-workflow-studio@0.1.2 build
+> tsc --project tsconfig.json
+
+
+> agent-workflow-studio@0.1.2 test:coverage
+> vitest run --coverage
+
+
+ RUN  v4.1.4 C:/Users/lenovo/Desktop/agent-workflow-studio
+      Coverage enabled with v8
+
+
+ Test Files  25 passed (25)
+      Tests  99 passed (99)
+   Start at  09:49:04
+   Duration  40.40s (transform 214ms, setup 0ms, import 812ms, tests 31.91s, environment 2ms)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   85.68 |    73.27 |   92.07 |   85.67 |                   
+ adapters.js       |   81.65 |    64.84 |   91.42 |   80.74 | ...28,336,361-364 
+ checkpoint.js     |    78.2 |    67.34 |   58.33 |   81.69 | ...80,184-187,198 
+ evidence-utils.js |      80 |    72.82 |   83.33 |   79.74 | ...67,171,201-202 
+ freshness.js      |   71.87 |    49.18 |   91.66 |   72.58 | ...23,143-153,158 
+ fs-utils.js       |   83.33 |       50 |     100 |   83.33 | 7                 
+ http-errors.js    |     100 |       96 |     100 |     100 | 5                 
+ ...y-bootstrap.js |   94.33 |    54.54 |     100 |   93.87 | 38,159,173        
+ ...laceholders.js |     100 |       50 |     100 |     100 | 20                
+ ...y-validator.js |   95.09 |    76.92 |   96.55 |   94.89 | 35,56,107,220,243 
+ overview.js       |   92.85 |    86.44 |   91.89 |   92.59 | ...40,447,478,485 
+ ...pt-compiler.js |   90.47 |       75 |     100 |   90.47 | 10,44             
+ quick-task.js     |   92.85 |    68.42 |     100 |    92.5 | 19,23,69          
+ recipes.js        |    92.3 |       50 |     100 |   91.66 | 13                
+ ...ry-snapshot.js |      85 |    75.54 |     100 |   84.83 | ...62,412-416,438 
+ run-executor.js   |   85.18 |    82.43 |   86.36 |   85.18 | ...76,280,334,343 
+ run-plan.js       |    83.6 |    74.78 |   97.05 |   83.05 | ...03,320,338,379 
+ run-preflight.js  |   87.63 |     71.6 |   97.56 |   87.36 | ...18,452,494-507 
+ run-preparer.js   |   96.29 |    72.72 |     100 |   96.29 | 14                
+ scanner.js        |    91.3 |     62.5 |   86.66 |   90.47 | 29,38,55,59       
+ ...l-generator.js |   73.52 |      100 |   72.72 |   73.52 | 114-128           
+ task-documents.js |   81.12 |    59.28 |   88.09 |   82.01 | ...16,543,553-556 
+ ...ation-gates.js |   84.61 |    76.83 |   91.17 |   84.87 | ...93,603,624,642 
+ ...ation-proof.js |   85.54 |    79.48 |   97.91 |      85 | ...67,373,408,425 
+ workspace.js      |   93.18 |      100 |   86.95 |   93.18 | 322-330           
+-------------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 85.68% ( 1910/2229 )
+Branches     : 73.27% ( 1478/2017 )
+Functions    : 92.07% ( 488/530 )
+Lines        : 85.67% ( 1848/2157 )
+================================================================================

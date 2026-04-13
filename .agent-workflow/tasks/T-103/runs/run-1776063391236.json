@@ -1,0 +1,101 @@
+{
+  "id": "run-1776063391236",
+  "taskId": "T-103",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: CI matrix (Node 18/20/22 + Win + macOS), publish workflow with tag/version guard, ESLint + Prettier, Codecov OIDC, all 7 review dimensions green",
+  "createdAt": "2026-04-13T06:56:31.235Z",
+  "scopeProofPaths": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/publish.yml",
+    "eslint.config.mjs",
+    "package.json",
+    "README.md",
+    "docs/PUBLISHING.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm run lint passes",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run format:check passes",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (25 files, 99 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "smoke test passes",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "ci.yml defines Node 18/20/22 matrix + Windows + macOS",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "publish.yml triggers on v* tags with version match guard",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "Codecov badge added to README",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "PUBLISHING.md updated for tag-driven releases",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "zero runtime dependencies",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:9fc8d99052800bf099700da06dc15aa330e6f292"
+    },
+    {
+      "path": ".github/workflows/publish.yml",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:6d4a6f0264c0673bb3457b7f9d5b99c6747ff6d2"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:6741cb44da658db3f22d56ab201bb7459ea9f887"
+    },
+    {
+      "path": "package.json",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:2f75f86604808beb780246276ae1a9ae664acaed"
+    },
+    {
+      "path": "README.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:914e65991ac9e911cb480415adb35bc092e9146e"
+    },
+    {
+      "path": "docs/PUBLISHING.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:95c7da3a4440a4390a2729a506f713cf0da3e873"
+    }
+  ]
+}

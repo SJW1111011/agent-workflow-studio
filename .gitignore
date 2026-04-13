@@ -1,4 +1,8 @@
 node_modules/
+dist/
+coverage/
+.npm-cache-tmp/
 tmp/
 .DS_Store
+*.tsbuildinfo
 

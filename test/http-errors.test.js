@@ -112,7 +112,13 @@ const tests = [
   },
 ];
 
-module.exports = {
+const suite = {
   name: "http-errors",
   tests,
 };
+
+describe(suite.name, () => {
+  suite.tests.forEach((testCase) => {
+    it(testCase.name, testCase.run);
+  });
+});

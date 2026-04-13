@@ -1,0 +1,29 @@
+{
+  "id": "run-1776020225012",
+  "taskId": "T-102",
+  "agent": "codex",
+  "status": "passed",
+  "summary": "The legacy scripts/unit-test.js bridge now delegates correctly to Vitest and passes the full 25-file suite.",
+  "createdAt": "2026-04-12T18:57:05.011Z",
+  "scopeProofPaths": [
+    "scripts/unit-test.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "node scripts/unit-test.js - 25 files and 99 tests passed through the compatibility bridge",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-102/runs/legacy-unit-test-output.txt"
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "scripts/unit-test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:933cebd244b6c918decc051a4b3903e1dd70ff3a"
+    }
+  ]
+}

@@ -1,8 +1,8 @@
-# T-100 - TypeScript migration skeleton — tsconfig, build pipeline, first module converted
+# T-100 - TypeScript migration skeleton - tsconfig, build pipeline, first module converted
 
 ## Goal
 
-Set up the TypeScript build pipeline and convert the first module (`src/lib/fs-utils.js`) to TypeScript as a proof-of-concept. After this task, any new code can be written in `.ts` and the project emits JavaScript that existing CJS consumers can still `require()`. This is an incremental migration — not a big-bang rewrite.
+Set up a strict TypeScript build path that emits CommonJS into `dist/`, convert `src/lib/fs-utils.js` into typed `src/lib/fs-utils.ts`, and keep existing CommonJS callers working through a small `src/lib/fs-utils.js` bridge. This keeps the migration incremental so new modules can move to `.ts` without forcing a repo-wide rewrite or breaking current `require()`-based consumers.
 
 <!-- agent-workflow:managed:task-recipe-meta:start -->
 ## Recipe
@@ -14,42 +14,49 @@ Set up the TypeScript build pipeline and convert the first module (`src/lib/fs-u
 ## Scope
 
 - In scope:
-  - repo path: tsconfig.json (new)
-  - repo path: package.json (add build script, devDeps)
-  - repo path: src/lib/fs-utils.js → src/lib/fs-utils.ts
-  - repo path: src/lib/fs-utils.d.ts (if needed for bridge)
-  - repo path: .gitignore (add dist/, *.tsbuildinfo)
+  - repo path: `tsconfig.json`
+  - repo path: `package.json`
+  - repo path: `.gitignore`
+  - repo path: `.npmignore`
+  - repo path: `src/lib/fs-utils.ts`
+  - repo path: `src/lib/fs-utils.js`
+  - repo path: `scripts/unit-test.js`
+  - repo path: `test/fs-utils.test.js`
+  - repo path: `README.md`
+  - repo path: `docs/PUBLISHING.md`
 - Out of scope:
-  - repo path: src/cli.js (not yet)
-  - repo path: src/server.js (not yet)
-  - repo path: dashboard/ (frontend, separate concern)
-  - repo path: test/ (tests stay JS for now, import compiled output)
+  - repo path: `src/cli.js`
+  - repo path: `src/server.js`
+  - repo path: `dashboard/`
+  - repo path: remaining `src/lib/*.js` modules
+  - repo path: migrating `test/` to TypeScript
 
 ## Required docs
 
-- .agent-workflow/project-profile.md
-- .agent-workflow/memory/product.md
-- .agent-workflow/memory/architecture.md
-- docs/ROADMAP.md (Phase 0 context)
+- `.agent-workflow/project-profile.md`
+- `.agent-workflow/memory/product.md`
+- `.agent-workflow/memory/architecture.md`
+- `docs/ROADMAP.md`
 
 ## Deliverables
 
-- `tsconfig.json` with strict mode, `outDir: dist/`, `rootDir: src/`
-- `src/lib/fs-utils.ts` — fully typed version of fs-utils.js
-- `package.json` updated: `typescript` as devDep, `build` script, `prepublishOnly` hook
-- `.gitignore` updated for build artifacts
-- All existing tests still pass (`npm test`)
+- `tsconfig.json` with `strict: true`, `outDir: dist/`, and `rootDir: src/`
+- `src/lib/fs-utils.ts` plus a CommonJS bridge at `src/lib/fs-utils.js`
+- `package.json` updated with `typescript` and `@types/node` devDependencies, `build`, `pretest`, and `prepublishOnly`
+- `.gitignore` and `.npmignore` updated for build artifacts
+- documentation updates for contributor and publishing flows
+- all existing tests still pass (`npm test`)
 
 ## Risks
 
 - Breaking existing `require('agent-workflow-studio')` imports if output paths change
 - TypeScript strict mode may surface latent type errors in dependent modules
-- Build step adds friction to contributor workflow — mitigate with clear README instructions
+- Build step adds friction to contributor workflow - mitigate with clear README instructions
 
 ## Acceptance Criteria
 
 - `npm run build` succeeds
-- `npm test` passes (tests import compiled JS, not TS directly)
+- `npm test` passes
 - `require('./src/lib/fs-utils')` still works (CJS compat)
 - `tsconfig.json` uses `strict: true`
-- Zero runtime dependencies added
+- zero runtime dependencies added

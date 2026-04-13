@@ -1,0 +1,15 @@
+> agent-workflow-studio@0.1.2 pretest
+> npm run build
+
+> agent-workflow-studio@0.1.2 build
+> tsc --project tsconfig.json
+
+> agent-workflow-studio@0.1.2 test
+> vitest run
+
+ RUN  v4.1.4 C:/Users/lenovo/Desktop/agent-workflow-studio
+
+ Test Files  25 passed (25)
+      Tests  99 passed (99)
+   Start at  02:44:42
+   Duration  31.86s (transform 135ms, setup 0ms, import 547ms, tests 26.31s, environment 2ms)

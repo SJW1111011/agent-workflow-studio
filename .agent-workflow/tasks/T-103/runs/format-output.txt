@@ -1,0 +1,6 @@
+
+> agent-workflow-studio@0.1.2 format:check
+> prettier --check ".github/**/*.yml" "README.md" "docs/PUBLISHING.md" "package.json" "eslint.config.mjs" "vitest.config.ts"
+
+Checking formatting...
+All matched files use Prettier code style!

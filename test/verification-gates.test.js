@@ -420,7 +420,13 @@ const tests = [
   },
 ];
 
-module.exports = {
+const suite = {
   name: "verification-gates",
   tests,
 };
+
+describe(suite.name, () => {
+  suite.tests.forEach((testCase) => {
+    it(testCase.name, testCase.run);
+  });
+});

@@ -326,7 +326,13 @@ const tests = [
   },
 ];
 
-module.exports = {
+const suite = {
   name: "task-documents",
   tests,
 };
+
+describe(suite.name, () => {
+  suite.tests.forEach((testCase) => {
+    it(testCase.name, testCase.run);
+  });
+});

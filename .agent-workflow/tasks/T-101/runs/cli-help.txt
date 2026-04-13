@@ -1,0 +1,22 @@
+Agent Workflow Studio CLI
+
+Commands:
+  init [--root path]
+  scan [--root path]
+  memory:bootstrap [--output .agent-workflow/handoffs/memory-bootstrap.md] [--root path]
+  memory:validate [--root path]
+  dashboard [--root path] [--port 4173]
+  skills:generate [--root path]
+  adapter:list [--root path]
+  adapter:create <adapterId> [--name "My Agent"] [--runner "npx my-agent-cli"] [--argv-template "exec -"] [--prompt-target codex|claude] [--root path]
+  recipe:list [--root path]
+  quick <title> [--task-id T-001] [--priority P1] [--recipe feature] [--agent codex|claude] [--root path]
+  task:new <taskId> <title> [--priority P1] [--recipe feature] [--root path]
+  task:list [--root path]
+  prompt:compile <taskId> [--agent codex|claude] [--root path]
+  run:prepare <taskId> [--adapter <adapterId>] [--agent <adapterId>] [--root path]
+  run:execute <taskId> [--adapter <adapterId>] [--agent <adapterId>] [--timeout-ms 300000] [--root path]
+  run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--root path]
+  checkpoint <taskId> [--root path]
+  overview [--root path]
+  validate [--root path]

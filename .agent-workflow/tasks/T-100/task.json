@@ -1,14 +1,41 @@
 {
   "id": "T-100",
-  "title": "TypeScript migration skeleton — tsconfig, build pipeline, first module converted",
+  "title": "TypeScript migration skeleton - tsconfig, build pipeline, first module converted",
   "recipeId": "feature",
   "priority": "P1",
-  "status": "todo",
+  "status": "done",
   "createdAt": "2026-04-12T17:20:56.487Z",
-  "updatedAt": "2026-04-12T17:20:56.487Z",
-  "goal": "",
-  "scope": [],
-  "nonGoals": [],
-  "requiredDocs": [],
-  "verificationCommands": []
+  "updatedAt": "2026-04-13T00:58:32.593Z",
+  "goal": "Set up a strict TypeScript build path that emits CommonJS into dist/, convert src/lib/fs-utils.js into typed src/lib/fs-utils.ts, and keep existing CommonJS callers working through a small src/lib/fs-utils.js bridge.",
+  "scope": [
+    "tsconfig.json",
+    "package.json",
+    ".gitignore",
+    ".npmignore",
+    "src/lib/fs-utils.ts",
+    "src/lib/fs-utils.js",
+    "scripts/unit-test.js",
+    "test/fs-utils.test.js",
+    "README.md",
+    "docs/PUBLISHING.md"
+  ],
+  "nonGoals": [
+    "src/cli.js",
+    "src/server.js",
+    "dashboard/",
+    "remaining src/lib/*.js modules",
+    "migrating test/ to TypeScript"
+  ],
+  "requiredDocs": [
+    ".agent-workflow/project-profile.md",
+    ".agent-workflow/memory/product.md",
+    ".agent-workflow/memory/architecture.md",
+    "docs/ROADMAP.md"
+  ],
+  "verificationCommands": [
+    "npm run build",
+    "npm test",
+    "npm pack --dry-run --json --cache ./.npm-cache-tmp",
+    "node -e \"const fsUtils = require('./src/lib/fs-utils'); console.log(Object.keys(fsUtils).sort().join(','));\""
+  ]
 }

@@ -1,0 +1,6 @@
+
+> agent-workflow-studio@0.1.2 verify:onboarding
+> node scripts/npm-onboarding-check.js
+
+Using temp root: C:\Users\lenovo\Desktop\agent-workflow-studio\tmp\npm-onboarding-VPFXzN
+npm-first onboarding check passed.

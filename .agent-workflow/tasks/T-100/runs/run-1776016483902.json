@@ -1,0 +1,123 @@
+{
+  "id": "run-1776016483902",
+  "taskId": "T-100",
+  "agent": "codex",
+  "status": "passed",
+  "summary": "Re-verified the final TypeScript migration state after refreshing ignored build and pack artifacts.",
+  "createdAt": "2026-04-12T17:54:43.900Z",
+  "source": "manual",
+  "verificationChecks": [
+    {
+      "label": "npm run build",
+      "status": "passed",
+      "details": "tsc completed successfully",
+      "artifacts": [
+        ".agent-workflow/tasks/T-100/runs/build-output.txt"
+      ]
+    },
+    {
+      "label": "npm test",
+      "status": "passed",
+      "details": "98 unit tests passed after the pretest build",
+      "artifacts": [
+        ".agent-workflow/tasks/T-100/runs/test-output.txt"
+      ]
+    },
+    {
+      "label": "npm pack --dry-run --json --cache ./.npm-cache-tmp",
+      "status": "passed",
+      "details": "packed payload includes dist/ and omits tsbuildinfo",
+      "artifacts": [
+        ".agent-workflow/tasks/T-100/runs/pack-output.json"
+      ]
+    },
+    {
+      "label": "require('./src/lib/fs-utils')",
+      "status": "passed",
+      "details": "the bridge resolved the compiled helper exports",
+      "artifacts": [
+        ".agent-workflow/tasks/T-100/runs/require-output.txt"
+      ]
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-100/runs/build-output.txt",
+    ".agent-workflow/tasks/T-100/runs/test-output.txt",
+    ".agent-workflow/tasks/T-100/runs/pack-output.json",
+    ".agent-workflow/tasks/T-100/runs/require-output.txt"
+  ],
+  "scopeProofPaths": [
+    "tsconfig.json",
+    "package.json",
+    ".gitignore",
+    ".npmignore",
+    "src/lib/fs-utils.ts",
+    "src/lib/fs-utils.js",
+    "scripts/unit-test.js",
+    "test/fs-utils.test.js",
+    "README.md",
+    "docs/PUBLISHING.md"
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "tsconfig.json",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:a6db5cc5f89983b10ba71c69ebc024bee8b81a1f"
+    },
+    {
+      "path": "package.json",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:ae8dc54888e708648f3eed6a7fa9c84950073ba6"
+    },
+    {
+      "path": ".gitignore",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:6a31e4dc465457a7fd108f76eb43be20641a06de"
+    },
+    {
+      "path": ".npmignore",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:89f3786c5038fb169a20db64991ec93eba203d6d"
+    },
+    {
+      "path": "src/lib/fs-utils.ts",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:7cbaeb1a5bc295c44f4f3d9874211ffdf2e49bca"
+    },
+    {
+      "path": "src/lib/fs-utils.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:0706eb12e42194e40c59d3e8b1aec72a56b43ca6"
+    },
+    {
+      "path": "scripts/unit-test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:467f89ed4693a448b74a1e089b91381e1fcbf875"
+    },
+    {
+      "path": "test/fs-utils.test.js",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:3d6b164db8afea72f5e96b231ae1191cc9d87aea"
+    },
+    {
+      "path": "README.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:1fb1751cf9308e447372d27b5340bcc6efc9fbcb"
+    },
+    {
+      "path": "docs/PUBLISHING.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:e221ef5cda85de9d0f1bcffe9ff90c3e825d1439"
+    }
+  ]
+}

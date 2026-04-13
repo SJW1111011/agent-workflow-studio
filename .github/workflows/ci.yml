@@ -2,47 +2,89 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
-  test-smoke-and-onboarding:
+  test-validate-and-coverage:
     name: ${{ matrix.os }} / node-${{ matrix.node }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
-        node:
-          - "20"
+        include:
+          - os: ubuntu-latest
+            node: "18"
+          - os: ubuntu-latest
+            node: "20"
+          - os: ubuntu-latest
+            node: "22"
+          - os: windows-latest
+            node: "22"
+          - os: macos-latest
+            node: "22"
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Show tool versions
         run: |
           node --version
           npm --version
 
+      - name: Run lint
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '22'
+        run: npm run lint
+
+      - name: Check formatting
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '22'
+        run: npm run format:check
+
+      - name: Run coverage suite
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '22'
+        run: npm run test:coverage
+
       - name: Run unit tests
+        if: matrix.os != 'ubuntu-latest' || matrix.node != '22'
         run: npm test
 
       - name: Run workspace validation
         run: npm run validate -- --root .
 
       - name: Run smoke test
+        if: matrix.node == '22'
         run: npm run smoke
 
       - name: Verify npm-first onboarding and dashboard quick flow
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '22'
         run: npm run verify:onboarding
+
+      - name: Upload coverage artifact
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '22'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-node-${{ matrix.node }}
+          path: coverage
+          if-no-files-found: error
+
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '22' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage/lcov.info
+          use_oidc: true
