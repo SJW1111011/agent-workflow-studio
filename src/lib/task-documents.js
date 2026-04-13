@@ -149,6 +149,49 @@ function renderCheckpointSkeleton(taskMeta) {
 `);
 }
 
+function ensureTaskArtifacts(workspaceRoot, taskId, options = {}) {
+  const files = taskFiles(workspaceRoot, taskId);
+  if (!fileExists(files.meta)) {
+    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
+  }
+
+  const taskMeta = readJson(files.meta, {});
+  const recipe = getRecipe(workspaceRoot, taskMeta.recipeId);
+  const created = [];
+
+  if (options.task && !fileExists(files.task)) {
+    writeFile(files.task, renderTaskMarkdown(taskMeta, recipe));
+    created.push("task.md");
+  }
+
+  if (options.context && !fileExists(files.context)) {
+    writeFile(files.context, renderContextMarkdown(taskMeta, recipe));
+    created.push("context.md");
+  }
+
+  if (options.verification && !fileExists(files.verification)) {
+    writeFile(files.verification, renderVerificationMarkdown(taskMeta));
+    created.push("verification.md");
+  }
+
+  if (options.checkpoint && !fileExists(files.checkpoint)) {
+    writeFile(files.checkpoint, renderCheckpointSkeleton(taskMeta));
+    created.push("checkpoint.md");
+  }
+
+  if (options.runs && !fileExists(files.runs)) {
+    fs.mkdirSync(files.runs, { recursive: true });
+    created.push("runs/");
+  }
+
+  return {
+    files,
+    taskMeta,
+    recipe,
+    created,
+  };
+}
+
 function syncManagedTaskDocs(files, taskMeta, recipe) {
   if (fileExists(files.task)) {
     writeFile(files.task, normalizeTaskMarkdown(taskMeta, recipe, readFileWithFallback(files.task)));
@@ -586,6 +629,7 @@ function escapeRegex(value) {
 
 module.exports = {
   EDITABLE_TASK_DOCUMENTS,
+  ensureTaskArtifacts,
   refreshManualProofAnchors,
   renderCheckpointSkeleton,
   renderContextMarkdown,

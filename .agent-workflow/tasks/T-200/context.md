@@ -2,7 +2,7 @@
 
 ## Why now
 
-Phase 0 (TypeScript, Vitest, ESM, CI) is complete. Phase 1's central goal is "90% of daily tasks recordable in 30 seconds." Currently `quick` generates 7 files including prompt compilation, run preparation, and checkpoint — excessive for "I just want to track that I'm doing something." Lite Mode is the foundation that all other Phase 1 tasks build on: `done` (T-201) and smart defaults (T-202) both depend on having a minimal task scaffold to work against.
+Phase 0 (TypeScript, Vitest, ESM, CI) is complete. Phase 1's central goal is "90% of daily tasks recordable in 30 seconds." Right now `quick` generates prompt, run-prep, and checkpoint artifacts even when the user only wants to capture a task quickly. Lite Mode is the foundation for later Phase 1 work such as `done` (T-201) and smart defaults (T-202), because both depend on a minimal task scaffold that can grow on demand.
 
 <!-- agent-workflow:managed:context-recipe-guidance:start -->
 ## Recipe guidance
@@ -13,18 +13,18 @@ Phase 0 (TypeScript, Vitest, ESM, CI) is complete. Phase 1's central goal is "90
 
 ## Facts
 
-- `quick` currently calls: `createTask()` → `compilePrompt()` → `prepareRun()` → `buildCheckpoint()` — four expensive steps
-- `createTask()` in `task-service.js` generates task.json + task.md + context.md + verification.md + checkpoint skeleton + runs/ directory
-- `compilePrompt()` reads project profile + memory docs + task docs to assemble a prompt file
-- `prepareRun()` generates run-request JSON + launch-pack markdown
-- `buildCheckpoint()` calls `buildTaskVerificationGate()` which does a full repository snapshot — the heaviest operation
-- The dashboard's `getTaskDetail()` also calls `buildTaskVerificationGate()`, so it must tolerate missing optional files
-- `verification-gates.js` reads `verification.md` for scope hints and manual proof — must return a neutral gate when file is absent
+- `quick` currently calls `createTask() -> compilePrompt() -> prepareRun() -> buildCheckpoint()`.
+- `createTask()` currently generates `task.json`, `task.md`, `context.md`, `verification.md`, `checkpoint.md`, and `runs/`.
+- `compilePrompt()` already reads missing docs as empty strings, but its prompt bundle still points agents at `context.md` and `verification.md`.
+- `prepareRun()` already compiles the prompt on demand when the adapter prompt file is missing.
+- `buildCheckpoint()` always rebuilds the verification gate, which is the heaviest operation in the `quick` path.
+- `recordRun()` appends directly to `verification.md`, so Lite tasks need lazy verification doc creation before evidence is recorded.
+- `buildTaskFreshness()` and task detail APIs already report missing docs without crashing, which keeps the dashboard compatible with Lite tasks.
 
 ## Open questions
 
-- Should context.md be included in Lite (3 files) or excluded (2 files)? Leaning toward excluding — it can auto-create on first `run:add`.
-- Should `--lite` become the default now or in a follow-up? Leaning toward follow-up to avoid changing behavior mid-Phase-1.
+- Lite will stay at exactly 2 files: `task.json` + `task.md`.
+- `--full` remains the default in T-200; the default flip stays for a follow-up task after Lite is verified.
 
 ## Constraints
 
@@ -32,7 +32,7 @@ Phase 0 (TypeScript, Vitest, ESM, CI) is complete. Phase 1's central goal is "90
 - Priority: P0
 - Keep the workflow docs current.
 <!-- agent-workflow:managed:context-constraints-meta:end -->
-- Must not break any existing `quick --full` behavior — Full Mode is a preserved contract
-- Must not add runtime dependencies
-- Must pass `npm test`, `npm run lint`, `npm run smoke`
-- Dashboard must still render Lite tasks (may show empty sections for missing docs)
+- Must not break any existing `quick --full` behavior because Full Mode is a preserved contract.
+- Must not add runtime dependencies.
+- Must pass `npm test`, `npm run lint`, and `npm run smoke`.
+- Dashboard task detail and overview flows must still tolerate missing optional Lite docs.

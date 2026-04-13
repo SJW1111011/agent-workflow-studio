@@ -24,7 +24,7 @@ Add a `--lite` mode (eventually become the default) to the `quick` command that 
   - repo path: test/quick-task.test.js (add lite mode tests)
   - repo path: test/task-documents.test.js (test lazy document generation)
   - repo path: README.md (document Lite/Full modes)
-  - repo path: AGENT_GUIDE.md (update agent workflow guidance)
+  - repo path: AGENT_GUIDE.md
   - repo path: docs/ROADMAP.md (mark T-200 done)
 - Out of scope:
   - repo path: dashboard/ (UI changes deferred to Phase 4)

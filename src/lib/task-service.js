@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { appendText, fileExists, readJson, writeFile, writeJson } = require("./fs-utils");
+const { appendText, fileExists, readJson, writeJson } = require("./fs-utils");
 const { listAdapters } = require("./adapters");
 const { buildTaskFreshness } = require("./freshness");
 const { badRequest, notFound } = require("./http-errors");
@@ -16,16 +16,14 @@ const {
 const { buildScopeProofAnchors, loadRepositorySnapshot } = require("./repository-snapshot");
 const { buildTaskVerificationGate } = require("./verification-gates");
 const {
-  renderCheckpointSkeleton,
-  renderContextMarkdown,
-  renderTaskMarkdown,
-  renderVerificationMarkdown,
+  ensureTaskArtifacts,
   syncManagedTaskDocs,
 } = require("./task-documents");
 const { ensureWorkflowScaffold, runsRoot, taskFiles, taskRoot } = require("./workspace");
 
 const TASK_STATUSES = new Set(["todo", "in_progress", "blocked", "done"]);
 const TASK_PRIORITIES = new Set(["P0", "P1", "P2", "P3"]);
+const TASK_SCAFFOLD_MODES = new Set(["full", "lite"]);
 
 function createTask(workspaceRoot, taskId, title, options = {}) {
   ensureWorkflowScaffold(workspaceRoot);
@@ -35,6 +33,7 @@ function createTask(workspaceRoot, taskId, title, options = {}) {
   const now = new Date().toISOString();
   const recipeId = normalizeRecipeId(options.recipe);
   const recipe = getRecipe(workspaceRoot, recipeId);
+  const scaffoldMode = normalizeTaskScaffoldMode(options.scaffoldMode || options.mode || "full");
 
   if (!recipe) {
     throw badRequest(`Unknown recipe: ${recipeId}`, "unknown_recipe");
@@ -59,11 +58,13 @@ function createTask(workspaceRoot, taskId, title, options = {}) {
 
   if (!exists) {
     writeJson(files.meta, taskMeta);
-    writeFile(files.task, renderTaskMarkdown(taskMeta, recipe));
-    writeFile(files.context, renderContextMarkdown(taskMeta, recipe));
-    writeFile(files.verification, renderVerificationMarkdown(taskMeta));
-    writeFile(files.checkpoint, renderCheckpointSkeleton(taskMeta));
-    fs.mkdirSync(files.runs, { recursive: true });
+    ensureTaskArtifacts(workspaceRoot, taskId, {
+      task: true,
+      context: scaffoldMode === "full",
+      verification: scaffoldMode === "full",
+      checkpoint: scaffoldMode === "full",
+      runs: scaffoldMode === "full",
+    });
   }
 
   return taskMeta;
@@ -203,6 +204,7 @@ module.exports = {
   getTaskDetail,
   listRuns,
   listTasks,
+  normalizeTaskScaffoldMode,
   persistRunRecord,
   recordRun,
   updateTaskMeta,
@@ -257,13 +259,12 @@ function createRunRecord(taskId, fields = {}) {
 }
 
 function persistRunRecord(workspaceRoot, taskId, run) {
-  const files = taskFiles(workspaceRoot, taskId);
-
-  if (!fileExists(files.meta)) {
-    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
-  }
-
-  const meta = readJson(files.meta, {});
+  const { files, taskMeta: meta } = ensureTaskArtifacts(workspaceRoot, taskId, {
+    task: true,
+    context: true,
+    verification: true,
+    runs: true,
+  });
   const existingRuns = listRuns(workspaceRoot, taskId);
   const taskText = safeRead(files.task);
   const repositorySnapshot = loadRepositorySnapshot(workspaceRoot);
@@ -320,6 +321,14 @@ function persistRunRecord(workspaceRoot, taskId, run) {
 
 function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function normalizeTaskScaffoldMode(value) {
+  const mode = String(value || "full").trim().toLowerCase() || "full";
+  if (!TASK_SCAFFOLD_MODES.has(mode)) {
+    throw badRequest(`Unsupported task scaffold mode: ${value}`, "unsupported_task_scaffold_mode");
+  }
+  return mode;
 }
 
 function omitUndefined(value, excludedKeys) {

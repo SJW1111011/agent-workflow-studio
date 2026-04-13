@@ -62,7 +62,7 @@ Track tasks, runs, risks, executor outcomes, and verification signals from one l
 
 ## Core capabilities
 
-- **`quick`** - create a durable task bundle in one step: profile refresh, task docs, prompt, run request, launch pack, and checkpoint
+- **`quick`** - create either a minimal Lite task scaffold or the full prompt/run/checkpoint bundle, depending on how much ceremony you want up front
 - **`memory:bootstrap`** - generate a local-only handoff prompt that helps Codex or Claude Code fill grounded project memory
 - **`run:execute`** - launch a local adapter when you explicitly opt into `commandMode: exec`, with shared preflight, logs, and evidence capture
 - **`verification gate`** - compare repo-relative task scope against the current repository snapshot and show which scoped files still need explicit proof
@@ -112,6 +112,14 @@ Task creation          Agent execution           Evidence + resume
 2. Hand the compiled prompt to Codex or Claude Code, or use `run:execute` when a local adapter is ready.
 3. Review proof in `verification.md` and recorded runs under `.agent-workflow/tasks/<taskId>/runs/`.
 4. Refresh `checkpoint.md`, keep moving, and resume later without losing context.
+
+## Lite vs Full
+
+`quick` now supports two task creation modes:
+
+- `npx agent-workflow quick "My task" --lite --root .` creates only `task.json` and `task.md`, then lets `prompt:compile`, `run:prepare`, `run:add`, and `checkpoint` materialize the rest on demand.
+- `npx agent-workflow quick "My task" --full --agent codex --root .` preserves the current full bundle: task docs, prompt, run request, launch pack, and checkpoint.
+- The current default is still Full Mode so existing workflows keep working unchanged.
 
 ## Verification model
 

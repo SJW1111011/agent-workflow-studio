@@ -129,13 +129,14 @@ function main(argv = process.argv.slice(2)) {
         const title = positionals.join(" ").trim();
         assert(
           title,
-          "Usage: quick <title> [--task-id T-001] [--priority P1] [--recipe feature] [--agent codex|claude] [--root path]"
+          "Usage: quick <title> [--task-id T-001] [--priority P1] [--recipe feature] [--agent codex|claude] [--lite] [--full] [--root path]"
         );
         const result = quickCreateTask(workspaceRoot, title, {
           taskId: options["task-id"],
           priority: options.priority,
           recipe: options.recipe,
           agent: options.agent,
+          mode: normalizeQuickModeOption(options),
         });
         print(formatQuickTaskSummary(result));
         break;
@@ -304,6 +305,17 @@ function normalizePromptAgent(agent) {
   return normalizeAdapterId(agent) === "claude-code" ? "claude" : "codex";
 }
 
+function normalizeQuickModeOption(options = {}) {
+  const lite = options.lite === true;
+  const full = options.full === true;
+
+  if (lite && full) {
+    throw new Error("Usage: quick <title> [--task-id T-001] [--priority P1] [--recipe feature] [--agent codex|claude] [--lite] [--full] [--root path]");
+  }
+
+  return lite ? "lite" : "full";
+}
+
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
@@ -327,7 +339,7 @@ Commands:
   adapter:list [--root path]
   adapter:create <adapterId> [--name "My Agent"] [--runner "npx my-agent-cli"] [--argv-template "exec -"] [--prompt-target codex|claude] [--root path]
   recipe:list [--root path]
-  quick <title> [--task-id T-001] [--priority P1] [--recipe feature] [--agent codex|claude] [--root path]
+  quick <title> [--task-id T-001] [--priority P1] [--recipe feature] [--agent codex|claude] [--lite] [--full] [--root path]
   task:new <taskId> <title> [--priority P1] [--recipe feature] [--root path]
   task:list [--root path]
   prompt:compile <taskId> [--agent codex|claude] [--root path]
@@ -348,4 +360,3 @@ module.exports = {
 if (require.main === module) {
   main();
 }
-

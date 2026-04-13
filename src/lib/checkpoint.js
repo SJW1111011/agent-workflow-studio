@@ -1,17 +1,16 @@
 const path = require("path");
-const { fileExists, readJson, readText, writeFile, writeJson } = require("./fs-utils");
-const { notFound } = require("./http-errors");
+const { fileExists, readText, writeFile, writeJson } = require("./fs-utils");
 const { listRuns } = require("./task-service");
+const { ensureTaskArtifacts } = require("./task-documents");
 const { buildTaskVerificationGate } = require("./verification-gates");
-const { projectProfilePath, taskFiles } = require("./workspace");
+const { projectProfilePath } = require("./workspace");
 
 function buildCheckpoint(workspaceRoot, taskId) {
-  const files = taskFiles(workspaceRoot, taskId);
-  if (!fileExists(files.meta)) {
-    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
-  }
-
-  const task = readJson(files.meta, {});
+  const { files, taskMeta: task } = ensureTaskArtifacts(workspaceRoot, taskId, {
+    task: true,
+    context: true,
+    verification: true,
+  });
   const runs = listRuns(workspaceRoot, taskId);
   const latestRun = runs[runs.length - 1] || null;
   const verificationGate = buildTaskVerificationGate(workspaceRoot, task, runs);

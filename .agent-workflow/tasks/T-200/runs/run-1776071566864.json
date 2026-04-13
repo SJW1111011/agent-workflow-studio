@@ -1,0 +1,113 @@
+{
+  "id": "run-1776071566864",
+  "taskId": "T-200",
+  "agent": "codex",
+  "status": "passed",
+  "summary": "Implemented Lite and Full quick modes with lazy task artifact materialization.",
+  "createdAt": "2026-04-13T09:12:46.863Z",
+  "scopeProofPaths": [
+    "src/lib/quick-task.js",
+    "src/lib/task-documents.js",
+    "src/lib/task-service.js",
+    "src/lib/prompt-compiler.js",
+    "src/lib/checkpoint.js",
+    "src/cli.js",
+    "test/quick-task.test.js",
+    "test/task-documents.test.js",
+    "test/test-helpers.js",
+    "README.md",
+    "AGENT_GUIDE.md",
+    "docs/ROADMAP.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm run lint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/lib/quick-task.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:f618e2ef94fff922b32ac08bc385ec24bbcffc85"
+    },
+    {
+      "path": "src/lib/task-documents.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:138eb7c5dad9aefeabaeee0564e83a2f13c25916"
+    },
+    {
+      "path": "src/lib/task-service.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:b691b03665b25fe7fee1c396c616e4b0f9b5a6a7"
+    },
+    {
+      "path": "src/lib/prompt-compiler.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:353375cdfa6a9e224994c61c4f8c54b835d09d55"
+    },
+    {
+      "path": "src/lib/checkpoint.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:ca9db8f44b342ecf5341c652d717e27555bb0cb9"
+    },
+    {
+      "path": "src/cli.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:6f2cfb6ee963bf68bd2b84351761da58f2c477c8"
+    },
+    {
+      "path": "test/quick-task.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:8842e75b64ac4277d6a7413176811340a18106c2"
+    },
+    {
+      "path": "test/task-documents.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:ed14faad06d68d36d4b472c79eab45628f2fc61d"
+    },
+    {
+      "path": "test/test-helpers.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:11de3e8ae45df1966c6347ac33e32a17ea5c8e82"
+    },
+    {
+      "path": "README.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:42a5b0481507faac2ae6343f238b862383489eb2"
+    },
+    {
+      "path": "AGENT_GUIDE.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:e60cd6d25ec202c6276cf334e4daebc5e9def3b2"
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:68f09e6f6f0de14fc9a981c4b79ea60186cbd348"
+    }
+  ]
+}

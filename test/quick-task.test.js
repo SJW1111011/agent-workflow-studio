@@ -2,8 +2,11 @@ const assert = require("node:assert/strict");
 const fs = require("fs");
 const path = require("path");
 
+const { buildCheckpoint } = require("../src/lib/checkpoint");
+const { compilePrompt } = require("../src/lib/prompt-compiler");
 const { buildNextTaskId, formatQuickTaskSummary, quickCreateTask } = require("../src/lib/quick-task");
-const { createTask } = require("../src/lib/task-service");
+const { prepareRun } = require("../src/lib/run-preparer");
+const { createTask, recordRun } = require("../src/lib/task-service");
 const { createTaskWorkspace, readJsonFile, readTextFile, writeTextFile } = require("./test-helpers");
 
 const tests = [
@@ -25,7 +28,7 @@ const tests = [
     },
   },
   {
-    name: "quickCreateTask refreshes project profile and creates prompt, run-request, launch pack, and checkpoint",
+    name: "quickCreateTask full mode refreshes project profile and creates prompt, run-request, launch pack, and checkpoint",
     run() {
       const { workspaceRoot } = createTaskWorkspace("quick-task-create");
 
@@ -57,6 +60,7 @@ const tests = [
       assert.equal(result.taskId, "T-002");
       assert.equal(result.priority, "P0");
       assert.equal(result.recipeId, "review");
+      assert.equal(result.mode, "full");
       assert.equal(result.agent, "claude");
       assert.equal(result.adapterId, "claude-code");
       assert.equal(result.profile.repositoryName, path.basename(workspaceRoot));
@@ -76,9 +80,106 @@ const tests = [
 
       const summary = formatQuickTaskSummary(result);
       assert.match(summary, /Quick task ready: T-002/);
+      assert.match(summary, /Mode: full/);
       assert.match(summary, /prompt\.claude\.md/);
       assert.match(summary, /run-request\.claude-code\.json/);
       assert.match(summary, /Review \.agent-workflow\/tasks\/T-002\/task\.md/);
+    },
+  },
+  {
+    name: "quickCreateTask lite mode creates only task.json and task.md in the task folder",
+    run() {
+      const { workspaceRoot } = createTaskWorkspace("quick-task-lite");
+      const taskId = "T-002";
+
+      const result = quickCreateTask(workspaceRoot, "Capture a lightweight task", {
+        taskId,
+        priority: "P1",
+        recipe: "feature",
+        mode: "lite",
+      });
+
+      const taskRoot = path.join(workspaceRoot, ".agent-workflow", "tasks", taskId);
+      assert.equal(result.mode, "lite");
+      assert.equal(result.prompt, null);
+      assert.equal(result.prepared, null);
+      assert.equal(result.checkpoint, null);
+      assert.deepEqual(fs.readdirSync(taskRoot).sort(), ["task.json", "task.md"]);
+
+      const summary = formatQuickTaskSummary(result);
+      assert.match(summary, /Mode: lite/);
+      assert.match(summary, /task\.md/);
+      assert.match(summary, /materialize the rest on demand/);
+      assert.doesNotMatch(summary, /Prompt \(/);
+    },
+  },
+  {
+    name: "compilePrompt and prepareRun materialize missing lite task docs and run-prep artifacts on demand",
+    run() {
+      const { workspaceRoot } = createTaskWorkspace("quick-task-lite-prepare");
+      const taskId = "T-002";
+
+      quickCreateTask(workspaceRoot, "Prepare a lite task later", {
+        taskId,
+        mode: "lite",
+      });
+
+      const taskRoot = path.join(workspaceRoot, ".agent-workflow", "tasks", taskId);
+      const prompt = compilePrompt(workspaceRoot, taskId, "codex");
+      assert.ok(fs.existsSync(prompt.outputPath));
+      assert.ok(fs.existsSync(path.join(taskRoot, "context.md")));
+      assert.ok(fs.existsSync(path.join(taskRoot, "verification.md")));
+      assert.equal(fs.existsSync(path.join(taskRoot, "run-request.codex.json")), false);
+      assert.equal(fs.existsSync(path.join(taskRoot, "launch.codex.md")), false);
+
+      const prepared = prepareRun(workspaceRoot, taskId, "codex");
+      assert.ok(fs.existsSync(prepared.runRequestPath));
+      assert.ok(fs.existsSync(prepared.launchPackPath));
+    },
+  },
+  {
+    name: "buildCheckpoint materializes verification and checkpoint files for lite tasks",
+    run() {
+      const { workspaceRoot } = createTaskWorkspace("quick-task-lite-checkpoint");
+      const taskId = "T-002";
+
+      quickCreateTask(workspaceRoot, "Checkpoint a lite task", {
+        taskId,
+        mode: "lite",
+      });
+
+      const taskRoot = path.join(workspaceRoot, ".agent-workflow", "tasks", taskId);
+      const checkpoint = buildCheckpoint(workspaceRoot, taskId);
+
+      assert.equal(checkpoint.taskId, taskId);
+      assert.ok(fs.existsSync(path.join(taskRoot, "context.md")));
+      assert.ok(fs.existsSync(path.join(taskRoot, "verification.md")));
+      assert.ok(fs.existsSync(path.join(taskRoot, "checkpoint.md")));
+      assert.ok(fs.existsSync(path.join(taskRoot, "checkpoint.json")));
+    },
+  },
+  {
+    name: "recordRun materializes lite task context, verification, and runs before writing evidence",
+    run() {
+      const { workspaceRoot } = createTaskWorkspace("quick-task-lite-run");
+      const taskId = "T-002";
+
+      quickCreateTask(workspaceRoot, "Record evidence for a lite task", {
+        taskId,
+        mode: "lite",
+      });
+
+      const taskRoot = path.join(workspaceRoot, ".agent-workflow", "tasks", taskId);
+      const run = recordRun(workspaceRoot, taskId, "Lite proof recorded.", "passed", "manual", {
+        verificationChecks: [{ label: "manual verification", status: "passed" }],
+      });
+
+      assert.equal(run.taskId, taskId);
+      assert.ok(fs.existsSync(path.join(taskRoot, "context.md")));
+      assert.ok(fs.existsSync(path.join(taskRoot, "verification.md")));
+      assert.ok(fs.existsSync(path.join(taskRoot, "runs")));
+      assert.match(readTextFile(path.join(taskRoot, "verification.md")), /Lite proof recorded\./);
+      assert.ok(fs.readdirSync(path.join(taskRoot, "runs")).some((fileName) => fileName.endsWith(".json")));
     },
   },
 ];

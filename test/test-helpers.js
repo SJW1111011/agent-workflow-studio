@@ -31,6 +31,7 @@ function createTaskWorkspace(prefix, options = {}) {
   createTask(workspaceRoot, taskId, title, {
     recipe: options.recipe || "feature",
     priority: options.priority || "P1",
+    scaffoldMode: options.scaffoldMode || "full",
   });
 
   return {

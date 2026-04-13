@@ -1,7 +1,13 @@
 const assert = require("node:assert/strict");
+const fs = require("fs");
 
 const { getRecipe } = require("../src/lib/recipes");
-const { refreshManualProofAnchors, saveTaskDocument, syncManagedTaskDocs } = require("../src/lib/task-documents");
+const {
+  ensureTaskArtifacts,
+  refreshManualProofAnchors,
+  saveTaskDocument,
+  syncManagedTaskDocs,
+} = require("../src/lib/task-documents");
 const {
   createTaskWorkspace,
   readJsonFile,
@@ -322,6 +328,32 @@ const tests = [
       assert.match(checkpointText, /- Status: blocked/);
       assert.match(checkpointText, /- Extra fact: keep me\./);
       assert.match(checkpointText, /- Preserve checkpoint note\./);
+    },
+  },
+  {
+    name: "ensureTaskArtifacts materializes missing optional docs and runs for lite tasks from the canonical templates",
+    run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("task-doc-lite-materialize", {
+        scaffoldMode: "lite",
+      });
+
+      assert.equal(fs.existsSync(files.context), false);
+      assert.equal(fs.existsSync(files.verification), false);
+      assert.equal(fs.existsSync(files.checkpoint), false);
+      assert.equal(fs.existsSync(files.runs), false);
+
+      const result = ensureTaskArtifacts(workspaceRoot, taskId, {
+        context: true,
+        verification: true,
+        checkpoint: true,
+        runs: true,
+      });
+
+      assert.deepEqual(result.created, ["context.md", "verification.md", "checkpoint.md", "runs/"]);
+      assert.match(readTextFile(files.context), /^# T-001 Context$/m);
+      assert.match(readTextFile(files.verification), /^# T-001 Verification$/m);
+      assert.match(readTextFile(files.checkpoint), /^# T-001 Checkpoint$/m);
+      assert.equal(fs.existsSync(files.runs), true);
     },
   },
 ];

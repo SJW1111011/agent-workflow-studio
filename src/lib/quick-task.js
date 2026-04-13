@@ -13,6 +13,7 @@ function quickCreateTask(workspaceRoot, title, options = {}) {
   const recipeId = String(options.recipe || "feature").trim() || "feature";
   const priority = String(options.priority || "P2").trim().toUpperCase() || "P2";
   const agent = normalizeQuickAgent(options.agent);
+  const mode = normalizeQuickMode(options.mode || "full");
   const taskId = isNonEmptyString(options.taskId) ? String(options.taskId).trim() : buildNextTaskId(workspaceRoot);
 
   if (!normalizedTitle) {
@@ -27,10 +28,11 @@ function quickCreateTask(workspaceRoot, title, options = {}) {
   const task = createTask(workspaceRoot, taskId, normalizedTitle, {
     recipe: recipeId,
     priority,
+    scaffoldMode: mode,
   });
-  const prompt = compilePrompt(workspaceRoot, taskId, agent.promptAgent);
-  const prepared = prepareRun(workspaceRoot, taskId, agent.adapterId);
-  const checkpoint = buildCheckpoint(workspaceRoot, taskId);
+  const prompt = mode === "full" ? compilePrompt(workspaceRoot, taskId, agent.promptAgent) : null;
+  const prepared = mode === "full" ? prepareRun(workspaceRoot, taskId, agent.adapterId) : null;
+  const checkpoint = mode === "full" ? buildCheckpoint(workspaceRoot, taskId) : null;
 
   return {
     workspaceRoot,
@@ -39,6 +41,7 @@ function quickCreateTask(workspaceRoot, title, options = {}) {
     title: normalizedTitle,
     priority,
     recipeId,
+    mode,
     agent: agent.promptAgent,
     adapterId: agent.adapterId,
     profile,
@@ -74,21 +77,40 @@ function normalizeQuickAgent(value) {
   };
 }
 
+function normalizeQuickMode(value) {
+  const mode = String(value || "full").trim().toLowerCase() || "full";
+  if (mode !== "full" && mode !== "lite") {
+    throw badRequest(`Unsupported quick mode: ${value}`, "unsupported_quick_mode");
+  }
+  return mode;
+}
+
 function formatQuickTaskSummary(result) {
-  return [
+  const lines = [
     `Quick task ready: ${result.taskId}`,
     `- Workflow root: ${toDisplayPath(result.workflowRoot)}`,
+    `- Mode: ${result.mode}`,
     `- Task: ${result.taskId} | ${result.priority} | recipe=${result.recipeId}`,
     `- Project profile: ${toDisplayPath(path.join(result.workflowRoot, "project-profile.md"))}`,
-    `- Prompt (${result.agent}): ${toDisplayPath(result.prompt.outputPath)}`,
-    `- Run request (${result.adapterId}): ${toDisplayPath(result.prepared.runRequestPath)}`,
-    `- Launch pack (${result.adapterId}): ${toDisplayPath(result.prepared.launchPackPath)}`,
-    `- Checkpoint: ${toDisplayPath(path.join(result.workflowRoot, "tasks", result.taskId, "checkpoint.md"))}`,
-    "Next steps:",
-    `1. Review .agent-workflow/tasks/${result.taskId}/task.md and context.md.`,
-    `2. Give ${path.basename(result.prompt.outputPath)} to ${result.adapterId}.`,
-    `3. After the run, record evidence and refresh the checkpoint.`,
-  ].join("\n");
+  ];
+
+  if (result.mode === "lite") {
+    lines.push(`- Task doc: ${toDisplayPath(path.join(result.workflowRoot, "tasks", result.taskId, "task.md"))}`);
+    lines.push("Next steps:");
+    lines.push(`1. Review .agent-workflow/tasks/${result.taskId}/task.md.`);
+    lines.push("2. Use prompt:compile, run:prepare, checkpoint, or run:add to materialize the rest on demand.");
+    return lines.join("\n");
+  }
+
+  lines.push(`- Prompt (${result.agent}): ${toDisplayPath(result.prompt.outputPath)}`);
+  lines.push(`- Run request (${result.adapterId}): ${toDisplayPath(result.prepared.runRequestPath)}`);
+  lines.push(`- Launch pack (${result.adapterId}): ${toDisplayPath(result.prepared.launchPackPath)}`);
+  lines.push(`- Checkpoint: ${toDisplayPath(path.join(result.workflowRoot, "tasks", result.taskId, "checkpoint.md"))}`);
+  lines.push("Next steps:");
+  lines.push(`1. Review .agent-workflow/tasks/${result.taskId}/task.md and context.md.`);
+  lines.push(`2. Give ${path.basename(result.prompt.outputPath)} to ${result.adapterId}.`);
+  lines.push("3. After the run, record evidence and refresh the checkpoint.");
+  return lines.join("\n");
 }
 
 function toDisplayPath(value) {

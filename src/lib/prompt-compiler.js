@@ -1,17 +1,13 @@
-const { fileExists, readJson, readText, writeFile } = require("./fs-utils");
-const { notFound } = require("./http-errors");
-const { getRecipe } = require("./recipes");
+const { fileExists, readText, writeFile } = require("./fs-utils");
+const { ensureTaskArtifacts } = require("./task-documents");
 const { projectProfilePath, taskFiles } = require("./workspace");
 
 function compilePrompt(workspaceRoot, taskId, agent = "codex") {
-  const files = taskFiles(workspaceRoot, taskId);
-
-  if (!fileExists(files.meta)) {
-    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
-  }
-
-  const taskMeta = readJson(files.meta, {});
-  const recipe = getRecipe(workspaceRoot, taskMeta.recipeId);
+  const { files, taskMeta, recipe } = ensureTaskArtifacts(workspaceRoot, taskId, {
+    task: true,
+    context: true,
+    verification: true,
+  });
 
   const prompt = renderPrompt({
     agent,

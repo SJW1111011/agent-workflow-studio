@@ -1,22 +1,21 @@
 {
   "taskId": "T-200",
-  "generatedAt": "2026-04-13T08:39:57.459Z",
-  "latestRunStatus": "none",
-  "runCount": 0,
-  "risks": [
-    "No execution evidence recorded yet.",
-    "Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths."
-  ],
+  "generatedAt": "2026-04-13T09:14:13.159Z",
+  "latestRunStatus": "passed",
+  "runCount": 1,
+  "risks": [],
   "completed": [
     "Prompt compiled",
-    "Task context captured"
+    "1 run(s) recorded",
+    "Task context captured",
+    "Scoped verification evidence looks current"
   ],
   "verificationGate": {
-    "status": "ready",
-    "message": "Add explicit repo-relative paths in the task scope to enable stronger verification gates.",
+    "status": "covered",
+    "message": "Explicit verification now covers the current scoped file set.",
     "relevantChangeCount": 0,
-    "scopeHintCount": 0,
-    "ambiguousScopeCount": 1,
+    "scopeHintCount": 23,
+    "ambiguousScopeCount": 0,
     "relevantChangedFiles": []
   }
 }
