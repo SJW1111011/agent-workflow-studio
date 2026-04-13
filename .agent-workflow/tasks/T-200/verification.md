@@ -30,3 +30,17 @@
 - Verification check: [passed] npm run lint
 - Verification check: [passed] npm test
 - Verification check: [passed] npm run smoke
+
+## Evidence 2026-04-13T13:49:26.189Z
+
+- Agent: manual
+- Status: passed
+- Scoped files covered: src/lib/quick-task.js, src/lib/task-documents.js, src/lib/task-service.js, src/cli.js
+- Summary: Claude Code review passed: Lite Mode generates 2 files, Full Mode unchanged, lazy materialization works, all 7 review dimensions green
+- Verification check: [passed] quick --lite generates exactly 2 files (task.json, task.md)
+- Verification check: [passed] quick --full generates all 10 items (no regression)
+- Verification check: [passed] done on Lite task auto-materializes context/verification/checkpoint/runs
+- Verification check: [passed] npm test passes (26 files, 109 tests)
+- Verification check: [passed] npm run lint passes
+- Verification check: [passed] smoke test passes
+- Verification check: [passed] zero runtime dependencies

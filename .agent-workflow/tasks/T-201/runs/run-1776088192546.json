@@ -1,0 +1,68 @@
+{
+  "id": "run-1776088192546",
+  "taskId": "T-201",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: done command combines run:add+checkpoint, --complete marks task done, server endpoint works, all 7 review dimensions green",
+  "createdAt": "2026-04-13T13:49:52.545Z",
+  "scopeProofPaths": [
+    "src/lib/done.js",
+    "src/cli.js",
+    "src/server.js",
+    "test/done.test.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "done T-001 summary records draft run + refreshes checkpoint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "done --complete marks task status done",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "done on Lite task auto-materializes missing docs",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "POST /api/tasks/{taskId}/done endpoint works",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (26 files, 109 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "zero runtime dependencies",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/lib/done.js",
+      "exists": true,
+      "contentFingerprint": "sha1:f08b6f181873fda304ce929958b07003346fad15"
+    },
+    {
+      "path": "src/cli.js",
+      "exists": true,
+      "contentFingerprint": "sha1:b69435f65568e3d67ac657b8256df226c6fa23d6"
+    },
+    {
+      "path": "src/server.js",
+      "exists": true,
+      "contentFingerprint": "sha1:bd4172111b10f87129dcbaed98cb39b606b25b3f"
+    },
+    {
+      "path": "test/done.test.js",
+      "exists": true,
+      "contentFingerprint": "sha1:e9aff1c556e49482bd7b1e002879ecf0615d5a85"
+    }
+  ]
+}

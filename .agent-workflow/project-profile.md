@@ -1,6 +1,6 @@
 # Project Profile
 
-Generated at: 2026-04-12T18:53:20.284Z
+Generated at: 2026-04-13T08:41:52.335Z
 
 ## Repository
 
@@ -39,8 +39,11 @@ Generated at: 2026-04-12T18:53:20.284Z
 ## Scripts
 
 - `build`: `tsc --project tsconfig.json`
+- `lint`: `eslint "*.js" "*.mjs" "dashboard/**/*.js" "scripts/**/*.js" "src/**/*.js" "test/**/*.js"`
+- `format:check`: `prettier --check ".github/**/*.yml" "README.md" "docs/PUBLISHING.md" "package.json" "eslint.config.mjs" "vitest.config.ts"`
 - `pretest`: `npm run build`
 - `test`: `vitest run`
+- `pretest:coverage`: `npm run build`
 - `test:coverage`: `vitest run --coverage`
 - `test:watch`: `vitest --watch`
 - `cli`: `node src/cli.js`

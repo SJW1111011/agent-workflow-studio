@@ -1,0 +1,73 @@
+{
+  "id": "run-1776088166190",
+  "taskId": "T-200",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: Lite Mode generates 2 files, Full Mode unchanged, lazy materialization works, all 7 review dimensions green",
+  "createdAt": "2026-04-13T13:49:26.189Z",
+  "scopeProofPaths": [
+    "src/lib/quick-task.js",
+    "src/lib/task-documents.js",
+    "src/lib/task-service.js",
+    "src/cli.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "quick --lite generates exactly 2 files (task.json, task.md)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "quick --full generates all 10 items (no regression)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "done on Lite task auto-materializes context/verification/checkpoint/runs",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (26 files, 109 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run lint passes",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "smoke test passes",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "zero runtime dependencies",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/lib/quick-task.js",
+      "exists": true,
+      "contentFingerprint": "sha1:f618e2ef94fff922b32ac08bc385ec24bbcffc85"
+    },
+    {
+      "path": "src/lib/task-documents.js",
+      "exists": true,
+      "contentFingerprint": "sha1:138eb7c5dad9aefeabaeee0564e83a2f13c25916"
+    },
+    {
+      "path": "src/lib/task-service.js",
+      "exists": true,
+      "contentFingerprint": "sha1:b691b03665b25fe7fee1c396c616e4b0f9b5a6a7"
+    },
+    {
+      "path": "src/cli.js",
+      "exists": true,
+      "contentFingerprint": "sha1:b69435f65568e3d67ac657b8256df226c6fa23d6"
+    }
+  ]
+}

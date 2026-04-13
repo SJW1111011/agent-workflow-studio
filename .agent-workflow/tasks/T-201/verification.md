@@ -30,3 +30,16 @@
 - Verification check: [passed] npm test
 - Verification check: [passed] npm run smoke
 - Verification check: [passed] Manual done CLI flow
+
+## Evidence 2026-04-13T13:49:52.545Z
+
+- Agent: manual
+- Status: passed
+- Scoped files covered: src/lib/done.js, src/cli.js, src/server.js, test/done.test.js
+- Summary: Claude Code review passed: done command combines run:add+checkpoint, --complete marks task done, server endpoint works, all 7 review dimensions green
+- Verification check: [passed] done T-001 summary records draft run + refreshes checkpoint
+- Verification check: [passed] done --complete marks task status done
+- Verification check: [passed] done on Lite task auto-materializes missing docs
+- Verification check: [passed] POST /api/tasks/{taskId}/done endpoint works
+- Verification check: [passed] npm test passes (26 files, 109 tests)
+- Verification check: [passed] zero runtime dependencies
