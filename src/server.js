@@ -5,6 +5,7 @@ const http = require("http");
 const path = require("path");
 const { buildCheckpoint } = require("./lib/checkpoint");
 const { createDashboardExecutionBridge } = require("./lib/dashboard-execution");
+const { recordDone } = require("./lib/done");
 const { badRequest, getHttpStatusCode } = require("./lib/http-errors");
 const { buildOverview } = require("./lib/overview");
 const { quickCreateTask } = require("./lib/quick-task");
@@ -100,13 +101,37 @@ function startDashboardServer(workspaceRoot, options = {}) {
           if (!isNonEmptyString(body.summary)) {
             return sendJson(response, 400, { error: "summary is required." });
           }
-          const run = recordRun(workspaceRoot, taskId, body.summary, body.status || "draft", body.agent || "manual", {
-            scopeProofPaths: body.scopeProofPaths || body.proofPaths,
-            verificationChecks: body.verificationChecks || body.checks,
-            verificationArtifacts: body.verificationArtifacts || body.artifacts,
-          });
+          const run = recordRun(
+            workspaceRoot,
+            taskId,
+            body.summary,
+            body.status || "draft",
+            body.agent || "manual",
+            buildManualRunFieldsFromBody(body)
+          );
           buildCheckpoint(workspaceRoot, taskId);
           return sendJson(response, 201, run);
+        }
+
+        const taskDoneRoute = parseTaskDoneRoute(requestUrl.pathname);
+        if (taskDoneRoute && request.method === "POST") {
+          const body = await readJsonBody(request);
+          if (!isNonEmptyString(body.summary)) {
+            return sendJson(response, 400, { error: "summary is required." });
+          }
+
+          const result = recordDone(workspaceRoot, taskDoneRoute.taskId, body.summary, {
+            status: body.status || "draft",
+            agent: body.agent || "manual",
+            complete: body.complete,
+            ...buildManualRunFieldsFromBody(body),
+          });
+
+          return sendJson(response, 201, {
+            run: result.run,
+            checkpoint: result.checkpoint,
+            task: buildTaskResponse(workspaceRoot, taskDoneRoute.taskId, executionBridge),
+          });
         }
 
         if (requestUrl.pathname.startsWith("/api/tasks/") && request.method === "PATCH") {
@@ -350,6 +375,14 @@ function normalizePositiveInteger(value) {
   return Number.isInteger(numeric) && numeric > 0 ? numeric : null;
 }
 
+function buildManualRunFieldsFromBody(body = {}) {
+  return {
+    scopeProofPaths: body.scopeProofPaths || body.proofPaths,
+    verificationChecks: body.verificationChecks || body.checks,
+    verificationArtifacts: body.verificationArtifacts || body.artifacts,
+  };
+}
+
 function normalizeServerPort(value) {
   if (value === undefined || value === null || value === "") {
     return 4173;
@@ -385,6 +418,17 @@ function parseTaskRunLogRoute(pathname) {
     taskId: decodeURIComponent(matched[1]),
     runId: decodeURIComponent(matched[2]),
     stream: decodeURIComponent(matched[3]),
+  };
+}
+
+function parseTaskDoneRoute(pathname) {
+  const matched = pathname.match(/^\/api\/tasks\/([^/]+)\/done$/);
+  if (!matched) {
+    return null;
+  }
+
+  return {
+    taskId: decodeURIComponent(matched[1]),
   };
 }
 

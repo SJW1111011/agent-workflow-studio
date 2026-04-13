@@ -2,6 +2,7 @@
 
 const path = require("path");
 const { buildCheckpoint } = require("./lib/checkpoint");
+const { recordDone } = require("./lib/done");
 const { createAdapter, listAdapters, normalizeAdapterId } = require("./lib/adapters");
 const { formatMemoryBootstrapSummary, generateMemoryBootstrapPrompt } = require("./lib/memory-bootstrap");
 const { formatMemoryValidationSummary, validateMemoryDocs } = require("./lib/memory-validator");
@@ -208,6 +209,28 @@ function main(argv = process.argv.slice(2)) {
         print(`Checkpoint updated for ${taskId} with ${checkpoint.runCount} recorded run(s).`);
         break;
       }
+      case "done": {
+        const [taskId, ...summaryParts] = positionals;
+        const summary = summaryParts.join(" ").trim();
+        const status = options.status || "draft";
+        const agent = normalizeAdapterId(options.agent || "manual");
+        assert(
+          taskId && summary,
+          "Usage: done <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--complete] [--root path]"
+        );
+        const result = recordDone(workspaceRoot, taskId, summary, {
+          status,
+          agent,
+          complete: options.complete,
+          ...buildManualRunFields(options),
+        });
+        print(`Recorded run ${result.run.id} for ${taskId} with status ${result.run.status}.`);
+        print(`Checkpoint updated for ${taskId} with ${result.checkpoint.runCount} recorded run(s).`);
+        if (result.task) {
+          print(`Task ${taskId} marked done.`);
+        }
+        break;
+      }
       case "run:add": {
         const [taskId, ...summaryParts] = positionals;
         const summary = summaryParts.join(" ").trim();
@@ -217,14 +240,7 @@ function main(argv = process.argv.slice(2)) {
           taskId && summary,
           "Usage: run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--root path]"
         );
-        const run = recordRun(workspaceRoot, taskId, summary, status, agent, {
-          scopeProofPaths: getOptionList(options, "proof-path"),
-          verificationChecks: getOptionList(options, "check").map((label) => ({
-            label,
-            status: status === "passed" ? "passed" : status === "failed" ? "failed" : "recorded",
-          })),
-          verificationArtifacts: getOptionList(options, "artifact"),
-        });
+        const run = recordRun(workspaceRoot, taskId, summary, status, agent, buildManualRunFields(options));
         buildCheckpoint(workspaceRoot, taskId);
         print(`Recorded run ${run.id} for ${taskId} with status ${run.status}.`);
         break;
@@ -301,6 +317,14 @@ function getOptionList(options, key) {
   return (Array.isArray(value) ? value : [value]).map((item) => String(item).trim()).filter(Boolean);
 }
 
+function buildManualRunFields(options = {}) {
+  return {
+    scopeProofPaths: getOptionList(options, "proof-path"),
+    verificationChecks: getOptionList(options, "check"),
+    verificationArtifacts: getOptionList(options, "artifact"),
+  };
+}
+
 function normalizePromptAgent(agent) {
   return normalizeAdapterId(agent) === "claude-code" ? "claude" : "codex";
 }
@@ -346,6 +370,7 @@ Commands:
   run:prepare <taskId> [--adapter <adapterId>] [--agent <adapterId>] [--root path]
   run:execute <taskId> [--adapter <adapterId>] [--agent <adapterId>] [--timeout-ms 300000] [--root path]
   run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--root path]
+  done <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--complete] [--root path]
   checkpoint <taskId> [--root path]
   overview [--root path]
   validate [--root path]

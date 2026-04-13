@@ -51,23 +51,24 @@ npx agent-workflow validate --root .
    - Deliverables: what will be produced
    - Risks: what could go wrong
 5. If `context.md` and `verification.md` already exist, fill them in immediately.
-6. If they do not exist yet because the task was created in Lite Mode, let `prompt:compile`, `run:prepare`, `run:add`, or `checkpoint` materialize them when needed.
+6. If they do not exist yet because the task was created in Lite Mode, let `prompt:compile`, `run:prepare`, `run:add`, `done`, or `checkpoint` materialize them when needed.
 
 ## After completing work
 
 1. Identify which files you changed that are within the task scope.
-2. Record structured evidence:
+2. Prefer the one-step completion command:
    ```bash
-   npx agent-workflow run:add <taskId> "<one-line summary>" \
+   npx agent-workflow done <taskId> "<one-line summary>" \
      --status passed \
      --proof-path <changed-file-1> \
      --proof-path <changed-file-2> \
      --check "<what you verified>" \
      --root .
    ```
-   Use `--status draft` if verification is incomplete.
-3. Refresh the checkpoint:
+   Add `--complete` when the task should also move to `done`. Use `--status draft` if verification is incomplete.
+3. If you need the older explicit flow, keep using:
    ```bash
+   npx agent-workflow run:add <taskId> "<one-line summary>" --status passed --root .
    npx agent-workflow checkpoint <taskId> --root .
    ```
 

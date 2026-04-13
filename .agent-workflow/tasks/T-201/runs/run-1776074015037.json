@@ -1,0 +1,76 @@
+{
+  "id": "run-1776074015037",
+  "taskId": "T-201",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Implemented the done command, docs, and verification coverage.",
+  "createdAt": "2026-04-13T09:53:35.036Z",
+  "scopeProofPaths": [
+    "src/cli.js",
+    "src/lib/done.js",
+    "src/server.js",
+    "test/done.test.js",
+    "README.md",
+    "AGENT_GUIDE.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm run lint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "Manual done CLI flow",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/cli.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:b69435f65568e3d67ac657b8256df226c6fa23d6"
+    },
+    {
+      "path": "src/lib/done.js",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:f08b6f181873fda304ce929958b07003346fad15"
+    },
+    {
+      "path": "src/server.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:bd4172111b10f87129dcbaed98cb39b606b25b3f"
+    },
+    {
+      "path": "test/done.test.js",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:e9aff1c556e49482bd7b1e002879ecf0615d5a85"
+    },
+    {
+      "path": "README.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:539d8f533b941bf3121a491f7055e35796c23227"
+    },
+    {
+      "path": "AGENT_GUIDE.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:b3db71f35ccb59c71cdb46b63bbd596dc667ffc1"
+    }
+  ]
+}

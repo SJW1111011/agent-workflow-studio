@@ -13,17 +13,18 @@ Today's flow after finishing work is two commands: `run:add T-001 "..." --status
 
 ## Facts
 
-- `run:add` exists in `src/cli.js` and calls `recordRun()` in `src/lib/task-service.js`
-- `checkpoint` exists in `src/cli.js` and calls `buildCheckpoint()` in `src/lib/checkpoint.js`
-- `recordRun()` returns the persisted run record; the run id is needed for follow-up
-- `buildCheckpoint()` reads all runs from disk and computes verification gate state
-- task.json has a `status` field that can be `todo`, `in_progress`, `done`
-- Currently no command transitions task status automatically — it stays `todo` until manually changed
+- `run:add` exists in `src/cli.js` and calls `recordRun()` in `src/lib/task-service.js`.
+- `checkpoint` exists in `src/cli.js` and calls `buildCheckpoint()` in `src/lib/checkpoint.js`.
+- `recordRun()` returns the persisted run record; the run id is available for follow-up messaging and API responses.
+- `recordRun()` already materializes missing Lite task artifacts before persisting evidence, so `done` can stay thin and reuse the same persistence path.
+- `buildCheckpoint()` is idempotent and already derives checkpoint state from task metadata plus recorded runs.
+- `updateTaskMeta()` can update task status and keep managed task docs synchronized when `--complete` is used.
+- The new server endpoint can mirror the existing `/runs` route shape while returning the combined done result.
 
 ## Open questions
 
-- Should `done` without `--complete` transition `todo` → `in_progress` automatically? Leaning yes.
-- Should there be an undo for `done`? — covered by T-203, do not duplicate here.
+- `done` without `--complete` should stay aligned with existing `run:add` status behavior unless acceptance criteria force a broader state transition.
+- Undo for `done` is covered by T-203 and should not be duplicated here.
 
 ## Constraints
 
@@ -31,6 +32,6 @@ Today's flow after finishing work is two commands: `run:add T-001 "..." --status
 - Priority: P0
 - Keep the workflow docs current.
 <!-- agent-workflow:managed:context-constraints-meta:end -->
-- Soft dependency on T-200 (Lite Mode): `done` should work on Lite tasks, but can land in either order
-- No runtime dependencies
-- Must pass `npm test`, `npm run lint`, `npm run smoke`
+- Soft dependency on T-200 (Lite Mode): `done` should work on Lite tasks, but can land in either order.
+- No runtime dependencies.
+- Must pass `npm test`, `npm run lint`, `npm run smoke`.

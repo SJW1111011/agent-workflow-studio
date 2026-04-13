@@ -1,26 +1,28 @@
 # T-201 Checkpoint
 
-Generated at: 2026-04-13T08:40:19.839Z
+Generated at: 2026-04-13T09:54:15.810Z
 
 ## Completed
 
 - Prompt compiled
+- 1 run(s) recorded
 - Task context captured
+- Scoped verification evidence looks current
 
 ## Confirmed facts
 
 - Title: done command — one-step evidence recording plus checkpoint
 - Priority: P0
-- Status: todo
-- Latest run status: none
-- Total runs: 0
+- Status: done
+- Latest run status: passed
+- Total runs: 1
 
 ## Verification gate
 
-- Status: ready
-- Summary: Add explicit repo-relative paths in the task scope to enable stronger verification gates.
-- Scope hints: 0
-- Ambiguous scope entries: 1
+- Status: covered
+- Summary: Explicit verification now covers the current scoped file set.
+- Scope hints: 7
+- Ambiguous scope entries: 0
 - Scoped files awaiting proof: 0
 
 ### Scoped files awaiting proof
@@ -29,29 +31,34 @@ Generated at: 2026-04-13T08:40:19.839Z
 
 ### Scoped files already linked to proof
 
-- None
+- AGENT_GUIDE.md
+- README.md
+- src/cli.js
+- src/server.js
+- src/lib/done.js
+- test/done.test.js
 
 ### Explicit proof items
 
-- None
+- manual:verification.md#proof-1 | paths=src/cli.js, src/lib/done.js, src/server.js, test/done.test.js, README.md, AGENT_GUIDE.md | checks=`npm run lint`, `npm test`, `npm run smoke`, and the manual `done` CLI flow all passed. (result: Added the shared `src/lib/done.js` orchestrator, wired `done` into the CLI and `POST /api/tasks/{taskId}/done`, covered the new flow with dedicated tests, updated the user and agent docs, then recorded `run-1776074015037` via the new command and refreshed the checkpoint with task status `done`.) | artifacts=.agent-workflow/tasks/T-201/runs/run-1776074015037.json, .agent-workflow/tasks/T-201/checkpoint.md
+- run:run-1776074015037 | paths=src/cli.js, src/lib/done.js, src/server.js, test/done.test.js, README.md, AGENT_GUIDE.md | checks=[passed] npm run lint; [passed] npm test; [passed] npm run smoke; [passed] Manual done CLI flow | artifacts=none
 
 ### Scope entries that need tightening
 
-- repo path: (task.md)
+- None
 
 ## Risks
 
-- No execution evidence recorded yet.
-- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.
+- No immediate risks detected
 
 ## Latest evidence
 
-- Summary: No runs recorded
-- Timestamp: N/A
+- Summary: Implemented the done command, docs, and verification coverage.
+- Timestamp: 2026-04-13T09:53:35.036Z
 
 ## Resume instructions
 
 1. Read task.md, context.md, and verification.md.
 2. Review the latest prompt and decide whether it still reflects scope.
-3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.
+3. Refresh verification.md and checkpoint.md again if scoped files change.
 4. Continue only after acknowledging the risks above.

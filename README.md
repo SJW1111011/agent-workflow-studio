@@ -65,6 +65,7 @@ Track tasks, runs, risks, executor outcomes, and verification signals from one l
 - **`quick`** - create either a minimal Lite task scaffold or the full prompt/run/checkpoint bundle, depending on how much ceremony you want up front
 - **`memory:bootstrap`** - generate a local-only handoff prompt that helps Codex or Claude Code fill grounded project memory
 - **`run:execute`** - launch a local adapter when you explicitly opt into `commandMode: exec`, with shared preflight, logs, and evidence capture
+- **`done`** - record evidence and refresh the checkpoint in one step, with an optional `--complete` flag to mark the task done
 - **`verification gate`** - compare repo-relative task scope against the current repository snapshot and show which scoped files still need explicit proof
 - **`proof anchors`** - keep passed evidence and refreshed manual proof tied to content fingerprints, not fragile `mtime` alone
 - **`skills:generate`** - write `AGENTS.md`, `CLAUDE.md`, and Claude slash commands so the workflow becomes part of the agent's default context
@@ -110,14 +111,14 @@ Task creation          Agent execution           Evidence + resume
 
 1. Create a task with `quick` or `task:new`.
 2. Hand the compiled prompt to Codex or Claude Code, or use `run:execute` when a local adapter is ready.
-3. Review proof in `verification.md` and recorded runs under `.agent-workflow/tasks/<taskId>/runs/`.
-4. Refresh `checkpoint.md`, keep moving, and resume later without losing context.
+3. Record evidence and refresh the checkpoint with `done <taskId> "<summary>"` when the work is ready to hand off.
+4. Review `verification.md`, `checkpoint.md`, and the recorded runs under `.agent-workflow/tasks/<taskId>/runs/`.
 
 ## Lite vs Full
 
 `quick` now supports two task creation modes:
 
-- `npx agent-workflow quick "My task" --lite --root .` creates only `task.json` and `task.md`, then lets `prompt:compile`, `run:prepare`, `run:add`, and `checkpoint` materialize the rest on demand.
+- `npx agent-workflow quick "My task" --lite --root .` creates only `task.json` and `task.md`, then lets `prompt:compile`, `run:prepare`, `run:add`, `done`, and `checkpoint` materialize the rest on demand.
 - `npx agent-workflow quick "My task" --full --agent codex --root .` preserves the current full bundle: task docs, prompt, run request, launch pack, and checkpoint.
 - The current default is still Full Mode so existing workflows keep working unchanged.
 
@@ -145,7 +146,7 @@ Agent Workflow Studio is designed to become that missing layer.
 - **Onboarding:** `init`, `scan`, `memory:bootstrap`, `memory:validate`
 - **Tasking:** `recipe:list`, `quick`, `task:new`, `task:list`
 - **Adapters:** `adapter:list`, `adapter:create`
-- **Execution:** `prompt:compile`, `run:prepare`, `run:execute`, `run:add`, `checkpoint`
+- **Execution:** `prompt:compile`, `run:prepare`, `run:execute`, `run:add`, `done`, `checkpoint`
 - **Inspection:** `dashboard`, `validate`
 - **Skills:** `skills:generate`
 
@@ -212,8 +213,7 @@ npm run memory:bootstrap -- --root ../some-repo
 npm run quick -- "Build the scanner" --task-id T-001 --priority P1 --agent codex --root ../some-repo
 npm run dashboard -- --root ../some-repo --port 4173
 npm run run:execute -- T-001 --agent codex --root ../some-repo
-npm run run:add -- T-001 "Scanner pass completed." --status passed --root ../some-repo
-npm run checkpoint -- T-001 --root ../some-repo
+npx agent-workflow done T-001 "Scanner pass completed." --status passed --check "npm test" --root ../some-repo
 npm run validate -- --root ../some-repo
 npm test
 ```
