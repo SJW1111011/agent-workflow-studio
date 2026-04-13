@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-203",
+  "adapterId": "codex",
+  "title": "undo command — roll back the most recent workflow operation",
+  "generatedAt": "2026-04-13T08:41:24.696Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-203",
+  "promptFile": ".agent-workflow/tasks/T-203/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-203/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

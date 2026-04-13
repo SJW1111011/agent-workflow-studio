@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-202",
+  "adapterId": "codex",
+  "title": "Smart defaults — auto-infer scope from git diff and checks from test exit code",
+  "generatedAt": "2026-04-13T08:40:23.054Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-202",
+  "promptFile": ".agent-workflow/tasks/T-202/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-202/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "T-204",
+  "title": "Auto status transitions — task.json status auto-advances on run:add and done",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-13T08:41:52.343Z",
+  "updatedAt": "2026-04-13T08:41:52.343Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

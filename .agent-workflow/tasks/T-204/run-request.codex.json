@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-204",
+  "adapterId": "codex",
+  "title": "Auto status transitions — task.json status auto-advances on run:add and done",
+  "generatedAt": "2026-04-13T08:41:52.354Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-204",
+  "promptFile": ".agent-workflow/tasks/T-204/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-204/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

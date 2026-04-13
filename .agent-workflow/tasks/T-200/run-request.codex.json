@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-200",
+  "adapterId": "codex",
+  "title": "Lite Mode for quick — minimal file generation, defer prompt/run-prep/checkpoint",
+  "generatedAt": "2026-04-13T08:39:57.333Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-200",
+  "promptFile": ".agent-workflow/tasks/T-200/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-200/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

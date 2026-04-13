@@ -1,0 +1,14 @@
+{
+  "id": "T-203",
+  "title": "undo command — roll back the most recent workflow operation",
+  "recipeId": "feature",
+  "priority": "P2",
+  "status": "todo",
+  "createdAt": "2026-04-13T08:41:24.686Z",
+  "updatedAt": "2026-04-13T08:41:24.686Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

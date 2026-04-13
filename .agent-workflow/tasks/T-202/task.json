@@ -1,0 +1,14 @@
+{
+  "id": "T-202",
+  "title": "Smart defaults — auto-infer scope from git diff and checks from test exit code",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-13T08:40:23.044Z",
+  "updatedAt": "2026-04-13T08:40:23.044Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

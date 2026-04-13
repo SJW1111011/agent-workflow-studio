@@ -1,0 +1,14 @@
+{
+  "id": "T-200",
+  "title": "Lite Mode for quick — minimal file generation, defer prompt/run-prep/checkpoint",
+  "recipeId": "feature",
+  "priority": "P0",
+  "status": "todo",
+  "createdAt": "2026-04-13T08:39:57.322Z",
+  "updatedAt": "2026-04-13T08:39:57.322Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}
