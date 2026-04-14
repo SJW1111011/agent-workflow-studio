@@ -6,12 +6,15 @@ function recordDone(workspaceRoot, taskId, summary, options = {}) {
     workspaceRoot,
     taskId,
     summary,
-    options.status || "draft",
+    options.status,
     options.agent || "manual",
     {
       scopeProofPaths: options.scopeProofPaths,
       verificationChecks: options.verificationChecks,
       verificationArtifacts: options.verificationArtifacts,
+      inferScopeProofPaths: options.inferScopeProofPaths !== false,
+      inferTestStatus: options.inferTestStatus === true,
+      skipInferTest: options.skipInferTest === true,
     }
   );
 

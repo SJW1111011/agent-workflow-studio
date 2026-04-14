@@ -31,6 +31,31 @@ function loadGitRepositorySnapshot(workspaceRoot, options = {}) {
   return tryLoadGitRepositorySnapshot(workspaceRoot, options);
 }
 
+function loadChangedFilePaths(workspaceRoot, options = {}) {
+  if (!workspaceRoot) {
+    throw new Error("workspaceRoot is required to query changed files.");
+  }
+
+  const gitCommand = options.gitCommand || "git";
+  const repositoryRoot = runGitCommand(gitCommand, ["rev-parse", "--show-toplevel"], workspaceRoot);
+  if (!repositoryRoot) {
+    return null;
+  }
+
+  if (path.resolve(repositoryRoot.trim()) !== path.resolve(workspaceRoot)) {
+    return null;
+  }
+
+  const diffOutput = runGitCommand(gitCommand, ["diff", "--name-only", "HEAD"], workspaceRoot);
+  if (diffOutput === null) {
+    return null;
+  }
+
+  const untrackedOutput = runGitCommand(gitCommand, ["ls-files", "--others", "--exclude-standard"], workspaceRoot);
+
+  return parseGitChangedFilePaths([diffOutput, untrackedOutput].filter((value) => value !== null).join("\n"));
+}
+
 function tryLoadGitRepositorySnapshot(workspaceRoot, options = {}) {
   const gitCommand = options.gitCommand || "git";
   const repositoryRoot = runGitCommand(gitCommand, ["rev-parse", "--show-toplevel"], workspaceRoot);
@@ -147,6 +172,17 @@ function runGitCommand(command, args, cwd) {
     }
     fs.rmSync(captureDir, { recursive: true, force: true });
   }
+}
+
+function parseGitChangedFilePaths(output) {
+  return Array.from(
+    new Set(
+      String(output || "")
+        .split(/\r?\n/)
+        .map((line) => normalizeSnapshotPath(line))
+        .filter(Boolean)
+    )
+  );
 }
 
 function parseGitStatusPorcelainV2(output, workspaceRoot) {
@@ -460,7 +496,9 @@ module.exports = {
   buildProofAnchor,
   buildScopeProofAnchors,
   loadGitRepositorySnapshot,
+  loadChangedFilePaths,
   loadFilesystemSnapshot,
   loadRepositorySnapshot,
+  parseGitChangedFilePaths,
   parseGitStatusPorcelainV2,
 };

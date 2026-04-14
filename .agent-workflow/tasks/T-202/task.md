@@ -1,4 +1,4 @@
-# T-202 - Smart defaults — auto-infer scope from git diff and checks from test exit code
+# T-202 - Smart defaults 鈥?auto-infer scope from git diff and checks from test exit code
 
 ## Goal
 
@@ -14,17 +14,17 @@ When recording evidence via `run:add` or `done`, automatically infer `--proof-pa
 ## Scope
 
 - In scope:
-  - repo path: src/lib/smart-defaults.js (new module — git diff inference, test runner detection)
-  - repo path: src/lib/task-service.js (integrate inferred defaults into `recordRun`)
-  - repo path: src/lib/done.js (pass inferred defaults through)
-  - repo path: src/cli.js (`run:add` and `done` use smart defaults when flags omitted)
-  - repo path: src/lib/repository-snapshot.js (expose a lightweight "changed files" query without full fingerprinting)
-  - repo path: test/smart-defaults.test.js (new)
-  - repo path: README.md (document smart defaults behavior)
+  - repo path: src/lib/smart-defaults.js
+  - repo path: src/lib/task-service.js
+  - repo path: src/lib/done.js
+  - repo path: src/cli.js
+  - repo path: src/lib/repository-snapshot.js
+  - repo path: test/smart-defaults.test.js
+  - repo path: README.md
 - Out of scope:
-  - repo path: dashboard/ (UI integration deferred)
-  - repo path: src/lib/verification-gates.js (this task provides data; gates consume it unchanged)
-  - repo path: src/lib/evidence-utils.js (normalization stays the same; this task produces better inputs)
+  - repo path: dashboard/
+  - repo path: src/lib/verification-gates.js
+  - repo path: src/lib/evidence-utils.js
 
 ## Required docs
 
@@ -34,8 +34,8 @@ When recording evidence via `run:add` or `done`, automatically infer `--proof-pa
 ## Deliverables
 
 - `src/lib/smart-defaults.js` module with:
-  - `inferProofPaths(workspaceRoot)` — runs `git diff --name-only HEAD` (staged+unstaged) and returns repo-relative paths
-  - `inferTestStatus(workspaceRoot)` — runs the project's test command (`npm test`) and returns `{ status: 'passed' | 'failed', check: 'npm test' }`, or `null` if no test command configured
+  - `inferProofPaths(workspaceRoot)` 鈥?runs `git diff --name-only HEAD` (staged+unstaged) and returns repo-relative paths
+  - `inferTestStatus(workspaceRoot)` 鈥?runs the project's test command (`npm test`) and returns `{ status: 'passed' | 'failed', check: 'npm test' }`, or `null` if no test command configured
 - `run:add` and `done` use inferred defaults when `--proof-path` and `--status` are omitted
 - Manual flags always override inferred values (explicit > implicit)
 - Unit tests covering: git diff parsing, test status detection, override behavior, no-git fallback
@@ -43,10 +43,10 @@ When recording evidence via `run:add` or `done`, automatically infer `--proof-pa
 
 ## Risks
 
-- Running `npm test` during `done` could be slow — mitigate with `--skip-test` flag and a warning if tests take >30s
-- Inferring from `git diff HEAD` may include changes outside task scope — acceptable for Lite mode; Full mode has scope declarations to filter
-- Non-npm projects (no `package.json` or no `test` script) — gracefully degrade to `null`
-- `git diff` may fail in non-git repos — fall back to empty proof paths with a warning
+- Running `npm test` during `done` could be slow 鈥?mitigate with `--skip-test` flag and a warning if tests take >30s
+- Inferring from `git diff HEAD` may include changes outside task scope 鈥?acceptable for Lite mode; Full mode has scope declarations to filter
+- Non-npm projects (no `package.json` or no `test` script) 鈥?gracefully degrade to `null`
+- `git diff` may fail in non-git repos 鈥?fall back to empty proof paths with a warning
 
 ## Acceptance Criteria
 

@@ -13,15 +13,15 @@ T-200 (Lite Mode) and T-201 (`done`) reduce file ceremony, but users still have 
 
 ## Facts
 
-- `repository-snapshot.js` already has `loadRepositoryDiff()` which runs `git status --porcelain=v2` — but it's heavy (includes fingerprinting, file walking). Need a lightweight variant that only returns changed file paths.
-- `evidence-utils.js` normalizes proof paths to repo-relative format — smart defaults can feed directly into this.
-- `package.json` has a `test` script in most Node.js projects — `npm test` exit code 0 = passed, non-zero = failed.
-- Other ecosystems (Python, Rust, Go) have different test commands — start with npm, add others later as plugin hooks.
+- `src/lib/smart-defaults.js` now owns proof-path inference, opt-in test-status inference, and the user-facing fallback messages for non-git / no-test-script cases.
+- `src/lib/repository-snapshot.js` now exposes a lightweight changed-file query and only treats the workspace as git-backed when the workspace root is the repository root, which avoids nested temp workspaces accidentally inheriting the parent repo diff.
+- `src/lib/task-service.js`, `src/lib/done.js`, and `src/cli.js` now preserve explicit `--proof-path`, `--check`, and `--status` values while filling omitted proof paths from git and opt-in test results from `--infer-test`.
+- `test/smart-defaults.test.js` covers git diff parsing, no-git fallback, npm test pass/fail detection, zero-flag `done`, override precedence, and the no-test-script info path.
+- Verification passed with the focused acceptance slice, the full `npm test` suite, and `npm run lint`.
 
 ## Open questions
 
-- Should auto-inferred test results run `npm test` or just check the *last* exit code? Running tests adds latency. Leaning toward opt-in via `--infer-test` flag.
-- Should `inferProofPaths` use staged files only, unstaged only, or both? Leaning toward both (staged + unstaged = full working tree diff).
+- None at handoff. This task kept test inference opt-in behind `--infer-test` and used the current working tree diff plus untracked files for proof-path inference within the workspace-root git repo.
 
 ## Constraints
 
@@ -30,6 +30,6 @@ T-200 (Lite Mode) and T-201 (`done`) reduce file ceremony, but users still have 
 - Keep the workflow docs current.
 <!-- agent-workflow:managed:context-constraints-meta:end -->
 - Depends on T-201 (`done` command must exist for smart defaults to plug into)
-- Must not slow down `run:add` / `done` when git is available — `git diff --name-only` is fast
+- Must not slow down `run:add` / `done` when git is available 鈥?`git diff --name-only` is fast
 - Must gracefully degrade in non-git repos
 - No runtime dependencies

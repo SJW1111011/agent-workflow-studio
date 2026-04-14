@@ -19,6 +19,7 @@ const {
   ensureTaskArtifacts,
   syncManagedTaskDocs,
 } = require("./task-documents");
+const { inferProofPathsResult, inferTestStatusResult } = require("./smart-defaults");
 const { ensureWorkflowScaffold, runsRoot, taskFiles, taskRoot } = require("./workspace");
 
 const TASK_STATUSES = new Set(["todo", "in_progress", "blocked", "done"]);
@@ -186,15 +187,16 @@ function updateTaskMeta(workspaceRoot, taskId, changes = {}) {
   return nextMeta;
 }
 
-function recordRun(workspaceRoot, taskId, summary, status = "draft", agent = "manual", fields = {}) {
+function recordRun(workspaceRoot, taskId, summary, status, agent = "manual", fields = {}) {
+  const resolvedDefaults = resolveRunSmartDefaults(workspaceRoot, status, fields);
   const run = createRunRecord(taskId, {
     agent,
-    status,
+    status: resolvedDefaults.status,
     summary,
-    ...fields,
+    ...resolvedDefaults.fields,
   });
 
-  return persistRunRecord(workspaceRoot, taskId, run);
+  return attachRunRuntimeMetadata(persistRunRecord(workspaceRoot, taskId, run), resolvedDefaults);
 }
 
 module.exports = {
@@ -212,6 +214,64 @@ module.exports = {
 
 function safeRead(filePath) {
   return fileExists(filePath) ? fs.readFileSync(filePath, "utf8") : "";
+}
+
+function resolveRunSmartDefaults(workspaceRoot, status, fields = {}) {
+  const input = fields && typeof fields === "object" ? fields : {};
+  const inferenceOptions = input.smartDefaultOptions || {};
+  const nextFields = omitUndefined(
+    input,
+    new Set(["inferScopeProofPaths", "inferTestStatus", "skipInferTest", "smartDefaultOptions"])
+  );
+  const messages = [];
+  const explicitStatus = isNonEmptyString(status) ? status.trim() : "";
+  const explicitScopeProofPaths = input.scopeProofPaths !== undefined;
+  const explicitVerificationChecks = input.verificationChecks !== undefined;
+  let inferredStatus = "";
+
+  if (input.inferScopeProofPaths !== false && !explicitScopeProofPaths) {
+    const inferredProofPaths = inferProofPathsResult(workspaceRoot, inferenceOptions);
+    messages.push(...inferredProofPaths.messages);
+    nextFields.scopeProofPaths = inferredProofPaths.proofPaths;
+  }
+
+  if (input.inferTestStatus === true && input.skipInferTest !== true) {
+    const inferredTestStatus = inferTestStatusResult(workspaceRoot, inferenceOptions);
+    messages.push(...inferredTestStatus.messages);
+    if (inferredTestStatus.result) {
+      inferredStatus = inferredTestStatus.result.status;
+      if (!explicitVerificationChecks) {
+        nextFields.verificationChecks = [
+          {
+            label: inferredTestStatus.result.check,
+            status: inferredTestStatus.result.status,
+          },
+        ];
+      }
+    }
+  }
+
+  return {
+    status: explicitStatus || inferredStatus || "draft",
+    fields: nextFields,
+    messages,
+  };
+}
+
+function attachRunRuntimeMetadata(run, metadata) {
+  if (!run || !metadata) {
+    return run;
+  }
+
+  Object.defineProperty(run, "smartDefaults", {
+    value: {
+      messages: Array.isArray(metadata.messages) ? metadata.messages.slice() : [],
+    },
+    enumerable: false,
+    configurable: true,
+  });
+
+  return run;
 }
 
 function describeFile(name, absolutePath) {
@@ -280,7 +340,7 @@ function persistRunRecord(workspaceRoot, taskId, run) {
         )
       : (gateBeforePersist.relevantChangedFiles || []).map((item) => item.path);
   const scopeProofPaths = normalizeProofPaths(
-    Array.isArray(run.scopeProofPaths) && run.scopeProofPaths.length > 0 ? run.scopeProofPaths : inferredScopeProofPaths
+    run.scopeProofPaths !== undefined ? run.scopeProofPaths : inferredScopeProofPaths
   );
   const verificationChecks = normalizeVerificationChecks(
     run.verificationChecks,

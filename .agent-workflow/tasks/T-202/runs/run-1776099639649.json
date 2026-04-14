@@ -1,0 +1,68 @@
+{
+  "id": "run-1776099639649",
+  "taskId": "T-202",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Implemented smart defaults for zero-flag run:add/done evidence recording.",
+  "createdAt": "2026-04-13T17:00:39.648Z",
+  "scopeProofPaths": [
+    "README.md",
+    "src/cli.js",
+    "src/lib/done.js",
+    "src/lib/repository-snapshot.js",
+    "src/lib/smart-defaults.js",
+    "src/lib/task-service.js",
+    "test/smart-defaults.test.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "README.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:ae94bc539a51b3e10e2d52c9f31e4ca09f40ac48"
+    },
+    {
+      "path": "src/cli.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:6c85328b5323063ccbbf3682c011bd0449bf0582"
+    },
+    {
+      "path": "src/lib/done.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:f7fb179c66ee0871218fce937dd674201a974d56"
+    },
+    {
+      "path": "src/lib/repository-snapshot.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:b7ee7c762afcdcead2c69750b057bb450e173bc2"
+    },
+    {
+      "path": "src/lib/smart-defaults.js",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:da0c6a4cccd39c68b1f3d59db01bc6d17f35e21b"
+    },
+    {
+      "path": "src/lib/task-service.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:72d8b9af30be5fd67d67a05f0ea3e5be08d5b2e3"
+    },
+    {
+      "path": "test/smart-defaults.test.js",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:bbf4f365f7f894fd7a8503fe3404cb369539cefe"
+    }
+  ]
+}

@@ -1,14 +1,35 @@
 {
   "id": "T-202",
-  "title": "Smart defaults — auto-infer scope from git diff and checks from test exit code",
+  "title": "Smart defaults 鈥?auto-infer scope from git diff and checks from test exit code",
   "recipeId": "feature",
   "priority": "P1",
-  "status": "todo",
+  "status": "done",
   "createdAt": "2026-04-13T08:40:23.044Z",
-  "updatedAt": "2026-04-13T08:40:23.044Z",
-  "goal": "",
-  "scope": [],
-  "nonGoals": [],
-  "requiredDocs": [],
-  "verificationCommands": []
+  "updatedAt": "2026-04-13T17:00:39.841Z",
+  "goal": "Let `run:add` and `done` infer proof paths from the current git diff, and optionally infer status/check data from `npm test`, so the zero-flag task record path stays fast without faking evidence.",
+  "scope": [
+    "src/lib/smart-defaults.js",
+    "src/lib/repository-snapshot.js",
+    "src/lib/task-service.js",
+    "src/lib/done.js",
+    "src/cli.js",
+    "test/smart-defaults.test.js",
+    "README.md"
+  ],
+  "nonGoals": [
+    "dashboard/",
+    "src/lib/verification-gates.js",
+    "src/lib/evidence-utils.js"
+  ],
+  "requiredDocs": [
+    ".agent-workflow/project-profile.md",
+    ".agent-workflow/memory/product.md",
+    ".agent-workflow/memory/architecture.md",
+    "docs/ROADMAP.md"
+  ],
+  "verificationCommands": [
+    "npm test -- test/smart-defaults.test.js test/done.test.js test/repository-snapshot.test.js",
+    "npm test",
+    "npm run lint"
+  ]
 }

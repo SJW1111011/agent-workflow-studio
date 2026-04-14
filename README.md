@@ -111,7 +111,7 @@ Task creation          Agent execution           Evidence + resume
 
 1. Create a task with `quick` or `task:new`.
 2. Hand the compiled prompt to Codex or Claude Code, or use `run:execute` when a local adapter is ready.
-3. Record evidence and refresh the checkpoint with `done <taskId> "<summary>"` when the work is ready to hand off.
+3. Record evidence and refresh the checkpoint with `done <taskId> "<summary>"` when the work is ready to hand off. `done` and `run:add` infer proof paths from the current git diff by default, and `--infer-test` runs `npm test` to derive a passed/failed check from the exit code.
 4. Review `verification.md`, `checkpoint.md`, and the recorded runs under `.agent-workflow/tasks/<taskId>/runs/`.
 
 ## Lite vs Full
@@ -213,7 +213,8 @@ npm run memory:bootstrap -- --root ../some-repo
 npm run quick -- "Build the scanner" --task-id T-001 --priority P1 --agent codex --root ../some-repo
 npm run dashboard -- --root ../some-repo --port 4173
 npm run run:execute -- T-001 --agent codex --root ../some-repo
-npx agent-workflow done T-001 "Scanner pass completed." --status passed --check "npm test" --root ../some-repo
+npx agent-workflow done T-001 "Scanner pass completed." --infer-test --root ../some-repo
+npx agent-workflow done T-001 "Docs-only follow-up." --proof-path README.md --status draft --root ../some-repo
 npm run validate -- --root ../some-repo
 npm test
 ```
