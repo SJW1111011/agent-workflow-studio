@@ -1,13 +1,12 @@
 # T-202 Checkpoint
 
-Generated at: 2026-04-13T17:01:57.562Z
+Generated at: 2026-04-14T11:19:58.522Z
 
 ## Completed
 
 - Prompt compiled
-- 1 run(s) recorded
+- 2 run(s) recorded
 - Task context captured
-- Scoped verification evidence looks current
 
 ## Confirmed facts
 
@@ -15,12 +14,12 @@ Generated at: 2026-04-13T17:01:57.562Z
 - Priority: P1
 - Status: done
 - Latest run status: passed
-- Total runs: 1
+- Total runs: 2
 
 ## Verification gate
 
-- Status: covered
-- Summary: Explicit verification now covers the current scoped file set.
+- Status: ready
+- Summary: No current workspace files match this task's declared scope.
 - Scope hints: 14
 - Ambiguous scope entries: 0
 - Scoped files awaiting proof: 0
@@ -31,13 +30,7 @@ Generated at: 2026-04-13T17:01:57.562Z
 
 ### Scoped files already linked to proof
 
-- README.md
-- src/cli.js
-- src/lib/done.js
-- src/lib/repository-snapshot.js
-- src/lib/task-service.js
-- src/lib/smart-defaults.js
-- test/smart-defaults.test.js
+- None
 
 ### Explicit proof items
 
@@ -45,6 +38,7 @@ Generated at: 2026-04-13T17:01:57.562Z
 - manual:verification.md#proof-2 | paths=src/lib/smart-defaults.js, src/lib/repository-snapshot.js, src/lib/task-service.js, src/lib/done.js, src/cli.js, README.md, test/smart-defaults.test.js | checks=`npm test` (result: Passed (`27` files, `117` tests)) | artifacts=terminal session output captured during this task run
 - manual:verification.md#proof-3 | paths=src/lib/smart-defaults.js, src/lib/repository-snapshot.js, src/lib/task-service.js, src/lib/done.js, src/cli.js, README.md, test/smart-defaults.test.js | checks=`npm run lint` (result: Passed) | artifacts=terminal session output captured during this task run
 - run:run-1776099639649 | paths=README.md, src/cli.js, src/lib/done.js, src/lib/repository-snapshot.js, src/lib/smart-defaults.js, src/lib/task-service.js, test/smart-defaults.test.js | checks=[passed] npm test | artifacts=none
+- run:run-1776165476841 | paths=src/lib/smart-defaults.js, src/lib/repository-snapshot.js, src/lib/task-service.js, src/cli.js | checks=[passed] inferProofPaths returns git diff changed files; [passed] inferTestStatus returns passed/failed from npm test exit code; [passed] explicit --proof-path and --status override inferred values; [passed] non-git repos degrade gracefully with warning; [passed] npm test passes (28 files, 122 tests); [passed] zero runtime dependencies | artifacts=none
 
 ### Scope entries that need tightening
 
@@ -56,8 +50,8 @@ Generated at: 2026-04-13T17:01:57.562Z
 
 ## Latest evidence
 
-- Summary: Implemented smart defaults for zero-flag run:add/done evidence recording.
-- Timestamp: 2026-04-13T17:00:39.648Z
+- Summary: Claude Code review passed: smart defaults infer proof paths from git diff, test status opt-in via --infer-test, explicit flags override, all 7 review dimensions green
+- Timestamp: 2026-04-14T11:17:56.840Z
 
 ## Resume instructions
 

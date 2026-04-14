@@ -5,7 +5,7 @@
   "priority": "P1",
   "status": "done",
   "createdAt": "2026-04-13T08:40:23.044Z",
-  "updatedAt": "2026-04-13T17:00:39.841Z",
+  "updatedAt": "2026-04-14T11:17:56.840Z",
   "goal": "Let `run:add` and `done` infer proof paths from the current git diff, and optionally infer status/check data from `npm test`, so the zero-flag task record path stays fast without faking evidence.",
   "scope": [
     "src/lib/smart-defaults.js",

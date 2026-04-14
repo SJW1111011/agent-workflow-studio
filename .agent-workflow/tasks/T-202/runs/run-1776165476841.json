@@ -1,0 +1,68 @@
+{
+  "id": "run-1776165476841",
+  "taskId": "T-202",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: smart defaults infer proof paths from git diff, test status opt-in via --infer-test, explicit flags override, all 7 review dimensions green",
+  "createdAt": "2026-04-14T11:17:56.840Z",
+  "scopeProofPaths": [
+    "src/lib/smart-defaults.js",
+    "src/lib/repository-snapshot.js",
+    "src/lib/task-service.js",
+    "src/cli.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "inferProofPaths returns git diff changed files",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "inferTestStatus returns passed/failed from npm test exit code",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "explicit --proof-path and --status override inferred values",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "non-git repos degrade gracefully with warning",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (28 files, 122 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "zero runtime dependencies",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/lib/smart-defaults.js",
+      "exists": true,
+      "contentFingerprint": "sha1:da0c6a4cccd39c68b1f3d59db01bc6d17f35e21b"
+    },
+    {
+      "path": "src/lib/repository-snapshot.js",
+      "exists": true,
+      "contentFingerprint": "sha1:b7ee7c762afcdcead2c69750b057bb450e173bc2"
+    },
+    {
+      "path": "src/lib/task-service.js",
+      "exists": true,
+      "contentFingerprint": "sha1:ad0b4e8e640d82992768ca412a2e3026d3a591a5"
+    },
+    {
+      "path": "src/cli.js",
+      "exists": true,
+      "contentFingerprint": "sha1:6c85328b5323063ccbbf3682c011bd0449bf0582"
+    }
+  ]
+}

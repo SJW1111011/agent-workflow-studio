@@ -5,7 +5,7 @@
   "priority": "P1",
   "status": "done",
   "createdAt": "2026-04-13T08:41:52.343Z",
-  "updatedAt": "2026-04-14T02:48:58.529Z",
+  "updatedAt": "2026-04-14T11:18:08.150Z",
   "goal": "Make task status tracking truthful without extra user edits: the first explicit recorded run should advance a task from `todo` to `in_progress`, `done --complete` should close it as `done`, and later run evidence must never auto-regress a manual or completed status.",
   "scope": [
     "src/lib/task-service.js",

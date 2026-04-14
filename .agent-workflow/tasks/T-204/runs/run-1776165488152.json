@@ -1,0 +1,56 @@
+{
+  "id": "run-1776165488152",
+  "taskId": "T-204",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: auto-status todo→in_progress on first run, no regression from done, done --complete marks task done, all 7 review dimensions green",
+  "createdAt": "2026-04-14T11:18:08.150Z",
+  "scopeProofPaths": [
+    "src/lib/task-service.js",
+    "test/task-service.test.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "todo→in_progress on first recordRun",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "in_progress stays in_progress on later runs",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "done status never regressed by late run:add",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "done --complete marks task done",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "checkpoint.md reflects auto-updated status",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (28 files, 122 tests)",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/lib/task-service.js",
+      "exists": true,
+      "contentFingerprint": "sha1:ad0b4e8e640d82992768ca412a2e3026d3a591a5"
+    },
+    {
+      "path": "test/task-service.test.js",
+      "exists": true,
+      "contentFingerprint": "sha1:e80e91766f9795ef3dbddca529e427931773024b"
+    }
+  ]
+}
