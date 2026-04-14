@@ -3,12 +3,33 @@
   "title": "Auto status transitions — task.json status auto-advances on run:add and done",
   "recipeId": "feature",
   "priority": "P1",
-  "status": "todo",
+  "status": "done",
   "createdAt": "2026-04-13T08:41:52.343Z",
-  "updatedAt": "2026-04-13T08:41:52.343Z",
-  "goal": "",
-  "scope": [],
-  "nonGoals": [],
-  "requiredDocs": [],
-  "verificationCommands": []
+  "updatedAt": "2026-04-14T02:48:58.529Z",
+  "goal": "Make task status tracking truthful without extra user edits: the first explicit recorded run should advance a task from `todo` to `in_progress`, `done --complete` should close it as `done`, and later run evidence must never auto-regress a manual or completed status.",
+  "scope": [
+    "src/lib/task-service.js",
+    "test/task-service.test.js",
+    "test/done.test.js",
+    "test/cli.test.js",
+    "test/server-api.test.js",
+    "README.md"
+  ],
+  "nonGoals": [
+    "dashboard/",
+    "src/lib/verification-gates.js",
+    "manual PATCH /api/tasks/:taskId status overrides"
+  ],
+  "requiredDocs": [
+    ".agent-workflow/project-profile.md",
+    ".agent-workflow/memory/product.md",
+    ".agent-workflow/memory/architecture.md",
+    "docs/ROADMAP.md"
+  ],
+  "verificationCommands": [
+    "npm test -- test/task-service.test.js test/done.test.js test/cli.test.js test/server-api.test.js",
+    "npm test",
+    "npm run lint",
+    "npm run smoke"
+  ]
 }

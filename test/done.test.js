@@ -157,7 +157,9 @@ const tests = [
       assert.equal(result.checkpoint.latestRunStatus, "draft");
       assert.equal(result.checkpoint.runCount, 1);
       assert.equal(result.task, null);
+      assert.equal(readJsonFile(files.meta).status, "in_progress");
       assert.match(readTextFile(files.verification), /Implemented the one-step done flow\./);
+      assert.match(readTextFile(files.checkpoint), /- Status: in_progress/);
       assert.match(readTextFile(files.checkpoint), /Latest run status: draft/);
       assert.equal(listRuns(workspaceRoot, taskId).length, 1);
     },

@@ -2,7 +2,7 @@
 
 ## Goal
 
-Make `task.json` status transitions automatic: `todo` → `in_progress` when the first `run:add` or `done` is called, `in_progress` → `done` when `done --complete` is used. Users should never need to manually edit task.json to update status. This also enables accurate status reporting in `task:list` and the dashboard.
+Make `task.json` status transitions automatic so task progress stays truthful without manual metadata edits: the first explicit `run:add` or `done` should move `todo` to `in_progress`, `done --complete` should move the task to `done`, and later run evidence must not regress a manual or completed status. This keeps `task:list` and the dashboard aligned with the real workflow state.
 
 <!-- agent-workflow:managed:task-recipe-meta:start -->
 ## Recipe
@@ -14,12 +14,12 @@ Make `task.json` status transitions automatic: `todo` → `in_progress` when the
 ## Scope
 
 - In scope:
-  - repo path: src/lib/task-service.js (add auto-transition logic to `recordRun` and `updateTaskMeta`)
-  - repo path: src/lib/done.js (use `--complete` to trigger `done` status)
-  - repo path: src/cli.js (no new commands, but `run:add` and `done` now trigger transitions)
-  - repo path: src/server.js (API endpoints that record runs should also trigger transitions)
-  - repo path: test/task-service.test.js (new — test status transitions)
-  - repo path: test/done.test.js (verify transitions integrate correctly)
+  - repo path: src/lib/task-service.js
+  - repo path: test/task-service.test.js
+  - repo path: test/done.test.js
+  - repo path: test/cli.test.js
+  - repo path: test/server-api.test.js
+  - repo path: README.md
 - Out of scope:
   - repo path: dashboard/ (UI status display already reads task.json; no changes needed)
   - repo path: src/lib/verification-gates.js (unchanged)
@@ -28,21 +28,23 @@ Make `task.json` status transitions automatic: `todo` → `in_progress` when the
 ## Required docs
 
 - .agent-workflow/project-profile.md
+- .agent-workflow/memory/product.md
+- .agent-workflow/memory/architecture.md
 - docs/ROADMAP.md (Phase 1 context)
 
 ## Deliverables
 
-- Auto-transition logic in `recordRun()`: if task status is `todo`, advance to `in_progress`
-- Auto-transition logic in `done --complete`: advance to `done` regardless of current status
-- Status is never regressed automatically (manual override via PATCH still allowed)
-- `task:list` accurately reflects the auto-updated status
-- Unit tests covering: todo→in_progress on first run, in_progress stays in_progress on second run, done on --complete, manual override preserved
+- Auto-transition logic in the shared run persistence path so the first recorded run advances `todo` to `in_progress`
+- `done --complete` still advances the task to `done` without changing the existing CLI/API contract
+- Automatic transitions remain one-way only; explicit manual overrides stay authoritative
+- `task:list` and API task detail now reflect the auto-updated status immediately after recorded work
+- Focused tests plus full repo verification for the service, CLI, server API, and `done` integration
 
 ## Risks
 
-- Tasks might be marked `in_progress` before the user intends — mitigate by only triggering on explicit `run:add` or `done`, not on `quick`
-- `done --complete` could close a task that still has open work — acceptable because user explicitly passed `--complete`
-- Must not regress: a manually set `done` status should not be overwritten back to `in_progress` by a late `run:add`
+- Tasks might be marked `in_progress` earlier than some users expect; mitigate by only triggering on explicit recorded runs, not task creation
+- `done --complete` can still close a task with open work, but that remains an explicit user choice
+- A late run must never overwrite a manual or completed status; coverage is included for the preserved override path
 
 ## Acceptance Criteria
 

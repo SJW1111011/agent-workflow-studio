@@ -234,6 +234,52 @@ const tests = [
     },
   },
   {
+    name: "server api run recording auto-advances status and preserves manual patch overrides",
+    async run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("server-api-run-status");
+      const server = await startServer(workspaceRoot);
+
+      try {
+        const firstRun = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}/runs`, {
+          method: "POST",
+          body: {
+            summary: "Started via API.",
+          },
+        });
+        assert.equal(firstRun.statusCode, 201);
+        assert.equal(firstRun.json.status, "draft");
+
+        const afterFirstRun = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}`);
+        assert.equal(afterFirstRun.statusCode, 200);
+        assert.equal(afterFirstRun.json.meta.status, "in_progress");
+
+        const patched = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}`, {
+          method: "PATCH",
+          body: {
+            status: "done",
+          },
+        });
+        assert.equal(patched.statusCode, 200);
+        assert.equal(patched.json.status, "done");
+
+        const lateRun = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}/runs`, {
+          method: "POST",
+          body: {
+            summary: "Late note after manual override.",
+          },
+        });
+        assert.equal(lateRun.statusCode, 201);
+
+        const afterLateRun = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}`);
+        assert.equal(afterLateRun.statusCode, 200);
+        assert.equal(afterLateRun.json.meta.status, "done");
+        assert.equal(afterLateRun.json.runs.length, 2);
+      } finally {
+        await server.stop();
+      }
+    },
+  },
+  {
     name: "server api returns 400 for invalid json, oversized bodies, invalid document payloads, and unsupported editable docs",
     async run() {
       const { workspaceRoot } = createTaskWorkspace("server-api-bad-request");

@@ -370,11 +370,21 @@ function persistRunRecord(workspaceRoot, taskId, run) {
   appendText(files.verification, renderVerificationEvidence(persistedRun));
 
   const updatedAt = persistedRun.completedAt || persistedRun.createdAt || new Date().toISOString();
-  meta.updatedAt = updatedAt;
-  if (persistedRun.status === "passed" && meta.status === "todo") {
-    meta.status = "in_progress";
+  const nextMeta = {
+    ...meta,
+    updatedAt,
+  };
+  const autoAdvancedTaskStatus = nextMeta.status === "todo";
+
+  if (autoAdvancedTaskStatus) {
+    nextMeta.status = "in_progress";
   }
-  writeJson(files.meta, meta);
+
+  writeJson(files.meta, nextMeta);
+
+  if (autoAdvancedTaskStatus) {
+    syncManagedTaskDocs(files, nextMeta, getRecipe(workspaceRoot, nextMeta.recipeId));
+  }
 
   return persistedRun;
 }

@@ -13,16 +13,15 @@ Currently task status is set to `todo` on creation and never automatically updat
 
 ## Facts
 
-- task.json `status` field currently accepts: `todo`, `in_progress`, `done`
-- `createTask()` sets initial status to `todo`
-- `recordRun()` in `task-service.js` persists a run record but does NOT update task status
-- `updateTaskMeta()` in `task-service.js` updates task.json fields — this is the write path for status
-- `task:list` reads task.json and displays status — it will immediately reflect auto-transitions
-- Dashboard `GET /api/tasks` also reads task.json — no dashboard code changes needed
+- task.json `status` now auto-advances from `todo` to `in_progress` inside `persistRunRecord()`, the shared persistence path used by manual and executor-backed runs.
+- The automatic transition only fires when the current task status is `todo`; `in_progress`, `blocked`, and `done` are preserved unless the user explicitly changes them.
+- `recordDone(..., { complete: true })` already routes through `updateTaskMeta(..., { status: "done" })`, so no extra `done.js` logic change was required to satisfy the completion transition.
+- `task:list` and `GET /api/tasks/:taskId` now reflect the persisted status immediately after a recorded run because they already read `task.json`.
+- Focused coverage was added for the shared service, CLI `task:list`, `done`, and the server `/runs` plus manual PATCH interaction.
 
 ## Open questions
 
-- Should `run:execute` (adapter execution) also trigger todo→in_progress? Leaning yes, since it implies work has started.
+- Resolved: yes, executor-backed runs now also advance `todo` to `in_progress` because the transition is enforced in shared run persistence.
 
 ## Constraints
 

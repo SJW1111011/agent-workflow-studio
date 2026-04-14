@@ -60,6 +60,27 @@ function request(url) {
   });
 }
 
+function captureCliOutput(callback) {
+  let output = "";
+  const originalWrite = process.stdout.write;
+
+  process.stdout.write = (chunk, encoding, done) => {
+    output += String(chunk);
+    if (typeof done === "function") {
+      done();
+    }
+    return true;
+  };
+
+  try {
+    callback();
+  } finally {
+    process.stdout.write = originalWrite;
+  }
+
+  return output;
+}
+
 async function startDashboardFromCli(workspaceRoot) {
   const port = await getFreePort();
   const child = spawn(process.execPath, [CLI_PATH, "dashboard", "--root", workspaceRoot, "--port", String(port)], {
@@ -133,6 +154,22 @@ const tests = [
       assert.match(output, /memory:validate \[--root path\]/);
       assert.match(output, /adapter:create <adapterId>/);
       assert.match(output, /dashboard \[--root path\] \[--port 4173\]/);
+    },
+  },
+  {
+    name: "task:list reflects the auto-transitioned status after run:add",
+    run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("cli-task-list-status");
+
+      captureCliOutput(() => {
+        main(["run:add", taskId, "Started work from the CLI.", "--root", workspaceRoot]);
+      });
+
+      const output = captureCliOutput(() => {
+        main(["task:list", "--root", workspaceRoot]);
+      });
+
+      assert.match(output, /T-001 \| P1 \| in_progress \| recipe=feature \| runs=1 \| Test task/);
     },
   },
   {

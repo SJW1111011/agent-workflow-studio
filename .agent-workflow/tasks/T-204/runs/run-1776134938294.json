@@ -1,0 +1,74 @@
+{
+  "id": "run-1776134938294",
+  "taskId": "T-204",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Implemented one-way automatic task status transitions with CLI and API coverage.",
+  "createdAt": "2026-04-14T02:48:58.292Z",
+  "scopeProofPaths": [
+    "src/lib/task-service.js",
+    "test/task-service.test.js",
+    "test/done.test.js",
+    "test/cli.test.js",
+    "test/server-api.test.js",
+    "README.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run lint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-204/checkpoint.md"
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/lib/task-service.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:ad0b4e8e640d82992768ca412a2e3026d3a591a5"
+    },
+    {
+      "path": "test/task-service.test.js",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:e80e91766f9795ef3dbddca529e427931773024b"
+    },
+    {
+      "path": "test/done.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:c0604d5e3876e70814856e9da3d67b11fe0424fa"
+    },
+    {
+      "path": "test/cli.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:3e22c177df9eb993cbb3cea39cbd51491d5709a7"
+    },
+    {
+      "path": "test/server-api.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:e2616fe0e8133f4caf60a0787bab73cc6425e108"
+    },
+    {
+      "path": "README.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:7c1e49bb555c28cecc0ff2cd2ea1d5421890313b"
+    }
+  ]
+}
