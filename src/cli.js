@@ -11,6 +11,7 @@ const { compilePrompt } = require("./lib/prompt-compiler");
 const { formatQuickTaskSummary, quickCreateTask } = require("./lib/quick-task");
 const { formatSkillsSummary, generateSkills } = require("./lib/skill-generator");
 const { listRecipes } = require("./lib/recipes");
+const { formatUndoSummary, undoLastOperation } = require("./lib/undo");
 const { executeRun } = require("./lib/run-executor");
 const { prepareRun } = require("./lib/run-preparer");
 const { scanWorkspace } = require("./lib/scanner");
@@ -205,7 +206,7 @@ function main(argv = process.argv.slice(2)) {
       case "checkpoint": {
         const [taskId] = positionals;
         assert(taskId, "Usage: checkpoint <taskId> [--root path]");
-        const checkpoint = buildCheckpoint(workspaceRoot, taskId);
+        const checkpoint = buildCheckpoint(workspaceRoot, taskId, { logUndo: true });
         print(`Checkpoint updated for ${taskId} with ${checkpoint.runCount} recorded run(s).`);
         break;
       }
@@ -241,10 +242,17 @@ function main(argv = process.argv.slice(2)) {
           taskId && summary,
           "Usage: run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--root path]"
         );
-        const run = recordRun(workspaceRoot, taskId, summary, status, agent, buildManualRunFields(options));
+        const run = recordRun(workspaceRoot, taskId, summary, status, agent, buildManualRunFields(options), {
+          undoType: "run:add",
+        });
         buildCheckpoint(workspaceRoot, taskId);
         printSmartDefaultMessages(run);
         print(`Recorded run ${run.id} for ${taskId} with status ${run.status}.`);
+        break;
+      }
+      case "undo": {
+        const result = undoLastOperation(workspaceRoot);
+        print(formatUndoSummary(result));
         break;
       }
       case "overview": {
@@ -391,6 +399,7 @@ Commands:
   run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--root path]
   done <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--complete] [--root path]
   checkpoint <taskId> [--root path]
+  undo [--root path]
   overview [--root path]
   validate [--root path]
 `);

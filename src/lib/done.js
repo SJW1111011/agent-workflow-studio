@@ -1,7 +1,9 @@
 const { buildCheckpoint } = require("./checkpoint");
 const { recordRun, updateTaskMeta } = require("./task-service");
+const { appendUndoEntry, buildUndoFileList, captureTaskRestoreSnapshots } = require("./undo-log");
 
 function recordDone(workspaceRoot, taskId, summary, options = {}) {
+  const restoreSnapshots = captureTaskRestoreSnapshots(workspaceRoot, taskId);
   const run = recordRun(
     workspaceRoot,
     taskId,
@@ -15,6 +17,9 @@ function recordDone(workspaceRoot, taskId, summary, options = {}) {
       inferScopeProofPaths: options.inferScopeProofPaths !== false,
       inferTestStatus: options.inferTestStatus === true,
       skipInferTest: options.skipInferTest === true,
+    },
+    {
+      undoType: null,
     }
   );
 
@@ -22,6 +27,25 @@ function recordDone(workspaceRoot, taskId, summary, options = {}) {
     ? updateTaskMeta(workspaceRoot, taskId, { status: "done" })
     : null;
   const checkpoint = buildCheckpoint(workspaceRoot, taskId);
+  const runFile = `.agent-workflow/tasks/${taskId}/runs/${run.id}.json`;
+  const undoRestoreSnapshots = restoreSnapshots.concat([
+    {
+      path: runFile,
+      kind: "file",
+      existed: false,
+    },
+  ]);
+
+  appendUndoEntry(workspaceRoot, {
+    type: "done",
+    taskId,
+    files: buildUndoFileList(undoRestoreSnapshots),
+    metadata: {
+      restore: undoRestoreSnapshots,
+      runFile,
+      runId: run.id,
+    },
+  });
 
   return {
     run,

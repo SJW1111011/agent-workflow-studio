@@ -107,7 +107,10 @@ function startDashboardServer(workspaceRoot, options = {}) {
             body.summary,
             body.status || "draft",
             body.agent || "manual",
-            buildManualRunFieldsFromBody(body)
+            buildManualRunFieldsFromBody(body),
+            {
+              undoType: "run:add",
+            }
           );
           buildCheckpoint(workspaceRoot, taskId);
           return sendJson(response, 201, run);

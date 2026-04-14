@@ -66,6 +66,7 @@ Track tasks, runs, risks, executor outcomes, and verification signals from one l
 - **`memory:bootstrap`** - generate a local-only handoff prompt that helps Codex or Claude Code fill grounded project memory
 - **`run:execute`** - launch a local adapter when you explicitly opt into `commandMode: exec`, with shared preflight, logs, and evidence capture
 - **`done`** - record evidence and refresh the checkpoint in one step, with an optional `--complete` flag to mark the task done
+- **`undo`** - roll back the latest workflow-layer operation (`quick`, `run:add`, `done`, or explicit `checkpoint`) without touching source files or git history
 - **`verification gate`** - compare repo-relative task scope against the current repository snapshot and show which scoped files still need explicit proof
 - **`proof anchors`** - keep passed evidence and refreshed manual proof tied to content fingerprints, not fragile `mtime` alone
 - **`skills:generate`** - write `AGENTS.md`, `CLAUDE.md`, and Claude slash commands so the workflow becomes part of the agent's default context
@@ -112,7 +113,18 @@ Task creation          Agent execution           Evidence + resume
 1. Create a task with `quick` or `task:new`.
 2. Hand the compiled prompt to Codex or Claude Code, or use `run:execute` when a local adapter is ready.
 3. Record evidence and refresh the checkpoint with `done <taskId> "<summary>"` when the work is ready to hand off. `done` and `run:add` infer proof paths from the current git diff by default, auto-advance `task.json` from `todo` to `in_progress` on the first recorded run, and `done --complete` marks the task `done`. `--infer-test` runs `npm test` to derive a passed/failed check from the exit code.
-4. Review `verification.md`, `checkpoint.md`, and the recorded runs under `.agent-workflow/tasks/<taskId>/runs/`.
+4. If the latest workflow operation was wrong, run `npx agent-workflow undo --root .` to roll it back. Undo only touches `.agent-workflow/` state, and it refuses to delete a quick-created task that already has recorded runs.
+5. Review `verification.md`, `checkpoint.md`, and the recorded runs under `.agent-workflow/tasks/<taskId>/runs/`.
+
+## Undo the latest workflow action
+
+Use `undo` when the most recent workflow-layer step created the wrong task or evidence record:
+
+```bash
+npx agent-workflow undo --root .
+```
+
+`undo` currently reverses the latest `quick`, `run:add`, `done`, or explicit `checkpoint` operation. The log is capped to the latest 20 entries, and rollback stays inside `.agent-workflow/` so source files and git history are left alone.
 
 ## Lite vs Full
 
@@ -146,7 +158,7 @@ Agent Workflow Studio is designed to become that missing layer.
 - **Onboarding:** `init`, `scan`, `memory:bootstrap`, `memory:validate`
 - **Tasking:** `recipe:list`, `quick`, `task:new`, `task:list`
 - **Adapters:** `adapter:list`, `adapter:create`
-- **Execution:** `prompt:compile`, `run:prepare`, `run:execute`, `run:add`, `done`, `checkpoint`
+- **Execution:** `prompt:compile`, `run:prepare`, `run:execute`, `run:add`, `done`, `checkpoint`, `undo`
 - **Inspection:** `dashboard`, `validate`
 - **Skills:** `skills:generate`
 

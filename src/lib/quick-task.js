@@ -6,6 +6,7 @@ const { prepareRun } = require("./run-preparer");
 const { scanWorkspace } = require("./scanner");
 const { createTask, listTasks } = require("./task-service");
 const { badRequest, conflict } = require("./http-errors");
+const { appendUndoEntry, listWorkflowPaths } = require("./undo-log");
 const { workflowRoot } = require("./workspace");
 
 function quickCreateTask(workspaceRoot, title, options = {}) {
@@ -33,6 +34,19 @@ function quickCreateTask(workspaceRoot, title, options = {}) {
   const prompt = mode === "full" ? compilePrompt(workspaceRoot, taskId, agent.promptAgent) : null;
   const prepared = mode === "full" ? prepareRun(workspaceRoot, taskId, agent.adapterId) : null;
   const checkpoint = mode === "full" ? buildCheckpoint(workspaceRoot, taskId) : null;
+  const taskRootRelativePath = `.agent-workflow/tasks/${taskId}`;
+
+  appendUndoEntry(workspaceRoot, {
+    type: "quick",
+    taskId,
+    files: listWorkflowPaths(workspaceRoot, taskRootRelativePath),
+    metadata: {
+      taskRoot: taskRootRelativePath,
+      mode,
+      agent: agent.promptAgent,
+      adapterId: agent.adapterId,
+    },
+  });
 
   return {
     workspaceRoot,

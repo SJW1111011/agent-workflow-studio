@@ -13,16 +13,18 @@ Lite Mode (T-200) and `done` (T-201) make it fast to create tasks and record evi
 
 ## Facts
 
-- Currently there is no undo capability — mistakes require manual file deletion
-- Run records are stored as individual JSON files in `tasks/T-XXX/runs/run-{timestamp}.json`
-- Task directories contain task.json + markdown docs + runs/ subdirectory
-- Checkpoint is a derived artifact (checkpoint.json + checkpoint.md) that can be regenerated
-- The undo log is a new concept — no existing infrastructure to build on
+- Currently there is no undo capability, so mistakes require manual workflow-file cleanup.
+- Run records are stored as individual JSON files in `tasks/T-XXX/runs/run-{timestamp}.json`.
+- Task directories can contain `task.json`, markdown docs, generated prompt/run artifacts, and a `runs/` subdirectory.
+- `recordRun` can also update `verification.md`, auto-advance `task.json`, and materialize missing Lite Mode files.
+- `buildCheckpoint` is called both directly and as a side effect of other commands, so explicit `checkpoint` logging must not duplicate nested checkpoint refreshes from `quick`, `run:add`, or `done`.
+- Undo metadata must stay repo-relative and portable; absolute machine paths are out of bounds.
 
 ## Open questions
 
-- Should undo log be `.agent-workflow/undo-log.json` (single file) or `.agent-workflow/undo/` (directory with one file per operation)? Single file is simpler.
-- Should undo be interactive (prompt confirmation) or non-interactive (just do it)? Leaning non-interactive with a `--dry-run` flag to preview.
+- The task direction is now settled on a single `.agent-workflow/undo-log.json` file capped to the latest 20 entries.
+- `undo` stays non-interactive for this task; preview or multi-step undo can follow later if the product needs it.
+- Exact workflow-file restoration is safer than partial deletion because Lite Mode commands may materialize new docs as a side effect.
 
 ## Constraints
 
@@ -30,6 +32,7 @@ Lite Mode (T-200) and `done` (T-201) make it fast to create tasks and record evi
 - Priority: P2
 - Keep the workflow docs current.
 <!-- agent-workflow:managed:context-constraints-meta:end -->
-- Depends on T-200, T-201 (those commands must write undo log entries)
-- Workflow layer only — never touch git, never delete user code files
-- No runtime dependencies
+- Depends on T-200 and T-201, because those command flows must write undo log entries.
+- Workflow layer only: never touch git, never delete user code files.
+- No runtime dependencies.
+- Any deletion path must stay inside `.agent-workflow/tasks/`.

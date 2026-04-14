@@ -2,10 +2,17 @@ const path = require("path");
 const { fileExists, readText, writeFile, writeJson } = require("./fs-utils");
 const { listRuns } = require("./task-service");
 const { ensureTaskArtifacts } = require("./task-documents");
+const { appendUndoEntry, buildUndoFileList, captureTaskRestoreSnapshots } = require("./undo-log");
 const { buildTaskVerificationGate } = require("./verification-gates");
 const { projectProfilePath } = require("./workspace");
 
-function buildCheckpoint(workspaceRoot, taskId) {
+function buildCheckpoint(workspaceRoot, taskId, options = {}) {
+  const restoreSnapshots = options.logUndo === true
+    ? captureTaskRestoreSnapshots(workspaceRoot, taskId, {
+        includeTaskMeta: false,
+        includeRunsDirectory: false,
+      })
+    : null;
   const { files, taskMeta: task } = ensureTaskArtifacts(workspaceRoot, taskId, {
     task: true,
     context: true,
@@ -56,6 +63,17 @@ function buildCheckpoint(workspaceRoot, taskId) {
 
   writeJson(path.join(files.root, "checkpoint.json"), checkpoint);
   writeFile(files.checkpoint, renderCheckpointMarkdown(task, checkpoint, latestRun, verificationGate));
+
+  if (restoreSnapshots) {
+    appendUndoEntry(workspaceRoot, {
+      type: "checkpoint",
+      taskId,
+      files: buildUndoFileList(restoreSnapshots),
+      metadata: {
+        restore: restoreSnapshots,
+      },
+    });
+  }
 
   return checkpoint;
 }

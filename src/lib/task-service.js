@@ -20,6 +20,7 @@ const {
   syncManagedTaskDocs,
 } = require("./task-documents");
 const { inferProofPathsResult, inferTestStatusResult } = require("./smart-defaults");
+const { appendUndoEntry, buildUndoFileList, captureTaskRestoreSnapshots } = require("./undo-log");
 const { ensureWorkflowScaffold, runsRoot, taskFiles, taskRoot } = require("./workspace");
 
 const TASK_STATUSES = new Set(["todo", "in_progress", "blocked", "done"]);
@@ -187,7 +188,9 @@ function updateTaskMeta(workspaceRoot, taskId, changes = {}) {
   return nextMeta;
 }
 
-function recordRun(workspaceRoot, taskId, summary, status, agent = "manual", fields = {}) {
+function recordRun(workspaceRoot, taskId, summary, status, agent = "manual", fields = {}, options = {}) {
+  const undoType = isNonEmptyString(options.undoType) ? options.undoType.trim() : "";
+  const restoreSnapshots = undoType ? captureTaskRestoreSnapshots(workspaceRoot, taskId) : null;
   const resolvedDefaults = resolveRunSmartDefaults(workspaceRoot, status, fields);
   const run = createRunRecord(taskId, {
     agent,
@@ -196,7 +199,30 @@ function recordRun(workspaceRoot, taskId, summary, status, agent = "manual", fie
     ...resolvedDefaults.fields,
   });
 
-  return attachRunRuntimeMetadata(persistRunRecord(workspaceRoot, taskId, run), resolvedDefaults);
+  const persistedRun = attachRunRuntimeMetadata(persistRunRecord(workspaceRoot, taskId, run), resolvedDefaults);
+
+  if (undoType) {
+    const runFile = `.agent-workflow/tasks/${taskId}/runs/${persistedRun.id}.json`;
+    const undoRestoreSnapshots = restoreSnapshots.concat([
+      {
+        path: runFile,
+        kind: "file",
+        existed: false,
+      },
+    ]);
+    appendUndoEntry(workspaceRoot, {
+      type: undoType,
+      taskId,
+      files: buildUndoFileList(undoRestoreSnapshots),
+      metadata: {
+        restore: undoRestoreSnapshots,
+        runFile,
+        runId: persistedRun.id,
+      },
+    });
+  }
+
+  return persistedRun;
 }
 
 module.exports = {
