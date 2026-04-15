@@ -1,0 +1,14 @@
+{
+  "id": "T-304",
+  "title": "Codex MCP support — add Codex as mcp:install target and document TOML config integration",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-15T07:23:57.675Z",
+  "updatedAt": "2026-04-15T07:23:57.675Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

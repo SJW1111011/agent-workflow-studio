@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-304",
+  "adapterId": "codex",
+  "title": "Codex MCP support — add Codex as mcp:install target and document TOML config integration",
+  "generatedAt": "2026-04-15T07:23:57.688Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-304",
+  "promptFile": ".agent-workflow/tasks/T-304/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-304/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}
