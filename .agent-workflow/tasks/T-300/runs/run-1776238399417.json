@@ -1,0 +1,104 @@
+{
+  "id": "run-1776238399417",
+  "taskId": "T-300",
+  "agent": "codex",
+  "status": "passed",
+  "summary": "Implemented the stdio MCP server, tool wrappers, CLI wiring, tests, and setup docs.",
+  "createdAt": "2026-04-15T07:33:19.416Z",
+  "scopeProofPaths": [
+    "src/mcp-server.js",
+    "src/lib/mcp-tools.js",
+    "src/cli.js",
+    "package.json",
+    "package-lock.json",
+    "test/mcp-tools.test.js",
+    "test/mcp-server.test.js",
+    "README.md",
+    "docs/MCP_SETUP.md",
+    "docs/README.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run lint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run format:check",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/mcp-server.js",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:c65c23b3227496f42e974dc6fa60c1ece58412c3"
+    },
+    {
+      "path": "src/lib/mcp-tools.js",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:e76b8d4cd97fd85e4d0663ca4ace87d52f81da96"
+    },
+    {
+      "path": "src/cli.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:2b1b6b9075ddce2430d53b3de314e7c3cd6e9086"
+    },
+    {
+      "path": "package.json",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:17d83b4feeae7bbab377ccee06324f908444ee93"
+    },
+    {
+      "path": "package-lock.json",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:dcba0288e44e6152b6c7830c29c1799503d5e28c"
+    },
+    {
+      "path": "test/mcp-tools.test.js",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:9700a4246508925761c45e448e423e558c024ca6"
+    },
+    {
+      "path": "test/mcp-server.test.js",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:c0ff8e052f2ddec6c0baf6c1404c6e957e19c2ad"
+    },
+    {
+      "path": "README.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:3a922d672f43c235f6e27ab054be2087abd28aa9"
+    },
+    {
+      "path": "docs/MCP_SETUP.md",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:d4bc69004ec384f6c57e10ce7ec9d1e72f0fc136"
+    },
+    {
+      "path": "docs/README.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:5b285e2ffe367716e10ca809f4f0e674f8421570"
+    }
+  ]
+}

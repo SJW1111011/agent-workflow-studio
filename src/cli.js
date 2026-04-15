@@ -61,6 +61,15 @@ function main(argv = process.argv.slice(2)) {
         });
         return;
       }
+      case "mcp:serve": {
+        const { startMcpServer } = require("./mcp-server");
+        startMcpServer(workspaceRoot)
+          .catch((error) => {
+            console.error(error.message);
+            process.exitCode = 1;
+          });
+        return;
+      }
       case "skills:generate": {
         const result = generateSkills(workspaceRoot);
         print(formatSkillsSummary(result));
@@ -386,6 +395,7 @@ Commands:
   memory:bootstrap [--output .agent-workflow/handoffs/memory-bootstrap.md] [--root path]
   memory:validate [--root path]
   dashboard [--root path] [--port 4173]
+  mcp:serve [--root path]
   skills:generate [--root path]
   adapter:list [--root path]
   adapter:create <adapterId> [--name "My Agent"] [--runner "npx my-agent-cli"] [--argv-template "exec -"] [--prompt-target codex|claude] [--root path]

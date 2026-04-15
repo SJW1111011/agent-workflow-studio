@@ -2,7 +2,7 @@
 
 ## Why now
 
-Phase 1 cut the CLI ceremony to `quick --lite` + `done`. But users still switch between their agent (Claude Code, Cursor) and a terminal to run these commands. MCP eliminates this context switch entirely — the agent calls workflow tools directly. This is the single highest-impact integration: one task that unlocks every MCP-compatible client without per-client work.
+Phase 1 reduced the common workflow to `quick` plus `done`, but agents still had to leave their MCP-capable editor and drop into a terminal to call those commands. Shipping a stdio MCP server removes that context switch and turns the existing local-first workflow modules into reusable tools for Claude Code, Cursor, and other MCP clients.
 
 <!-- agent-workflow:managed:context-recipe-guidance:start -->
 ## Recipe guidance
@@ -13,21 +13,17 @@ Phase 1 cut the CLI ceremony to `quick --lite` + `done`. But users still switch 
 
 ## Facts
 
-- MCP (Model Context Protocol) is an open standard by Anthropic for LLM tool integration
-- Claude Code, Cursor, Windsurf, and other editors support MCP servers via stdio transport
-- The MCP SDK (`@modelcontextprotocol/sdk`) provides `Server` class with stdio transport
-- All workflow logic already exists in `src/lib/` — the MCP server is a thin wrapper
-- The existing HTTP server (`src/server.js`) has 23+ API endpoints — MCP tools are a subset of these
-- Claude Code configuration: add server to `~/.claude/settings.json` under `mcpServers`
-- Cursor configuration: add server to `.cursor/mcp.json`
-- Zero existing MCP code in the codebase — clean slate
-- Current project has zero runtime dependencies. MCP SDK will be the first. This is an acceptable trade-off for the integration value, but should be isolated to `src/mcp-server.js`.
+- The implementation pins `@modelcontextprotocol/sdk` at `1.3.0`.
+- The pinned SDK ships a CommonJS build, so the repo can stay CommonJS while adding an MCP entry point.
+- The pinned SDK's stdio transport uses newline-delimited JSON messages, not `Content-Length` framing.
+- All workflow logic still lives in the existing `src/lib/` modules; the MCP layer is a thin wrapper.
+- The CLI now exposes `mcp:serve`, and the package now exposes `agent-workflow-mcp`.
+- README and docs now include Claude Code and Cursor setup examples plus a dedicated MCP setup guide.
 
 ## Open questions
 
-- Should MCP SDK be a regular dependency or optional/peer dependency? Leaning regular — the MCP server is a first-class entry point, not optional.
-- Should the MCP server resolve `--root` from cwd or require explicit configuration? Leaning cwd — matches CLI behavior.
-- Should tool names use `workflow_` prefix or shorter names? Leaning `workflow_` to avoid collisions with other MCP tools.
+- No blocking design questions remain for this slice.
+- Follow-up work can decide whether later SDK upgrades should expose richer structured tool payloads when client support improves.
 
 ## Constraints
 
@@ -35,8 +31,7 @@ Phase 1 cut the CLI ceremony to `quick --lite` + `done`. But users still switch 
 - Priority: P0
 - Keep the workflow docs current.
 <!-- agent-workflow:managed:context-constraints-meta:end -->
-- MCP SDK is the ONLY new runtime dependency allowed
-- Core CLI (`src/cli.js`) must remain zero-dep — MCP SDK only imported by `src/mcp-server.js`
-- Must not break any existing CLI, HTTP API, or test behavior
-- Must pass `npm test`, `npm run lint`, `npm run smoke`
-- Tool input schemas must match CLI argument semantics
+- The MCP SDK is the only new direct runtime dependency in this task.
+- Existing CLI, dashboard, and HTTP behavior must keep working unchanged.
+- The MCP server must not print extra stdout logs after startup because stdout is reserved for protocol traffic.
+- Verification must include the actual MCP handler tests plus the real CLI stdio path.

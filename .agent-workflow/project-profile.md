@@ -1,6 +1,6 @@
 # Project Profile
 
-Generated at: 2026-04-13T08:41:52.335Z
+Generated at: 2026-04-15T07:30:41.397Z
 
 ## Repository
 
@@ -25,6 +25,7 @@ Generated at: 2026-04-13T08:41:52.335Z
 - docs/ARCHITECTURE.md
 - docs/GETTING_STARTED.md
 - docs/ISSUE_BACKLOG.md
+- docs/MCP_SETUP.md
 - docs/NEXT_AGENT_HANDOFF.md
 - docs/PRD.md
 - docs/PUBLISHING.md
@@ -63,6 +64,7 @@ Generated at: 2026-04-13T08:41:52.335Z
 - `checkpoint`: `node src/cli.js checkpoint`
 - `run:add`: `node src/cli.js run:add`
 - `validate`: `node src/cli.js validate`
+- `mcp:serve`: `node src/cli.js mcp:serve`
 - `skills:generate`: `node src/cli.js skills:generate`
 - `dashboard`: `node src/server.js`
 - `verify:onboarding`: `node scripts/npm-onboarding-check.js`

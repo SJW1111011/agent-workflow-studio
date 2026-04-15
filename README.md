@@ -6,7 +6,7 @@
   <a href="https://codecov.io/gh/SJW1111011/agent-workflow-studio"><img src="https://codecov.io/gh/SJW1111011/agent-workflow-studio/graph/badge.svg" alt="Coverage"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="MIT license"></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=for-the-badge" alt="Node 18+"></a>
-  <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=for-the-badge" alt="Zero dependencies">
+  <img src="https://img.shields.io/badge/runtime%20deps-1-blue?style=for-the-badge" alt="One runtime dependency for MCP support">
 </p>
 
 > **Built largely by Codex in a single session (default 258k context, repeatedly compacted and spanning more than 50 commits over 7 days), with Claude Code providing evaluation, suggestions, and code review.**
@@ -14,7 +14,7 @@
 
 Make every Codex and Claude Code run leave an auditable evidence trail.
 
-Zero dependencies - local-first - Git-native - npm-installable
+Local-first - Git-native - npm-installable - MCP-ready
 
 Agent Workflow Studio turns:
 
@@ -67,6 +67,7 @@ Track tasks, runs, risks, executor outcomes, and verification signals from one l
 - **`run:execute`** - launch a local adapter when you explicitly opt into `commandMode: exec`, with shared preflight, logs, and evidence capture
 - **`done`** - record evidence and refresh the checkpoint in one step, with an optional `--complete` flag to mark the task done
 - **`undo`** - roll back the latest workflow-layer operation (`quick`, `run:add`, `done`, or explicit `checkpoint`) without touching source files or git history
+- **`mcp:serve`** - expose the core workflow operations as MCP tools over stdio for Claude Code, Cursor, and other MCP clients
 - **`verification gate`** - compare repo-relative task scope against the current repository snapshot and show which scoped files still need explicit proof
 - **`proof anchors`** - keep passed evidence and refreshed manual proof tied to content fingerprints, not fragile `mtime` alone
 - **`skills:generate`** - write `AGENTS.md`, `CLAUDE.md`, and Claude slash commands so the workflow becomes part of the agent's default context
@@ -83,6 +84,55 @@ npx agent-workflow skills:generate --root .
 This writes `AGENTS.md`, `CLAUDE.md`, and Claude slash commands so the agent can follow the same task/evidence/checkpoint flow without manual setup.
 
 See [AGENT_GUIDE.md](AGENT_GUIDE.md) for the full workflow guide.
+
+## Use it through MCP
+
+Start the MCP server on stdio:
+
+```bash
+npx agent-workflow mcp:serve --root .
+```
+
+It exposes these MCP tools:
+
+- `workflow_quick`
+- `workflow_done`
+- `workflow_task_list`
+- `workflow_run_add`
+- `workflow_checkpoint`
+- `workflow_undo`
+- `workflow_validate`
+- `workflow_overview`
+
+Claude Code example:
+
+```json
+{
+  "mcpServers": {
+    "agent-workflow": {
+      "command": "npx",
+      "args": ["agent-workflow-mcp", "--root", "/absolute/path/to/repo"],
+      "cwd": "/absolute/path/to/helper-dir"
+    }
+  }
+}
+```
+
+Cursor example:
+
+```json
+{
+  "mcpServers": {
+    "agent-workflow": {
+      "command": "npx",
+      "args": ["agent-workflow-mcp", "--root", "/absolute/path/to/repo"],
+      "cwd": "/absolute/path/to/helper-dir"
+    }
+  }
+}
+```
+
+The `cwd` should point at the directory where `agent-workflow-studio` is installed so `npx agent-workflow-mcp` resolves the local bin cleanly. For contributor and package-install variants, plus more setup notes for Claude Code and Cursor, see [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
 
 ## Architecture at a glance
 
@@ -158,7 +208,7 @@ Agent Workflow Studio is designed to become that missing layer.
 - **Onboarding:** `init`, `scan`, `memory:bootstrap`, `memory:validate`
 - **Tasking:** `recipe:list`, `quick`, `task:new`, `task:list`
 - **Adapters:** `adapter:list`, `adapter:create`
-- **Execution:** `prompt:compile`, `run:prepare`, `run:execute`, `run:add`, `done`, `checkpoint`, `undo`
+- **Execution:** `prompt:compile`, `run:prepare`, `run:execute`, `run:add`, `done`, `checkpoint`, `undo`, `mcp:serve`
 - **Inspection:** `dashboard`, `validate`
 - **Skills:** `skills:generate`
 
@@ -224,6 +274,7 @@ npm run scan -- --root ../some-repo
 npm run memory:bootstrap -- --root ../some-repo
 npm run quick -- "Build the scanner" --task-id T-001 --priority P1 --agent codex --root ../some-repo
 npm run dashboard -- --root ../some-repo --port 4173
+npm run mcp:serve -- --root ../some-repo
 npm run run:execute -- T-001 --agent codex --root ../some-repo
 npx agent-workflow done T-001 "Scanner pass completed." --infer-test --root ../some-repo
 npx agent-workflow done T-001 "Docs-only follow-up." --proof-path README.md --status draft --root ../some-repo
@@ -237,6 +288,7 @@ npm test
 
 - [Getting Started](docs/GETTING_STARTED.md) - the full npm-first onboarding flow
 - [Documentation Index](docs/README.md) - the map for all design and reference docs
+- [MCP Setup](docs/MCP_SETUP.md) - Claude Code and Cursor MCP configuration examples
 - [Release Notes 0.1.2](docs/RELEASE_NOTES_0.1.2.md) - the published release summary for the current npm version
 - [Architecture](docs/ARCHITECTURE.md) - how the scaffold, dashboard, adapters, and evidence model fit together
 - [Verification Design](docs/VERIFICATION_FRESHNESS_DESIGN.md) - verification gates, proof anchors, and freshness rules

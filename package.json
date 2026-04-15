@@ -9,6 +9,7 @@
     "workflow",
     "codex",
     "claude-code",
+    "mcp",
     "local-first",
     "git-native"
   ],
@@ -35,7 +36,8 @@
     "CONTRIBUTING.md"
   ],
   "bin": {
-    "agent-workflow": "src/cli.js"
+    "agent-workflow": "src/cli.js",
+    "agent-workflow-mcp": "src/mcp-server.js"
   },
   "scripts": {
     "build": "tsc --project tsconfig.json",
@@ -63,11 +65,15 @@
     "checkpoint": "node src/cli.js checkpoint",
     "run:add": "node src/cli.js run:add",
     "validate": "node src/cli.js validate",
+    "mcp:serve": "node src/cli.js mcp:serve",
     "skills:generate": "node src/cli.js skills:generate",
     "dashboard": "node src/server.js",
     "verify:onboarding": "node scripts/npm-onboarding-check.js",
     "smoke": "node scripts/smoke-test.js",
     "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
