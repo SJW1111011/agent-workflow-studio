@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-401",
+  "adapterId": "codex",
+  "title": "Fingerprint opt-in — make proof anchor fingerprinting --strict only, default to timestamp-based",
+  "generatedAt": "2026-04-15T16:35:37.216Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-401",
+  "promptFile": ".agent-workflow/tasks/T-401/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-401/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

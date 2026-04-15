@@ -1,0 +1,14 @@
+{
+  "id": "T-404",
+  "title": "Transparent data migration — existing .agent-workflow data works with new evidence model without manual changes",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-15T16:35:39.087Z",
+  "updatedAt": "2026-04-15T16:35:39.087Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

@@ -1,0 +1,14 @@
+{
+  "id": "T-402",
+  "title": "Coverage score — replace verification gate status list with a single coverage percentage",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-15T16:35:37.712Z",
+  "updatedAt": "2026-04-15T16:35:37.712Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

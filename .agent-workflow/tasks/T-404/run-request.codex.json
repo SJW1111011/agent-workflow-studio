@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-404",
+  "adapterId": "codex",
+  "title": "Transparent data migration — existing .agent-workflow data works with new evidence model without manual changes",
+  "generatedAt": "2026-04-15T16:35:39.139Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-404",
+  "promptFile": ".agent-workflow/tasks/T-404/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-404/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

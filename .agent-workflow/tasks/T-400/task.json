@@ -1,0 +1,14 @@
+{
+  "id": "T-400",
+  "title": "Unify evidence vocabulary — merge weak/strong/draft into two tiers with user-friendly names",
+  "recipeId": "feature",
+  "priority": "P0",
+  "status": "todo",
+  "createdAt": "2026-04-15T16:35:36.641Z",
+  "updatedAt": "2026-04-15T16:35:36.641Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

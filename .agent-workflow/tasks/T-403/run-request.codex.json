@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-403",
+  "adapterId": "codex",
+  "title": "Auto evidence extraction — git diff paths and test exit code populate evidence automatically on every run",
+  "generatedAt": "2026-04-15T16:35:38.509Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-403",
+  "promptFile": ".agent-workflow/tasks/T-403/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-403/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

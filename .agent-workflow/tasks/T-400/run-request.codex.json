@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-400",
+  "adapterId": "codex",
+  "title": "Unify evidence vocabulary — merge weak/strong/draft into two tiers with user-friendly names",
+  "generatedAt": "2026-04-15T16:35:36.668Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-400",
+  "promptFile": ".agent-workflow/tasks/T-400/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-400/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}
