@@ -1,0 +1,26 @@
+{
+  "id": "run-1776256483293",
+  "taskId": "T-304",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Tightened task scope entries to remove ambiguity after verification.",
+  "createdAt": "2026-04-15T12:34:43.292Z",
+  "scopeProofPaths": [
+    ".agent-workflow/tasks/T-304/task.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "checkpoint scope ambiguity cleared",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": ".agent-workflow/tasks/T-304/task.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:f0fd7952dc74d9d8c8bcc2a593b8b8a56587adaf"
+    }
+  ]
+}

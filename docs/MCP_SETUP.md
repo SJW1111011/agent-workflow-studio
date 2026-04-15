@@ -1,6 +1,6 @@
 # MCP Setup
 
-This guide shows how to run `agent-workflow-studio` as an MCP server over stdio so Claude Code, Cursor, and other MCP clients can call the workflow tools directly.
+This guide shows how to run `agent-workflow-studio` as an MCP server over stdio so Codex, Claude Code, Cursor, and other MCP clients can call the workflow tools directly.
 
 ## What the MCP server exposes
 
@@ -24,6 +24,7 @@ All tool handlers delegate to the same durable workflow modules used by the CLI,
 Install the MCP server into the client config you want to use:
 
 ```bash
+npx agent-workflow mcp:install --client codex --root /absolute/path/to/target-repo
 npx agent-workflow mcp:install --client claude --root /absolute/path/to/target-repo
 npx agent-workflow mcp:install --client cursor --root /absolute/path/to/target-repo
 ```
@@ -34,7 +35,7 @@ If the standard config file already exists, you can omit `--client` and let the 
 npx agent-workflow mcp:install --root /absolute/path/to/target-repo
 ```
 
-Auto-detect only touches config files it can already find. Pass `--client claude` or `--client cursor` when you want the CLI to create the standard config file for that client.
+Auto-detect only touches config files it can already find. Pass `--client codex`, `--client claude`, or `--client cursor` when you want the CLI to create the standard config file for that client.
 
 The installer is non-destructive:
 
@@ -45,9 +46,43 @@ The installer is non-destructive:
 Remove the entry later with:
 
 ```bash
+npx agent-workflow mcp:uninstall --client codex --root /absolute/path/to/target-repo
 npx agent-workflow mcp:uninstall --client claude --root /absolute/path/to/target-repo
 npx agent-workflow mcp:uninstall --client cursor --root /absolute/path/to/target-repo
 ```
+
+## Codex
+
+Codex reads MCP servers from `~/.codex/config.toml`. Codex also supports trusted project-level `.codex/config.toml`, but `mcp:install --client codex` currently targets the global config only.
+
+Recommended command:
+
+```bash
+npx agent-workflow mcp:install --client codex --root /absolute/path/to/target-repo
+```
+
+Manual config example:
+
+```toml
+[mcp_servers.agent-workflow]
+command = "npx"
+args = ["agent-workflow-mcp", "--root", "/absolute/path/to/target-repo"]
+cwd = "/absolute/path/to/workflow-cli"
+```
+
+Contributor checkout variant:
+
+```toml
+[mcp_servers.agent-workflow]
+command = "node"
+args = [
+  "/absolute/path/to/agent-workflow-studio/src/mcp-server.js",
+  "--root",
+  "/absolute/path/to/target-repo"
+]
+```
+
+Codex's MCP config supports `command`, `args`, optional `cwd`, and optional `env` under the same `[mcp_servers.<name>]` table. After saving the config, restart Codex or use `/mcp` inside the Codex TUI to confirm the server is available.
 
 ## Launch shapes used by the installer
 
@@ -213,6 +248,8 @@ You should see the corresponding `workflow_*` tools being selected by the client
 
 - `--root` is optional. If you omit it, the server uses the current working directory. For editor integrations, explicit `--root` is usually safer.
 - `mcp:install` writes either a direct `node /absolute/path/to/src/mcp-server.js` entry or an `npx agent-workflow-mcp` entry with the correct `cwd`, depending on how it finds the package.
+- Codex config is written as TOML under `~/.codex/config.toml`; Claude Code and Cursor continue using JSON config files.
+- Codex itself also supports trusted project-level `.codex/config.toml`, but that project-scoped install flow is a follow-up.
 - `agent-workflow mcp:serve` and `agent-workflow-mcp` start the same stdio server. The dedicated `agent-workflow-mcp` bin is usually easier for editor config files.
 - The package now has one runtime dependency: `@modelcontextprotocol/sdk`. The existing workflow logic still lives in the local file-based modules under `src/lib/`.
 - The MCP server is stdio-only in this release. SSE and remote execution remain separate follow-up work.

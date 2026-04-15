@@ -78,7 +78,7 @@ That keeps backward compatibility for polling clients while giving the dashboard
 - **`run:execute`** - launch a local adapter when you explicitly opt into `commandMode: exec`, with shared preflight, logs, and evidence capture
 - **`done`** - record evidence and refresh the checkpoint in one step, with an optional `--complete` flag to mark the task done
 - **`undo`** - roll back the latest workflow-layer operation (`quick`, `run:add`, `done`, or explicit `checkpoint`) without touching source files or git history
-- **`mcp:install` / `mcp:uninstall`** - register or remove the MCP server in Claude Code and Cursor without manual JSON editing
+- **`mcp:install` / `mcp:uninstall`** - register or remove the MCP server in Codex, Claude Code, and Cursor without manual JSON or TOML editing
 - **`mcp:serve`** - expose the core workflow operations as MCP tools over stdio for Claude Code, Cursor, and other MCP clients
 - **`verification gate`** - compare repo-relative task scope against the current repository snapshot and show which scoped files still need explicit proof
 - **`proof anchors`** - keep passed evidence and refreshed manual proof tied to content fingerprints, not fragile `mtime` alone
@@ -102,6 +102,7 @@ See [AGENT_GUIDE.md](AGENT_GUIDE.md) for the full workflow guide.
 Install the MCP server into your editor config first:
 
 ```bash
+npx agent-workflow mcp:install --client codex --root .
 npx agent-workflow mcp:install --client claude --root .
 npx agent-workflow mcp:install --client cursor --root .
 ```
@@ -116,10 +117,12 @@ The installer writes the correct launch entry for the way you are running the pa
 
 - contributor checkout: `node /absolute/path/to/agent-workflow-studio/src/mcp-server.js --root ...`
 - local npm install: `npx agent-workflow-mcp --root ...` plus the right `cwd`
+- Codex is written to `~/.codex/config.toml`; Claude Code and Cursor keep using their existing JSON config files
 
 Remove the MCP entry later with:
 
 ```bash
+npx agent-workflow mcp:uninstall --client codex --root .
 npx agent-workflow mcp:uninstall --client claude --root .
 ```
 
@@ -142,7 +145,7 @@ The server exposes these MCP tools:
 - `workflow_validate`
 - `workflow_overview`
 
-That lets an MCP-connected agent update task status or priority mid-execution and append timestamped progress notes to `context.md`, instead of waiting until the final `done` step to leave durable state behind. For the auto-install flow, manual JSON examples, and Claude Code or Cursor specifics, see [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
+That lets an MCP-connected agent update task status or priority mid-execution and append timestamped progress notes to `context.md`, instead of waiting until the final `done` step to leave durable state behind. For the auto-install flow, Codex TOML examples, and Claude Code or Cursor specifics, see [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
 
 ## Architecture at a glance
 
@@ -298,7 +301,7 @@ npm test
 
 - [Getting Started](docs/GETTING_STARTED.md) - the full npm-first onboarding flow
 - [Documentation Index](docs/README.md) - the map for all design and reference docs
-- [MCP Setup](docs/MCP_SETUP.md) - Claude Code and Cursor auto-install plus manual configuration examples
+- [MCP Setup](docs/MCP_SETUP.md) - Codex, Claude Code, and Cursor auto-install plus manual configuration examples
 - [Release Notes 0.1.2](docs/RELEASE_NOTES_0.1.2.md) - the published release summary for the current npm version
 - [Architecture](docs/ARCHITECTURE.md) - how the scaffold, dashboard, adapters, and evidence model fit together
 - [Verification Design](docs/VERIFICATION_FRESHNESS_DESIGN.md) - verification gates, proof anchors, and freshness rules

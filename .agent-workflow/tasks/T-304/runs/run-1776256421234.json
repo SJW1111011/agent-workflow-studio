@@ -1,0 +1,116 @@
+{
+  "id": "run-1776256421234",
+  "taskId": "T-304",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Added Codex MCP install/uninstall support with TOML config handling and docs.",
+  "createdAt": "2026-04-15T12:33:41.233Z",
+  "scopeProofPaths": [
+    "src/lib/mcp-install.js",
+    "src/cli.js",
+    "test/mcp-install.test.js",
+    "test/cli.test.js",
+    "README.md",
+    "docs/MCP_SETUP.md",
+    "AGENT_GUIDE.md",
+    ".agent-workflow/memory/architecture.md",
+    ".agent-workflow/tasks/T-304/task.md",
+    ".agent-workflow/tasks/T-304/context.md",
+    ".agent-workflow/tasks/T-304/verification.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run lint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "manual Codex CLI install wrote ~/.codex/config.toml in tmp/manual-codex-home",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "manual Codex CLI uninstall removed the agent-workflow entry from tmp/manual-codex-home/.codex/config.toml",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/lib/mcp-install.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:140790ccd73a477c2f060114b4e246531f5013c6"
+    },
+    {
+      "path": "src/cli.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:78f0611f7d37fc03a7a891436c0eb7739a85274a"
+    },
+    {
+      "path": "test/mcp-install.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:b5bfb7a98f51c6351e16497893cdcae72f89e006"
+    },
+    {
+      "path": "test/cli.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:8bb52ad88a0a4eefbf1ef6dab33260f827a62617"
+    },
+    {
+      "path": "README.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:90541b403abc7d19f9333b451e4cf7ae53494cf2"
+    },
+    {
+      "path": "docs/MCP_SETUP.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:d4a7c9bed40cb627788e0e92ced819149be9646a"
+    },
+    {
+      "path": "AGENT_GUIDE.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:281f7f41a76a9b2b0aebbcfcd3953ce8fb1e6aa5"
+    },
+    {
+      "path": ".agent-workflow/memory/architecture.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:bff484aef1126223712e7dc1095f888cf37efd2b"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-304/task.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:9ff3abc83b5dcf7bff32d295bcfc712c4add9faf"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-304/context.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:27262b715ada0a812ba48d647469591dc492faf3"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-304/verification.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:1418e897f2d86d97b13ad764265846948c9c1faf"
+    }
+  ]
+}

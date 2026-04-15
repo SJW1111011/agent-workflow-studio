@@ -134,6 +134,77 @@ const tests = [
     },
   },
   {
+    name: "mcp:install for Codex creates ~/.codex/config.toml and stays idempotent on repeat runs",
+    run() {
+      const { workspaceRoot } = createTaskWorkspace("mcp-install-codex-idempotent");
+      const homeDir = path.join(workspaceRoot, "home");
+      const codexConfigPath = path.join(homeDir, ".codex", "config.toml");
+      const packageRoot = path.join(workspaceRoot, "package-root");
+
+      writeTextFile(path.join(packageRoot, "src", "mcp-server.js"), "module.exports = {};\n");
+
+      const first = installMcpServer(workspaceRoot, {
+        client: "codex",
+        execPath: "/test/node",
+        homeDir,
+        packageRoot,
+      });
+      const second = installMcpServer(workspaceRoot, {
+        client: "codex",
+        execPath: "/test/node",
+        homeDir,
+        packageRoot,
+      });
+
+      assert.equal(first.ok, true);
+      assert.equal(first.results[0].status, "created");
+      assert.equal(second.ok, true);
+      assert.equal(second.results[0].status, "unchanged");
+
+      const configText = readTextFile(codexConfigPath);
+      assert.match(configText, /\[mcp_servers\.agent-workflow\]/);
+      assert.match(configText, /command = "\/test\/node"/);
+      assert.match(configText, /args = \[/);
+      assert.match(configText, /mcp-server\.js/);
+      assert.match(configText, /"--root"/);
+      assert.doesNotMatch(configText, /^env =/m);
+    },
+  },
+  {
+    name: "mcp:install for Codex merges into config.toml without disturbing unrelated settings",
+    run() {
+      const { workspaceRoot } = createTaskWorkspace("mcp-install-codex-merge");
+      const homeDir = path.join(workspaceRoot, "home");
+      const codexConfigPath = path.join(homeDir, ".codex", "config.toml");
+      const packageRoot = path.join(workspaceRoot, "package-root");
+
+      writeTextFile(path.join(packageRoot, "src", "mcp-server.js"), "module.exports = {};\n");
+      writeTextFile(codexConfigPath, [
+        "approval_policy = \"trusted\"",
+        "",
+        "[mcp_servers.existing]",
+        "command = \"uvx\"",
+        "args = [\"existing-server\"]",
+        "",
+      ].join("\n"));
+
+      const result = installMcpServer(workspaceRoot, {
+        client: "codex",
+        execPath: "/test/node",
+        homeDir,
+        packageRoot,
+      });
+
+      assert.equal(result.ok, true);
+      assert.equal(result.results[0].status, "updated");
+
+      const configText = readTextFile(codexConfigPath);
+      assert.match(configText, /^approval_policy = "trusted"/);
+      assert.match(configText, /\[mcp_servers\.existing\]\ncommand = "uvx"\nargs = \["existing-server"\]/);
+      assert.match(configText, /\[mcp_servers\.agent-workflow\]/);
+    },
+  },
+  {
     name: "mcp:install auto-detect updates every supported client config already present",
     run() {
       const { workspaceRoot } = createTaskWorkspace("mcp-install-autodetect");
@@ -141,10 +212,12 @@ const tests = [
       const packageRoot = path.join(workspaceRoot, "package-root");
       const claudePath = path.join(homeDir, ".claude", "settings.json");
       const cursorPath = path.join(workspaceRoot, ".cursor", "mcp.json");
+      const codexPath = path.join(homeDir, ".codex", "config.toml");
 
       writeTextFile(path.join(packageRoot, "src", "mcp-server.js"), "module.exports = {};\n");
       writeJsonFile(claudePath, {});
       writeJsonFile(cursorPath, {});
+      writeTextFile(codexPath, "approval_policy = \"trusted\"\n");
 
       const result = installMcpServer(workspaceRoot, {
         execPath: "/test/node",
@@ -153,13 +226,14 @@ const tests = [
       });
 
       assert.equal(result.ok, true);
-      assert.equal(result.results.length, 2);
+      assert.equal(result.results.length, 3);
       assert.deepEqual(
         result.results.map((item) => item.clientId).sort(),
-        ["claude", "cursor"]
+        ["claude", "codex", "cursor"]
       );
       assert.equal(readJsonFile(claudePath).mcpServers["agent-workflow"].command, "/test/node");
       assert.equal(readJsonFile(cursorPath).mcpServers["agent-workflow"].command, "/test/node");
+      assert.match(readTextFile(codexPath), /\[mcp_servers\.agent-workflow\]/);
     },
   },
   {
@@ -191,6 +265,35 @@ const tests = [
       assert.equal(result.ok, false);
       assert.equal(result.results[0].status, "conflict");
       assert.equal(readTextFile(cursorConfigPath), before);
+    },
+  },
+  {
+    name: "mcp:install warns instead of overwriting an existing Codex entry with different settings",
+    run() {
+      const { workspaceRoot } = createTaskWorkspace("mcp-install-codex-conflict");
+      const homeDir = path.join(workspaceRoot, "home");
+      const codexConfigPath = path.join(homeDir, ".codex", "config.toml");
+      const packageRoot = path.join(workspaceRoot, "package-root");
+
+      writeTextFile(path.join(packageRoot, "src", "mcp-server.js"), "module.exports = {};\n");
+      writeTextFile(codexConfigPath, [
+        "[mcp_servers.agent-workflow]",
+        "command = \"node\"",
+        "args = [\"custom-server.js\"]",
+        "",
+      ].join("\n"));
+
+      const before = readTextFile(codexConfigPath);
+      const result = installMcpServer(workspaceRoot, {
+        client: "codex",
+        execPath: "/test/node",
+        homeDir,
+        packageRoot,
+      });
+
+      assert.equal(result.ok, false);
+      assert.equal(result.results[0].status, "conflict");
+      assert.equal(readTextFile(codexConfigPath), before);
     },
   },
   {
@@ -233,6 +336,43 @@ const tests = [
         command: "node",
         args: ["other.js"],
       });
+    },
+  },
+  {
+    name: "mcp:uninstall for Codex removes only the agent-workflow sections and keeps other config intact",
+    run() {
+      const { workspaceRoot } = createTaskWorkspace("mcp-uninstall-codex");
+      const homeDir = path.join(workspaceRoot, "home");
+      const codexConfigPath = path.join(homeDir, ".codex", "config.toml");
+
+      writeTextFile(codexConfigPath, [
+        "approval_policy = \"trusted\"",
+        "",
+        "[mcp_servers.agent-workflow]",
+        "command = \"node\"",
+        "args = [\"server.js\"]",
+        "",
+        "[mcp_servers.agent-workflow.env]",
+        "TOKEN = \"secret\"",
+        "",
+        "[mcp_servers.other]",
+        "command = \"node\"",
+        "args = [\"other.js\"]",
+        "",
+      ].join("\n"));
+
+      const result = uninstallMcpServer(workspaceRoot, {
+        client: "codex",
+        homeDir,
+      });
+
+      assert.equal(result.ok, true);
+      assert.equal(result.results[0].status, "removed");
+
+      const configText = readTextFile(codexConfigPath);
+      assert.match(configText, /^approval_policy = "trusted"/);
+      assert.doesNotMatch(configText, /\[mcp_servers\.agent-workflow/);
+      assert.match(configText, /\[mcp_servers\.other\]\ncommand = "node"\nargs = \["other\.js"\]/);
     },
   },
 ];

@@ -6,6 +6,18 @@ If you are an agent reading this, follow the instructions below whenever the use
 
 When `skills:generate` is run, this guide is copied into `CLAUDE.md` (for Claude Code) and `AGENTS.md` (for Codex) at the target repository root so both agents pick it up automatically.
 
+## Prefer MCP when available
+
+If you are running inside Codex, Claude Code, or Cursor and MCP is available, prefer the MCP tools over copy-pasting terminal commands. Install the workflow server once with the matching client:
+
+```bash
+npx agent-workflow mcp:install --client codex --root .
+npx agent-workflow mcp:install --client claude --root .
+npx agent-workflow mcp:install --client cursor --root .
+```
+
+After that, use the exposed `workflow_*` tools as the primary integration path and fall back to raw CLI commands when MCP is not available.
+
 ## Workflow state
 
 All workflow state lives inside `.agent-workflow/` at the repository root:

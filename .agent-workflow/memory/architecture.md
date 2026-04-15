@@ -5,6 +5,7 @@
 - Core modules: `src/cli.js` for local commands, `src/server.js` for the local control-plane API, shared logic under `src/lib/`, static dashboard modules under `dashboard/`, and focused unit/smoke coverage under `test/` plus `scripts/smoke-test.js`.
 - Data flows: `scan` builds `project-profile.*`; task bootstrap (`quick` or explicit task commands) creates task bundles; `prompt:compile` and `run:prepare` build adapter handoff artifacts; `run:execute` / `run:add` persist evidence; verification gates combine scope hints, repository snapshot data, and proof items; checkpoint generation summarizes the current durable state.
 - Key dependencies: Node.js stdlib only, optional Git for stronger repository snapshots, and file-based workflow state under `.agent-workflow/`.
+- MCP client install is format-aware: Claude Code merges `mcpServers` into `~/.claude/settings.json`, Cursor merges `mcpServers` into `.cursor/mcp.json`, and Codex now merges `[mcp_servers.<name>]` tables into `~/.codex/config.toml` without overwriting unrelated config.
 
 ## Fragile areas
 
