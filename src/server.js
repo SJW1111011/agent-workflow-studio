@@ -178,6 +178,28 @@ function startDashboardServer(workspaceRoot, options = {}) {
           return sendJson(response, 202, state);
         }
 
+        const taskExecutionEventsRoute = parseTaskExecutionEventsRoute(requestUrl.pathname);
+        if (taskExecutionEventsRoute && request.method === "GET") {
+          if (!getTaskDetail(workspaceRoot, taskExecutionEventsRoute.taskId)) {
+            return sendJson(response, 404, { error: `Task not found: ${taskExecutionEventsRoute.taskId}` });
+          }
+          return streamTaskExecutionEvents(request, response, executionBridge, taskExecutionEventsRoute.taskId);
+        }
+
+        const taskExecutionLogStreamRoute = parseTaskExecutionLogStreamRoute(requestUrl.pathname);
+        if (taskExecutionLogStreamRoute && request.method === "GET") {
+          if (!getTaskDetail(workspaceRoot, taskExecutionLogStreamRoute.taskId)) {
+            return sendJson(response, 404, { error: `Task not found: ${taskExecutionLogStreamRoute.taskId}` });
+          }
+          return streamTaskExecutionLog(
+            request,
+            response,
+            executionBridge,
+            taskExecutionLogStreamRoute.taskId,
+            taskExecutionLogStreamRoute.stream
+          );
+        }
+
         const taskExecutionRoute = parseTaskExecutionRoute(requestUrl.pathname);
         if (taskExecutionRoute && request.method === "GET") {
           if (!getTaskDetail(workspaceRoot, taskExecutionRoute.taskId)) {
@@ -279,6 +301,138 @@ function parseArgs(argv) {
 function sendJson(response, statusCode, payload) {
   response.writeHead(statusCode, { "Content-Type": MIME_TYPES[".json"] });
   response.end(`${JSON.stringify(payload, null, 2)}\n`);
+}
+
+function streamTaskExecutionEvents(request, response, executionBridge, taskId) {
+  let cleanup = () => {};
+  const unsubscribe = executionBridge.subscribeToTaskExecution(taskId, (state) => {
+    if (!writeSseEvent(response, buildExecutionEventPayload(state), "state")) {
+      cleanup();
+    }
+  });
+
+  openSseStream(response);
+  cleanup = bindSseCleanup(request, response, unsubscribe);
+  if (!writeSseEvent(response, buildExecutionEventPayload(executionBridge.getTaskExecution(taskId)), "state")) {
+    cleanup();
+  }
+  return undefined;
+}
+
+function streamTaskExecutionLog(request, response, executionBridge, taskId, stream) {
+  let cleanup = () => {};
+  const unsubscribe = executionBridge.subscribeToTaskExecutionLog(taskId, stream, (event) => {
+    if (!writeSseEvent(response, buildExecutionLogEventPayload(event), "log")) {
+      cleanup();
+    }
+  });
+
+  openSseStream(response);
+
+  cleanup = bindSseCleanup(request, response, unsubscribe);
+  return undefined;
+}
+
+function bindSseCleanup(request, response, unsubscribe) {
+  let closed = false;
+  const keepAlive = setInterval(() => {
+    if (!writeSseComment(response, "keepalive")) {
+      cleanup();
+    }
+  }, 15000);
+  if (typeof keepAlive.unref === "function") {
+    keepAlive.unref();
+  }
+
+  function cleanup() {
+    if (closed) {
+      return;
+    }
+
+    closed = true;
+    clearInterval(keepAlive);
+    if (typeof unsubscribe === "function") {
+      unsubscribe();
+    }
+
+    if (!response.writableEnded) {
+      try {
+        response.end();
+      } catch (error) {
+        // Ignore close-time failures on torn-down SSE sockets.
+      }
+    }
+  }
+
+  request.on("close", cleanup);
+  response.on("close", cleanup);
+  response.on("error", cleanup);
+
+  return cleanup;
+}
+
+function openSseStream(response) {
+  response.writeHead(200, {
+    "Cache-Control": "no-cache, no-transform",
+    Connection: "keep-alive",
+    "Content-Type": "text/event-stream; charset=utf-8",
+    "X-Accel-Buffering": "no",
+  });
+
+  if (typeof response.flushHeaders === "function") {
+    response.flushHeaders();
+  }
+}
+
+function writeSseComment(response, message) {
+  return safeSseWrite(response, `: ${String(message || "").trim()}\n\n`);
+}
+
+function writeSseEvent(response, payload, eventName) {
+  const lines = [];
+  if (isNonEmptyString(eventName)) {
+    lines.push(`event: ${eventName}`);
+  }
+
+  const serialized = JSON.stringify(payload);
+  serialized.split(/\r?\n/).forEach((line) => {
+    lines.push(`data: ${line}`);
+  });
+
+  return safeSseWrite(response, `${lines.join("\n")}\n\n`);
+}
+
+function safeSseWrite(response, chunk) {
+  if (response.destroyed || response.writableEnded) {
+    return false;
+  }
+
+  try {
+    response.write(chunk);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+function buildExecutionEventPayload(state) {
+  return {
+    outcome: state.outcome || null,
+    runId: state.runId || null,
+    status: state.status || "idle",
+    taskId: state.taskId,
+    updatedAt: state.updatedAt || null,
+  };
+}
+
+function buildExecutionLogEventPayload(event) {
+  return {
+    line: event.line,
+    receivedAt: event.receivedAt || null,
+    runId: event.runId || null,
+    stream: event.stream,
+    taskId: event.taskId,
+  };
 }
 
 function buildErrorPayload(error) {
@@ -468,8 +622,31 @@ function parseTaskExecutionRoute(pathname) {
   };
 }
 
+function parseTaskExecutionEventsRoute(pathname) {
+  const matched = pathname.match(/^\/api\/tasks\/([^/]+)\/execution\/events$/);
+  if (!matched) {
+    return null;
+  }
+
+  return {
+    taskId: decodeURIComponent(matched[1]),
+  };
+}
+
 function parseTaskExecutionLogRoute(pathname) {
   const matched = pathname.match(/^\/api\/tasks\/([^/]+)\/execution\/logs\/([^/]+)$/);
+  if (!matched) {
+    return null;
+  }
+
+  return {
+    taskId: decodeURIComponent(matched[1]),
+    stream: decodeURIComponent(matched[2]),
+  };
+}
+
+function parseTaskExecutionLogStreamRoute(pathname) {
+  const matched = pathname.match(/^\/api\/tasks\/([^/]+)\/execution\/logs\/([^/]+)\/stream$/);
   if (!matched) {
     return null;
   }

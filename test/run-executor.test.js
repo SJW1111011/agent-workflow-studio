@@ -426,6 +426,32 @@ const tests = [
     },
   },
   {
+    name: "executeRun fans out live stdout and stderr lines while preserving the persisted log files",
+    async run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("run-executor-log-fanout");
+
+      writeFakeRunner(workspaceRoot);
+      configureCodexExecutor(workspaceRoot);
+
+      const logEvents = [];
+      const result = await executeRun(workspaceRoot, taskId, "codex", {
+        onLogLine(event) {
+          logEvents.push(event);
+        },
+      });
+
+      assert.equal(result.run.status, "passed");
+      assert.ok(logEvents.some((event) => event.stream === "stdout" && /stdout T-001 codex/.test(event.line)));
+      assert.ok(logEvents.some((event) => event.stream === "stderr" && /stderr T-001 codex/.test(event.line)));
+      assert.ok(logEvents.every((event) => event.runId === result.run.id));
+      assert.ok(logEvents.every((event) => event.taskId === taskId));
+      assert.ok(logEvents.every((event) => event.adapterId === "codex"));
+      assert.ok(logEvents.every((event) => typeof event.receivedAt === "string" && event.receivedAt.length > 0));
+      assert.match(readTextFile(path.join(workspaceRoot, result.run.stdoutFile)), /stdout T-001 codex/);
+      assert.match(readTextFile(path.join(workspaceRoot, result.run.stderrFile)), /stderr T-001 codex/);
+    },
+  },
+  {
     name: "executeRun can stream the compiled prompt into stdin for non-interactive adapter profiles",
     async run() {
       const { workspaceRoot, taskId } = createTaskWorkspace("run-executor-stdin");

@@ -420,5 +420,104 @@
         }
       ]
     }
+  },
+  {
+    "type": "done",
+    "taskId": "T-301",
+    "timestamp": "2026-04-15T07:55:27.807Z",
+    "files": [
+      ".agent-workflow/tasks/T-301/checkpoint.json",
+      ".agent-workflow/tasks/T-301/checkpoint.md",
+      ".agent-workflow/tasks/T-301/context.md",
+      ".agent-workflow/tasks/T-301/runs",
+      ".agent-workflow/tasks/T-301/runs/run-1776239727338.json",
+      ".agent-workflow/tasks/T-301/task.json",
+      ".agent-workflow/tasks/T-301/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-301/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-301\",\n  \"title\": \"SSE streaming for execution logs — replace file polling with server-sent events\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P1\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-15T06:47:33.392Z\",\n  \"updatedAt\": \"2026-04-15T06:47:33.392Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-301 Context\n\n## Why now\n\nThe dashboard currently polls `GET /api/tasks/{taskId}/execution` and `GET .../logs/{stream}` to show execution progress. This is laggy because clients wait for the next poll interval, and it is wasteful because every refresh rereads the current state from disk. SSE gives Phase 2 a simple push channel that the future dashboard and MCP subscriptions can both reuse.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/dashboard-execution.js` already owns the in-memory dashboard execution state and is the narrowest place to emit task-level state transitions.\n- `src/lib/run-executor.js` currently writes stdout/stderr directly to log files when `stdioMode === \"pipe\"`.\n- Dashboard execution already requires adapter `stdioMode: \"pipe\"`, which gives the executor one reliable place to tee live output while preserving the current log files.\n- `test/server-api.test.js` already boots the real local HTTP server, so SSE coverage can stay inside the existing API test suite.\n- No external dependency is needed because Node's built-in `http`, `events`, and child-process streams are enough for SSE plus live log fan-out.\n\n## Open questions\n\n- Log streaming will tee child stdout/stderr through Node, write the same bytes to the existing log files, and emit line-based events from that single source of truth.\n- SSE events will stay v1-simple with no resume cursor or sequence number; reconnect behavior can still fall back to the existing snapshot endpoints.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Can run in parallel with T-300 (MCP Server)\n- No external dependencies\n- Must not break existing polling endpoints\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-301 Verification\n\n## Planned checks\n\n- automated: `npm test -- --runInBand test/server-api.test.js test/run-executor.test.js test/http-errors.test.js`\n- automated: `npm run lint`\n- automated: `npm run smoke`\n- manual: start a dashboard execution and confirm `GET /api/tasks/T-001/execution/events` and `GET /api/tasks/T-001/execution/logs/stdout/stream` return `text/event-stream` data without breaking the existing snapshot routes\n\n## Proof links\n\n### Proof 1\n\n- Files: pending implementation\n- Check: pending implementation\n- Result: pending verification\n- Artifact: pending run log\n\n## Blocking gaps\n\n- No verification evidence recorded yet for the SSE endpoints or executor log fan-out.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-301\",\n  \"generatedAt\": \"2026-04-15T06:47:33.549Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add explicit repo-relative paths in the task scope to enable stronger verification gates.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-301 Checkpoint\n\nGenerated at: 2026-04-15T06:47:33.549Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: SSE streaming for execution logs — replace file polling with server-sent events\n- Priority: P1\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add explicit repo-relative paths in the task scope to enable stronger verification gates.\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit proof items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/runs/run-1776239727338.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-301/runs/run-1776239727338.json",
+      "runId": "run-1776239727338"
+    }
+  },
+  {
+    "type": "checkpoint",
+    "taskId": "T-301",
+    "timestamp": "2026-04-15T07:56:24.195Z",
+    "files": [
+      ".agent-workflow/tasks/T-301/checkpoint.json",
+      ".agent-workflow/tasks/T-301/checkpoint.md",
+      ".agent-workflow/tasks/T-301/context.md",
+      ".agent-workflow/tasks/T-301/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-301/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-301 Context\n\n## Why now\n\nThe dashboard currently polls `GET /api/tasks/{taskId}/execution` and `GET .../logs/{stream}` to show execution progress. This is laggy because clients wait for the next poll interval, and it is wasteful because every refresh rereads the current state from disk. SSE gives Phase 2 a simple push channel that the future dashboard and MCP subscriptions can both reuse.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/dashboard-execution.js` already owns the in-memory dashboard execution state and is the narrowest place to emit task-level state transitions.\n- `src/lib/run-executor.js` currently writes stdout/stderr directly to log files when `stdioMode === \"pipe\"`.\n- Dashboard execution already requires adapter `stdioMode: \"pipe\"`, which gives the executor one reliable place to tee live output while preserving the current log files.\n- `test/server-api.test.js` already boots the real local HTTP server, so SSE coverage can stay inside the existing API test suite.\n- No external dependency is needed because Node's built-in `http`, `events`, and child-process streams are enough for SSE plus live log fan-out.\n\n## Open questions\n\n- Log streaming will tee child stdout/stderr through Node, write the same bytes to the existing log files, and emit line-based events from that single source of truth.\n- SSE events will stay v1-simple with no resume cursor or sequence number; reconnect behavior can still fall back to the existing snapshot endpoints.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Can run in parallel with T-300 (MCP Server)\n- No external dependencies\n- Must not break existing polling endpoints\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-301 Verification\n\n## Planned checks\n\n- automated: `npm test -- test/server-api.test.js test/run-executor.test.js test/http-errors.test.js`\n- automated: `npm test`\n- automated: `npm run lint`\n- automated: `npm run smoke`\n- manual: optional follow-up `curl -N` spot-check against the SSE routes if a human wants to watch the stream outside the automated test suite\n\n## Proof links\n\n### Proof 1\n\n- Files: src/server.js, src/lib/dashboard-execution.js, src/lib/run-executor.js, test/server-api.test.js, test/run-executor.test.js, README.md\n- Check: `npm test -- test/server-api.test.js test/run-executor.test.js test/http-errors.test.js`; `npm test`; `npm run lint`; `npm run smoke`\n- Result: passed\n- Artifact: .agent-workflow/tasks/T-301/runs/run-1776239727338.json\n\n## Blocking gaps\n\n- None for the implemented server-side scope.\n\n## Evidence 2026-04-15T07:55:27.336Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/server.js, src/lib/dashboard-execution.js, src/lib/run-executor.js, test/server-api.test.js, test/run-executor.test.js, README.md\n- Summary: Implemented live SSE execution streams and executor log fan-out.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run smoke\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-301\",\n  \"generatedAt\": \"2026-04-15T07:55:27.790Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Explicit verification now covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 11,\n    \"ambiguousScopeCount\": 1,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-301 Checkpoint\n\nGenerated at: 2026-04-15T07:55:27.790Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: SSE streaming for execution logs — replace file polling with server-sent events\n- Priority: P1\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Explicit verification now covers the current scoped file set.\n- Scope hints: 11\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- src/lib/dashboard-execution.js\n- src/lib/run-executor.js\n- src/server.js\n- test/run-executor.test.js\n- test/server-api.test.js\n\n### Explicit proof items\n\n- manual:verification.md#proof-1 | paths=pending implementation | checks=pending implementation (result: pending verification) | artifacts=pending run log\n- run:run-1776239727338 | paths=src/server.js, src/lib/dashboard-execution.js, src/lib/run-executor.js, test/server-api.test.js, test/run-executor.test.js, README.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run smoke | artifacts=none\n\n### Scope entries that need tightening\n\n- repo path: README.md (document SSE endpoints) (task.md)\n\n## Risks\n\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: Implemented live SSE execution streams and executor log fan-out.\n- Timestamp: 2026-04-15T07:55:27.336Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        }
+      ]
+    }
   }
 ]

@@ -60,6 +60,17 @@ Track tasks, runs, risks, executor outcomes, and verification signals from one l
   />
 </p>
 
+## Real-time execution streams
+
+Dashboard execution still keeps the existing snapshot routes, but it now also exposes SSE endpoints for live subscribers:
+
+- `GET /api/tasks/:taskId/execution` returns the current execution snapshot as JSON
+- `GET /api/tasks/:taskId/execution/events` streams execution state updates as `text/event-stream`
+- `GET /api/tasks/:taskId/execution/logs/:stream` returns the current stdout/stderr tail as JSON
+- `GET /api/tasks/:taskId/execution/logs/:stream/stream` streams live stdout/stderr lines as `text/event-stream`
+
+That keeps backward compatibility for polling clients while giving the dashboard and future MCP subscriptions a push-based path.
+
 ## Core capabilities
 
 - **`quick`** - create either a minimal Lite task scaffold or the full prompt/run/checkpoint bundle, depending on how much ceremony you want up front

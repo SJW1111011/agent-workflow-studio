@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { EventEmitter } = require("events");
 const { executeRun, createRunExecutionPreflightError, preflightRunExecution } = require("./run-executor");
 const { fileExists } = require("./fs-utils");
 const { badRequest, conflict, notFound } = require("./http-errors");
@@ -8,22 +9,49 @@ const { taskFiles } = require("./workspace");
 function createDashboardExecutionBridge(workspaceRoot) {
   const taskStates = new Map();
   const taskControllers = new Map();
+  const eventBus = new EventEmitter();
+  eventBus.setMaxListeners(0);
+
+  function ensureTaskExists(taskId) {
+    const files = taskFiles(workspaceRoot, taskId);
+    if (!fileExists(files.meta)) {
+      throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
+    }
+
+    return files;
+  }
+
+  function replaceExecutionState(taskId, nextState) {
+    taskStates.set(taskId, nextState);
+    eventBus.emit(getTaskExecutionEventName(taskId), getTaskExecution(taskId));
+    return nextState;
+  }
+
+  function updateExecutionState(taskId, patch) {
+    const current = taskStates.get(taskId) || buildIdleExecutionState(taskId);
+    return replaceExecutionState(taskId, {
+      ...current,
+      ...patch,
+      taskId,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  function emitExecutionLog(taskId, payload) {
+    eventBus.emit(getTaskExecutionLogEventName(taskId, payload.stream), {
+      ...payload,
+      taskId,
+    });
+  }
 
   function getTaskExecution(taskId) {
     return buildPublicExecutionState(workspaceRoot, taskId, taskStates.get(taskId) || buildIdleExecutionState(taskId));
   }
 
   function getTaskExecutionLog(taskId, streamName, maxChars = 12000) {
-    const files = taskFiles(workspaceRoot, taskId);
-    if (!fileExists(files.meta)) {
-      throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
-    }
-
+    const files = ensureTaskExists(taskId);
     const state = taskStates.get(taskId) || buildIdleExecutionState(taskId);
-    const fieldName = streamName === "stderr" ? "stderrFile" : streamName === "stdout" ? "stdoutFile" : null;
-    if (!fieldName) {
-      throw badRequest(`Unsupported execution log stream: ${streamName}`, "unsupported_execution_log_stream");
-    }
+    const fieldName = resolveExecutionLogFieldName(streamName);
 
     const relativePath = state[fieldName];
     if (!isNonEmptyString(relativePath)) {
@@ -80,6 +108,23 @@ function createDashboardExecutionBridge(workspaceRoot) {
     };
   }
 
+  function subscribeToTaskExecution(taskId, listener) {
+    ensureTaskExists(taskId);
+    eventBus.on(getTaskExecutionEventName(taskId), listener);
+    return () => {
+      eventBus.off(getTaskExecutionEventName(taskId), listener);
+    };
+  }
+
+  function subscribeToTaskExecutionLog(taskId, streamName, listener) {
+    ensureTaskExists(taskId);
+    resolveExecutionLogFieldName(streamName);
+    eventBus.on(getTaskExecutionLogEventName(taskId, streamName), listener);
+    return () => {
+      eventBus.off(getTaskExecutionLogEventName(taskId, streamName), listener);
+    };
+  }
+
   async function startTaskExecution(taskId, adapterInput, options = {}) {
     const existingState = taskStates.get(taskId);
     if (existingState && isActiveExecutionStatus(existingState.status)) {
@@ -92,7 +137,7 @@ function createDashboardExecutionBridge(workspaceRoot) {
     });
     if (!readiness.ready) {
       const failedAt = new Date().toISOString();
-      taskStates.set(taskId, {
+      replaceExecutionState(taskId, {
         ...buildIdleExecutionState(taskId),
         adapterId: readiness.adapterId,
         status: "preflight-failed",
@@ -137,13 +182,13 @@ function createDashboardExecutionBridge(workspaceRoot) {
       stderrFile: executionLogPaths.stderrFile,
       error: null,
     };
-    taskStates.set(taskId, nextState);
+    replaceExecutionState(taskId, nextState);
 
     const abortController = new AbortController();
     taskControllers.set(taskId, abortController);
 
     Promise.resolve().then(async () => {
-      updateExecutionState(taskStates, taskId, {
+      updateExecutionState(taskId, {
         status: "running",
       });
 
@@ -152,10 +197,13 @@ function createDashboardExecutionBridge(workspaceRoot) {
           ...options,
           abortSignal: abortController.signal,
           executionPlan: plan,
+          onLogLine(event) {
+            emitExecutionLog(taskId, event);
+          },
           runId,
         });
 
-        updateExecutionState(taskStates, taskId, {
+        updateExecutionState(taskId, {
           status: "completed",
           completedAt: new Date().toISOString(),
           outcome: deriveExecutionOutcome(result.run),
@@ -176,7 +224,7 @@ function createDashboardExecutionBridge(workspaceRoot) {
           error: null,
         });
       } catch (error) {
-        updateExecutionState(taskStates, taskId, {
+        updateExecutionState(taskId, {
           status: "failed-to-start",
           completedAt: new Date().toISOString(),
           outcome: "failed-to-start",
@@ -204,7 +252,7 @@ function createDashboardExecutionBridge(workspaceRoot) {
       );
     }
 
-    updateExecutionState(taskStates, taskId, {
+    updateExecutionState(taskId, {
       status: "cancel-requested",
       cancelRequestedAt: new Date().toISOString(),
       outcome: null,
@@ -219,18 +267,10 @@ function createDashboardExecutionBridge(workspaceRoot) {
     cancelTaskExecution,
     getTaskExecution,
     getTaskExecutionLog,
+    subscribeToTaskExecution,
+    subscribeToTaskExecutionLog,
     startTaskExecution,
   };
-}
-
-function updateExecutionState(taskStates, taskId, patch) {
-  const current = taskStates.get(taskId) || buildIdleExecutionState(taskId);
-  taskStates.set(taskId, {
-    ...current,
-    ...patch,
-    taskId,
-    updatedAt: new Date().toISOString(),
-  });
 }
 
 function buildIdleExecutionState(taskId) {
@@ -427,6 +467,26 @@ function buildExecutionLogPaths(workspaceRoot, taskId, runId, stdioMode) {
 
 function toWorkspaceRelative(workspaceRoot, absolutePath) {
   return path.relative(workspaceRoot, absolutePath).split(path.sep).join("/");
+}
+
+function resolveExecutionLogFieldName(streamName) {
+  if (streamName === "stdout") {
+    return "stdoutFile";
+  }
+
+  if (streamName === "stderr") {
+    return "stderrFile";
+  }
+
+  throw badRequest(`Unsupported execution log stream: ${streamName}`, "unsupported_execution_log_stream");
+}
+
+function getTaskExecutionEventName(taskId) {
+  return `execution:${taskId}`;
+}
+
+function getTaskExecutionLogEventName(taskId, streamName) {
+  return `execution-log:${taskId}:${streamName}`;
 }
 
 function isNonEmptyString(value) {

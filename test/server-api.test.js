@@ -38,6 +38,148 @@ function updateCodexAdapter(workspaceRoot, patch) {
   fs.writeFileSync(adapterPath, `${JSON.stringify(adapter, null, 2)}\n`, "utf8");
 }
 
+function writeDashboardSseRunner(workspaceRoot) {
+  writeTextFile(
+    path.join(workspaceRoot, "fake-sse-runner.js"),
+    `const fs = require("fs");
+
+async function main() {
+  const promptPath = process.argv[2];
+  const runRequestPath = process.argv[3];
+
+  if (!promptPath || !runRequestPath) {
+    console.error("missing args");
+    process.exit(2);
+  }
+
+  const prompt = fs.readFileSync(promptPath, "utf8");
+  const runRequest = JSON.parse(fs.readFileSync(runRequestPath, "utf8"));
+
+  if (!prompt.includes("# " + runRequest.taskId + " Prompt")) {
+    console.error("prompt header missing");
+    process.exit(3);
+  }
+
+  process.stdout.write("stdout " + runRequest.taskId + " " + runRequest.adapterId + "\\n");
+  await new Promise((resolve) => setTimeout(resolve, 60));
+  process.stderr.write("stderr " + runRequest.taskId + " " + runRequest.adapterId + "\\n");
+  await new Promise((resolve) => setTimeout(resolve, 60));
+  process.stdout.write("stdout done\\n");
+}
+
+main().catch((error) => {
+  console.error(error.message);
+  process.exit(1);
+});
+`,
+    "utf8"
+  );
+}
+
+function parseSseEvent(rawEvent) {
+  if (!rawEvent || rawEvent.startsWith(":")) {
+    return null;
+  }
+
+  const event = {
+    data: null,
+    event: "message",
+  };
+  const dataLines = [];
+
+  rawEvent.split("\n").forEach((line) => {
+    if (!line) {
+      return;
+    }
+
+    if (line.startsWith(":")) {
+      return;
+    }
+
+    if (line.startsWith("event:")) {
+      event.event = line.slice("event:".length).trim();
+      return;
+    }
+
+    if (line.startsWith("data:")) {
+      dataLines.push(line.slice("data:".length).trimStart());
+    }
+  });
+
+  if (dataLines.length === 0) {
+    return null;
+  }
+
+  event.data = JSON.parse(dataLines.join("\n"));
+  return event;
+}
+
+function connectSse(url) {
+  return new Promise((resolve, reject) => {
+    let responseRef = null;
+    let buffer = "";
+    const events = [];
+    const req = http.request(
+      url,
+      {
+        headers: {
+          Accept: "text/event-stream",
+        },
+      },
+      (response) => {
+        responseRef = response;
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => {
+          buffer += chunk.replace(/\r\n/g, "\n");
+
+          let boundary = buffer.indexOf("\n\n");
+          while (boundary >= 0) {
+            const rawEvent = buffer.slice(0, boundary);
+            buffer = buffer.slice(boundary + 2);
+            const parsed = parseSseEvent(rawEvent);
+            if (parsed) {
+              events.push(parsed);
+            }
+            boundary = buffer.indexOf("\n\n");
+          }
+        });
+        response.on("error", reject);
+
+        resolve({
+          close: async () => {
+            if (responseRef && !responseRef.destroyed) {
+              responseRef.destroy();
+            }
+            if (!req.destroyed) {
+              req.destroy();
+            }
+            await delay(10);
+          },
+          events,
+          headers: response.headers,
+          statusCode: response.statusCode,
+        });
+      }
+    );
+
+    req.on("error", reject);
+    req.end();
+  });
+}
+
+async function waitForSseEvent(connection, predicate, timeoutMs = 4000) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    const found = connection.events.find(predicate);
+    if (found) {
+      return found;
+    }
+    await delay(25);
+  }
+
+  throw new Error(`Timed out waiting for SSE event after ${timeoutMs} ms.`);
+}
+
 function request(url, options = {}) {
   return new Promise((resolve, reject) => {
     const requestBody =
@@ -460,6 +602,79 @@ const tests = [
         assert.ok(Array.isArray(executionState.json.advisories));
         assert.equal(executionState.json.blockingIssues[0].field, "stdioMode");
       } finally {
+        await server.stop();
+      }
+    },
+  },
+  {
+    name: "server api streams execution state and stdout lines over sse without breaking snapshot log reads",
+    async run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("server-api-execution-sse");
+      writeDashboardSseRunner(workspaceRoot);
+      updateCodexAdapter(workspaceRoot, {
+        commandMode: "exec",
+        runnerCommand: [process.execPath],
+        argvTemplate: ["fake-sse-runner.js", "{promptFile}", "{runRequestFile}"],
+        stdioMode: "pipe",
+      });
+
+      const server = await startServer(workspaceRoot);
+      let stateStream = null;
+      let stdoutStream = null;
+
+      try {
+        stateStream = await connectSse(`http://127.0.0.1:${server.port}/api/tasks/${taskId}/execution/events`);
+        stdoutStream = await connectSse(
+          `http://127.0.0.1:${server.port}/api/tasks/${taskId}/execution/logs/stdout/stream`
+        );
+
+        assert.equal(stateStream.statusCode, 200);
+        assert.equal(stdoutStream.statusCode, 200);
+        assert.match(String(stateStream.headers["content-type"] || ""), /text\/event-stream/i);
+        assert.match(String(stdoutStream.headers["content-type"] || ""), /text\/event-stream/i);
+
+        const initialState = await waitForSseEvent(stateStream, (event) => event.event === "state");
+        assert.equal(initialState.data.status, "idle");
+
+        const execute = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}/execute`, {
+          method: "POST",
+          body: {},
+        });
+        assert.equal(execute.statusCode, 202);
+        assert.equal(execute.json.status, "starting");
+
+        const runningState = await waitForSseEvent(
+          stateStream,
+          (event) => event.event === "state" && event.data.status === "running"
+        );
+        const completedState = await waitForSseEvent(
+          stateStream,
+          (event) => event.event === "state" && event.data.status === "completed"
+        );
+        const stdoutEvent = await waitForSseEvent(
+          stdoutStream,
+          (event) => event.event === "log" && /stdout T-001 codex/.test(event.data.line)
+        );
+
+        assert.equal(runningState.data.taskId, taskId);
+        assert.equal(completedState.data.outcome, "passed");
+        assert.equal(stdoutEvent.data.stream, "stdout");
+        assert.equal(stdoutEvent.data.taskId, taskId);
+        assert.ok(typeof stdoutEvent.data.receivedAt === "string");
+
+        const snapshotLog = await request(
+          `http://127.0.0.1:${server.port}/api/tasks/${taskId}/execution/logs/stdout?maxChars=2048`
+        );
+        assert.equal(snapshotLog.statusCode, 200);
+        assert.match(snapshotLog.json.content, /stdout T-001 codex/);
+        assert.match(snapshotLog.json.content, /stdout done/);
+      } finally {
+        if (stateStream) {
+          await stateStream.close();
+        }
+        if (stdoutStream) {
+          await stdoutStream.close();
+        }
         await server.stop();
       }
     },

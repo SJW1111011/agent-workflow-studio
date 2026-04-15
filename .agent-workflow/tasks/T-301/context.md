@@ -2,7 +2,7 @@
 
 ## Why now
 
-The dashboard currently polls `GET /api/tasks/{taskId}/execution` and `GET .../logs/{stream}` to show execution progress. This is laggy (poll interval) and wasteful (repeated full reads). SSE enables real-time updates for both the dashboard (Phase 4) and future MCP resource subscriptions. It's a prerequisite for a responsive control plane.
+The dashboard currently polls `GET /api/tasks/{taskId}/execution` and `GET .../logs/{stream}` to show execution progress. This is laggy because clients wait for the next poll interval, and it is wasteful because every refresh rereads the current state from disk. SSE gives Phase 2 a simple push channel that the future dashboard and MCP subscriptions can both reuse.
 
 <!-- agent-workflow:managed:context-recipe-guidance:start -->
 ## Recipe guidance
@@ -13,16 +13,16 @@ The dashboard currently polls `GET /api/tasks/{taskId}/execution` and `GET .../l
 
 ## Facts
 
-- `dashboard-execution.js` already tracks execution state per-task in memory with status transitions
-- `run-executor.js` writes stdout/stderr to log files via file handles opened at spawn time
-- SSE is built into HTTP — just set `Content-Type: text/event-stream`, `Cache-Control: no-cache`, and write `data: ...\n\n` lines
-- No external dependency needed — Node.js `http` module supports SSE natively
-- The dashboard frontend (`dashboard/app.js`) currently polls via `setInterval` + `fetch`
+- `src/lib/dashboard-execution.js` already owns the in-memory dashboard execution state and is the narrowest place to emit task-level state transitions.
+- `src/lib/run-executor.js` currently writes stdout/stderr directly to log files when `stdioMode === "pipe"`.
+- Dashboard execution already requires adapter `stdioMode: "pipe"`, which gives the executor one reliable place to tee live output while preserving the current log files.
+- `test/server-api.test.js` already boots the real local HTTP server, so SSE coverage can stay inside the existing API test suite.
+- No external dependency is needed because Node's built-in `http`, `events`, and child-process streams are enough for SSE plus live log fan-out.
 
 ## Open questions
 
-- Should log streaming use `fs.watchFile` (polling) or `fs.watch` (inotify/FSEvents)? `fs.watch` is faster but less reliable on some platforms. Leaning `fs.watch` with `fs.watchFile` fallback.
-- Should SSE events include a sequence number for resume-after-disconnect? Leaning no for v1 — keep it simple.
+- Log streaming will tee child stdout/stderr through Node, write the same bytes to the existing log files, and emit line-based events from that single source of truth.
+- SSE events will stay v1-simple with no resume cursor or sequence number; reconnect behavior can still fall back to the existing snapshot endpoints.
 
 ## Constraints
 

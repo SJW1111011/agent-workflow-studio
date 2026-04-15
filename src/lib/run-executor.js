@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
+const { StringDecoder } = require("string_decoder");
 const { buildCheckpoint } = require("./checkpoint");
 const { createRunExecutionPreflightError, planRunExecution, preflightRunExecution } = require("./run-preflight");
 const { isNonEmptyString, toWorkspaceRelative } = require("./run-plan");
@@ -12,7 +13,18 @@ async function executeRun(workspaceRoot, taskId, adapterInput, options = {}) {
   const files = taskFiles(workspaceRoot, taskId);
   const runId = isNonEmptyString(options.runId) ? String(options.runId).trim() : `run-${Date.now()}`;
   const startedAt = new Date().toISOString();
-  const execution = await spawnExecution(plan, runId, plan.runsDirectory || files.runs, options.abortSignal);
+  const execution = await spawnExecution(plan, runId, plan.runsDirectory || files.runs, options.abortSignal, {
+    onLogLine(event) {
+      if (typeof options.onLogLine === "function") {
+        options.onLogLine({
+          ...event,
+          adapterId: plan.adapterId,
+          runId,
+          taskId,
+        });
+      }
+    },
+  });
   const completedAt = new Date().toISOString();
   const durationMs = new Date(completedAt).getTime() - new Date(startedAt).getTime();
   const exitCode = typeof execution.exitCode === "number" ? execution.exitCode : null;
@@ -64,7 +76,7 @@ async function executeRun(workspaceRoot, taskId, adapterInput, options = {}) {
   };
 }
 
-async function spawnExecution(plan, runId, runsDirectory, abortSignal) {
+async function spawnExecution(plan, runId, runsDirectory, abortSignal, logObserver = {}) {
   return new Promise((resolve, reject) => {
     let spawned = false;
     let stdinFd = null;
@@ -101,11 +113,15 @@ async function spawnExecution(plan, runId, runsDirectory, abortSignal) {
       return;
     }
 
+    const stdoutForwarder =
+      plan.stdioMode === "pipe" ? createExecutionLogForwarder("stdout", stdoutFd, logObserver) : null;
+    const stderrForwarder =
+      plan.stdioMode === "pipe" ? createExecutionLogForwarder("stderr", stderrFd, logObserver) : null;
     const stdinHandle = typeof stdinFd === "number" ? stdinFd : "ignore";
     const child = spawn(plan.command, plan.args, {
       cwd: plan.cwd,
       env: plan.env,
-      stdio: plan.stdioMode === "pipe" ? [stdinHandle, stdoutFd, stderrFd] : [stdinHandle, "inherit", "inherit"],
+      stdio: plan.stdioMode === "pipe" ? [stdinHandle, "pipe", "pipe"] : [stdinHandle, "inherit", "inherit"],
     });
 
     const signalListeners = new Map();
@@ -127,6 +143,26 @@ async function spawnExecution(plan, runId, runsDirectory, abortSignal) {
       safeCloseFd(stdoutFd);
       safeCloseFd(stderrFd);
     };
+
+    if (plan.stdioMode === "pipe") {
+      if (child.stdout && stdoutForwarder) {
+        child.stdout.on("data", (chunk) => {
+          stdoutForwarder.handleChunk(chunk);
+        });
+        child.stdout.on("end", () => {
+          stdoutForwarder.flushRemainder();
+        });
+      }
+
+      if (child.stderr && stderrForwarder) {
+        child.stderr.on("data", (chunk) => {
+          stderrForwarder.handleChunk(chunk);
+        });
+        child.stderr.on("end", () => {
+          stderrForwarder.flushRemainder();
+        });
+      }
+    }
 
     const requestTermination = (reason) => {
       if (!spawned) {
@@ -206,6 +242,12 @@ async function spawnExecution(plan, runId, runsDirectory, abortSignal) {
     }
 
     child.on("close", (code, signal) => {
+      if (stdoutForwarder) {
+        stdoutForwarder.flushRemainder();
+      }
+      if (stderrForwarder) {
+        stderrForwarder.flushRemainder();
+      }
       cleanup();
       terminationSignal = signal || (timedOut ? "SIGTERM" : null);
 
@@ -220,6 +262,63 @@ async function spawnExecution(plan, runId, runsDirectory, abortSignal) {
         errorMessage: childErrorMessage || (signal ? `Process exited due to signal ${signal}.` : undefined),
       });
     });
+  });
+}
+
+function createExecutionLogForwarder(streamName, fileDescriptor, logObserver = {}) {
+  const decoder = new StringDecoder("utf8");
+  let remainder = "";
+
+  return {
+    flushRemainder() {
+      if (fileDescriptor === null) {
+        return;
+      }
+
+      const decodedTail = decoder.end();
+      if (decodedTail) {
+        remainder += decodedTail;
+      }
+
+      if (!remainder) {
+        return;
+      }
+
+      emitExecutionLogLine(logObserver, streamName, remainder);
+      remainder = "";
+    },
+    handleChunk(chunk) {
+      if (fileDescriptor === null || !chunk) {
+        return;
+      }
+
+      const chunkBuffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk), "utf8");
+      if (chunkBuffer.length === 0) {
+        return;
+      }
+
+      fs.writeSync(fileDescriptor, chunkBuffer, 0, chunkBuffer.length);
+
+      remainder += decoder.write(chunkBuffer);
+      const lines = remainder.split(/\r?\n/);
+      remainder = lines.pop() || "";
+
+      lines.forEach((line) => {
+        emitExecutionLogLine(logObserver, streamName, line);
+      });
+    },
+  };
+}
+
+function emitExecutionLogLine(logObserver, streamName, line) {
+  if (typeof logObserver.onLogLine !== "function") {
+    return;
+  }
+
+  logObserver.onLogLine({
+    line,
+    receivedAt: new Date().toISOString(),
+    stream: streamName,
   });
 }
 
