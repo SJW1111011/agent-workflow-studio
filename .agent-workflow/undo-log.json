@@ -1,55 +1,5 @@
 [
   {
-    "type": "quick",
-    "taskId": "T-303",
-    "timestamp": "2026-04-15T06:47:56.570Z",
-    "files": [
-      ".agent-workflow/tasks/T-303",
-      ".agent-workflow/tasks/T-303/checkpoint.json",
-      ".agent-workflow/tasks/T-303/checkpoint.md",
-      ".agent-workflow/tasks/T-303/context.md",
-      ".agent-workflow/tasks/T-303/launch.codex.md",
-      ".agent-workflow/tasks/T-303/prompt.codex.md",
-      ".agent-workflow/tasks/T-303/run-request.codex.json",
-      ".agent-workflow/tasks/T-303/runs",
-      ".agent-workflow/tasks/T-303/task.json",
-      ".agent-workflow/tasks/T-303/task.md",
-      ".agent-workflow/tasks/T-303/verification.md"
-    ],
-    "metadata": {
-      "taskRoot": ".agent-workflow/tasks/T-303",
-      "mode": "full",
-      "agent": "codex",
-      "adapterId": "codex",
-      "restore": []
-    }
-  },
-  {
-    "type": "quick",
-    "taskId": "T-304",
-    "timestamp": "2026-04-15T07:23:57.834Z",
-    "files": [
-      ".agent-workflow/tasks/T-304",
-      ".agent-workflow/tasks/T-304/checkpoint.json",
-      ".agent-workflow/tasks/T-304/checkpoint.md",
-      ".agent-workflow/tasks/T-304/context.md",
-      ".agent-workflow/tasks/T-304/launch.codex.md",
-      ".agent-workflow/tasks/T-304/prompt.codex.md",
-      ".agent-workflow/tasks/T-304/run-request.codex.json",
-      ".agent-workflow/tasks/T-304/runs",
-      ".agent-workflow/tasks/T-304/task.json",
-      ".agent-workflow/tasks/T-304/task.md",
-      ".agent-workflow/tasks/T-304/verification.md"
-    ],
-    "metadata": {
-      "taskRoot": ".agent-workflow/tasks/T-304",
-      "mode": "full",
-      "agent": "codex",
-      "adapterId": "codex",
-      "restore": []
-    }
-  },
-  {
     "type": "done",
     "taskId": "T-300",
     "timestamp": "2026-04-15T07:33:19.927Z",
@@ -980,6 +930,105 @@
       ],
       "runFile": ".agent-workflow/tasks/T-304/runs/run-1776256483293.json",
       "runId": "run-1776256483293"
+    }
+  },
+  {
+    "type": "run:add",
+    "taskId": "T-304",
+    "timestamp": "2026-04-15T16:26:06.753Z",
+    "files": [
+      ".agent-workflow/tasks/T-304/checkpoint.json",
+      ".agent-workflow/tasks/T-304/checkpoint.md",
+      ".agent-workflow/tasks/T-304/context.md",
+      ".agent-workflow/tasks/T-304/runs",
+      ".agent-workflow/tasks/T-304/runs/run-1776270366576.json",
+      ".agent-workflow/tasks/T-304/task.json",
+      ".agent-workflow/tasks/T-304/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-304/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-304\",\n  \"title\": \"Codex MCP support — add Codex as mcp:install target and document TOML config integration\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P1\",\n  \"status\": \"done\",\n  \"createdAt\": \"2026-04-15T07:23:57.675Z\",\n  \"updatedAt\": \"2026-04-15T12:34:43.292Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-304/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-304 Context\n\n## Why now\n\nT-303 adds `mcp:install` for Claude Code and Cursor. Codex also supports MCP over stdio, but it stores server definitions in TOML instead of JSON. Without this task, Codex users still have to hand-edit `~/.codex/config.toml`, which undercuts the same friction-reduction story the JSON installer already solved for the other clients.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Codex MCP config lives in `~/.codex/config.toml` (global) or `.codex/config.toml` (project, trusted only).\n- Current Codex MCP config uses `[mcp_servers.<name>]` TOML tables with `command`, `args`, and optional `cwd` / `env`.\n- This task only targets the global `~/.codex/config.toml` install path.\n- Claude Code uses JSON: `~/.claude/settings.json` -> `mcpServers`.\n- Cursor uses JSON: `.cursor/mcp.json`.\n- T-303 built the JSON installer; this task adds the TOML parallel.\n- The MCP server binary (`agent-workflow-mcp`) is the same for all three clients; only the config format differs.\n- Codex CLI and the Codex IDE extension share the same `config.toml`, so one global install covers both.\n\n## Open questions\n\n- Project-level `.codex/config.toml` install support remains a follow-up after the global path lands cleanly.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-303 (`mcp:install` infrastructure must already exist).\n- No runtime dependencies; TOML handling must stay built-in.\n- Must not corrupt existing Codex config.\n- Must pass `npm test`, `npm run lint`, and `npm run smoke`.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-304/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-304 Verification\n\n## Planned checks\n\n- automated:\n  - `npm test`\n  - `npm run lint`\n  - `npm run smoke`\n- manual:\n  - inspect generated Codex TOML output in unit coverage\n  - confirm README and MCP setup docs describe Codex global TOML install correctly\n\n## Proof links\n\n### Proof 1\n\n- Files:\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n- none after verification runs complete\n\n## Evidence 2026-04-15T12:33:41.233Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, AGENT_GUIDE.md, .agent-workflow/memory/architecture.md, .agent-workflow/tasks/T-304/task.md, .agent-workflow/tasks/T-304/context.md, .agent-workflow/tasks/T-304/verification.md\n- Summary: Added Codex MCP install/uninstall support with TOML config handling and docs.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] manual Codex CLI install wrote ~/.codex/config.toml in tmp/manual-codex-home\n- Verification check: [passed] manual Codex CLI uninstall removed the agent-workflow entry from tmp/manual-codex-home/.codex/config.toml\n\n## Evidence 2026-04-15T12:34:43.292Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: .agent-workflow/tasks/T-304/task.md\n- Summary: Tightened task scope entries to remove ambiguity after verification.\n- Verification check: [passed] checkpoint scope ambiguity cleared\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-304/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-304\",\n  \"generatedAt\": \"2026-04-15T12:34:43.752Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 2,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"2 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Explicit verification now covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 11,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-304/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-304 Checkpoint\n\nGenerated at: 2026-04-15T12:34:43.752Z\n\n## Completed\n\n- Prompt compiled\n- 2 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Codex MCP support — add Codex as mcp:install target and document TOML config integration\n- Priority: P1\n- Status: done\n- Latest run status: passed\n- Total runs: 2\n\n## Verification gate\n\n- Status: covered\n- Summary: Explicit verification now covers the current scoped file set.\n- Scope hints: 11\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- .agent-workflow/memory/architecture.md\n- .agent-workflow/tasks/T-304/context.md\n- .agent-workflow/tasks/T-304/task.md\n- .agent-workflow/tasks/T-304/verification.md\n- AGENT_GUIDE.md\n- README.md\n- docs/MCP_SETUP.md\n- src/cli.js\n- src/lib/mcp-install.js\n- test/cli.test.js\n- test/mcp-install.test.js\n\n### Explicit proof items\n\n- run:run-1776256421234 | paths=src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, AGENT_GUIDE.md, .agent-workflow/memory/architecture.md, .agent-workflow/tasks/T-304/task.md, .agent-workflow/tasks/T-304/context.md, .agent-workflow/tasks/T-304/verification.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run smoke; [passed] manual Codex CLI install wrote ~/.codex/config.toml in tmp/manual-codex-home; [passed] manual Codex CLI uninstall removed the agent-workflow entry from tmp/manual-codex-home/.codex/config.toml | artifacts=none\n- run:run-1776256483293 | paths=.agent-workflow/tasks/T-304/task.md | checks=[passed] checkpoint scope ambiguity cleared | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Tightened task scope entries to remove ambiguity after verification.\n- Timestamp: 2026-04-15T12:34:43.292Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-304/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-304/runs/run-1776270366576.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-304/runs/run-1776270366576.json",
+      "runId": "run-1776270366576"
+    }
+  },
+  {
+    "type": "checkpoint",
+    "taskId": "T-304",
+    "timestamp": "2026-04-15T16:26:07.181Z",
+    "files": [
+      ".agent-workflow/tasks/T-304/checkpoint.json",
+      ".agent-workflow/tasks/T-304/checkpoint.md",
+      ".agent-workflow/tasks/T-304/context.md",
+      ".agent-workflow/tasks/T-304/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-304/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-304 Context\n\n## Why now\n\nT-303 adds `mcp:install` for Claude Code and Cursor. Codex also supports MCP over stdio, but it stores server definitions in TOML instead of JSON. Without this task, Codex users still have to hand-edit `~/.codex/config.toml`, which undercuts the same friction-reduction story the JSON installer already solved for the other clients.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Codex MCP config lives in `~/.codex/config.toml` (global) or `.codex/config.toml` (project, trusted only).\n- Current Codex MCP config uses `[mcp_servers.<name>]` TOML tables with `command`, `args`, and optional `cwd` / `env`.\n- This task only targets the global `~/.codex/config.toml` install path.\n- Claude Code uses JSON: `~/.claude/settings.json` -> `mcpServers`.\n- Cursor uses JSON: `.cursor/mcp.json`.\n- T-303 built the JSON installer; this task adds the TOML parallel.\n- The MCP server binary (`agent-workflow-mcp`) is the same for all three clients; only the config format differs.\n- Codex CLI and the Codex IDE extension share the same `config.toml`, so one global install covers both.\n\n## Open questions\n\n- Project-level `.codex/config.toml` install support remains a follow-up after the global path lands cleanly.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-303 (`mcp:install` infrastructure must already exist).\n- No runtime dependencies; TOML handling must stay built-in.\n- Must not corrupt existing Codex config.\n- Must pass `npm test`, `npm run lint`, and `npm run smoke`.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-304/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-304 Verification\n\n## Planned checks\n\n- automated:\n  - `npm test`\n  - `npm run lint`\n  - `npm run smoke`\n- manual:\n  - inspect generated Codex TOML output in unit coverage\n  - confirm README and MCP setup docs describe Codex global TOML install correctly\n\n## Proof links\n\n### Proof 1\n\n- Files:\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n- none after verification runs complete\n\n## Evidence 2026-04-15T12:33:41.233Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, AGENT_GUIDE.md, .agent-workflow/memory/architecture.md, .agent-workflow/tasks/T-304/task.md, .agent-workflow/tasks/T-304/context.md, .agent-workflow/tasks/T-304/verification.md\n- Summary: Added Codex MCP install/uninstall support with TOML config handling and docs.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] manual Codex CLI install wrote ~/.codex/config.toml in tmp/manual-codex-home\n- Verification check: [passed] manual Codex CLI uninstall removed the agent-workflow entry from tmp/manual-codex-home/.codex/config.toml\n\n## Evidence 2026-04-15T12:34:43.292Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: .agent-workflow/tasks/T-304/task.md\n- Summary: Tightened task scope entries to remove ambiguity after verification.\n- Verification check: [passed] checkpoint scope ambiguity cleared\n\n## Evidence 2026-04-15T16:26:06.567Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/mcp-install.js, test/mcp-install.test.js, docs/MCP_SETUP.md\n- Summary: Claude Code review passed: Codex TOML mcp:install/uninstall, three-client support, idempotent, conflict handling, no new runtime deps\n- Verification check: [passed] mcp:install --client codex writes valid TOML to ~/.codex/config.toml\n- Verification check: [passed] Idempotent: second install returns unchanged\n- Verification check: [passed] Uninstall removes entry without corrupting config\n- Verification check: [passed] Three-client install (claude,cursor,codex) works in one call\n- Verification check: [passed] TOML output handles Windows backslash paths\n- Verification check: [passed] npm test passes (32 files, 156 tests)\n- Verification check: [passed] No runtime dependencies added\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-304/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-304\",\n  \"generatedAt\": \"2026-04-15T16:26:06.900Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 3,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"3 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Explicit verification now covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 11,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-304/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-304 Checkpoint\n\nGenerated at: 2026-04-15T16:26:06.900Z\n\n## Completed\n\n- Prompt compiled\n- 3 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Codex MCP support — add Codex as mcp:install target and document TOML config integration\n- Priority: P1\n- Status: done\n- Latest run status: passed\n- Total runs: 3\n\n## Verification gate\n\n- Status: covered\n- Summary: Explicit verification now covers the current scoped file set.\n- Scope hints: 11\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- .agent-workflow/tasks/T-304/verification.md\n\n### Explicit proof items\n\n- run:run-1776256421234 | paths=src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, AGENT_GUIDE.md, .agent-workflow/memory/architecture.md, .agent-workflow/tasks/T-304/task.md, .agent-workflow/tasks/T-304/context.md, .agent-workflow/tasks/T-304/verification.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run smoke; [passed] manual Codex CLI install wrote ~/.codex/config.toml in tmp/manual-codex-home; [passed] manual Codex CLI uninstall removed the agent-workflow entry from tmp/manual-codex-home/.codex/config.toml | artifacts=none\n- run:run-1776256483293 | paths=.agent-workflow/tasks/T-304/task.md | checks=[passed] checkpoint scope ambiguity cleared | artifacts=none\n- run:run-1776270366576 | paths=src/lib/mcp-install.js, test/mcp-install.test.js, docs/MCP_SETUP.md | checks=[passed] mcp:install --client codex writes valid TOML to ~/.codex/config.toml; [passed] Idempotent: second install returns unchanged; [passed] Uninstall removes entry without corrupting config; [passed] Three-client install (claude,cursor,codex) works in one call; [passed] TOML output handles Windows backslash paths; [passed] npm test passes (32 files, 156 tests); [passed] No runtime dependencies added | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Claude Code review passed: Codex TOML mcp:install/uninstall, three-client support, idempotent, conflict handling, no new runtime deps\n- Timestamp: 2026-04-15T16:26:06.567Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
+        }
+      ]
     }
   }
 ]

@@ -1,11 +1,11 @@
 # T-304 Checkpoint
 
-Generated at: 2026-04-15T12:34:43.752Z
+Generated at: 2026-04-15T16:26:07.174Z
 
 ## Completed
 
 - Prompt compiled
-- 2 run(s) recorded
+- 3 run(s) recorded
 - Task context captured
 - Scoped verification evidence looks current
 
@@ -15,7 +15,7 @@ Generated at: 2026-04-15T12:34:43.752Z
 - Priority: P1
 - Status: done
 - Latest run status: passed
-- Total runs: 2
+- Total runs: 3
 
 ## Verification gate
 
@@ -31,22 +31,13 @@ Generated at: 2026-04-15T12:34:43.752Z
 
 ### Scoped files already linked to proof
 
-- .agent-workflow/memory/architecture.md
-- .agent-workflow/tasks/T-304/context.md
-- .agent-workflow/tasks/T-304/task.md
 - .agent-workflow/tasks/T-304/verification.md
-- AGENT_GUIDE.md
-- README.md
-- docs/MCP_SETUP.md
-- src/cli.js
-- src/lib/mcp-install.js
-- test/cli.test.js
-- test/mcp-install.test.js
 
 ### Explicit proof items
 
 - run:run-1776256421234 | paths=src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, AGENT_GUIDE.md, .agent-workflow/memory/architecture.md, .agent-workflow/tasks/T-304/task.md, .agent-workflow/tasks/T-304/context.md, .agent-workflow/tasks/T-304/verification.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run smoke; [passed] manual Codex CLI install wrote ~/.codex/config.toml in tmp/manual-codex-home; [passed] manual Codex CLI uninstall removed the agent-workflow entry from tmp/manual-codex-home/.codex/config.toml | artifacts=none
 - run:run-1776256483293 | paths=.agent-workflow/tasks/T-304/task.md | checks=[passed] checkpoint scope ambiguity cleared | artifacts=none
+- run:run-1776270366576 | paths=src/lib/mcp-install.js, test/mcp-install.test.js, docs/MCP_SETUP.md | checks=[passed] mcp:install --client codex writes valid TOML to ~/.codex/config.toml; [passed] Idempotent: second install returns unchanged; [passed] Uninstall removes entry without corrupting config; [passed] Three-client install (claude,cursor,codex) works in one call; [passed] TOML output handles Windows backslash paths; [passed] npm test passes (32 files, 156 tests); [passed] No runtime dependencies added | artifacts=none
 
 ### Scope entries that need tightening
 
@@ -58,8 +49,8 @@ Generated at: 2026-04-15T12:34:43.752Z
 
 ## Latest evidence
 
-- Summary: Tightened task scope entries to remove ambiguity after verification.
-- Timestamp: 2026-04-15T12:34:43.292Z
+- Summary: Claude Code review passed: Codex TOML mcp:install/uninstall, three-client support, idempotent, conflict handling, no new runtime deps
+- Timestamp: 2026-04-15T16:26:06.567Z
 
 ## Resume instructions
 

@@ -1,12 +1,12 @@
 {
   "taskId": "T-304",
-  "generatedAt": "2026-04-15T12:34:43.752Z",
+  "generatedAt": "2026-04-15T16:26:07.174Z",
   "latestRunStatus": "passed",
-  "runCount": 2,
+  "runCount": 3,
   "risks": [],
   "completed": [
     "Prompt compiled",
-    "2 run(s) recorded",
+    "3 run(s) recorded",
     "Task context captured",
     "Scoped verification evidence looks current"
   ],

@@ -1,0 +1,67 @@
+{
+  "id": "run-1776270366576",
+  "taskId": "T-304",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: Codex TOML mcp:install/uninstall, three-client support, idempotent, conflict handling, no new runtime deps",
+  "createdAt": "2026-04-15T16:26:06.567Z",
+  "scopeProofPaths": [
+    "src/lib/mcp-install.js",
+    "test/mcp-install.test.js",
+    "docs/MCP_SETUP.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "mcp:install --client codex writes valid TOML to ~/.codex/config.toml",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "Idempotent: second install returns unchanged",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "Uninstall removes entry without corrupting config",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "Three-client install (claude,cursor,codex) works in one call",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "TOML output handles Windows backslash paths",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (32 files, 156 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "No runtime dependencies added",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/lib/mcp-install.js",
+      "exists": true,
+      "contentFingerprint": "sha1:140790ccd73a477c2f060114b4e246531f5013c6"
+    },
+    {
+      "path": "test/mcp-install.test.js",
+      "exists": true,
+      "contentFingerprint": "sha1:b5bfb7a98f51c6351e16497893cdcae72f89e006"
+    },
+    {
+      "path": "docs/MCP_SETUP.md",
+      "exists": true,
+      "contentFingerprint": "sha1:d4a7c9bed40cb627788e0e92ced819149be9646a"
+    }
+  ]
+}

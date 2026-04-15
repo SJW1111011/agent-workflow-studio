@@ -42,3 +42,17 @@
 - Scoped files covered: .agent-workflow/tasks/T-304/task.md
 - Summary: Tightened task scope entries to remove ambiguity after verification.
 - Verification check: [passed] checkpoint scope ambiguity cleared
+
+## Evidence 2026-04-15T16:26:06.567Z
+
+- Agent: manual
+- Status: passed
+- Scoped files covered: src/lib/mcp-install.js, test/mcp-install.test.js, docs/MCP_SETUP.md
+- Summary: Claude Code review passed: Codex TOML mcp:install/uninstall, three-client support, idempotent, conflict handling, no new runtime deps
+- Verification check: [passed] mcp:install --client codex writes valid TOML to ~/.codex/config.toml
+- Verification check: [passed] Idempotent: second install returns unchanged
+- Verification check: [passed] Uninstall removes entry without corrupting config
+- Verification check: [passed] Three-client install (claude,cursor,codex) works in one call
+- Verification check: [passed] TOML output handles Windows backslash paths
+- Verification check: [passed] npm test passes (32 files, 156 tests)
+- Verification check: [passed] No runtime dependencies added
