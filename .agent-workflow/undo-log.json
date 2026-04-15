@@ -1,203 +1,5 @@
 [
   {
-    "type": "done",
-    "taskId": "T-203",
-    "timestamp": "2026-04-14T11:57:15.191Z",
-    "files": [
-      ".agent-workflow/tasks/T-203/checkpoint.json",
-      ".agent-workflow/tasks/T-203/checkpoint.md",
-      ".agent-workflow/tasks/T-203/context.md",
-      ".agent-workflow/tasks/T-203/runs",
-      ".agent-workflow/tasks/T-203/runs/run-1776167834671.json",
-      ".agent-workflow/tasks/T-203/task.json",
-      ".agent-workflow/tasks/T-203/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-203/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-203\",\n  \"title\": \"undo command — roll back the most recent workflow operation\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P2\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-13T08:41:24.686Z\",\n  \"updatedAt\": \"2026-04-13T08:41:24.686Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-203 Context\n\n## Why now\n\nLite Mode (T-200) and `done` (T-201) make it fast to create tasks and record evidence. But speed also means more accidental records. Without undo, users must manually find and delete JSON files from `.agent-workflow/tasks/`. Undo is the safety net that makes the fast workflow trustworthy.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Currently there is no undo capability, so mistakes require manual workflow-file cleanup.\n- Run records are stored as individual JSON files in `tasks/T-XXX/runs/run-{timestamp}.json`.\n- Task directories can contain `task.json`, markdown docs, generated prompt/run artifacts, and a `runs/` subdirectory.\n- `recordRun` can also update `verification.md`, auto-advance `task.json`, and materialize missing Lite Mode files.\n- `buildCheckpoint` is called both directly and as a side effect of other commands, so explicit `checkpoint` logging must not duplicate nested checkpoint refreshes from `quick`, `run:add`, or `done`.\n- Undo metadata must stay repo-relative and portable; absolute machine paths are out of bounds.\n\n## Open questions\n\n- The task direction is now settled on a single `.agent-workflow/undo-log.json` file capped to the latest 20 entries.\n- `undo` stays non-interactive for this task; preview or multi-step undo can follow later if the product needs it.\n- Exact workflow-file restoration is safer than partial deletion because Lite Mode commands may materialize new docs as a side effect.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-200 and T-201, because those command flows must write undo log entries.\n- Workflow layer only: never touch git, never delete user code files.\n- No runtime dependencies.\n- Any deletion path must stay inside `.agent-workflow/tasks/`.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-203 Verification\n\n## Planned checks\n\n- automated: `npm test -- undo.test.js done.test.js quick-task.test.js cli.test.js`\n- manual: confirm the CLI reports the last operation, restores workflow files, and refuses to delete a quick-created task that already has recorded runs\n\n## Proof links\n\n### Proof 1\n\n- Files: src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/cli.js, test/undo.test.js, README.md\n- Check: targeted undo regression suite\n- Result: pending\n- Artifact: pending\n\n## Blocking gaps\n\n- Final implementation and verification evidence still need to be recorded after the code and tests land.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-203\",\n  \"generatedAt\": \"2026-04-13T08:41:24.834Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add explicit repo-relative paths in the task scope to enable stronger verification gates.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-203 Checkpoint\n\nGenerated at: 2026-04-13T08:41:24.834Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: undo command — roll back the most recent workflow operation\n- Priority: P2\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add explicit repo-relative paths in the task scope to enable stronger verification gates.\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit proof items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/runs/run-1776167834671.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-203/runs/run-1776167834671.json",
-      "runId": "run-1776167834671"
-    }
-  },
-  {
-    "type": "checkpoint",
-    "taskId": "T-203",
-    "timestamp": "2026-04-14T11:58:46.427Z",
-    "files": [
-      ".agent-workflow/tasks/T-203/checkpoint.json",
-      ".agent-workflow/tasks/T-203/checkpoint.md",
-      ".agent-workflow/tasks/T-203/context.md",
-      ".agent-workflow/tasks/T-203/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-203/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-203 Context\n\n## Why now\n\nLite Mode (T-200) and `done` (T-201) make it fast to create tasks and record evidence. But speed also means more accidental records. Without undo, users must manually find and delete JSON files from `.agent-workflow/tasks/`. Undo is the safety net that makes the fast workflow trustworthy.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Currently there is no undo capability, so mistakes require manual workflow-file cleanup.\n- Run records are stored as individual JSON files in `tasks/T-XXX/runs/run-{timestamp}.json`.\n- Task directories can contain `task.json`, markdown docs, generated prompt/run artifacts, and a `runs/` subdirectory.\n- `recordRun` can also update `verification.md`, auto-advance `task.json`, and materialize missing Lite Mode files.\n- `buildCheckpoint` is called both directly and as a side effect of other commands, so explicit `checkpoint` logging must not duplicate nested checkpoint refreshes from `quick`, `run:add`, or `done`.\n- Undo metadata must stay repo-relative and portable; absolute machine paths are out of bounds.\n\n## Open questions\n\n- The task direction is now settled on a single `.agent-workflow/undo-log.json` file capped to the latest 20 entries.\n- `undo` stays non-interactive for this task; preview or multi-step undo can follow later if the product needs it.\n- Exact workflow-file restoration is safer than partial deletion because Lite Mode commands may materialize new docs as a side effect.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-200 and T-201, because those command flows must write undo log entries.\n- Workflow layer only: never touch git, never delete user code files.\n- No runtime dependencies.\n- Any deletion path must stay inside `.agent-workflow/tasks/`.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-203 Verification\n\n## Planned checks\n\n- automated: `npm test`\n- manual: confirm the CLI reports the last operation, restores workflow files, and refuses to delete a quick-created task that already has recorded runs\n\n## Proof links\n\n### Proof 1\n\n- Files: src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/cli.js, test/undo.test.js, README.md\n- Check: `npm test`\n- Result: passed (`29` files, `129` tests)\n- Artifact: .agent-workflow/tasks/T-203/runs/run-1776167834671.json\n\n## Blocking gaps\n\n- None.\n\n## Evidence 2026-04-14T11:57:14.669Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/cli.js, src/lib/undo.js, src/lib/undo-log.js, src/lib/checkpoint.js, src/lib/done.js, src/lib/quick-task.js, src/lib/task-service.js, test/undo.test.js, README.md\n- Verification artifacts: README.md, test/undo.test.js\n- Proof artifacts: README.md, test/undo.test.js\n- Summary: Implemented undo logging and rollback for quick, run:add, done, and checkpoint; added undo tests and README docs.\n- Verification check: [passed] npm test\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-203\",\n  \"generatedAt\": \"2026-04-14T11:57:15.172Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Explicit verification now covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 16,\n    \"ambiguousScopeCount\": 1,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-203 Checkpoint\n\nGenerated at: 2026-04-14T11:57:15.172Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: undo command — roll back the most recent workflow operation\n- Priority: P2\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Explicit verification now covers the current scoped file set.\n- Scope hints: 16\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- src/cli.js\n- src/lib/checkpoint.js\n- src/lib/done.js\n- src/lib/quick-task.js\n- src/lib/task-service.js\n- src/lib/undo-log.js\n- src/lib/undo.js\n- test/undo.test.js\n\n### Explicit proof items\n\n- manual:verification.md#proof-1 | paths=src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/cli.js, test/undo.test.js, README.md | checks=targeted undo regression suite (result: pending) | artifacts=pending\n- run:run-1776167834671 | paths=src/cli.js, src/lib/undo.js, src/lib/undo-log.js, src/lib/checkpoint.js, src/lib/done.js, src/lib/quick-task.js, src/lib/task-service.js, test/undo.test.js, README.md | checks=[passed] npm test | artifacts=README.md, test/undo.test.js\n\n### Scope entries that need tightening\n\n- repo path: README.md (document undo) (task.md)\n\n## Risks\n\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: Implemented undo logging and rollback for quick, run:add, done, and checkpoint; added undo tests and README docs.\n- Timestamp: 2026-04-14T11:57:14.669Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
-        }
-      ]
-    }
-  },
-  {
-    "type": "run:add",
-    "taskId": "T-203",
-    "timestamp": "2026-04-14T18:32:35.599Z",
-    "files": [
-      ".agent-workflow/tasks/T-203/checkpoint.json",
-      ".agent-workflow/tasks/T-203/checkpoint.md",
-      ".agent-workflow/tasks/T-203/context.md",
-      ".agent-workflow/tasks/T-203/runs",
-      ".agent-workflow/tasks/T-203/runs/run-1776191555030.json",
-      ".agent-workflow/tasks/T-203/task.json",
-      ".agent-workflow/tasks/T-203/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-203/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-203\",\n  \"title\": \"undo command — roll back the most recent workflow operation\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P2\",\n  \"status\": \"done\",\n  \"createdAt\": \"2026-04-13T08:41:24.686Z\",\n  \"updatedAt\": \"2026-04-14T11:57:14.920Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-203 Context\n\n## Why now\n\nLite Mode (T-200) and `done` (T-201) make it fast to create tasks and record evidence. But speed also means more accidental records. Without undo, users must manually find and delete JSON files from `.agent-workflow/tasks/`. Undo is the safety net that makes the fast workflow trustworthy.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Currently there is no undo capability, so mistakes require manual workflow-file cleanup.\n- Run records are stored as individual JSON files in `tasks/T-XXX/runs/run-{timestamp}.json`.\n- Task directories can contain `task.json`, markdown docs, generated prompt/run artifacts, and a `runs/` subdirectory.\n- `recordRun` can also update `verification.md`, auto-advance `task.json`, and materialize missing Lite Mode files.\n- `buildCheckpoint` is called both directly and as a side effect of other commands, so explicit `checkpoint` logging must not duplicate nested checkpoint refreshes from `quick`, `run:add`, or `done`.\n- Undo metadata must stay repo-relative and portable; absolute machine paths are out of bounds.\n\n## Open questions\n\n- The task direction is now settled on a single `.agent-workflow/undo-log.json` file capped to the latest 20 entries.\n- `undo` stays non-interactive for this task; preview or multi-step undo can follow later if the product needs it.\n- Exact workflow-file restoration is safer than partial deletion because Lite Mode commands may materialize new docs as a side effect.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-200 and T-201, because those command flows must write undo log entries.\n- Workflow layer only: never touch git, never delete user code files.\n- No runtime dependencies.\n- Any deletion path must stay inside `.agent-workflow/tasks/`.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-203 Verification\n\n## Planned checks\n\n- automated: `npm test`\n- manual: confirm the CLI reports the last operation, restores workflow files, and refuses to delete a quick-created task that already has recorded runs\n\n## Proof links\n\n### Proof 1\n\n- Files: src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/cli.js, test/undo.test.js, README.md\n- Check: `npm test`\n- Result: passed (`29` files, `129` tests)\n- Artifact: .agent-workflow/tasks/T-203/runs/run-1776167834671.json\n\n## Blocking gaps\n\n- None.\n\n## Evidence 2026-04-14T11:57:14.669Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/cli.js, src/lib/undo.js, src/lib/undo-log.js, src/lib/checkpoint.js, src/lib/done.js, src/lib/quick-task.js, src/lib/task-service.js, test/undo.test.js, README.md\n- Verification artifacts: README.md, test/undo.test.js\n- Proof artifacts: README.md, test/undo.test.js\n- Summary: Implemented undo logging and rollback for quick, run:add, done, and checkpoint; added undo tests and README docs.\n- Verification check: [passed] npm test\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-203\",\n  \"generatedAt\": \"2026-04-14T11:58:46.411Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Explicit verification now covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 9,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-203 Checkpoint\n\nGenerated at: 2026-04-14T11:58:46.411Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: undo command — roll back the most recent workflow operation\n- Priority: P2\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Explicit verification now covers the current scoped file set.\n- Scope hints: 9\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- README.md\n- src/cli.js\n- src/lib/checkpoint.js\n- src/lib/done.js\n- src/lib/quick-task.js\n- src/lib/task-service.js\n- src/lib/undo-log.js\n- src/lib/undo.js\n- test/undo.test.js\n\n### Explicit proof items\n\n- manual:verification.md#proof-1 | paths=src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/cli.js, test/undo.test.js, README.md | checks=`npm test` (result: passed (`29` files, `129` tests)) | artifacts=.agent-workflow/tasks/T-203/runs/run-1776167834671.json\n- run:run-1776167834671 | paths=src/cli.js, src/lib/undo.js, src/lib/undo-log.js, src/lib/checkpoint.js, src/lib/done.js, src/lib/quick-task.js, src/lib/task-service.js, test/undo.test.js, README.md | checks=[passed] npm test | artifacts=README.md, test/undo.test.js\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Implemented undo logging and rollback for quick, run:add, done, and checkpoint; added undo tests and README docs.\n- Timestamp: 2026-04-14T11:57:14.669Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/runs/run-1776191555030.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-203/runs/run-1776191555030.json",
-      "runId": "run-1776191555030"
-    }
-  },
-  {
-    "type": "checkpoint",
-    "taskId": "T-203",
-    "timestamp": "2026-04-14T18:33:54.560Z",
-    "files": [
-      ".agent-workflow/tasks/T-203/checkpoint.json",
-      ".agent-workflow/tasks/T-203/checkpoint.md",
-      ".agent-workflow/tasks/T-203/context.md",
-      ".agent-workflow/tasks/T-203/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-203/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-203 Context\n\n## Why now\n\nLite Mode (T-200) and `done` (T-201) make it fast to create tasks and record evidence. But speed also means more accidental records. Without undo, users must manually find and delete JSON files from `.agent-workflow/tasks/`. Undo is the safety net that makes the fast workflow trustworthy.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Currently there is no undo capability, so mistakes require manual workflow-file cleanup.\n- Run records are stored as individual JSON files in `tasks/T-XXX/runs/run-{timestamp}.json`.\n- Task directories can contain `task.json`, markdown docs, generated prompt/run artifacts, and a `runs/` subdirectory.\n- `recordRun` can also update `verification.md`, auto-advance `task.json`, and materialize missing Lite Mode files.\n- `buildCheckpoint` is called both directly and as a side effect of other commands, so explicit `checkpoint` logging must not duplicate nested checkpoint refreshes from `quick`, `run:add`, or `done`.\n- Undo metadata must stay repo-relative and portable; absolute machine paths are out of bounds.\n\n## Open questions\n\n- The task direction is now settled on a single `.agent-workflow/undo-log.json` file capped to the latest 20 entries.\n- `undo` stays non-interactive for this task; preview or multi-step undo can follow later if the product needs it.\n- Exact workflow-file restoration is safer than partial deletion because Lite Mode commands may materialize new docs as a side effect.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-200 and T-201, because those command flows must write undo log entries.\n- Workflow layer only: never touch git, never delete user code files.\n- No runtime dependencies.\n- Any deletion path must stay inside `.agent-workflow/tasks/`.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-203 Verification\n\n## Planned checks\n\n- automated: `npm test`\n- manual: confirm the CLI reports the last operation, restores workflow files, and refuses to delete a quick-created task that already has recorded runs\n\n## Proof links\n\n### Proof 1\n\n- Files: src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/cli.js, test/undo.test.js, README.md\n- Check: `npm test`\n- Result: passed (`29` files, `129` tests)\n- Artifact: .agent-workflow/tasks/T-203/runs/run-1776167834671.json\n\n## Blocking gaps\n\n- None.\n\n## Evidence 2026-04-14T11:57:14.669Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/cli.js, src/lib/undo.js, src/lib/undo-log.js, src/lib/checkpoint.js, src/lib/done.js, src/lib/quick-task.js, src/lib/task-service.js, test/undo.test.js, README.md\n- Verification artifacts: README.md, test/undo.test.js\n- Proof artifacts: README.md, test/undo.test.js\n- Summary: Implemented undo logging and rollback for quick, run:add, done, and checkpoint; added undo tests and README docs.\n- Verification check: [passed] npm test\n\n## Evidence 2026-04-14T18:32:35.027Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/done.js, src/lib/task-service.js, src/lib/checkpoint.js, test/undo.test.js\n- Summary: Claude Code review passed: undo command with undo-log persistence, 4-site integration, path traversal guard, 7 acceptance criteria covered by tests, no-double-logging design correct\n- Verification check: [passed] undo after quick --lite removes task directory\n- Verification check: [passed] undo after run:add removes run and restores prior state\n- Verification check: [passed] undo after done restores status and checkpoint\n- Verification check: [passed] undo on empty log prints Nothing to undo\n- Verification check: [passed] refuses to delete quick task with existing runs\n- Verification check: [passed] log capped at 20 entries\n- Verification check: [passed] npm test passes (29 files, 129 tests)\n- Verification check: [passed] path traversal guard prevents escape from .agent-workflow/\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-203\",\n  \"generatedAt\": \"2026-04-14T18:32:36.049Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 2,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"2 run(s) recorded\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"No current workspace files match this task's declared scope.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 9,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-203/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-203 Checkpoint\n\nGenerated at: 2026-04-14T18:32:36.049Z\n\n## Completed\n\n- Prompt compiled\n- 2 run(s) recorded\n- Task context captured\n\n## Confirmed facts\n\n- Title: undo command — roll back the most recent workflow operation\n- Priority: P2\n- Status: done\n- Latest run status: passed\n- Total runs: 2\n\n## Verification gate\n\n- Status: ready\n- Summary: No current workspace files match this task's declared scope.\n- Scope hints: 9\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit proof items\n\n- manual:verification.md#proof-1 | paths=src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/cli.js, test/undo.test.js, README.md | checks=`npm test` (result: passed (`29` files, `129` tests)) | artifacts=.agent-workflow/tasks/T-203/runs/run-1776167834671.json\n- run:run-1776167834671 | paths=src/cli.js, src/lib/undo.js, src/lib/undo-log.js, src/lib/checkpoint.js, src/lib/done.js, src/lib/quick-task.js, src/lib/task-service.js, test/undo.test.js, README.md | checks=[passed] npm test | artifacts=README.md, test/undo.test.js\n- run:run-1776191555030 | paths=src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/done.js, src/lib/task-service.js, src/lib/checkpoint.js, test/undo.test.js | checks=[passed] undo after quick --lite removes task directory; [passed] undo after run:add removes run and restores prior state; [passed] undo after done restores status and checkpoint; [passed] undo on empty log prints Nothing to undo; [passed] refuses to delete quick task with existing runs; [passed] log capped at 20 entries; [passed] npm test passes (29 files, 129 tests); [passed] path traversal guard prevents escape from .agent-workflow/ | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Claude Code review passed: undo command with undo-log persistence, 4-site integration, path traversal guard, 7 acceptance criteria covered by tests, no-double-logging design correct\n- Timestamp: 2026-04-14T18:32:35.027Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
-        }
-      ]
-    }
-  },
-  {
     "type": "quick",
     "taskId": "T-300",
     "timestamp": "2026-04-15T06:34:19.362Z",
@@ -896,6 +698,204 @@
       ],
       "runFile": ".agent-workflow/tasks/T-303/runs/run-1776244574474.json",
       "runId": "run-1776244574474"
+    }
+  },
+  {
+    "type": "run:add",
+    "taskId": "T-302",
+    "timestamp": "2026-04-15T09:32:32.490Z",
+    "files": [
+      ".agent-workflow/tasks/T-302/checkpoint.json",
+      ".agent-workflow/tasks/T-302/checkpoint.md",
+      ".agent-workflow/tasks/T-302/context.md",
+      ".agent-workflow/tasks/T-302/runs",
+      ".agent-workflow/tasks/T-302/runs/run-1776245552305.json",
+      ".agent-workflow/tasks/T-302/task.json",
+      ".agent-workflow/tasks/T-302/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-302/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-302\",\n  \"title\": \"Bidirectional task updates — agents can update task status and append notes mid-execution\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P1\",\n  \"status\": \"done\",\n  \"createdAt\": \"2026-04-15T06:47:46.584Z\",\n  \"updatedAt\": \"2026-04-15T08:54:42.450Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-302 Context\n\n## Why now\n\nT-300 (MCP Server) gives agents read + create capabilities. But agents can't update tasks mid-flight — they must wait until `done` to record anything. For long-running tasks, intermediate progress notes and status changes are essential for observability and for handoffs between agents or sessions.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `updateTaskMeta()` in `task-service.js` already supports updating status, priority, title via PATCH\n- `PATCH /api/tasks/{taskId}` HTTP endpoint exists and works\n- context.md has free-form sections (Facts, Open questions) that could host notes\n- T-204 established the one-way status transition rule: never regress automatically\n- MCP tools return structured JSON results\n- The implementation appends notes under a dedicated `## Progress notes` section in `context.md` so managed recipe and constraints blocks stay isolated.\n- `workflow_update_task` now calls the shared `updateTaskMeta()` path directly and refreshes the checkpoint, matching other MCP tool behavior.\n- `appendTaskNote()` now updates `task.json.updatedAt`, materializes `context.md` for lite tasks, and returns the appended note metadata for MCP/HTTP callers.\n- Full verification passed on 2026-04-15: `npm test`, `npm run lint`, and `npm run smoke`.\n\n## Open questions\n\n- Resolved: notes live in `context.md` under `## Progress notes` to avoid extra task files and managed-block collisions.\n- Resolved: `workflow_update_task` calls `updateTaskMeta()` directly, while the existing PATCH endpoint remains the HTTP surface for task metadata updates.\n\n## Progress notes\n\n### 2026-04-15T08:55:00.000Z\n\nImplemented the MCP task-update and note-append flows, added the dedicated `/api/tasks/{taskId}/notes` endpoint, and finished focused plus repo-level verification.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-300 (MCP Server must exist for new tools to be registered)\n- Must not break existing PATCH /api/tasks/{taskId} behavior\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-302 Verification\n\n## Planned checks\n\n- automated: `npm test`\n- automated: `npm run lint`\n- automated: `npm run smoke`\n- manual: inspect `context.md` to confirm appended notes land under `## Progress notes` with ISO timestamps\n- manual: inspect MCP tool registration and server routes for `workflow_update_task`, `workflow_append_note`, and `POST /api/tasks/{taskId}/notes`\n\n## Proof links\n\n### Proof 1\n\n- Files: src/lib/mcp-tools.js, src/lib/task-documents.js, src/lib/task-service.js, src/mcp-server.js, src/server.js, test/mcp-tools.test.js, test/mcp-server.test.js, test/server-api.test.js, test/task-service.test.js, README.md\n- Check: `npm test`; `npm run lint`; `npm run smoke`; manual review of context note placement and MCP/HTTP wiring\n- Result: Passed on 2026-04-15. Full suite: 31 files, 145 tests passed. Lint passed. Smoke test passed.\n- Artifact: .agent-workflow/tasks/T-302/checkpoint.md\n\n## Blocking gaps\n\n- None.\n\n## Evidence 2026-04-15T08:54:42.143Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/mcp-tools.js, src/lib/task-documents.js, src/lib/task-service.js, src/mcp-server.js, src/server.js, test/mcp-tools.test.js, test/mcp-server.test.js, test/server-api.test.js, test/task-service.test.js, README.md\n- Verification artifacts: .agent-workflow/tasks/T-302/checkpoint.md\n- Proof artifacts: .agent-workflow/tasks/T-302/checkpoint.md\n- Summary: Implemented MCP task updates, timestamped progress notes, and the HTTP notes endpoint; added focused MCP/service/server tests and documented the new tools.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] focused MCP/service/server tests\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-302\",\n  \"generatedAt\": \"2026-04-15T08:54:42.753Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Explicit verification now covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 10,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-302 Checkpoint\n\nGenerated at: 2026-04-15T08:54:42.753Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Bidirectional task updates — agents can update task status and append notes mid-execution\n- Priority: P1\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Explicit verification now covers the current scoped file set.\n- Scope hints: 10\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- README.md\n- src/lib/mcp-tools.js\n- src/lib/task-documents.js\n- src/lib/task-service.js\n- src/mcp-server.js\n- src/server.js\n- test/mcp-server.test.js\n- test/mcp-tools.test.js\n- test/server-api.test.js\n- test/task-service.test.js\n\n### Explicit proof items\n\n- manual:verification.md#proof-1 | paths=src/lib/mcp-tools.js, src/lib/task-documents.js, src/lib/task-service.js, src/mcp-server.js, src/server.js, test/mcp-tools.test.js, test/mcp-server.test.js, test/server-api.test.js, test/task-service.test.js, README.md | checks=`npm test`; `npm run lint`; `npm run smoke`; manual review of context note placement and MCP/HTTP wiring (result: Passed on 2026-04-15. Full suite: 31 files, 145 tests passed. Lint passed. Smoke test passed.) | artifacts=.agent-workflow/tasks/T-302/checkpoint.md\n- run:run-1776243282144 | paths=src/lib/mcp-tools.js, src/lib/task-documents.js, src/lib/task-service.js, src/mcp-server.js, src/server.js, test/mcp-tools.test.js, test/mcp-server.test.js, test/server-api.test.js, test/task-service.test.js, README.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run smoke; [passed] focused MCP/service/server tests | artifacts=.agent-workflow/tasks/T-302/checkpoint.md\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Implemented MCP task updates, timestamped progress notes, and the HTTP notes endpoint; added focused MCP/service/server tests and documented the new tools.\n- Timestamp: 2026-04-15T08:54:42.143Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/runs/run-1776245552305.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-302/runs/run-1776245552305.json",
+      "runId": "run-1776245552305"
+    }
+  },
+  {
+    "type": "run:add",
+    "taskId": "T-303",
+    "timestamp": "2026-04-15T09:32:33.221Z",
+    "files": [
+      ".agent-workflow/tasks/T-303/checkpoint.json",
+      ".agent-workflow/tasks/T-303/checkpoint.md",
+      ".agent-workflow/tasks/T-303/context.md",
+      ".agent-workflow/tasks/T-303/runs",
+      ".agent-workflow/tasks/T-303/runs/run-1776245552794.json",
+      ".agent-workflow/tasks/T-303/task.json",
+      ".agent-workflow/tasks/T-303/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-303/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-303\",\n  \"title\": \"MCP configuration — CLI command to register MCP server in Claude Code and Cursor settings\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P2\",\n  \"status\": \"done\",\n  \"createdAt\": \"2026-04-15T06:47:56.354Z\",\n  \"updatedAt\": \"2026-04-15T09:16:14.803Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-303/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-303 Context\n\n## Why now\n\nT-300 builds the MCP server, but users still need to manually edit JSON config files to register it. This is the #1 onboarding friction point for MCP tools. A one-command installer eliminates it. Should ship shortly after T-300 to complete the \"zero-manual-config\" story.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Claude Code MCP config: `~/.claude/settings.json` → `mcpServers` object\n- Cursor MCP config: `.cursor/mcp.json` at project root or user home\n- MCP server entry format: `{\"command\": \"npx\", \"args\": [\"agent-workflow-mcp\"], \"env\": {}}`\n- The `bin` entry from T-300 provides `agent-workflow-mcp` as the command\n- `settings.json` may contain other unrelated settings — must preserve them\n\n## Open questions\n\n- Should auto-detect prefer Claude Code or Cursor when both are present? Leaning Claude Code since this project is built for it.\n- Should `mcp:install` also run `init` if `.agent-workflow/` doesn't exist? Leaning yes — reduces onboarding to one command.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-300 (MCP server must exist)\n- Must never corrupt existing config files — atomic write pattern\n- Must not add runtime dependencies\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n\n## Progress notes\n\n- 2026-04-15T09:24:00.000Z: Read the required project memory, roadmap, CLI, MCP docs, and existing tests. Confirmed the change should land as a focused install helper plus thin CLI wiring and docs updates.\n- 2026-04-15T17:13:00.000Z: Implemented `mcp:install` / `mcp:uninstall`, added merge/idempotence coverage, updated README and MCP setup docs, and verified with `npm test`, `npm run lint`, `npm run smoke`, and `npm run format:check`.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-303/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-303 Verification\n\n## Planned checks\n\n- automated:\n- manual:\n\n## Proof links\n\n### Proof 1\n\n- Files:\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n-\n\n## Evidence 2026-04-15T09:13:27.780Z\n\n- Agent: codex\n- Status: passed\n- Scoped files covered: src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, .agent-workflow/tasks/T-303/context.md\n- Summary: Added MCP install/uninstall commands for Claude Code and Cursor with docs and verification coverage.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] npm run format:check\n\n## Evidence 2026-04-15T09:16:14.472Z\n\n- Agent: codex\n- Status: passed\n- Scoped files covered: src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, .agent-workflow/tasks/T-303/context.md\n- Summary: Finalized MCP install/uninstall command polish and re-verified the completed change set.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] npm run format:check\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-303/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-303\",\n  \"generatedAt\": \"2026-04-15T09:16:15.097Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 2,\n  \"risks\": [\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"2 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Explicit verification now covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 10,\n    \"ambiguousScopeCount\": 1,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-303/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-303 Checkpoint\n\nGenerated at: 2026-04-15T09:16:15.097Z\n\n## Completed\n\n- Prompt compiled\n- 2 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: MCP configuration — CLI command to register MCP server in Claude Code and Cursor settings\n- Priority: P2\n- Status: done\n- Latest run status: passed\n- Total runs: 2\n\n## Verification gate\n\n- Status: covered\n- Summary: Explicit verification now covers the current scoped file set.\n- Scope hints: 10\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- docs/MCP_SETUP.md\n- src/cli.js\n- src/lib/mcp-install.js\n- test/mcp-install.test.js\n\n### Explicit proof items\n\n- run:run-1776244407782 | paths=src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, .agent-workflow/tasks/T-303/context.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run smoke; [passed] npm run format:check | artifacts=none\n- run:run-1776244574474 | paths=src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, .agent-workflow/tasks/T-303/context.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run smoke; [passed] npm run format:check | artifacts=none\n\n### Scope entries that need tightening\n\n- repo path: README.md (document the command) (task.md)\n\n## Risks\n\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: Finalized MCP install/uninstall command polish and re-verified the completed change set.\n- Timestamp: 2026-04-15T09:16:14.472Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-303/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-303/runs/run-1776245552794.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-303/runs/run-1776245552794.json",
+      "runId": "run-1776245552794"
+    }
+  },
+  {
+    "type": "checkpoint",
+    "taskId": "T-302",
+    "timestamp": "2026-04-15T09:33:48.799Z",
+    "files": [
+      ".agent-workflow/tasks/T-302/checkpoint.json",
+      ".agent-workflow/tasks/T-302/checkpoint.md",
+      ".agent-workflow/tasks/T-302/context.md",
+      ".agent-workflow/tasks/T-302/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-302/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-302 Context\n\n## Why now\n\nT-300 (MCP Server) gives agents read + create capabilities. But agents can't update tasks mid-flight — they must wait until `done` to record anything. For long-running tasks, intermediate progress notes and status changes are essential for observability and for handoffs between agents or sessions.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `updateTaskMeta()` in `task-service.js` already supports updating status, priority, title via PATCH\n- `PATCH /api/tasks/{taskId}` HTTP endpoint exists and works\n- context.md has free-form sections (Facts, Open questions) that could host notes\n- T-204 established the one-way status transition rule: never regress automatically\n- MCP tools return structured JSON results\n- The implementation appends notes under a dedicated `## Progress notes` section in `context.md` so managed recipe and constraints blocks stay isolated.\n- `workflow_update_task` now calls the shared `updateTaskMeta()` path directly and refreshes the checkpoint, matching other MCP tool behavior.\n- `appendTaskNote()` now updates `task.json.updatedAt`, materializes `context.md` for lite tasks, and returns the appended note metadata for MCP/HTTP callers.\n- Full verification passed on 2026-04-15: `npm test`, `npm run lint`, and `npm run smoke`.\n\n## Open questions\n\n- Resolved: notes live in `context.md` under `## Progress notes` to avoid extra task files and managed-block collisions.\n- Resolved: `workflow_update_task` calls `updateTaskMeta()` directly, while the existing PATCH endpoint remains the HTTP surface for task metadata updates.\n\n## Progress notes\n\n### 2026-04-15T08:55:00.000Z\n\nImplemented the MCP task-update and note-append flows, added the dedicated `/api/tasks/{taskId}/notes` endpoint, and finished focused plus repo-level verification.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-300 (MCP Server must exist for new tools to be registered)\n- Must not break existing PATCH /api/tasks/{taskId} behavior\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-302 Verification\n\n## Planned checks\n\n- automated: `npm test`\n- automated: `npm run lint`\n- automated: `npm run smoke`\n- manual: inspect `context.md` to confirm appended notes land under `## Progress notes` with ISO timestamps\n- manual: inspect MCP tool registration and server routes for `workflow_update_task`, `workflow_append_note`, and `POST /api/tasks/{taskId}/notes`\n\n## Proof links\n\n### Proof 1\n\n- Files: src/lib/mcp-tools.js, src/lib/task-documents.js, src/lib/task-service.js, src/mcp-server.js, src/server.js, test/mcp-tools.test.js, test/mcp-server.test.js, test/server-api.test.js, test/task-service.test.js, README.md\n- Check: `npm test`; `npm run lint`; `npm run smoke`; manual review of context note placement and MCP/HTTP wiring\n- Result: Passed on 2026-04-15. Full suite: 31 files, 145 tests passed. Lint passed. Smoke test passed.\n- Artifact: .agent-workflow/tasks/T-302/checkpoint.md\n\n## Blocking gaps\n\n- None.\n\n## Evidence 2026-04-15T08:54:42.143Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/mcp-tools.js, src/lib/task-documents.js, src/lib/task-service.js, src/mcp-server.js, src/server.js, test/mcp-tools.test.js, test/mcp-server.test.js, test/server-api.test.js, test/task-service.test.js, README.md\n- Verification artifacts: .agent-workflow/tasks/T-302/checkpoint.md\n- Proof artifacts: .agent-workflow/tasks/T-302/checkpoint.md\n- Summary: Implemented MCP task updates, timestamped progress notes, and the HTTP notes endpoint; added focused MCP/service/server tests and documented the new tools.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] focused MCP/service/server tests\n\n## Evidence 2026-04-15T09:32:32.304Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/mcp-tools.js, src/lib/task-service.js, src/lib/task-documents.js, src/server.js\n- Summary: Claude Code review passed: workflow_update_task and workflow_append_note MCP tools, POST /api/tasks/{taskId}/notes endpoint, status transition rule respected\n- Verification check: [passed] workflow_update_task updates priority/title/status\n- Verification check: [passed] workflow_append_note appends timestamped note to context.md\n- Verification check: [passed] Status transition rule: never regress done→in_progress\n- Verification check: [passed] npm test passes (32 files, 152 tests)\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-302\",\n  \"generatedAt\": \"2026-04-15T09:32:32.659Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 2,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"2 run(s) recorded\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"No current workspace files match this task's declared scope.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 10,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-302 Checkpoint\n\nGenerated at: 2026-04-15T09:32:32.659Z\n\n## Completed\n\n- Prompt compiled\n- 2 run(s) recorded\n- Task context captured\n\n## Confirmed facts\n\n- Title: Bidirectional task updates — agents can update task status and append notes mid-execution\n- Priority: P1\n- Status: done\n- Latest run status: passed\n- Total runs: 2\n\n## Verification gate\n\n- Status: ready\n- Summary: No current workspace files match this task's declared scope.\n- Scope hints: 10\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit proof items\n\n- manual:verification.md#proof-1 | paths=src/lib/mcp-tools.js, src/lib/task-documents.js, src/lib/task-service.js, src/mcp-server.js, src/server.js, test/mcp-tools.test.js, test/mcp-server.test.js, test/server-api.test.js, test/task-service.test.js, README.md | checks=`npm test`; `npm run lint`; `npm run smoke`; manual review of context note placement and MCP/HTTP wiring (result: Passed on 2026-04-15. Full suite: 31 files, 145 tests passed. Lint passed. Smoke test passed.) | artifacts=.agent-workflow/tasks/T-302/checkpoint.md\n- run:run-1776243282144 | paths=src/lib/mcp-tools.js, src/lib/task-documents.js, src/lib/task-service.js, src/mcp-server.js, src/server.js, test/mcp-tools.test.js, test/mcp-server.test.js, test/server-api.test.js, test/task-service.test.js, README.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run smoke; [passed] focused MCP/service/server tests | artifacts=.agent-workflow/tasks/T-302/checkpoint.md\n- run:run-1776245552305 | paths=src/lib/mcp-tools.js, src/lib/task-service.js, src/lib/task-documents.js, src/server.js | checks=[passed] workflow_update_task updates priority/title/status; [passed] workflow_append_note appends timestamped note to context.md; [passed] Status transition rule: never regress done→in_progress; [passed] npm test passes (32 files, 152 tests) | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Claude Code review passed: workflow_update_task and workflow_append_note MCP tools, POST /api/tasks/{taskId}/notes endpoint, status transition rule respected\n- Timestamp: 2026-04-15T09:32:32.304Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
+        }
+      ]
+    }
+  },
+  {
+    "type": "checkpoint",
+    "taskId": "T-303",
+    "timestamp": "2026-04-15T09:33:49.119Z",
+    "files": [
+      ".agent-workflow/tasks/T-303/checkpoint.json",
+      ".agent-workflow/tasks/T-303/checkpoint.md",
+      ".agent-workflow/tasks/T-303/context.md",
+      ".agent-workflow/tasks/T-303/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-303/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-303 Context\n\n## Why now\n\nT-300 builds the MCP server, but users still need to manually edit JSON config files to register it. This is the #1 onboarding friction point for MCP tools. A one-command installer eliminates it. Should ship shortly after T-300 to complete the \"zero-manual-config\" story.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Claude Code MCP config: `~/.claude/settings.json` → `mcpServers` object\n- Cursor MCP config: `.cursor/mcp.json` at project root or user home\n- MCP server entry format: `{\"command\": \"npx\", \"args\": [\"agent-workflow-mcp\"], \"env\": {}}`\n- The `bin` entry from T-300 provides `agent-workflow-mcp` as the command\n- `settings.json` may contain other unrelated settings — must preserve them\n\n## Open questions\n\n- Should auto-detect prefer Claude Code or Cursor when both are present? Leaning Claude Code since this project is built for it.\n- Should `mcp:install` also run `init` if `.agent-workflow/` doesn't exist? Leaning yes — reduces onboarding to one command.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-300 (MCP server must exist)\n- Must never corrupt existing config files — atomic write pattern\n- Must not add runtime dependencies\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n\n## Progress notes\n\n- 2026-04-15T09:24:00.000Z: Read the required project memory, roadmap, CLI, MCP docs, and existing tests. Confirmed the change should land as a focused install helper plus thin CLI wiring and docs updates.\n- 2026-04-15T17:13:00.000Z: Implemented `mcp:install` / `mcp:uninstall`, added merge/idempotence coverage, updated README and MCP setup docs, and verified with `npm test`, `npm run lint`, `npm run smoke`, and `npm run format:check`.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-303/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-303 Verification\n\n## Planned checks\n\n- automated:\n- manual:\n\n## Proof links\n\n### Proof 1\n\n- Files:\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n-\n\n## Evidence 2026-04-15T09:13:27.780Z\n\n- Agent: codex\n- Status: passed\n- Scoped files covered: src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, .agent-workflow/tasks/T-303/context.md\n- Summary: Added MCP install/uninstall commands for Claude Code and Cursor with docs and verification coverage.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] npm run format:check\n\n## Evidence 2026-04-15T09:16:14.472Z\n\n- Agent: codex\n- Status: passed\n- Scoped files covered: src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, .agent-workflow/tasks/T-303/context.md\n- Summary: Finalized MCP install/uninstall command polish and re-verified the completed change set.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] npm run format:check\n\n## Evidence 2026-04-15T09:32:32.793Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, docs/MCP_SETUP.md\n- Summary: Claude Code review passed: mcp:install/uninstall for Claude Code and Cursor, auto-detect, atomic writes, idempotent, conflict handling\n- Verification check: [passed] mcp:install --client claude writes to ~/.claude/settings.json\n- Verification check: [passed] mcp:install --client cursor writes to .cursor/mcp.json\n- Verification check: [passed] Idempotent: second install returns unchanged\n- Verification check: [passed] Uninstall removes entry cleanly\n- Verification check: [passed] Atomic write via temp file + rename\n- Verification check: [passed] npm test passes (32 files, 152 tests)\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-303/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-303\",\n  \"generatedAt\": \"2026-04-15T09:32:33.386Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 3,\n  \"risks\": [\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"3 run(s) recorded\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"No current workspace files match this task's declared scope.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 10,\n    \"ambiguousScopeCount\": 1,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-303/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-303 Checkpoint\n\nGenerated at: 2026-04-15T09:32:33.386Z\n\n## Completed\n\n- Prompt compiled\n- 3 run(s) recorded\n- Task context captured\n\n## Confirmed facts\n\n- Title: MCP configuration — CLI command to register MCP server in Claude Code and Cursor settings\n- Priority: P2\n- Status: done\n- Latest run status: passed\n- Total runs: 3\n\n## Verification gate\n\n- Status: ready\n- Summary: No current workspace files match this task's declared scope.\n- Scope hints: 10\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit proof items\n\n- run:run-1776244407782 | paths=src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, .agent-workflow/tasks/T-303/context.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run smoke; [passed] npm run format:check | artifacts=none\n- run:run-1776244574474 | paths=src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, .agent-workflow/tasks/T-303/context.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run smoke; [passed] npm run format:check | artifacts=none\n- run:run-1776245552794 | paths=src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, docs/MCP_SETUP.md | checks=[passed] mcp:install --client claude writes to ~/.claude/settings.json; [passed] mcp:install --client cursor writes to .cursor/mcp.json; [passed] Idempotent: second install returns unchanged; [passed] Uninstall removes entry cleanly; [passed] Atomic write via temp file + rename; [passed] npm test passes (32 files, 152 tests) | artifacts=none\n\n### Scope entries that need tightening\n\n- repo path: README.md (document the command) (task.md)\n\n## Risks\n\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: Claude Code review passed: mcp:install/uninstall for Claude Code and Cursor, auto-detect, atomic writes, idempotent, conflict handling\n- Timestamp: 2026-04-15T09:32:32.793Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        }
+      ]
     }
   }
 ]

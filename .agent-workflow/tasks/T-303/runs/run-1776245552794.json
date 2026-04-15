@@ -1,0 +1,68 @@
+{
+  "id": "run-1776245552794",
+  "taskId": "T-303",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: mcp:install/uninstall for Claude Code and Cursor, auto-detect, atomic writes, idempotent, conflict handling",
+  "createdAt": "2026-04-15T09:32:32.793Z",
+  "scopeProofPaths": [
+    "src/lib/mcp-install.js",
+    "src/cli.js",
+    "test/mcp-install.test.js",
+    "docs/MCP_SETUP.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "mcp:install --client claude writes to ~/.claude/settings.json",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "mcp:install --client cursor writes to .cursor/mcp.json",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "Idempotent: second install returns unchanged",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "Uninstall removes entry cleanly",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "Atomic write via temp file + rename",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (32 files, 152 tests)",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/lib/mcp-install.js",
+      "exists": true,
+      "contentFingerprint": "sha1:d60d3b64e2386ccc24ff6babe77bce0aee3a16aa"
+    },
+    {
+      "path": "src/cli.js",
+      "exists": true,
+      "contentFingerprint": "sha1:febd7e9f7caa9d379f845ed4d6a0b350f564235b"
+    },
+    {
+      "path": "test/mcp-install.test.js",
+      "exists": true,
+      "contentFingerprint": "sha1:c7f602c841ca29ef38346095cad44d19285d2c55"
+    },
+    {
+      "path": "docs/MCP_SETUP.md",
+      "exists": true,
+      "contentFingerprint": "sha1:81a94b51e19c8ceb8b09148cecf7f00dbcfcc89b"
+    }
+  ]
+}

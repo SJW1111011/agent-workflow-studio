@@ -39,3 +39,16 @@
 - Verification check: [passed] npm run lint
 - Verification check: [passed] npm run smoke
 - Verification check: [passed] npm run format:check
+
+## Evidence 2026-04-15T09:32:32.793Z
+
+- Agent: manual
+- Status: passed
+- Scoped files covered: src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, docs/MCP_SETUP.md
+- Summary: Claude Code review passed: mcp:install/uninstall for Claude Code and Cursor, auto-detect, atomic writes, idempotent, conflict handling
+- Verification check: [passed] mcp:install --client claude writes to ~/.claude/settings.json
+- Verification check: [passed] mcp:install --client cursor writes to .cursor/mcp.json
+- Verification check: [passed] Idempotent: second install returns unchanged
+- Verification check: [passed] Uninstall removes entry cleanly
+- Verification check: [passed] Atomic write via temp file + rename
+- Verification check: [passed] npm test passes (32 files, 152 tests)

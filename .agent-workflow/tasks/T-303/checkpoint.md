@@ -1,13 +1,12 @@
 # T-303 Checkpoint
 
-Generated at: 2026-04-15T09:16:15.097Z
+Generated at: 2026-04-15T09:33:49.112Z
 
 ## Completed
 
 - Prompt compiled
-- 2 run(s) recorded
+- 3 run(s) recorded
 - Task context captured
-- Scoped verification evidence looks current
 
 ## Confirmed facts
 
@@ -15,12 +14,12 @@ Generated at: 2026-04-15T09:16:15.097Z
 - Priority: P2
 - Status: done
 - Latest run status: passed
-- Total runs: 2
+- Total runs: 3
 
 ## Verification gate
 
-- Status: covered
-- Summary: Explicit verification now covers the current scoped file set.
+- Status: ready
+- Summary: No current workspace files match this task's declared scope.
 - Scope hints: 10
 - Ambiguous scope entries: 1
 - Scoped files awaiting proof: 0
@@ -31,15 +30,13 @@ Generated at: 2026-04-15T09:16:15.097Z
 
 ### Scoped files already linked to proof
 
-- docs/MCP_SETUP.md
-- src/cli.js
-- src/lib/mcp-install.js
-- test/mcp-install.test.js
+- None
 
 ### Explicit proof items
 
 - run:run-1776244407782 | paths=src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, .agent-workflow/tasks/T-303/context.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run smoke; [passed] npm run format:check | artifacts=none
 - run:run-1776244574474 | paths=src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, test/cli.test.js, README.md, docs/MCP_SETUP.md, .agent-workflow/tasks/T-303/context.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run smoke; [passed] npm run format:check | artifacts=none
+- run:run-1776245552794 | paths=src/lib/mcp-install.js, src/cli.js, test/mcp-install.test.js, docs/MCP_SETUP.md | checks=[passed] mcp:install --client claude writes to ~/.claude/settings.json; [passed] mcp:install --client cursor writes to .cursor/mcp.json; [passed] Idempotent: second install returns unchanged; [passed] Uninstall removes entry cleanly; [passed] Atomic write via temp file + rename; [passed] npm test passes (32 files, 152 tests) | artifacts=none
 
 ### Scope entries that need tightening
 
@@ -51,8 +48,8 @@ Generated at: 2026-04-15T09:16:15.097Z
 
 ## Latest evidence
 
-- Summary: Finalized MCP install/uninstall command polish and re-verified the completed change set.
-- Timestamp: 2026-04-15T09:16:14.472Z
+- Summary: Claude Code review passed: mcp:install/uninstall for Claude Code and Cursor, auto-detect, atomic writes, idempotent, conflict handling
+- Timestamp: 2026-04-15T09:32:32.793Z
 
 ## Resume instructions
 

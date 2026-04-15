@@ -33,3 +33,14 @@
 - Verification check: [passed] npm run lint
 - Verification check: [passed] npm run smoke
 - Verification check: [passed] focused MCP/service/server tests
+
+## Evidence 2026-04-15T09:32:32.304Z
+
+- Agent: manual
+- Status: passed
+- Scoped files covered: src/lib/mcp-tools.js, src/lib/task-service.js, src/lib/task-documents.js, src/server.js
+- Summary: Claude Code review passed: workflow_update_task and workflow_append_note MCP tools, POST /api/tasks/{taskId}/notes endpoint, status transition rule respected
+- Verification check: [passed] workflow_update_task updates priority/title/status
+- Verification check: [passed] workflow_append_note appends timestamped note to context.md
+- Verification check: [passed] Status transition rule: never regress done→in_progress
+- Verification check: [passed] npm test passes (32 files, 152 tests)

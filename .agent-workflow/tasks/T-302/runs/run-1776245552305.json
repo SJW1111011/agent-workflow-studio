@@ -1,0 +1,58 @@
+{
+  "id": "run-1776245552305",
+  "taskId": "T-302",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: workflow_update_task and workflow_append_note MCP tools, POST /api/tasks/{taskId}/notes endpoint, status transition rule respected",
+  "createdAt": "2026-04-15T09:32:32.304Z",
+  "scopeProofPaths": [
+    "src/lib/mcp-tools.js",
+    "src/lib/task-service.js",
+    "src/lib/task-documents.js",
+    "src/server.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "workflow_update_task updates priority/title/status",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "workflow_append_note appends timestamped note to context.md",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "Status transition rule: never regress done→in_progress",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (32 files, 152 tests)",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/lib/mcp-tools.js",
+      "exists": true,
+      "contentFingerprint": "sha1:c54075e003f5a7d569465a3b12a3f390e4bda4ed"
+    },
+    {
+      "path": "src/lib/task-service.js",
+      "exists": true,
+      "contentFingerprint": "sha1:7ae4468deb5603c5f6e5963931647cafa53708d0"
+    },
+    {
+      "path": "src/lib/task-documents.js",
+      "exists": true,
+      "contentFingerprint": "sha1:d84bbeddedcccefb0d718518c205e2aca6a3e1f2"
+    },
+    {
+      "path": "src/server.js",
+      "exists": true,
+      "contentFingerprint": "sha1:1069f9ae0310b206919b9ab1b22bf6d6a08be521"
+    }
+  ]
+}
