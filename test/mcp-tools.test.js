@@ -78,6 +78,49 @@ const tests = [
     },
   },
   {
+    name: "workflow_update_task updates metadata and refreshes checkpoint state",
+    async run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("mcp-tool-update-task");
+
+      const result = await executeMcpTool(workspaceRoot, "workflow_update_task", {
+        taskId,
+        priority: "P0",
+        status: "blocked",
+        title: "Updated through MCP",
+      });
+
+      assert.equal(result.ok, true);
+      assert.equal(result.tool, "workflow_update_task");
+      assert.equal(result.task.id, taskId);
+      assert.equal(result.task.title, "Updated through MCP");
+      assert.equal(result.task.priority, "P0");
+      assert.equal(result.task.status, "blocked");
+      assert.equal(result.checkpointPath, `.agent-workflow/tasks/${taskId}/checkpoint.md`);
+      assert.equal(readJsonFile(files.meta).status, "blocked");
+      assert.match(readTextFile(files.checkpoint), /- Status: blocked/);
+    },
+  },
+  {
+    name: "workflow_append_note appends a timestamped progress note and refreshes checkpoint state",
+    async run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("mcp-tool-append-note");
+
+      const result = await executeMcpTool(workspaceRoot, "workflow_append_note", {
+        taskId,
+        note: "Found a race condition in auth.",
+      });
+
+      assert.equal(result.ok, true);
+      assert.equal(result.tool, "workflow_append_note");
+      assert.equal(result.taskId, taskId);
+      assert.equal(result.contextPath, `.agent-workflow/tasks/${taskId}/context.md`);
+      assert.match(result.timestamp, /^\d{4}-\d{2}-\d{2}T/);
+      assert.match(readTextFile(files.context), /## Progress notes/);
+      assert.match(readTextFile(files.context), /Found a race condition in auth\./);
+      assert.ok(fs.existsSync(path.join(workspaceRoot, result.checkpointPath)));
+    },
+  },
+  {
     name: "workflow_task_list returns task status, priority, run counts, and latest run details",
     async run() {
       const { workspaceRoot, taskId } = createTaskWorkspace("mcp-tool-task-list");

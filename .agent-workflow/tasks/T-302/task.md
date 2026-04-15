@@ -14,17 +14,19 @@ Enable agents to update task metadata and append progress notes during execution
 ## Scope
 
 - In scope:
-  - repo path: src/lib/mcp-tools.js (add `workflow_update_task` and `workflow_append_note` tools)
-  - repo path: src/mcp-server.js (register new tools)
-  - repo path: src/lib/task-service.js (add `appendTaskNote` function)
-  - repo path: src/lib/task-documents.js (append note to context.md or a new notes section)
-  - repo path: src/server.js (add `POST /api/tasks/{taskId}/notes` endpoint)
-  - repo path: test/mcp-tools.test.js (test new tools)
-  - repo path: test/task-service.test.js (test appendTaskNote)
-  - repo path: README.md (document new MCP tools)
+  - repo path: src/lib/mcp-tools.js
+  - repo path: src/mcp-server.js
+  - repo path: src/lib/task-service.js
+  - repo path: src/lib/task-documents.js
+  - repo path: src/server.js
+  - repo path: test/mcp-tools.test.js
+  - repo path: test/mcp-server.test.js
+  - repo path: test/server-api.test.js
+  - repo path: test/task-service.test.js
+  - repo path: README.md
 - Out of scope:
-  - repo path: dashboard/ (UI for notes display deferred to Phase 4)
-  - repo path: src/lib/run-executor.js (execution flow unchanged)
+  - repo path: dashboard/
+  - repo path: src/lib/run-executor.js
 
 ## Required docs
 

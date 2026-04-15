@@ -21,7 +21,7 @@ function createMcpServer(workspaceRoot) {
         },
       },
       instructions:
-        "Use the workflow_* tools to create tasks, record evidence, refresh checkpoints, inspect workspace state, and undo the latest workflow-layer operation.",
+        "Use the workflow_* tools to create tasks, update task metadata, append progress notes, record evidence, refresh checkpoints, inspect workspace state, and undo the latest workflow-layer operation.",
     }
   );
 

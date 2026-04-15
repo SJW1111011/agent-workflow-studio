@@ -12,7 +12,14 @@ const { quickCreateTask } = require("./lib/quick-task");
 const { listRecipes } = require("./lib/recipes");
 const { validateWorkspace } = require("./lib/schema-validator");
 const { refreshManualProofAnchors, saveTaskDocument } = require("./lib/task-documents");
-const { createTask, getRunLog, getTaskDetail, recordRun, updateTaskMeta } = require("./lib/task-service");
+const {
+  appendTaskNote,
+  createTask,
+  getRunLog,
+  getTaskDetail,
+  recordRun,
+  updateTaskMeta,
+} = require("./lib/task-service");
 const { resolveWorkspaceRoot } = require("./lib/workspace");
 
 const MIME_TYPES = {
@@ -143,6 +150,23 @@ function startDashboardServer(workspaceRoot, options = {}) {
           const updated = updateTaskMeta(workspaceRoot, taskId, body);
           buildCheckpoint(workspaceRoot, taskId);
           return sendJson(response, 200, updated);
+        }
+
+        const taskNotesRoute = parseTaskNotesRoute(requestUrl.pathname);
+        if (taskNotesRoute && request.method === "POST") {
+          const body = await readJsonBody(request);
+          if (!isNonEmptyString(body.note)) {
+            return sendJson(response, 400, { error: "note is required." });
+          }
+
+          const appendedNote = appendTaskNote(workspaceRoot, taskNotesRoute.taskId, body.note);
+          const checkpoint = buildCheckpoint(workspaceRoot, taskNotesRoute.taskId);
+
+          return sendJson(response, 201, {
+            note: appendedNote,
+            checkpoint,
+            task: buildTaskResponse(workspaceRoot, taskNotesRoute.taskId, executionBridge),
+          });
         }
 
         const documentRoute = parseTaskDocumentRoute(requestUrl.pathname);
@@ -562,6 +586,17 @@ function parseTaskDocumentRoute(pathname) {
   return {
     taskId: decodeURIComponent(matched[1]),
     documentName: decodeURIComponent(matched[2]),
+  };
+}
+
+function parseTaskNotesRoute(pathname) {
+  const matched = pathname.match(/^\/api\/tasks\/([^/]+)\/notes$/);
+  if (!matched) {
+    return null;
+  }
+
+  return {
+    taskId: decodeURIComponent(matched[1]),
   };
 }
 

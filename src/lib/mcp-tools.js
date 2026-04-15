@@ -6,11 +6,13 @@ const { badRequest } = require("./http-errors");
 const { buildOverview } = require("./overview");
 const { formatQuickTaskSummary, quickCreateTask } = require("./quick-task");
 const { validateWorkspace } = require("./schema-validator");
-const { listRuns, listTasks, recordRun } = require("./task-service");
+const { appendTaskNote, listRuns, listTasks, recordRun, updateTaskMeta } = require("./task-service");
 const { formatUndoSummary, undoLastOperation } = require("./undo");
 
 const RUN_STATUSES = new Set(["passed", "failed", "draft"]);
 const QUICK_MODES = new Set(["full", "lite"]);
+const TASK_PRIORITIES = Object.freeze(["P0", "P1", "P2", "P3"]);
+const TASK_STATUSES = Object.freeze(["todo", "in_progress", "blocked", "done"]);
 
 const TOOL_DEFINITIONS = Object.freeze([
   {
@@ -60,6 +62,54 @@ const TOOL_DEFINITIONS = Object.freeze([
     inputSchema: buildManualRunInputSchema({
       includeComplete: true,
     }),
+  },
+  {
+    name: "workflow_update_task",
+    description: "Update a task title, priority, or status mid-execution and refresh its checkpoint.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        taskId: {
+          type: "string",
+          description: "Task id such as T-001.",
+        },
+        title: {
+          type: "string",
+          description: "Optional task title update.",
+        },
+        priority: {
+          type: "string",
+          enum: TASK_PRIORITIES,
+          description: "Optional task priority update.",
+        },
+        status: {
+          type: "string",
+          enum: TASK_STATUSES,
+          description: "Optional task status update.",
+        },
+      },
+      required: ["taskId"],
+    },
+  },
+  {
+    name: "workflow_append_note",
+    description: "Append a timestamped progress note to a task context and refresh its checkpoint.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        taskId: {
+          type: "string",
+          description: "Task id such as T-001.",
+        },
+        note: {
+          type: "string",
+          description: "Progress note text to append.",
+        },
+      },
+      required: ["taskId", "note"],
+    },
   },
   {
     name: "workflow_task_list",
@@ -121,6 +171,10 @@ function createMcpToolRuntime(workspaceRoot) {
           return runQuickTool(workspaceRoot, args);
         case "workflow_done":
           return runDoneTool(workspaceRoot, args);
+        case "workflow_update_task":
+          return runUpdateTaskTool(workspaceRoot, args);
+        case "workflow_append_note":
+          return runAppendNoteTool(workspaceRoot, args);
         case "workflow_task_list":
           return runTaskListTool(workspaceRoot, args);
         case "workflow_run_add":
@@ -259,6 +313,49 @@ function runDoneTool(workspaceRoot, args) {
     checkpoint: result.checkpoint,
     checkpointPath: `.agent-workflow/tasks/${taskId}/checkpoint.md`,
     task: result.task || null,
+  };
+}
+
+function runUpdateTaskTool(workspaceRoot, args) {
+  assertKnownKeys(args, ["priority", "status", "taskId", "title"], "workflow_update_task");
+
+  const taskId = requireNonEmptyString(args, "taskId", "workflow_update_task");
+  const task = updateTaskMeta(workspaceRoot, taskId, {
+    title: optionalTrimmedString(args.title) || undefined,
+    priority: optionalTrimmedString(args.priority) || undefined,
+    status: optionalTrimmedString(args.status) || undefined,
+  });
+  const checkpoint = buildCheckpoint(workspaceRoot, taskId);
+
+  return {
+    ok: true,
+    tool: "workflow_update_task",
+    workspaceRoot,
+    taskId,
+    task,
+    checkpoint,
+    checkpointPath: `.agent-workflow/tasks/${taskId}/checkpoint.md`,
+  };
+}
+
+function runAppendNoteTool(workspaceRoot, args) {
+  assertKnownKeys(args, ["note", "taskId"], "workflow_append_note");
+
+  const taskId = requireNonEmptyString(args, "taskId", "workflow_append_note");
+  const note = requireNonEmptyString(args, "note", "workflow_append_note");
+  const appended = appendTaskNote(workspaceRoot, taskId, note);
+  const checkpoint = buildCheckpoint(workspaceRoot, taskId);
+
+  return {
+    ok: true,
+    tool: "workflow_append_note",
+    workspaceRoot,
+    taskId,
+    note: appended.note,
+    timestamp: appended.timestamp,
+    contextPath: appended.contextPath,
+    checkpoint,
+    checkpointPath: `.agent-workflow/tasks/${taskId}/checkpoint.md`,
   };
 }
 

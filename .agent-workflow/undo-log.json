@@ -717,5 +717,65 @@
         }
       ]
     }
+  },
+  {
+    "type": "done",
+    "taskId": "T-302",
+    "timestamp": "2026-04-15T08:54:42.773Z",
+    "files": [
+      ".agent-workflow/tasks/T-302/checkpoint.json",
+      ".agent-workflow/tasks/T-302/checkpoint.md",
+      ".agent-workflow/tasks/T-302/context.md",
+      ".agent-workflow/tasks/T-302/runs",
+      ".agent-workflow/tasks/T-302/runs/run-1776243282144.json",
+      ".agent-workflow/tasks/T-302/task.json",
+      ".agent-workflow/tasks/T-302/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-302/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-302\",\n  \"title\": \"Bidirectional task updates — agents can update task status and append notes mid-execution\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P1\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-15T06:47:46.584Z\",\n  \"updatedAt\": \"2026-04-15T06:47:46.584Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-302 Context\n\n## Why now\n\nT-300 (MCP Server) gives agents read + create capabilities. But agents can't update tasks mid-flight — they must wait until `done` to record anything. For long-running tasks, intermediate progress notes and status changes are essential for observability and for handoffs between agents or sessions.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `updateTaskMeta()` in `task-service.js` already supports updating status, priority, title via PATCH\n- `PATCH /api/tasks/{taskId}` HTTP endpoint exists and works\n- context.md has free-form sections (Facts, Open questions) that could host notes\n- T-204 established the one-way status transition rule: never regress automatically\n- MCP tools return structured JSON results\n- The implementation appends notes under a dedicated `## Progress notes` section in `context.md` so managed recipe and constraints blocks stay isolated.\n- `workflow_update_task` now calls the shared `updateTaskMeta()` path directly and refreshes the checkpoint, matching other MCP tool behavior.\n- `appendTaskNote()` now updates `task.json.updatedAt`, materializes `context.md` for lite tasks, and returns the appended note metadata for MCP/HTTP callers.\n- Full verification passed on 2026-04-15: `npm test`, `npm run lint`, and `npm run smoke`.\n\n## Open questions\n\n- Resolved: notes live in `context.md` under `## Progress notes` to avoid extra task files and managed-block collisions.\n- Resolved: `workflow_update_task` calls `updateTaskMeta()` directly, while the existing PATCH endpoint remains the HTTP surface for task metadata updates.\n\n## Progress notes\n\n### 2026-04-15T08:55:00.000Z\n\nImplemented the MCP task-update and note-append flows, added the dedicated `/api/tasks/{taskId}/notes` endpoint, and finished focused plus repo-level verification.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-300 (MCP Server must exist for new tools to be registered)\n- Must not break existing PATCH /api/tasks/{taskId} behavior\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-302 Verification\n\n## Planned checks\n\n- automated: `npm test`\n- automated: `npm run lint`\n- automated: `npm run smoke`\n- manual: inspect `context.md` to confirm appended notes land under `## Progress notes` with ISO timestamps\n- manual: inspect MCP tool registration and server routes for `workflow_update_task`, `workflow_append_note`, and `POST /api/tasks/{taskId}/notes`\n\n## Proof links\n\n### Proof 1\n\n- Files: src/lib/mcp-tools.js, src/lib/task-documents.js, src/lib/task-service.js, src/mcp-server.js, src/server.js, test/mcp-tools.test.js, test/mcp-server.test.js, test/server-api.test.js, test/task-service.test.js, README.md\n- Check: `npm test`; `npm run lint`; `npm run smoke`; manual review of context note placement and MCP/HTTP wiring\n- Result: Passed on 2026-04-15. Full suite: 31 files, 145 tests passed. Lint passed. Smoke test passed.\n- Artifact: .agent-workflow/tasks/T-302/checkpoint.md\n\n## Blocking gaps\n\n- None.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-302\",\n  \"generatedAt\": \"2026-04-15T06:47:46.765Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add explicit repo-relative paths in the task scope to enable stronger verification gates.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-302 Checkpoint\n\nGenerated at: 2026-04-15T06:47:46.765Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: Bidirectional task updates — agents can update task status and append notes mid-execution\n- Priority: P1\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add explicit repo-relative paths in the task scope to enable stronger verification gates.\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit proof items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-302/runs/run-1776243282144.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-302/runs/run-1776243282144.json",
+      "runId": "run-1776243282144"
+    }
   }
 ]

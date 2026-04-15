@@ -422,6 +422,54 @@ const tests = [
     },
   },
   {
+    name: "server api appends task notes and rejects done to in_progress regressions",
+    async run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("server-api-task-notes");
+      const server = await startServer(workspaceRoot);
+
+      try {
+        const appended = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}/notes`, {
+          method: "POST",
+          body: {
+            note: "Found a race condition in auth.",
+          },
+        });
+        assert.equal(appended.statusCode, 201);
+        assert.equal(appended.json.note.taskId, taskId);
+        assert.match(appended.json.note.contextText, /## Progress notes/);
+        assert.match(appended.json.note.contextText, /Found a race condition in auth\./);
+        assert.equal(appended.json.task.meta.id, taskId);
+
+        const missingNote = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}/notes`, {
+          method: "POST",
+          body: {},
+        });
+        assert.equal(missingNote.statusCode, 400);
+        assert.equal(missingNote.json.error, "note is required.");
+
+        const done = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}`, {
+          method: "PATCH",
+          body: {
+            status: "done",
+          },
+        });
+        assert.equal(done.statusCode, 200);
+
+        const regressed = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}`, {
+          method: "PATCH",
+          body: {
+            status: "in_progress",
+          },
+        });
+        assert.equal(regressed.statusCode, 409);
+        assert.equal(regressed.json.code, "task_status_regression");
+        assert.match(regressed.json.error, /cannot regress to in_progress/);
+      } finally {
+        await server.stop();
+      }
+    },
+  },
+  {
     name: "server api returns 400 for invalid json, oversized bodies, invalid document payloads, and unsupported editable docs",
     async run() {
       const { workspaceRoot } = createTaskWorkspace("server-api-bad-request");

@@ -108,12 +108,16 @@ It exposes these MCP tools:
 
 - `workflow_quick`
 - `workflow_done`
+- `workflow_update_task`
+- `workflow_append_note`
 - `workflow_task_list`
 - `workflow_run_add`
 - `workflow_checkpoint`
 - `workflow_undo`
 - `workflow_validate`
 - `workflow_overview`
+
+That lets an MCP-connected agent update task status or priority mid-execution and append timestamped progress notes to `context.md`, instead of waiting until the final `done` step to leave durable state behind.
 
 Claude Code example:
 

@@ -34,6 +34,7 @@ const tests = [
         const listedTools = await server.request("tools/list", {});
         const toolNames = listedTools.tools.map((tool) => tool.name).sort();
         assert.deepEqual(toolNames, [
+          "workflow_append_note",
           "workflow_checkpoint",
           "workflow_done",
           "workflow_overview",
@@ -41,6 +42,7 @@ const tests = [
           "workflow_run_add",
           "workflow_task_list",
           "workflow_undo",
+          "workflow_update_task",
           "workflow_validate",
         ]);
 
@@ -58,6 +60,19 @@ const tests = [
         assert.equal(quickPayload.ok, true);
         assert.equal(quickPayload.taskId, "T-002");
         assert.equal(quickPayload.mode, "lite");
+
+        const note = await server.request("tools/call", {
+          name: "workflow_append_note",
+          arguments: {
+            taskId: "T-002",
+            note: "MCP server note coverage.",
+          },
+        });
+        const notePayload = parseToolPayload(note);
+
+        assert.equal(notePayload.ok, true);
+        assert.equal(notePayload.tool, "workflow_append_note");
+        assert.equal(notePayload.taskId, "T-002");
 
         const taskList = await server.request("tools/call", {
           name: "workflow_task_list",

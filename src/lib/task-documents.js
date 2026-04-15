@@ -30,6 +30,8 @@ const MANAGED_BLOCKS = {
   verificationManualProofAnchors: VERIFICATION_MANUAL_PROOF_ANCHOR_BLOCK_ID,
 };
 
+const PROGRESS_NOTES_SECTION_TITLE = "Progress notes";
+
 function renderTaskMarkdown(taskMeta, recipe) {
   return ensureTrailingNewline(`# ${taskMeta.id} - ${taskMeta.title}
 
@@ -206,6 +208,24 @@ function syncManagedTaskDocs(files, taskMeta, recipe) {
   }
 }
 
+function appendTaskContextNote(files, note, timestamp = new Date().toISOString()) {
+  const noteBody = normalizeText(note);
+  if (!noteBody) {
+    throw badRequest('Task note must be a non-empty "note" string.', "task_note_required");
+  }
+
+  const normalizedTimestamp = normalizeText(timestamp) || new Date().toISOString();
+  const existingContent = readFileWithFallback(files.context);
+  const nextContent = appendContextProgressNote(existingContent, noteBody, normalizedTimestamp);
+  writeFile(files.context, nextContent);
+
+  return {
+    note: noteBody,
+    timestamp: normalizedTimestamp,
+    content: nextContent,
+  };
+}
+
 function saveTaskDocument(workspaceRoot, taskId, documentName, content) {
   const files = taskFiles(workspaceRoot, taskId);
   if (!fileExists(files.meta)) {
@@ -362,6 +382,22 @@ function normalizeVerificationMarkdown(taskMeta, content, existingContent = "") 
   }
 
   return ensureTrailingNewline(nextContent);
+}
+
+function appendContextProgressNote(content, note, timestamp) {
+  const entry = `### ${timestamp}\n\n${note}`;
+  const section = getSection(content, PROGRESS_NOTES_SECTION_TITLE);
+
+  if (!section) {
+    return ensureTrailingNewline(
+      upsertSection(content, PROGRESS_NOTES_SECTION_TITLE, entry, {
+        insertBeforePattern: /(?:^|\n)## Constraints\b/m,
+      })
+    );
+  }
+
+  const nextBody = joinBlocks(section.body, entry);
+  return ensureTrailingNewline(upsertSection(content, PROGRESS_NOTES_SECTION_TITLE, nextBody));
 }
 
 function normalizeCheckpointMarkdown(taskMeta, content) {
@@ -628,6 +664,7 @@ function escapeRegex(value) {
 }
 
 module.exports = {
+  appendTaskContextNote,
   EDITABLE_TASK_DOCUMENTS,
   ensureTaskArtifacts,
   refreshManualProofAnchors,

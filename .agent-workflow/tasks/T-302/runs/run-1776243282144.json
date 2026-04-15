@@ -1,0 +1,107 @@
+{
+  "id": "run-1776243282144",
+  "taskId": "T-302",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Implemented MCP task updates, timestamped progress notes, and the HTTP notes endpoint; added focused MCP/service/server tests and documented the new tools.",
+  "createdAt": "2026-04-15T08:54:42.143Z",
+  "scopeProofPaths": [
+    "src/lib/mcp-tools.js",
+    "src/lib/task-documents.js",
+    "src/lib/task-service.js",
+    "src/mcp-server.js",
+    "src/server.js",
+    "test/mcp-tools.test.js",
+    "test/mcp-server.test.js",
+    "test/server-api.test.js",
+    "test/task-service.test.js",
+    "README.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run lint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "focused MCP/service/server tests",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-302/checkpoint.md"
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/lib/mcp-tools.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:c54075e003f5a7d569465a3b12a3f390e4bda4ed"
+    },
+    {
+      "path": "src/lib/task-documents.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:d84bbeddedcccefb0d718518c205e2aca6a3e1f2"
+    },
+    {
+      "path": "src/lib/task-service.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:7ae4468deb5603c5f6e5963931647cafa53708d0"
+    },
+    {
+      "path": "src/mcp-server.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:ba60222c738dcd9588eaf6a9c519922d80d23d9b"
+    },
+    {
+      "path": "src/server.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:1069f9ae0310b206919b9ab1b22bf6d6a08be521"
+    },
+    {
+      "path": "test/mcp-tools.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:cbddd2faf9d8cc94f9d26bedb6667807540b7054"
+    },
+    {
+      "path": "test/mcp-server.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:19d0459646992e9d66b66a6f62b3f03fd87ffa3e"
+    },
+    {
+      "path": "test/server-api.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:14f581a6e5dfbcca56bf8caa286a41a123ed2269"
+    },
+    {
+      "path": "test/task-service.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:72bbeebab0ddf1d65dc7699ded5ba824c74b661f"
+    },
+    {
+      "path": "README.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:8982d6e8fddec7cae4b139eb5e9f128dc33abfca"
+    }
+  ]
+}

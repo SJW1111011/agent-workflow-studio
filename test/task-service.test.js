@@ -1,6 +1,6 @@
 const assert = require("node:assert/strict");
 
-const { listTasks, recordRun, updateTaskMeta } = require("../src/lib/task-service");
+const { appendTaskNote, listTasks, recordRun, updateTaskMeta } = require("../src/lib/task-service");
 const { createTaskWorkspace, readJsonFile, readTextFile } = require("./test-helpers");
 
 const tests = [
@@ -47,6 +47,44 @@ const tests = [
       assert.equal(readJsonFile(files.meta).status, "done");
       assert.equal(listedTask.status, "done");
       assert.match(readTextFile(files.checkpoint), /- Status: done/);
+    },
+  },
+  {
+    name: "appendTaskNote appends timestamped notes under a dedicated progress notes section",
+    run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("task-service-progress-note");
+
+      const result = appendTaskNote(workspaceRoot, taskId, "Found a race condition in auth.", {
+        timestamp: "2026-04-15T08:00:00.000Z",
+      });
+      const contextText = readTextFile(files.context);
+
+      assert.equal(result.taskId, taskId);
+      assert.equal(result.timestamp, "2026-04-15T08:00:00.000Z");
+      assert.match(contextText, /## Progress notes/);
+      assert.match(contextText, /### 2026-04-15T08:00:00\.000Z/);
+      assert.match(contextText, /Found a race condition in auth\./);
+      assert.match(contextText, /## Constraints/);
+      assert.ok(contextText.indexOf("## Progress notes") < contextText.indexOf("## Constraints"));
+      assert.equal(readJsonFile(files.meta).updatedAt, "2026-04-15T08:00:00.000Z");
+    },
+  },
+  {
+    name: "updateTaskMeta rejects status regressions once a task is done",
+    run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("task-service-status-regression");
+
+      updateTaskMeta(workspaceRoot, taskId, { status: "done" });
+
+      assert.throws(
+        () => updateTaskMeta(workspaceRoot, taskId, { status: "in_progress" }),
+        (error) => {
+          assert.equal(error.statusCode, 409);
+          assert.equal(error.code, "task_status_regression");
+          assert.match(error.message, /cannot regress to in_progress/);
+          return true;
+        }
+      );
     },
   },
 ];

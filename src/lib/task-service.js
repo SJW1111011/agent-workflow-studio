@@ -3,7 +3,7 @@ const path = require("path");
 const { appendText, fileExists, readJson, writeJson } = require("./fs-utils");
 const { listAdapters } = require("./adapters");
 const { buildTaskFreshness } = require("./freshness");
-const { badRequest, notFound } = require("./http-errors");
+const { badRequest, conflict, notFound } = require("./http-errors");
 const { getRecipe, normalizeRecipeId } = require("./recipes");
 const {
   defaultCheckStatusForRunStatus,
@@ -16,6 +16,7 @@ const {
 const { buildScopeProofAnchors, loadRepositorySnapshot } = require("./repository-snapshot");
 const { buildTaskVerificationGate } = require("./verification-gates");
 const {
+  appendTaskContextNote,
   ensureTaskArtifacts,
   syncManagedTaskDocs,
 } = require("./task-documents");
@@ -167,6 +168,7 @@ function updateTaskMeta(workspaceRoot, taskId, changes = {}) {
     if (!TASK_STATUSES.has(status)) {
       throw badRequest(`Unsupported status: ${changes.status}`, "unsupported_status");
     }
+    assertStatusTransitionAllowed(meta.status, status, taskId);
     nextMeta.status = status;
   }
 
@@ -186,6 +188,38 @@ function updateTaskMeta(workspaceRoot, taskId, changes = {}) {
   syncManagedTaskDocs(files, nextMeta, recipe);
 
   return nextMeta;
+}
+
+function appendTaskNote(workspaceRoot, taskId, note, options = {}) {
+  const files = taskFiles(workspaceRoot, taskId);
+  if (!fileExists(files.meta)) {
+    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
+  }
+
+  const noteText = isNonEmptyString(note) ? note.trim() : "";
+  if (!noteText) {
+    throw badRequest('Task note must be a non-empty "note" string.', "task_note_required");
+  }
+
+  const { taskMeta } = ensureTaskArtifacts(workspaceRoot, taskId, {
+    context: true,
+  });
+  const timestamp = isNonEmptyString(options.timestamp)
+    ? options.timestamp.trim()
+    : new Date().toISOString();
+  const appended = appendTaskContextNote(files, noteText, timestamp);
+
+  taskMeta.updatedAt = timestamp;
+  writeJson(files.meta, taskMeta);
+
+  return {
+    taskId,
+    note: appended.note,
+    timestamp: appended.timestamp,
+    contextText: appended.content,
+    contextPath: `.agent-workflow/tasks/${taskId}/context.md`,
+    updatedAt: taskMeta.updatedAt,
+  };
 }
 
 function recordRun(workspaceRoot, taskId, summary, status, agent = "manual", fields = {}, options = {}) {
@@ -226,6 +260,7 @@ function recordRun(workspaceRoot, taskId, summary, status, agent = "manual", fie
 }
 
 module.exports = {
+  appendTaskNote,
   createRunRecord,
   createTask,
   getRunLog,
@@ -425,6 +460,15 @@ function normalizeTaskScaffoldMode(value) {
     throw badRequest(`Unsupported task scaffold mode: ${value}`, "unsupported_task_scaffold_mode");
   }
   return mode;
+}
+
+function assertStatusTransitionAllowed(currentStatus, nextStatus, taskId) {
+  if (currentStatus === "done" && nextStatus !== "done") {
+    throw conflict(
+      `Task ${taskId} is already done and cannot regress to ${nextStatus}.`,
+      "task_status_regression"
+    );
+  }
 }
 
 function omitUndefined(value, excludedKeys) {

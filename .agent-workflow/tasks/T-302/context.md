@@ -18,11 +18,21 @@ T-300 (MCP Server) gives agents read + create capabilities. But agents can't upd
 - context.md has free-form sections (Facts, Open questions) that could host notes
 - T-204 established the one-way status transition rule: never regress automatically
 - MCP tools return structured JSON results
+- The implementation appends notes under a dedicated `## Progress notes` section in `context.md` so managed recipe and constraints blocks stay isolated.
+- `workflow_update_task` now calls the shared `updateTaskMeta()` path directly and refreshes the checkpoint, matching other MCP tool behavior.
+- `appendTaskNote()` now updates `task.json.updatedAt`, materializes `context.md` for lite tasks, and returns the appended note metadata for MCP/HTTP callers.
+- Full verification passed on 2026-04-15: `npm test`, `npm run lint`, and `npm run smoke`.
 
 ## Open questions
 
-- Should notes go in context.md or a separate notes.md? Leaning context.md `## Progress notes` section to keep file count low.
-- Should `workflow_update_task` wrap the existing PATCH endpoint or call `updateTaskMeta` directly? Leaning direct call for consistency with other MCP tools.
+- Resolved: notes live in `context.md` under `## Progress notes` to avoid extra task files and managed-block collisions.
+- Resolved: `workflow_update_task` calls `updateTaskMeta()` directly, while the existing PATCH endpoint remains the HTTP surface for task metadata updates.
+
+## Progress notes
+
+### 2026-04-15T08:55:00.000Z
+
+Implemented the MCP task-update and note-append flows, added the dedicated `/api/tasks/{taskId}/notes` endpoint, and finished focused plus repo-level verification.
 
 ## Constraints
 
