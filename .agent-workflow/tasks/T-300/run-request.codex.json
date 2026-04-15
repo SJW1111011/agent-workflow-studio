@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-300",
+  "adapterId": "codex",
+  "title": "MCP Server — expose core workflow tools via Model Context Protocol",
+  "generatedAt": "2026-04-15T06:34:19.188Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-300",
+  "promptFile": ".agent-workflow/tasks/T-300/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-300/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

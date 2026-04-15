@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-303",
+  "adapterId": "codex",
+  "title": "MCP configuration — CLI command to register MCP server in Claude Code and Cursor settings",
+  "generatedAt": "2026-04-15T06:47:56.372Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-303",
+  "promptFile": ".agent-workflow/tasks/T-303/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-303/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-301",
+  "adapterId": "codex",
+  "title": "SSE streaming for execution logs — replace file polling with server-sent events",
+  "generatedAt": "2026-04-15T06:47:33.405Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-301",
+  "promptFile": ".agent-workflow/tasks/T-301/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-301/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

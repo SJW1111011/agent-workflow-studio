@@ -1,0 +1,14 @@
+{
+  "id": "T-301",
+  "title": "SSE streaming for execution logs — replace file polling with server-sent events",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-15T06:47:33.392Z",
+  "updatedAt": "2026-04-15T06:47:33.392Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

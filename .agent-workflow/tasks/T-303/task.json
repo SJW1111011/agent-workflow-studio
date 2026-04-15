@@ -1,0 +1,14 @@
+{
+  "id": "T-303",
+  "title": "MCP configuration — CLI command to register MCP server in Claude Code and Cursor settings",
+  "recipeId": "feature",
+  "priority": "P2",
+  "status": "todo",
+  "createdAt": "2026-04-15T06:47:56.354Z",
+  "updatedAt": "2026-04-15T06:47:56.354Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

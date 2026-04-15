@@ -1,0 +1,14 @@
+{
+  "id": "T-302",
+  "title": "Bidirectional task updates — agents can update task status and append notes mid-execution",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-15T06:47:46.584Z",
+  "updatedAt": "2026-04-15T06:47:46.584Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}
