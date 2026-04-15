@@ -8,6 +8,8 @@ The server exposes these MCP tools:
 
 - `workflow_quick`
 - `workflow_done`
+- `workflow_update_task`
+- `workflow_append_note`
 - `workflow_task_list`
 - `workflow_run_add`
 - `workflow_checkpoint`
@@ -17,7 +19,37 @@ The server exposes these MCP tools:
 
 All tool handlers delegate to the same durable workflow modules used by the CLI, so MCP calls update `.agent-workflow/` the same way terminal commands do.
 
-## Choose one launch shape
+## Quick install
+
+Install the MCP server into the client config you want to use:
+
+```bash
+npx agent-workflow mcp:install --client claude --root /absolute/path/to/target-repo
+npx agent-workflow mcp:install --client cursor --root /absolute/path/to/target-repo
+```
+
+If the standard config file already exists, you can omit `--client` and let the CLI auto-detect supported targets:
+
+```bash
+npx agent-workflow mcp:install --root /absolute/path/to/target-repo
+```
+
+Auto-detect only touches config files it can already find. Pass `--client claude` or `--client cursor` when you want the CLI to create the standard config file for that client.
+
+The installer is non-destructive:
+
+- it merges the `agent-workflow` entry into `mcpServers`
+- it preserves unrelated settings and other MCP servers
+- it does not overwrite an existing `agent-workflow` entry with different settings; it warns instead
+
+Remove the entry later with:
+
+```bash
+npx agent-workflow mcp:uninstall --client claude --root /absolute/path/to/target-repo
+npx agent-workflow mcp:uninstall --client cursor --root /absolute/path/to/target-repo
+```
+
+## Launch shapes used by the installer
 
 ### Option 1: contributor repo checkout
 
@@ -73,7 +105,13 @@ For editor configs, keep `cwd` set to the helper directory so `npx agent-workflo
 
 Claude Code reads MCP servers from `~/.claude/settings.json`.
 
-Merge an entry like this into `mcpServers`:
+Recommended command:
+
+```bash
+npx agent-workflow mcp:install --client claude --root /absolute/path/to/target-repo
+```
+
+Manual config example:
 
 ```json
 {
@@ -114,7 +152,13 @@ After saving the config, restart Claude Code. Then try requests like:
 
 Cursor reads MCP servers from `.cursor/mcp.json` in the workspace you want Cursor to control.
 
-Create or update `.cursor/mcp.json` in the target repo:
+Recommended command:
+
+```bash
+npx agent-workflow mcp:install --client cursor --root /absolute/path/to/target-repo
+```
+
+Manual config example:
 
 ```json
 {
@@ -168,6 +212,7 @@ You should see the corresponding `workflow_*` tools being selected by the client
 ## Notes
 
 - `--root` is optional. If you omit it, the server uses the current working directory. For editor integrations, explicit `--root` is usually safer.
+- `mcp:install` writes either a direct `node /absolute/path/to/src/mcp-server.js` entry or an `npx agent-workflow-mcp` entry with the correct `cwd`, depending on how it finds the package.
 - `agent-workflow mcp:serve` and `agent-workflow-mcp` start the same stdio server. The dedicated `agent-workflow-mcp` bin is usually easier for editor config files.
 - The package now has one runtime dependency: `@modelcontextprotocol/sdk`. The existing workflow logic still lives in the local file-based modules under `src/lib/`.
 - The MCP server is stdio-only in this release. SSE and remote execution remain separate follow-up work.

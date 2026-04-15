@@ -154,6 +154,8 @@ const tests = [
       assert.match(output, /memory:validate \[--root path\]/);
       assert.match(output, /adapter:create <adapterId>/);
       assert.match(output, /dashboard \[--root path\] \[--port 4173\]/);
+      assert.match(output, /mcp:install \[--client claude\|cursor\] \[--root path\]/);
+      assert.match(output, /mcp:uninstall \[--client claude\|cursor\] \[--root path\]/);
       assert.match(output, /undo \[--root path\]/);
     },
   },

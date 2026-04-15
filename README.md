@@ -78,6 +78,7 @@ That keeps backward compatibility for polling clients while giving the dashboard
 - **`run:execute`** - launch a local adapter when you explicitly opt into `commandMode: exec`, with shared preflight, logs, and evidence capture
 - **`done`** - record evidence and refresh the checkpoint in one step, with an optional `--complete` flag to mark the task done
 - **`undo`** - roll back the latest workflow-layer operation (`quick`, `run:add`, `done`, or explicit `checkpoint`) without touching source files or git history
+- **`mcp:install` / `mcp:uninstall`** - register or remove the MCP server in Claude Code and Cursor without manual JSON editing
 - **`mcp:serve`** - expose the core workflow operations as MCP tools over stdio for Claude Code, Cursor, and other MCP clients
 - **`verification gate`** - compare repo-relative task scope against the current repository snapshot and show which scoped files still need explicit proof
 - **`proof anchors`** - keep passed evidence and refreshed manual proof tied to content fingerprints, not fragile `mtime` alone
@@ -98,13 +99,37 @@ See [AGENT_GUIDE.md](AGENT_GUIDE.md) for the full workflow guide.
 
 ## Use it through MCP
 
-Start the MCP server on stdio:
+Install the MCP server into your editor config first:
+
+```bash
+npx agent-workflow mcp:install --client claude --root .
+npx agent-workflow mcp:install --client cursor --root .
+```
+
+If the standard config file already exists, you can also omit `--client` and let the CLI auto-detect supported targets:
+
+```bash
+npx agent-workflow mcp:install --root .
+```
+
+The installer writes the correct launch entry for the way you are running the package:
+
+- contributor checkout: `node /absolute/path/to/agent-workflow-studio/src/mcp-server.js --root ...`
+- local npm install: `npx agent-workflow-mcp --root ...` plus the right `cwd`
+
+Remove the MCP entry later with:
+
+```bash
+npx agent-workflow mcp:uninstall --client claude --root .
+```
+
+For a quick terminal check, you can still start the stdio server directly:
 
 ```bash
 npx agent-workflow mcp:serve --root .
 ```
 
-It exposes these MCP tools:
+The server exposes these MCP tools:
 
 - `workflow_quick`
 - `workflow_done`
@@ -117,37 +142,7 @@ It exposes these MCP tools:
 - `workflow_validate`
 - `workflow_overview`
 
-That lets an MCP-connected agent update task status or priority mid-execution and append timestamped progress notes to `context.md`, instead of waiting until the final `done` step to leave durable state behind.
-
-Claude Code example:
-
-```json
-{
-  "mcpServers": {
-    "agent-workflow": {
-      "command": "npx",
-      "args": ["agent-workflow-mcp", "--root", "/absolute/path/to/repo"],
-      "cwd": "/absolute/path/to/helper-dir"
-    }
-  }
-}
-```
-
-Cursor example:
-
-```json
-{
-  "mcpServers": {
-    "agent-workflow": {
-      "command": "npx",
-      "args": ["agent-workflow-mcp", "--root", "/absolute/path/to/repo"],
-      "cwd": "/absolute/path/to/helper-dir"
-    }
-  }
-}
-```
-
-The `cwd` should point at the directory where `agent-workflow-studio` is installed so `npx agent-workflow-mcp` resolves the local bin cleanly. For contributor and package-install variants, plus more setup notes for Claude Code and Cursor, see [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
+That lets an MCP-connected agent update task status or priority mid-execution and append timestamped progress notes to `context.md`, instead of waiting until the final `done` step to leave durable state behind. For the auto-install flow, manual JSON examples, and Claude Code or Cursor specifics, see [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
 
 ## Architecture at a glance
 
@@ -223,7 +218,7 @@ Agent Workflow Studio is designed to become that missing layer.
 - **Onboarding:** `init`, `scan`, `memory:bootstrap`, `memory:validate`
 - **Tasking:** `recipe:list`, `quick`, `task:new`, `task:list`
 - **Adapters:** `adapter:list`, `adapter:create`
-- **Execution:** `prompt:compile`, `run:prepare`, `run:execute`, `run:add`, `done`, `checkpoint`, `undo`, `mcp:serve`
+- **Execution:** `prompt:compile`, `run:prepare`, `run:execute`, `run:add`, `done`, `checkpoint`, `undo`, `mcp:install`, `mcp:uninstall`, `mcp:serve`
 - **Inspection:** `dashboard`, `validate`
 - **Skills:** `skills:generate`
 
@@ -303,7 +298,7 @@ npm test
 
 - [Getting Started](docs/GETTING_STARTED.md) - the full npm-first onboarding flow
 - [Documentation Index](docs/README.md) - the map for all design and reference docs
-- [MCP Setup](docs/MCP_SETUP.md) - Claude Code and Cursor MCP configuration examples
+- [MCP Setup](docs/MCP_SETUP.md) - Claude Code and Cursor auto-install plus manual configuration examples
 - [Release Notes 0.1.2](docs/RELEASE_NOTES_0.1.2.md) - the published release summary for the current npm version
 - [Architecture](docs/ARCHITECTURE.md) - how the scaffold, dashboard, adapters, and evidence model fit together
 - [Verification Design](docs/VERIFICATION_FRESHNESS_DESIGN.md) - verification gates, proof anchors, and freshness rules

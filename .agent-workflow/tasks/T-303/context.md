@@ -34,3 +34,8 @@ T-300 builds the MCP server, but users still need to manually edit JSON config f
 - Must never corrupt existing config files — atomic write pattern
 - Must not add runtime dependencies
 - Must pass `npm test`, `npm run lint`, `npm run smoke`
+
+## Progress notes
+
+- 2026-04-15T09:24:00.000Z: Read the required project memory, roadmap, CLI, MCP docs, and existing tests. Confirmed the change should land as a focused install helper plus thin CLI wiring and docs updates.
+- 2026-04-15T17:13:00.000Z: Implemented `mcp:install` / `mcp:uninstall`, added merge/idempotence coverage, updated README and MCP setup docs, and verified with `npm test`, `npm run lint`, `npm run smoke`, and `npm run format:check`.

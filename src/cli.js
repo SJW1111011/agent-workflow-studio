@@ -4,6 +4,7 @@ const path = require("path");
 const { buildCheckpoint } = require("./lib/checkpoint");
 const { recordDone } = require("./lib/done");
 const { createAdapter, listAdapters, normalizeAdapterId } = require("./lib/adapters");
+const { formatMcpConfigSummary, installMcpServer, uninstallMcpServer } = require("./lib/mcp-install");
 const { formatMemoryBootstrapSummary, generateMemoryBootstrapPrompt } = require("./lib/memory-bootstrap");
 const { formatMemoryValidationSummary, validateMemoryDocs } = require("./lib/memory-validator");
 const { buildOverview } = require("./lib/overview");
@@ -69,6 +70,26 @@ function main(argv = process.argv.slice(2)) {
             process.exitCode = 1;
           });
         return;
+      }
+      case "mcp:install": {
+        const result = installMcpServer(workspaceRoot, {
+          client: options.client,
+        });
+        print(formatMcpConfigSummary(result));
+        if (!result.ok) {
+          process.exitCode = 1;
+        }
+        break;
+      }
+      case "mcp:uninstall": {
+        const result = uninstallMcpServer(workspaceRoot, {
+          client: options.client,
+        });
+        print(formatMcpConfigSummary(result));
+        if (!result.ok) {
+          process.exitCode = 1;
+        }
+        break;
       }
       case "skills:generate": {
         const result = generateSkills(workspaceRoot);
@@ -396,6 +417,8 @@ Commands:
   memory:validate [--root path]
   dashboard [--root path] [--port 4173]
   mcp:serve [--root path]
+  mcp:install [--client claude|cursor] [--root path]
+  mcp:uninstall [--client claude|cursor] [--root path]
   skills:generate [--root path]
   adapter:list [--root path]
   adapter:create <adapterId> [--name "My Agent"] [--runner "npx my-agent-cli"] [--argv-template "exec -"] [--prompt-target codex|claude] [--root path]

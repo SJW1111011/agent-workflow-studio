@@ -1,0 +1,83 @@
+{
+  "id": "run-1776244407782",
+  "taskId": "T-303",
+  "agent": "codex",
+  "status": "passed",
+  "summary": "Added MCP install/uninstall commands for Claude Code and Cursor with docs and verification coverage.",
+  "createdAt": "2026-04-15T09:13:27.780Z",
+  "scopeProofPaths": [
+    "src/lib/mcp-install.js",
+    "src/cli.js",
+    "test/mcp-install.test.js",
+    "test/cli.test.js",
+    "README.md",
+    "docs/MCP_SETUP.md",
+    ".agent-workflow/tasks/T-303/context.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run lint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run format:check",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/lib/mcp-install.js",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:ad33186ebcb8a901cf8a3dd7491317f75201bf92"
+    },
+    {
+      "path": "src/cli.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:febd7e9f7caa9d379f845ed4d6a0b350f564235b"
+    },
+    {
+      "path": "test/mcp-install.test.js",
+      "gitState": "??",
+      "exists": true,
+      "contentFingerprint": "sha1:c7f602c841ca29ef38346095cad44d19285d2c55"
+    },
+    {
+      "path": "test/cli.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:ed4c5253cc4fd654507b867330906a27bef16f8c"
+    },
+    {
+      "path": "README.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:a6202fcf1400e515acc206c0249a88e1733b5067"
+    },
+    {
+      "path": "docs/MCP_SETUP.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:81a94b51e19c8ceb8b09148cecf7f00dbcfcc89b"
+    },
+    {
+      "path": ".agent-workflow/tasks/T-303/context.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:71d3971f095a7a1186b264edfd46870dbdb9e9cb"
+    }
+  ]
+}
