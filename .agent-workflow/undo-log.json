@@ -1,0 +1,200 @@
+[
+  {
+    "type": "done",
+    "taskId": "T-203",
+    "timestamp": "2026-04-14T11:57:15.191Z",
+    "files": [
+      ".agent-workflow/tasks/T-203/checkpoint.json",
+      ".agent-workflow/tasks/T-203/checkpoint.md",
+      ".agent-workflow/tasks/T-203/context.md",
+      ".agent-workflow/tasks/T-203/runs",
+      ".agent-workflow/tasks/T-203/runs/run-1776167834671.json",
+      ".agent-workflow/tasks/T-203/task.json",
+      ".agent-workflow/tasks/T-203/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-203/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-203\",\n  \"title\": \"undo command — roll back the most recent workflow operation\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P2\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-13T08:41:24.686Z\",\n  \"updatedAt\": \"2026-04-13T08:41:24.686Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-203 Context\n\n## Why now\n\nLite Mode (T-200) and `done` (T-201) make it fast to create tasks and record evidence. But speed also means more accidental records. Without undo, users must manually find and delete JSON files from `.agent-workflow/tasks/`. Undo is the safety net that makes the fast workflow trustworthy.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Currently there is no undo capability, so mistakes require manual workflow-file cleanup.\n- Run records are stored as individual JSON files in `tasks/T-XXX/runs/run-{timestamp}.json`.\n- Task directories can contain `task.json`, markdown docs, generated prompt/run artifacts, and a `runs/` subdirectory.\n- `recordRun` can also update `verification.md`, auto-advance `task.json`, and materialize missing Lite Mode files.\n- `buildCheckpoint` is called both directly and as a side effect of other commands, so explicit `checkpoint` logging must not duplicate nested checkpoint refreshes from `quick`, `run:add`, or `done`.\n- Undo metadata must stay repo-relative and portable; absolute machine paths are out of bounds.\n\n## Open questions\n\n- The task direction is now settled on a single `.agent-workflow/undo-log.json` file capped to the latest 20 entries.\n- `undo` stays non-interactive for this task; preview or multi-step undo can follow later if the product needs it.\n- Exact workflow-file restoration is safer than partial deletion because Lite Mode commands may materialize new docs as a side effect.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-200 and T-201, because those command flows must write undo log entries.\n- Workflow layer only: never touch git, never delete user code files.\n- No runtime dependencies.\n- Any deletion path must stay inside `.agent-workflow/tasks/`.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-203 Verification\n\n## Planned checks\n\n- automated: `npm test -- undo.test.js done.test.js quick-task.test.js cli.test.js`\n- manual: confirm the CLI reports the last operation, restores workflow files, and refuses to delete a quick-created task that already has recorded runs\n\n## Proof links\n\n### Proof 1\n\n- Files: src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/cli.js, test/undo.test.js, README.md\n- Check: targeted undo regression suite\n- Result: pending\n- Artifact: pending\n\n## Blocking gaps\n\n- Final implementation and verification evidence still need to be recorded after the code and tests land.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-203\",\n  \"generatedAt\": \"2026-04-13T08:41:24.834Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add explicit repo-relative paths in the task scope to enable stronger verification gates.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-203 Checkpoint\n\nGenerated at: 2026-04-13T08:41:24.834Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: undo command — roll back the most recent workflow operation\n- Priority: P2\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add explicit repo-relative paths in the task scope to enable stronger verification gates.\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit proof items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/runs/run-1776167834671.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-203/runs/run-1776167834671.json",
+      "runId": "run-1776167834671"
+    }
+  },
+  {
+    "type": "checkpoint",
+    "taskId": "T-203",
+    "timestamp": "2026-04-14T11:58:46.427Z",
+    "files": [
+      ".agent-workflow/tasks/T-203/checkpoint.json",
+      ".agent-workflow/tasks/T-203/checkpoint.md",
+      ".agent-workflow/tasks/T-203/context.md",
+      ".agent-workflow/tasks/T-203/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-203/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-203 Context\n\n## Why now\n\nLite Mode (T-200) and `done` (T-201) make it fast to create tasks and record evidence. But speed also means more accidental records. Without undo, users must manually find and delete JSON files from `.agent-workflow/tasks/`. Undo is the safety net that makes the fast workflow trustworthy.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Currently there is no undo capability, so mistakes require manual workflow-file cleanup.\n- Run records are stored as individual JSON files in `tasks/T-XXX/runs/run-{timestamp}.json`.\n- Task directories can contain `task.json`, markdown docs, generated prompt/run artifacts, and a `runs/` subdirectory.\n- `recordRun` can also update `verification.md`, auto-advance `task.json`, and materialize missing Lite Mode files.\n- `buildCheckpoint` is called both directly and as a side effect of other commands, so explicit `checkpoint` logging must not duplicate nested checkpoint refreshes from `quick`, `run:add`, or `done`.\n- Undo metadata must stay repo-relative and portable; absolute machine paths are out of bounds.\n\n## Open questions\n\n- The task direction is now settled on a single `.agent-workflow/undo-log.json` file capped to the latest 20 entries.\n- `undo` stays non-interactive for this task; preview or multi-step undo can follow later if the product needs it.\n- Exact workflow-file restoration is safer than partial deletion because Lite Mode commands may materialize new docs as a side effect.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-200 and T-201, because those command flows must write undo log entries.\n- Workflow layer only: never touch git, never delete user code files.\n- No runtime dependencies.\n- Any deletion path must stay inside `.agent-workflow/tasks/`.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-203 Verification\n\n## Planned checks\n\n- automated: `npm test`\n- manual: confirm the CLI reports the last operation, restores workflow files, and refuses to delete a quick-created task that already has recorded runs\n\n## Proof links\n\n### Proof 1\n\n- Files: src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/cli.js, test/undo.test.js, README.md\n- Check: `npm test`\n- Result: passed (`29` files, `129` tests)\n- Artifact: .agent-workflow/tasks/T-203/runs/run-1776167834671.json\n\n## Blocking gaps\n\n- None.\n\n## Evidence 2026-04-14T11:57:14.669Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/cli.js, src/lib/undo.js, src/lib/undo-log.js, src/lib/checkpoint.js, src/lib/done.js, src/lib/quick-task.js, src/lib/task-service.js, test/undo.test.js, README.md\n- Verification artifacts: README.md, test/undo.test.js\n- Proof artifacts: README.md, test/undo.test.js\n- Summary: Implemented undo logging and rollback for quick, run:add, done, and checkpoint; added undo tests and README docs.\n- Verification check: [passed] npm test\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-203\",\n  \"generatedAt\": \"2026-04-14T11:57:15.172Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Explicit verification now covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 16,\n    \"ambiguousScopeCount\": 1,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-203 Checkpoint\n\nGenerated at: 2026-04-14T11:57:15.172Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: undo command — roll back the most recent workflow operation\n- Priority: P2\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Explicit verification now covers the current scoped file set.\n- Scope hints: 16\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- src/cli.js\n- src/lib/checkpoint.js\n- src/lib/done.js\n- src/lib/quick-task.js\n- src/lib/task-service.js\n- src/lib/undo-log.js\n- src/lib/undo.js\n- test/undo.test.js\n\n### Explicit proof items\n\n- manual:verification.md#proof-1 | paths=src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/cli.js, test/undo.test.js, README.md | checks=targeted undo regression suite (result: pending) | artifacts=pending\n- run:run-1776167834671 | paths=src/cli.js, src/lib/undo.js, src/lib/undo-log.js, src/lib/checkpoint.js, src/lib/done.js, src/lib/quick-task.js, src/lib/task-service.js, test/undo.test.js, README.md | checks=[passed] npm test | artifacts=README.md, test/undo.test.js\n\n### Scope entries that need tightening\n\n- repo path: README.md (document undo) (task.md)\n\n## Risks\n\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: Implemented undo logging and rollback for quick, run:add, done, and checkpoint; added undo tests and README docs.\n- Timestamp: 2026-04-14T11:57:14.669Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        }
+      ]
+    }
+  },
+  {
+    "type": "run:add",
+    "taskId": "T-203",
+    "timestamp": "2026-04-14T18:32:35.599Z",
+    "files": [
+      ".agent-workflow/tasks/T-203/checkpoint.json",
+      ".agent-workflow/tasks/T-203/checkpoint.md",
+      ".agent-workflow/tasks/T-203/context.md",
+      ".agent-workflow/tasks/T-203/runs",
+      ".agent-workflow/tasks/T-203/runs/run-1776191555030.json",
+      ".agent-workflow/tasks/T-203/task.json",
+      ".agent-workflow/tasks/T-203/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-203/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-203\",\n  \"title\": \"undo command — roll back the most recent workflow operation\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P2\",\n  \"status\": \"done\",\n  \"createdAt\": \"2026-04-13T08:41:24.686Z\",\n  \"updatedAt\": \"2026-04-14T11:57:14.920Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-203 Context\n\n## Why now\n\nLite Mode (T-200) and `done` (T-201) make it fast to create tasks and record evidence. But speed also means more accidental records. Without undo, users must manually find and delete JSON files from `.agent-workflow/tasks/`. Undo is the safety net that makes the fast workflow trustworthy.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Currently there is no undo capability, so mistakes require manual workflow-file cleanup.\n- Run records are stored as individual JSON files in `tasks/T-XXX/runs/run-{timestamp}.json`.\n- Task directories can contain `task.json`, markdown docs, generated prompt/run artifacts, and a `runs/` subdirectory.\n- `recordRun` can also update `verification.md`, auto-advance `task.json`, and materialize missing Lite Mode files.\n- `buildCheckpoint` is called both directly and as a side effect of other commands, so explicit `checkpoint` logging must not duplicate nested checkpoint refreshes from `quick`, `run:add`, or `done`.\n- Undo metadata must stay repo-relative and portable; absolute machine paths are out of bounds.\n\n## Open questions\n\n- The task direction is now settled on a single `.agent-workflow/undo-log.json` file capped to the latest 20 entries.\n- `undo` stays non-interactive for this task; preview or multi-step undo can follow later if the product needs it.\n- Exact workflow-file restoration is safer than partial deletion because Lite Mode commands may materialize new docs as a side effect.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-200 and T-201, because those command flows must write undo log entries.\n- Workflow layer only: never touch git, never delete user code files.\n- No runtime dependencies.\n- Any deletion path must stay inside `.agent-workflow/tasks/`.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-203 Verification\n\n## Planned checks\n\n- automated: `npm test`\n- manual: confirm the CLI reports the last operation, restores workflow files, and refuses to delete a quick-created task that already has recorded runs\n\n## Proof links\n\n### Proof 1\n\n- Files: src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/cli.js, test/undo.test.js, README.md\n- Check: `npm test`\n- Result: passed (`29` files, `129` tests)\n- Artifact: .agent-workflow/tasks/T-203/runs/run-1776167834671.json\n\n## Blocking gaps\n\n- None.\n\n## Evidence 2026-04-14T11:57:14.669Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/cli.js, src/lib/undo.js, src/lib/undo-log.js, src/lib/checkpoint.js, src/lib/done.js, src/lib/quick-task.js, src/lib/task-service.js, test/undo.test.js, README.md\n- Verification artifacts: README.md, test/undo.test.js\n- Proof artifacts: README.md, test/undo.test.js\n- Summary: Implemented undo logging and rollback for quick, run:add, done, and checkpoint; added undo tests and README docs.\n- Verification check: [passed] npm test\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-203\",\n  \"generatedAt\": \"2026-04-14T11:58:46.411Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Explicit verification now covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 9,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-203 Checkpoint\n\nGenerated at: 2026-04-14T11:58:46.411Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: undo command — roll back the most recent workflow operation\n- Priority: P2\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Explicit verification now covers the current scoped file set.\n- Scope hints: 9\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- README.md\n- src/cli.js\n- src/lib/checkpoint.js\n- src/lib/done.js\n- src/lib/quick-task.js\n- src/lib/task-service.js\n- src/lib/undo-log.js\n- src/lib/undo.js\n- test/undo.test.js\n\n### Explicit proof items\n\n- manual:verification.md#proof-1 | paths=src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/cli.js, test/undo.test.js, README.md | checks=`npm test` (result: passed (`29` files, `129` tests)) | artifacts=.agent-workflow/tasks/T-203/runs/run-1776167834671.json\n- run:run-1776167834671 | paths=src/cli.js, src/lib/undo.js, src/lib/undo-log.js, src/lib/checkpoint.js, src/lib/done.js, src/lib/quick-task.js, src/lib/task-service.js, test/undo.test.js, README.md | checks=[passed] npm test | artifacts=README.md, test/undo.test.js\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Implemented undo logging and rollback for quick, run:add, done, and checkpoint; added undo tests and README docs.\n- Timestamp: 2026-04-14T11:57:14.669Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/runs/run-1776191555030.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-203/runs/run-1776191555030.json",
+      "runId": "run-1776191555030"
+    }
+  },
+  {
+    "type": "checkpoint",
+    "taskId": "T-203",
+    "timestamp": "2026-04-14T18:33:54.560Z",
+    "files": [
+      ".agent-workflow/tasks/T-203/checkpoint.json",
+      ".agent-workflow/tasks/T-203/checkpoint.md",
+      ".agent-workflow/tasks/T-203/context.md",
+      ".agent-workflow/tasks/T-203/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-203/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-203 Context\n\n## Why now\n\nLite Mode (T-200) and `done` (T-201) make it fast to create tasks and record evidence. But speed also means more accidental records. Without undo, users must manually find and delete JSON files from `.agent-workflow/tasks/`. Undo is the safety net that makes the fast workflow trustworthy.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Currently there is no undo capability, so mistakes require manual workflow-file cleanup.\n- Run records are stored as individual JSON files in `tasks/T-XXX/runs/run-{timestamp}.json`.\n- Task directories can contain `task.json`, markdown docs, generated prompt/run artifacts, and a `runs/` subdirectory.\n- `recordRun` can also update `verification.md`, auto-advance `task.json`, and materialize missing Lite Mode files.\n- `buildCheckpoint` is called both directly and as a side effect of other commands, so explicit `checkpoint` logging must not duplicate nested checkpoint refreshes from `quick`, `run:add`, or `done`.\n- Undo metadata must stay repo-relative and portable; absolute machine paths are out of bounds.\n\n## Open questions\n\n- The task direction is now settled on a single `.agent-workflow/undo-log.json` file capped to the latest 20 entries.\n- `undo` stays non-interactive for this task; preview or multi-step undo can follow later if the product needs it.\n- Exact workflow-file restoration is safer than partial deletion because Lite Mode commands may materialize new docs as a side effect.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-200 and T-201, because those command flows must write undo log entries.\n- Workflow layer only: never touch git, never delete user code files.\n- No runtime dependencies.\n- Any deletion path must stay inside `.agent-workflow/tasks/`.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-203 Verification\n\n## Planned checks\n\n- automated: `npm test`\n- manual: confirm the CLI reports the last operation, restores workflow files, and refuses to delete a quick-created task that already has recorded runs\n\n## Proof links\n\n### Proof 1\n\n- Files: src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/cli.js, test/undo.test.js, README.md\n- Check: `npm test`\n- Result: passed (`29` files, `129` tests)\n- Artifact: .agent-workflow/tasks/T-203/runs/run-1776167834671.json\n\n## Blocking gaps\n\n- None.\n\n## Evidence 2026-04-14T11:57:14.669Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/cli.js, src/lib/undo.js, src/lib/undo-log.js, src/lib/checkpoint.js, src/lib/done.js, src/lib/quick-task.js, src/lib/task-service.js, test/undo.test.js, README.md\n- Verification artifacts: README.md, test/undo.test.js\n- Proof artifacts: README.md, test/undo.test.js\n- Summary: Implemented undo logging and rollback for quick, run:add, done, and checkpoint; added undo tests and README docs.\n- Verification check: [passed] npm test\n\n## Evidence 2026-04-14T18:32:35.027Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/done.js, src/lib/task-service.js, src/lib/checkpoint.js, test/undo.test.js\n- Summary: Claude Code review passed: undo command with undo-log persistence, 4-site integration, path traversal guard, 7 acceptance criteria covered by tests, no-double-logging design correct\n- Verification check: [passed] undo after quick --lite removes task directory\n- Verification check: [passed] undo after run:add removes run and restores prior state\n- Verification check: [passed] undo after done restores status and checkpoint\n- Verification check: [passed] undo on empty log prints Nothing to undo\n- Verification check: [passed] refuses to delete quick task with existing runs\n- Verification check: [passed] log capped at 20 entries\n- Verification check: [passed] npm test passes (29 files, 129 tests)\n- Verification check: [passed] path traversal guard prevents escape from .agent-workflow/\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-203\",\n  \"generatedAt\": \"2026-04-14T18:32:36.049Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 2,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"2 run(s) recorded\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"No current workspace files match this task's declared scope.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 9,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-203/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-203 Checkpoint\n\nGenerated at: 2026-04-14T18:32:36.049Z\n\n## Completed\n\n- Prompt compiled\n- 2 run(s) recorded\n- Task context captured\n\n## Confirmed facts\n\n- Title: undo command — roll back the most recent workflow operation\n- Priority: P2\n- Status: done\n- Latest run status: passed\n- Total runs: 2\n\n## Verification gate\n\n- Status: ready\n- Summary: No current workspace files match this task's declared scope.\n- Scope hints: 9\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit proof items\n\n- manual:verification.md#proof-1 | paths=src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/cli.js, test/undo.test.js, README.md | checks=`npm test` (result: passed (`29` files, `129` tests)) | artifacts=.agent-workflow/tasks/T-203/runs/run-1776167834671.json\n- run:run-1776167834671 | paths=src/cli.js, src/lib/undo.js, src/lib/undo-log.js, src/lib/checkpoint.js, src/lib/done.js, src/lib/quick-task.js, src/lib/task-service.js, test/undo.test.js, README.md | checks=[passed] npm test | artifacts=README.md, test/undo.test.js\n- run:run-1776191555030 | paths=src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/done.js, src/lib/task-service.js, src/lib/checkpoint.js, test/undo.test.js | checks=[passed] undo after quick --lite removes task directory; [passed] undo after run:add removes run and restores prior state; [passed] undo after done restores status and checkpoint; [passed] undo on empty log prints Nothing to undo; [passed] refuses to delete quick task with existing runs; [passed] log capped at 20 entries; [passed] npm test passes (29 files, 129 tests); [passed] path traversal guard prevents escape from .agent-workflow/ | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Claude Code review passed: undo command with undo-log persistence, 4-site integration, path traversal guard, 7 acceptance criteria covered by tests, no-double-logging design correct\n- Timestamp: 2026-04-14T18:32:35.027Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
+        }
+      ]
+    }
+  }
+]

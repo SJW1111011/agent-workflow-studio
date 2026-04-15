@@ -27,3 +27,18 @@
 - Proof artifacts: README.md, test/undo.test.js
 - Summary: Implemented undo logging and rollback for quick, run:add, done, and checkpoint; added undo tests and README docs.
 - Verification check: [passed] npm test
+
+## Evidence 2026-04-14T18:32:35.027Z
+
+- Agent: manual
+- Status: passed
+- Scoped files covered: src/lib/undo-log.js, src/lib/undo.js, src/lib/quick-task.js, src/lib/done.js, src/lib/task-service.js, src/lib/checkpoint.js, test/undo.test.js
+- Summary: Claude Code review passed: undo command with undo-log persistence, 4-site integration, path traversal guard, 7 acceptance criteria covered by tests, no-double-logging design correct
+- Verification check: [passed] undo after quick --lite removes task directory
+- Verification check: [passed] undo after run:add removes run and restores prior state
+- Verification check: [passed] undo after done restores status and checkpoint
+- Verification check: [passed] undo on empty log prints Nothing to undo
+- Verification check: [passed] refuses to delete quick task with existing runs
+- Verification check: [passed] log capped at 20 entries
+- Verification check: [passed] npm test passes (29 files, 129 tests)
+- Verification check: [passed] path traversal guard prevents escape from .agent-workflow/

@@ -1,0 +1,96 @@
+{
+  "id": "run-1776191555030",
+  "taskId": "T-203",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: undo command with undo-log persistence, 4-site integration, path traversal guard, 7 acceptance criteria covered by tests, no-double-logging design correct",
+  "createdAt": "2026-04-14T18:32:35.027Z",
+  "scopeProofPaths": [
+    "src/lib/undo-log.js",
+    "src/lib/undo.js",
+    "src/lib/quick-task.js",
+    "src/lib/done.js",
+    "src/lib/task-service.js",
+    "src/lib/checkpoint.js",
+    "test/undo.test.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "undo after quick --lite removes task directory",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "undo after run:add removes run and restores prior state",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "undo after done restores status and checkpoint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "undo on empty log prints Nothing to undo",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "refuses to delete quick task with existing runs",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "log capped at 20 entries",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (29 files, 129 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "path traversal guard prevents escape from .agent-workflow/",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/lib/undo-log.js",
+      "exists": true,
+      "contentFingerprint": "sha1:72544262342780193350abd6a7884e0e1ecbd888"
+    },
+    {
+      "path": "src/lib/undo.js",
+      "exists": true,
+      "contentFingerprint": "sha1:57e590c35ad2f2fcc426cf1ae9df8e0f785100e0"
+    },
+    {
+      "path": "src/lib/quick-task.js",
+      "exists": true,
+      "contentFingerprint": "sha1:c9edf10d70ef3b9b775da65ffd35bb1d0b33f9b2"
+    },
+    {
+      "path": "src/lib/done.js",
+      "exists": true,
+      "contentFingerprint": "sha1:a56253bb01b6c4a663a7929368bb5a2bdc9d712a"
+    },
+    {
+      "path": "src/lib/task-service.js",
+      "exists": true,
+      "contentFingerprint": "sha1:150da62cfa663f7c726811adfc78fada949dc261"
+    },
+    {
+      "path": "src/lib/checkpoint.js",
+      "exists": true,
+      "contentFingerprint": "sha1:6ac7fe7f4babd516e6d70497ccda1ac83f466e66"
+    },
+    {
+      "path": "test/undo.test.js",
+      "exists": true,
+      "contentFingerprint": "sha1:1f3559066ef7c3f7f25a61611599d66554f89d5d"
+    }
+  ]
+}
