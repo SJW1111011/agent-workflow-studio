@@ -519,5 +519,203 @@
         }
       ]
     }
+  },
+  {
+    "type": "run:add",
+    "taskId": "T-300",
+    "timestamp": "2026-04-15T08:12:01.197Z",
+    "files": [
+      ".agent-workflow/tasks/T-300/checkpoint.json",
+      ".agent-workflow/tasks/T-300/checkpoint.md",
+      ".agent-workflow/tasks/T-300/context.md",
+      ".agent-workflow/tasks/T-300/runs",
+      ".agent-workflow/tasks/T-300/runs/run-1776240721025.json",
+      ".agent-workflow/tasks/T-300/task.json",
+      ".agent-workflow/tasks/T-300/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-300/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-300\",\n  \"title\": \"MCP Server - expose core workflow tools via Model Context Protocol\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P0\",\n  \"status\": \"done\",\n  \"createdAt\": \"2026-04-15T06:34:19.175Z\",\n  \"updatedAt\": \"2026-04-15T07:33:19.677Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-300/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-300 Context\n\n## Why now\n\nPhase 1 reduced the common workflow to `quick` plus `done`, but agents still had to leave their MCP-capable editor and drop into a terminal to call those commands. Shipping a stdio MCP server removes that context switch and turns the existing local-first workflow modules into reusable tools for Claude Code, Cursor, and other MCP clients.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- The implementation pins `@modelcontextprotocol/sdk` at `1.3.0`.\n- The pinned SDK ships a CommonJS build, so the repo can stay CommonJS while adding an MCP entry point.\n- The pinned SDK's stdio transport uses newline-delimited JSON messages, not `Content-Length` framing.\n- All workflow logic still lives in the existing `src/lib/` modules; the MCP layer is a thin wrapper.\n- The CLI now exposes `mcp:serve`, and the package now exposes `agent-workflow-mcp`.\n- README and docs now include Claude Code and Cursor setup examples plus a dedicated MCP setup guide.\n\n## Open questions\n\n- No blocking design questions remain for this slice.\n- Follow-up work can decide whether later SDK upgrades should expose richer structured tool payloads when client support improves.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- The MCP SDK is the only new direct runtime dependency in this task.\n- Existing CLI, dashboard, and HTTP behavior must keep working unchanged.\n- The MCP server must not print extra stdout logs after startup because stdout is reserved for protocol traffic.\n- Verification must include the actual MCP handler tests plus the real CLI stdio path.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-300/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-300 Verification\n\n## Planned checks\n\n- automated: `npm test`\n- automated: `npm run lint`\n- automated: `npm run format:check`\n- automated: `npm run smoke`\n- manual: start the CLI `mcp:serve` entry point and verify the MCP client can list tools and call `workflow_quick`\n\n## Proof links\n\n### Proof 1\n\n- Files: src/mcp-server.js, src/lib/mcp-tools.js, src/cli.js, package.json, package-lock.json\n- Check: MCP server wired through the CLI and package metadata, with tool handlers delegating to existing workflow modules\n- Result: implemented\n- Artifact: .agent-workflow/tasks/T-300/runs/run-1776238399417.json\n\n### Proof 2\n\n- Files: test/mcp-tools.test.js, test/mcp-server.test.js\n- Check: automated MCP handler and stdio integration coverage\n- Result: implemented\n- Artifact: .agent-workflow/tasks/T-300/runs/run-1776238399417.json\n\n### Proof 3\n\n- Files: README.md, docs/MCP_SETUP.md, docs/README.md\n- Check: Claude Code and Cursor setup guidance documented and linked from the docs map\n- Result: implemented\n- Artifact: docs/MCP_SETUP.md\n\n## Blocking gaps\n\n- None.\n\n## Evidence 2026-04-15T07:33:19.416Z\n\n- Agent: codex\n- Status: passed\n- Scoped files covered: src/mcp-server.js, src/lib/mcp-tools.js, src/cli.js, package.json, package-lock.json, test/mcp-tools.test.js, test/mcp-server.test.js, README.md, docs/MCP_SETUP.md, docs/README.md\n- Summary: Implemented the stdio MCP server, tool wrappers, CLI wiring, tests, and setup docs.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run format:check\n- Verification check: [passed] npm run smoke\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-300/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-300\",\n  \"generatedAt\": \"2026-04-15T07:35:07.314Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Explicit verification now covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 10,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-300/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-300 Checkpoint\n\nGenerated at: 2026-04-15T07:35:07.314Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: MCP Server - expose core workflow tools via Model Context Protocol\n- Priority: P0\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Explicit verification now covers the current scoped file set.\n- Scope hints: 10\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- README.md\n- docs/README.md\n- package-lock.json\n- package.json\n- src/cli.js\n- docs/MCP_SETUP.md\n- src/lib/mcp-tools.js\n- src/mcp-server.js\n- test/mcp-server.test.js\n- test/mcp-tools.test.js\n\n### Explicit proof items\n\n- manual:verification.md#proof-1 | paths=src/mcp-server.js, src/lib/mcp-tools.js, src/cli.js, package.json, package-lock.json | checks=MCP server wired through the CLI and package metadata, with tool handlers delegating to existing workflow modules (result: implemented) | artifacts=.agent-workflow/tasks/T-300/runs/run-1776238399417.json\n- manual:verification.md#proof-2 | paths=test/mcp-tools.test.js, test/mcp-server.test.js | checks=automated MCP handler and stdio integration coverage (result: implemented) | artifacts=.agent-workflow/tasks/T-300/runs/run-1776238399417.json\n- manual:verification.md#proof-3 | paths=README.md, docs/MCP_SETUP.md, docs/README.md | checks=Claude Code and Cursor setup guidance documented and linked from the docs map (result: implemented) | artifacts=docs/MCP_SETUP.md\n- run:run-1776238399417 | paths=src/mcp-server.js, src/lib/mcp-tools.js, src/cli.js, package.json, package-lock.json, test/mcp-tools.test.js, test/mcp-server.test.js, README.md, docs/MCP_SETUP.md, docs/README.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run format:check; [passed] npm run smoke | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Implemented the stdio MCP server, tool wrappers, CLI wiring, tests, and setup docs.\n- Timestamp: 2026-04-15T07:33:19.416Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-300/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-300/runs/run-1776240721025.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-300/runs/run-1776240721025.json",
+      "runId": "run-1776240721025"
+    }
+  },
+  {
+    "type": "run:add",
+    "taskId": "T-301",
+    "timestamp": "2026-04-15T08:12:09.976Z",
+    "files": [
+      ".agent-workflow/tasks/T-301/checkpoint.json",
+      ".agent-workflow/tasks/T-301/checkpoint.md",
+      ".agent-workflow/tasks/T-301/context.md",
+      ".agent-workflow/tasks/T-301/runs",
+      ".agent-workflow/tasks/T-301/runs/run-1776240729808.json",
+      ".agent-workflow/tasks/T-301/task.json",
+      ".agent-workflow/tasks/T-301/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-301/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-301\",\n  \"title\": \"SSE streaming for execution logs — replace file polling with server-sent events\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P1\",\n  \"status\": \"done\",\n  \"createdAt\": \"2026-04-15T06:47:33.392Z\",\n  \"updatedAt\": \"2026-04-15T07:55:27.567Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-301 Context\n\n## Why now\n\nThe dashboard currently polls `GET /api/tasks/{taskId}/execution` and `GET .../logs/{stream}` to show execution progress. This is laggy because clients wait for the next poll interval, and it is wasteful because every refresh rereads the current state from disk. SSE gives Phase 2 a simple push channel that the future dashboard and MCP subscriptions can both reuse.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/dashboard-execution.js` already owns the in-memory dashboard execution state and is the narrowest place to emit task-level state transitions.\n- `src/lib/run-executor.js` currently writes stdout/stderr directly to log files when `stdioMode === \"pipe\"`.\n- Dashboard execution already requires adapter `stdioMode: \"pipe\"`, which gives the executor one reliable place to tee live output while preserving the current log files.\n- `test/server-api.test.js` already boots the real local HTTP server, so SSE coverage can stay inside the existing API test suite.\n- No external dependency is needed because Node's built-in `http`, `events`, and child-process streams are enough for SSE plus live log fan-out.\n\n## Open questions\n\n- Log streaming will tee child stdout/stderr through Node, write the same bytes to the existing log files, and emit line-based events from that single source of truth.\n- SSE events will stay v1-simple with no resume cursor or sequence number; reconnect behavior can still fall back to the existing snapshot endpoints.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Can run in parallel with T-300 (MCP Server)\n- No external dependencies\n- Must not break existing polling endpoints\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-301 Verification\n\n## Planned checks\n\n- automated: `npm test -- test/server-api.test.js test/run-executor.test.js test/http-errors.test.js`\n- automated: `npm test`\n- automated: `npm run lint`\n- automated: `npm run smoke`\n- manual: optional follow-up `curl -N` spot-check against the SSE routes if a human wants to watch the stream outside the automated test suite\n\n## Proof links\n\n### Proof 1\n\n- Files: src/server.js, src/lib/dashboard-execution.js, src/lib/run-executor.js, test/server-api.test.js, test/run-executor.test.js, README.md\n- Check: `npm test -- test/server-api.test.js test/run-executor.test.js test/http-errors.test.js`; `npm test`; `npm run lint`; `npm run smoke`\n- Result: passed\n- Artifact: .agent-workflow/tasks/T-301/runs/run-1776239727338.json\n\n## Blocking gaps\n\n- None for the implemented server-side scope.\n\n## Evidence 2026-04-15T07:55:27.336Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/server.js, src/lib/dashboard-execution.js, src/lib/run-executor.js, test/server-api.test.js, test/run-executor.test.js, README.md\n- Summary: Implemented live SSE execution streams and executor log fan-out.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run smoke\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-301\",\n  \"generatedAt\": \"2026-04-15T07:56:24.179Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Explicit verification now covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 6,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-301 Checkpoint\n\nGenerated at: 2026-04-15T07:56:24.179Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: SSE streaming for execution logs — replace file polling with server-sent events\n- Priority: P1\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Explicit verification now covers the current scoped file set.\n- Scope hints: 6\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- README.md\n- src/lib/dashboard-execution.js\n- src/lib/run-executor.js\n- src/server.js\n- test/run-executor.test.js\n- test/server-api.test.js\n\n### Explicit proof items\n\n- manual:verification.md#proof-1 | paths=src/server.js, src/lib/dashboard-execution.js, src/lib/run-executor.js, test/server-api.test.js, test/run-executor.test.js, README.md | checks=`npm test -- test/server-api.test.js test/run-executor.test.js test/http-errors.test.js`; `npm test`; `npm run lint`; `npm run smoke` (result: passed) | artifacts=.agent-workflow/tasks/T-301/runs/run-1776239727338.json\n- run:run-1776239727338 | paths=src/server.js, src/lib/dashboard-execution.js, src/lib/run-executor.js, test/server-api.test.js, test/run-executor.test.js, README.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run smoke | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Implemented live SSE execution streams and executor log fan-out.\n- Timestamp: 2026-04-15T07:55:27.336Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/runs/run-1776240729808.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-301/runs/run-1776240729808.json",
+      "runId": "run-1776240729808"
+    }
+  },
+  {
+    "type": "checkpoint",
+    "taskId": "T-300",
+    "timestamp": "2026-04-15T08:12:34.355Z",
+    "files": [
+      ".agent-workflow/tasks/T-300/checkpoint.json",
+      ".agent-workflow/tasks/T-300/checkpoint.md",
+      ".agent-workflow/tasks/T-300/context.md",
+      ".agent-workflow/tasks/T-300/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-300/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-300 Context\n\n## Why now\n\nPhase 1 reduced the common workflow to `quick` plus `done`, but agents still had to leave their MCP-capable editor and drop into a terminal to call those commands. Shipping a stdio MCP server removes that context switch and turns the existing local-first workflow modules into reusable tools for Claude Code, Cursor, and other MCP clients.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- The implementation pins `@modelcontextprotocol/sdk` at `1.3.0`.\n- The pinned SDK ships a CommonJS build, so the repo can stay CommonJS while adding an MCP entry point.\n- The pinned SDK's stdio transport uses newline-delimited JSON messages, not `Content-Length` framing.\n- All workflow logic still lives in the existing `src/lib/` modules; the MCP layer is a thin wrapper.\n- The CLI now exposes `mcp:serve`, and the package now exposes `agent-workflow-mcp`.\n- README and docs now include Claude Code and Cursor setup examples plus a dedicated MCP setup guide.\n\n## Open questions\n\n- No blocking design questions remain for this slice.\n- Follow-up work can decide whether later SDK upgrades should expose richer structured tool payloads when client support improves.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- The MCP SDK is the only new direct runtime dependency in this task.\n- Existing CLI, dashboard, and HTTP behavior must keep working unchanged.\n- The MCP server must not print extra stdout logs after startup because stdout is reserved for protocol traffic.\n- Verification must include the actual MCP handler tests plus the real CLI stdio path.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-300/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-300 Verification\n\n## Planned checks\n\n- automated: `npm test`\n- automated: `npm run lint`\n- automated: `npm run format:check`\n- automated: `npm run smoke`\n- manual: start the CLI `mcp:serve` entry point and verify the MCP client can list tools and call `workflow_quick`\n\n## Proof links\n\n### Proof 1\n\n- Files: src/mcp-server.js, src/lib/mcp-tools.js, src/cli.js, package.json, package-lock.json\n- Check: MCP server wired through the CLI and package metadata, with tool handlers delegating to existing workflow modules\n- Result: implemented\n- Artifact: .agent-workflow/tasks/T-300/runs/run-1776238399417.json\n\n### Proof 2\n\n- Files: test/mcp-tools.test.js, test/mcp-server.test.js\n- Check: automated MCP handler and stdio integration coverage\n- Result: implemented\n- Artifact: .agent-workflow/tasks/T-300/runs/run-1776238399417.json\n\n### Proof 3\n\n- Files: README.md, docs/MCP_SETUP.md, docs/README.md\n- Check: Claude Code and Cursor setup guidance documented and linked from the docs map\n- Result: implemented\n- Artifact: docs/MCP_SETUP.md\n\n## Blocking gaps\n\n- None.\n\n## Evidence 2026-04-15T07:33:19.416Z\n\n- Agent: codex\n- Status: passed\n- Scoped files covered: src/mcp-server.js, src/lib/mcp-tools.js, src/cli.js, package.json, package-lock.json, test/mcp-tools.test.js, test/mcp-server.test.js, README.md, docs/MCP_SETUP.md, docs/README.md\n- Summary: Implemented the stdio MCP server, tool wrappers, CLI wiring, tests, and setup docs.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run format:check\n- Verification check: [passed] npm run smoke\n\n## Evidence 2026-04-15T08:12:01.024Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/mcp-server.js, src/lib/mcp-tools.js, test/mcp-tools.test.js, test/mcp-server.test.js, docs/MCP_SETUP.md\n- Summary: Claude Code review passed: MCP server with 8 workflow tools, stdio transport, graceful shutdown, typed schemas, aliased inputs, MCP_SETUP.md docs\n- Verification check: [passed] 8 MCP tools exposed and return structured JSON\n- Verification check: [passed] E2E: quick→task_list→done→undo works via MCP runtime\n- Verification check: [passed] npm test passes (31 files, 140 tests)\n- Verification check: [passed] MCP SDK is the only runtime dep\n- Verification check: [passed] Core CLI remains zero-dep\n- Verification check: [passed] mcp:serve CLI command works\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-300/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-300\",\n  \"generatedAt\": \"2026-04-15T08:12:01.340Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 2,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"2 run(s) recorded\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"No current workspace files match this task's declared scope.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 10,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-300/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-300 Checkpoint\n\nGenerated at: 2026-04-15T08:12:01.340Z\n\n## Completed\n\n- Prompt compiled\n- 2 run(s) recorded\n- Task context captured\n\n## Confirmed facts\n\n- Title: MCP Server - expose core workflow tools via Model Context Protocol\n- Priority: P0\n- Status: done\n- Latest run status: passed\n- Total runs: 2\n\n## Verification gate\n\n- Status: ready\n- Summary: No current workspace files match this task's declared scope.\n- Scope hints: 10\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit proof items\n\n- manual:verification.md#proof-1 | paths=src/mcp-server.js, src/lib/mcp-tools.js, src/cli.js, package.json, package-lock.json | checks=MCP server wired through the CLI and package metadata, with tool handlers delegating to existing workflow modules (result: implemented) | artifacts=.agent-workflow/tasks/T-300/runs/run-1776238399417.json\n- manual:verification.md#proof-2 | paths=test/mcp-tools.test.js, test/mcp-server.test.js | checks=automated MCP handler and stdio integration coverage (result: implemented) | artifacts=.agent-workflow/tasks/T-300/runs/run-1776238399417.json\n- manual:verification.md#proof-3 | paths=README.md, docs/MCP_SETUP.md, docs/README.md | checks=Claude Code and Cursor setup guidance documented and linked from the docs map (result: implemented) | artifacts=docs/MCP_SETUP.md\n- run:run-1776238399417 | paths=src/mcp-server.js, src/lib/mcp-tools.js, src/cli.js, package.json, package-lock.json, test/mcp-tools.test.js, test/mcp-server.test.js, README.md, docs/MCP_SETUP.md, docs/README.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run format:check; [passed] npm run smoke | artifacts=none\n- run:run-1776240721025 | paths=src/mcp-server.js, src/lib/mcp-tools.js, test/mcp-tools.test.js, test/mcp-server.test.js, docs/MCP_SETUP.md | checks=[passed] 8 MCP tools exposed and return structured JSON; [passed] E2E: quick→task_list→done→undo works via MCP runtime; [passed] npm test passes (31 files, 140 tests); [passed] MCP SDK is the only runtime dep; [passed] Core CLI remains zero-dep; [passed] mcp:serve CLI command works | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Claude Code review passed: MCP server with 8 workflow tools, stdio transport, graceful shutdown, typed schemas, aliased inputs, MCP_SETUP.md docs\n- Timestamp: 2026-04-15T08:12:01.024Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
+        }
+      ]
+    }
+  },
+  {
+    "type": "checkpoint",
+    "taskId": "T-301",
+    "timestamp": "2026-04-15T08:12:34.613Z",
+    "files": [
+      ".agent-workflow/tasks/T-301/checkpoint.json",
+      ".agent-workflow/tasks/T-301/checkpoint.md",
+      ".agent-workflow/tasks/T-301/context.md",
+      ".agent-workflow/tasks/T-301/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-301/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-301 Context\n\n## Why now\n\nThe dashboard currently polls `GET /api/tasks/{taskId}/execution` and `GET .../logs/{stream}` to show execution progress. This is laggy because clients wait for the next poll interval, and it is wasteful because every refresh rereads the current state from disk. SSE gives Phase 2 a simple push channel that the future dashboard and MCP subscriptions can both reuse.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/dashboard-execution.js` already owns the in-memory dashboard execution state and is the narrowest place to emit task-level state transitions.\n- `src/lib/run-executor.js` currently writes stdout/stderr directly to log files when `stdioMode === \"pipe\"`.\n- Dashboard execution already requires adapter `stdioMode: \"pipe\"`, which gives the executor one reliable place to tee live output while preserving the current log files.\n- `test/server-api.test.js` already boots the real local HTTP server, so SSE coverage can stay inside the existing API test suite.\n- No external dependency is needed because Node's built-in `http`, `events`, and child-process streams are enough for SSE plus live log fan-out.\n\n## Open questions\n\n- Log streaming will tee child stdout/stderr through Node, write the same bytes to the existing log files, and emit line-based events from that single source of truth.\n- SSE events will stay v1-simple with no resume cursor or sequence number; reconnect behavior can still fall back to the existing snapshot endpoints.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Can run in parallel with T-300 (MCP Server)\n- No external dependencies\n- Must not break existing polling endpoints\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-301 Verification\n\n## Planned checks\n\n- automated: `npm test -- test/server-api.test.js test/run-executor.test.js test/http-errors.test.js`\n- automated: `npm test`\n- automated: `npm run lint`\n- automated: `npm run smoke`\n- manual: optional follow-up `curl -N` spot-check against the SSE routes if a human wants to watch the stream outside the automated test suite\n\n## Proof links\n\n### Proof 1\n\n- Files: src/server.js, src/lib/dashboard-execution.js, src/lib/run-executor.js, test/server-api.test.js, test/run-executor.test.js, README.md\n- Check: `npm test -- test/server-api.test.js test/run-executor.test.js test/http-errors.test.js`; `npm test`; `npm run lint`; `npm run smoke`\n- Result: passed\n- Artifact: .agent-workflow/tasks/T-301/runs/run-1776239727338.json\n\n## Blocking gaps\n\n- None for the implemented server-side scope.\n\n## Evidence 2026-04-15T07:55:27.336Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/server.js, src/lib/dashboard-execution.js, src/lib/run-executor.js, test/server-api.test.js, test/run-executor.test.js, README.md\n- Summary: Implemented live SSE execution streams and executor log fan-out.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run smoke\n\n## Evidence 2026-04-15T08:12:09.806Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/server.js, src/lib/dashboard-execution.js, src/lib/run-executor.js, test/server-api.test.js, test/run-executor.test.js\n- Summary: Claude Code review passed: SSE execution events and log streaming, cleanup on disconnect, keepalive, fan-out in run-executor, polling endpoints unchanged\n- Verification check: [passed] SSE execution events endpoint works\n- Verification check: [passed] SSE log stream endpoint works\n- Verification check: [passed] Cleanup on client disconnect (no leaks)\n- Verification check: [passed] Existing polling endpoints unchanged\n- Verification check: [passed] npm test passes (31 files, 140 tests)\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-301\",\n  \"generatedAt\": \"2026-04-15T08:12:10.103Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 2,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"2 run(s) recorded\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"No current workspace files match this task's declared scope.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 6,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-301/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-301 Checkpoint\n\nGenerated at: 2026-04-15T08:12:10.103Z\n\n## Completed\n\n- Prompt compiled\n- 2 run(s) recorded\n- Task context captured\n\n## Confirmed facts\n\n- Title: SSE streaming for execution logs — replace file polling with server-sent events\n- Priority: P1\n- Status: done\n- Latest run status: passed\n- Total runs: 2\n\n## Verification gate\n\n- Status: ready\n- Summary: No current workspace files match this task's declared scope.\n- Scope hints: 6\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit proof items\n\n- manual:verification.md#proof-1 | paths=src/server.js, src/lib/dashboard-execution.js, src/lib/run-executor.js, test/server-api.test.js, test/run-executor.test.js, README.md | checks=`npm test -- test/server-api.test.js test/run-executor.test.js test/http-errors.test.js`; `npm test`; `npm run lint`; `npm run smoke` (result: passed) | artifacts=.agent-workflow/tasks/T-301/runs/run-1776239727338.json\n- run:run-1776239727338 | paths=src/server.js, src/lib/dashboard-execution.js, src/lib/run-executor.js, test/server-api.test.js, test/run-executor.test.js, README.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run smoke | artifacts=none\n- run:run-1776240729808 | paths=src/server.js, src/lib/dashboard-execution.js, src/lib/run-executor.js, test/server-api.test.js, test/run-executor.test.js | checks=[passed] SSE execution events endpoint works; [passed] SSE log stream endpoint works; [passed] Cleanup on client disconnect (no leaks); [passed] Existing polling endpoints unchanged; [passed] npm test passes (31 files, 140 tests) | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Claude Code review passed: SSE execution events and log streaming, cleanup on disconnect, keepalive, fan-out in run-executor, polling endpoints unchanged\n- Timestamp: 2026-04-15T08:12:09.806Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
+        }
+      ]
+    }
   }
 ]

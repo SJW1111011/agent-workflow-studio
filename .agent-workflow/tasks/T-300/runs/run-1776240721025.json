@@ -1,0 +1,74 @@
+{
+  "id": "run-1776240721025",
+  "taskId": "T-300",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: MCP server with 8 workflow tools, stdio transport, graceful shutdown, typed schemas, aliased inputs, MCP_SETUP.md docs",
+  "createdAt": "2026-04-15T08:12:01.024Z",
+  "scopeProofPaths": [
+    "src/mcp-server.js",
+    "src/lib/mcp-tools.js",
+    "test/mcp-tools.test.js",
+    "test/mcp-server.test.js",
+    "docs/MCP_SETUP.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "8 MCP tools exposed and return structured JSON",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "E2E: quick→task_list→done→undo works via MCP runtime",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (31 files, 140 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "MCP SDK is the only runtime dep",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "Core CLI remains zero-dep",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "mcp:serve CLI command works",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/mcp-server.js",
+      "exists": true,
+      "contentFingerprint": "sha1:c65c23b3227496f42e974dc6fa60c1ece58412c3"
+    },
+    {
+      "path": "src/lib/mcp-tools.js",
+      "exists": true,
+      "contentFingerprint": "sha1:e76b8d4cd97fd85e4d0663ca4ace87d52f81da96"
+    },
+    {
+      "path": "test/mcp-tools.test.js",
+      "exists": true,
+      "contentFingerprint": "sha1:9700a4246508925761c45e448e423e558c024ca6"
+    },
+    {
+      "path": "test/mcp-server.test.js",
+      "exists": true,
+      "contentFingerprint": "sha1:c0ff8e052f2ddec6c0baf6c1404c6e957e19c2ad"
+    },
+    {
+      "path": "docs/MCP_SETUP.md",
+      "exists": true,
+      "contentFingerprint": "sha1:d4bc69004ec384f6c57e10ce7ec9d1e72f0fc136"
+    }
+  ]
+}

@@ -1,13 +1,12 @@
 # T-300 Checkpoint
 
-Generated at: 2026-04-15T07:35:07.314Z
+Generated at: 2026-04-15T08:12:34.349Z
 
 ## Completed
 
 - Prompt compiled
-- 1 run(s) recorded
+- 2 run(s) recorded
 - Task context captured
-- Scoped verification evidence looks current
 
 ## Confirmed facts
 
@@ -15,12 +14,12 @@ Generated at: 2026-04-15T07:35:07.314Z
 - Priority: P0
 - Status: done
 - Latest run status: passed
-- Total runs: 1
+- Total runs: 2
 
 ## Verification gate
 
-- Status: covered
-- Summary: Explicit verification now covers the current scoped file set.
+- Status: ready
+- Summary: No current workspace files match this task's declared scope.
 - Scope hints: 10
 - Ambiguous scope entries: 0
 - Scoped files awaiting proof: 0
@@ -31,16 +30,7 @@ Generated at: 2026-04-15T07:35:07.314Z
 
 ### Scoped files already linked to proof
 
-- README.md
-- docs/README.md
-- package-lock.json
-- package.json
-- src/cli.js
-- docs/MCP_SETUP.md
-- src/lib/mcp-tools.js
-- src/mcp-server.js
-- test/mcp-server.test.js
-- test/mcp-tools.test.js
+- None
 
 ### Explicit proof items
 
@@ -48,6 +38,7 @@ Generated at: 2026-04-15T07:35:07.314Z
 - manual:verification.md#proof-2 | paths=test/mcp-tools.test.js, test/mcp-server.test.js | checks=automated MCP handler and stdio integration coverage (result: implemented) | artifacts=.agent-workflow/tasks/T-300/runs/run-1776238399417.json
 - manual:verification.md#proof-3 | paths=README.md, docs/MCP_SETUP.md, docs/README.md | checks=Claude Code and Cursor setup guidance documented and linked from the docs map (result: implemented) | artifacts=docs/MCP_SETUP.md
 - run:run-1776238399417 | paths=src/mcp-server.js, src/lib/mcp-tools.js, src/cli.js, package.json, package-lock.json, test/mcp-tools.test.js, test/mcp-server.test.js, README.md, docs/MCP_SETUP.md, docs/README.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run format:check; [passed] npm run smoke | artifacts=none
+- run:run-1776240721025 | paths=src/mcp-server.js, src/lib/mcp-tools.js, test/mcp-tools.test.js, test/mcp-server.test.js, docs/MCP_SETUP.md | checks=[passed] 8 MCP tools exposed and return structured JSON; [passed] E2E: quick→task_list→done→undo works via MCP runtime; [passed] npm test passes (31 files, 140 tests); [passed] MCP SDK is the only runtime dep; [passed] Core CLI remains zero-dep; [passed] mcp:serve CLI command works | artifacts=none
 
 ### Scope entries that need tightening
 
@@ -59,8 +50,8 @@ Generated at: 2026-04-15T07:35:07.314Z
 
 ## Latest evidence
 
-- Summary: Implemented the stdio MCP server, tool wrappers, CLI wiring, tests, and setup docs.
-- Timestamp: 2026-04-15T07:33:19.416Z
+- Summary: Claude Code review passed: MCP server with 8 workflow tools, stdio transport, graceful shutdown, typed schemas, aliased inputs, MCP_SETUP.md docs
+- Timestamp: 2026-04-15T08:12:01.024Z
 
 ## Resume instructions
 
