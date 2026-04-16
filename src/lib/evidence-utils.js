@@ -8,6 +8,15 @@ const CHECK_STATUS_ALIASES = Object.freeze({
   draft: "recorded",
   planned: "recorded",
 });
+const VALID_RUN_STATUSES = ["passed", "failed", "draft"];
+const RUN_STATUS_ALIASES = Object.freeze({
+  verified: "passed",
+  strong: "passed",
+  weak: "draft",
+  recorded: "draft",
+  planned: "draft",
+  info: "draft",
+});
 
 function normalizeProofPath(value) {
   return normalizeRelativePath(value);
@@ -21,11 +30,11 @@ function normalizeProofPaths(values) {
   return uniqueStrings(toArray(values).map(normalizeProofPath).filter(Boolean));
 }
 
-function normalizeProofAnchors(values) {
+function normalizeProofAnchors(values, options = {}) {
   const anchorsByPath = new Map();
 
   toArray(values)
-    .map((value) => normalizeProofAnchor(value))
+    .map((value) => normalizeProofAnchor(value, options))
     .filter(Boolean)
     .forEach((anchor) => {
       const existing = anchorsByPath.get(anchor.path);
@@ -37,7 +46,7 @@ function normalizeProofAnchors(values) {
   return Array.from(anchorsByPath.values());
 }
 
-function normalizeProofAnchor(value) {
+function normalizeProofAnchor(value, options = {}) {
   if (!value || typeof value !== "object") {
     return null;
   }
@@ -50,11 +59,14 @@ function normalizeProofAnchor(value) {
   const anchor = { path };
   const gitState = firstNonEmptyString([value.gitState, value.state]);
   const previousPath = normalizeProofPath(value.previousPath || value.fromPath || value.oldPath);
-  const contentFingerprint = firstNonEmptyString([
-    value.contentFingerprint,
-    value.fingerprint,
-    value.hash,
-  ]);
+  const contentFingerprint =
+    options.strict === false
+      ? ""
+      : firstNonEmptyString([
+          value.contentFingerprint,
+          value.fingerprint,
+          value.hash,
+        ]);
 
   if (gitState) {
     anchor.gitState = gitState;
@@ -160,6 +172,16 @@ function normalizeCheckStatus(status, fallbackStatus = "recorded") {
   return VALID_CHECK_STATUSES.includes(fallbackStatus) ? fallbackStatus : "recorded";
 }
 
+function normalizeRunStatus(status, fallbackStatus = "draft") {
+  const normalized = String(status || "").trim().toLowerCase();
+  const aliased = RUN_STATUS_ALIASES[normalized] || normalized;
+  if (VALID_RUN_STATUSES.includes(aliased)) {
+    return aliased;
+  }
+
+  return VALID_RUN_STATUSES.includes(fallbackStatus) ? fallbackStatus : "draft";
+}
+
 function normalizeVerificationTier(value) {
   const normalized = String(value || "").trim().toLowerCase();
   if (!normalized) {
@@ -234,6 +256,96 @@ function normalizeEvidenceFreshnessStatus(value) {
   }
 
   return "";
+}
+
+function normalizeProofCoverageItem(value) {
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  const normalized = { ...value };
+  if (typeof normalized.strong === "boolean" && normalized.verified === undefined) {
+    normalized.verified = normalized.strong;
+  }
+  if (typeof normalized.verified === "boolean" && normalized.strong === undefined) {
+    normalized.strong = normalized.verified;
+  }
+  return normalized;
+}
+
+function normalizeProofCoverageSummary(value) {
+  if (!value || typeof value !== "object") {
+    return {};
+  }
+
+  const normalized = { ...value };
+  copyNumericAlias(normalized, "verifiedEvidenceCount", "explicitProofCount");
+  copyNumericAlias(normalized, "draftEvidenceCount", "weakProofCount");
+  copyNumericAlias(normalized, "currentVerifiedEvidenceCount", "anchoredStrongProofCount");
+  copyNumericAlias(normalized, "recordedVerifiedEvidenceCount", "compatibilityStrongProofCount");
+
+  if (Array.isArray(normalized.items)) {
+    normalized.items = normalized.items.map((item) => normalizeProofCoverageItem(item));
+  }
+
+  return normalized;
+}
+
+function normalizeRunRecordForRead(value) {
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  const normalized = { ...value };
+  const runStatus = normalizeRunStatus(value.status, "draft");
+  const scopeProofPathSource = firstDefinedValue([
+    value.scopeProofPaths,
+    value.proofPaths,
+    value.proofPath,
+    value.paths,
+    value.files,
+  ]);
+  const verificationCheckSource = firstDefinedValue([value.verificationChecks, value.checks]);
+  const verificationArtifactSource = firstDefinedValue([
+    value.verificationArtifacts,
+    value.artifacts,
+  ]);
+  const scopeProofAnchorSource = firstDefinedValue([
+    value.scopeProofAnchors,
+    value.proofAnchors,
+    value.anchors,
+  ]);
+
+  if (value.status !== undefined) {
+    normalized.status = runStatus;
+  }
+
+  if (scopeProofPathSource !== undefined) {
+    normalized.scopeProofPaths = normalizeProofPaths(scopeProofPathSource);
+  }
+
+  if (verificationCheckSource !== undefined) {
+    normalized.verificationChecks = normalizeVerificationChecks(
+      verificationCheckSource,
+      defaultCheckStatusForRunStatus(runStatus)
+    );
+  }
+
+  if (verificationArtifactSource !== undefined) {
+    normalized.verificationArtifacts = normalizeArtifactRefs(verificationArtifactSource);
+  }
+
+  if (scopeProofAnchorSource !== undefined) {
+    normalized.scopeProofAnchors = normalizeProofAnchors(scopeProofAnchorSource);
+  }
+
+  copyNumericAlias(normalized, "verifiedProofCount", "strongProofCount");
+  copyNumericAlias(normalized, "draftEvidenceCount", "draftProofCount");
+  copyNumericAlias(normalized, "draftCheckCount", "plannedVerificationCheckCount");
+  copyNumericAlias(normalized, "currentVerifiedEvidenceCount", "anchorBackedStrongProofCount");
+  copyNumericAlias(normalized, "recordedVerifiedEvidenceCount", "compatibilityStrongProofCount");
+
+  return normalized;
 }
 
 function isVerifiedEvidence(value) {
@@ -322,6 +434,24 @@ function countDefinedProofAnchorFields(anchor) {
   }, 0);
 }
 
+function firstDefinedValue(values) {
+  return toArray(values).find((value) => value !== undefined);
+}
+
+function copyNumericAlias(target, canonicalKey, aliasKey) {
+  if (!target || typeof target !== "object") {
+    return;
+  }
+
+  if (typeof target[canonicalKey] === "number" && target[aliasKey] === undefined) {
+    target[aliasKey] = target[canonicalKey];
+  }
+
+  if (typeof target[aliasKey] === "number" && target[canonicalKey] === undefined) {
+    target[canonicalKey] = target[aliasKey];
+  }
+}
+
 module.exports = {
   VALID_CHECK_STATUSES,
   defaultCheckStatusForRunStatus,
@@ -331,10 +461,14 @@ module.exports = {
   normalizeEvidenceFreshnessStatus,
   normalizeArtifactRef,
   normalizeArtifactRefs,
+  normalizeProofCoverageItem,
+  normalizeProofCoverageSummary,
   normalizeVerificationGateStatus,
   normalizeProofAnchors,
   normalizeProofPath,
   normalizeProofPaths,
+  normalizeRunRecordForRead,
+  normalizeRunStatus,
   normalizeVerificationSignalStatus,
   normalizeVerificationTier,
   normalizeVerificationChecks,

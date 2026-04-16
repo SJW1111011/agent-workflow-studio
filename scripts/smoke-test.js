@@ -988,6 +988,10 @@ Ship a dashboard markdown editor.
     ) {
       throw new Error("Manual verification record was not parsed into verified scoped coverage.");
     }
+    const projectConfigPath = path.join(tempRoot, ".agent-workflow", "project.json");
+    const projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, "utf8"));
+    projectConfig.strictVerification = true;
+    fs.writeFileSync(projectConfigPath, `${JSON.stringify(projectConfig, null, 2)}\n`, "utf8");
     const manualAnchorRefreshDetail = await requestJson(
       `http://127.0.0.1:${port}/api/tasks/T-001/verification/anchors/refresh`,
       "POST",
@@ -1088,6 +1092,7 @@ Ship a dashboard markdown editor.
       "Reviewed README.md diff after CLI run",
       "--artifact",
       ".agent-workflow/tasks/T-001/checkpoint.md",
+      "--strict",
       "--root",
       tempRoot,
     ]);

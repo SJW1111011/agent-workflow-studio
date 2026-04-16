@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
 
-const { createTaskWorkspace, writeTextFile } = require("./test-helpers");
+const { createTaskWorkspace, setProjectStrictVerification, writeTextFile } = require("./test-helpers");
 
 const SERVER_PATH = path.join(__dirname, "..", "src", "server.js");
 
@@ -557,6 +557,7 @@ const tests = [
     name: "server api refreshes verification records and returns typed validation errors when evidence is not ready",
     async run() {
       const { workspaceRoot, files } = createTaskWorkspace("server-api-manual-proof-anchors");
+      setProjectStrictVerification(workspaceRoot, true);
       fs.mkdirSync(path.join(workspaceRoot, "src"), { recursive: true });
       fs.writeFileSync(path.join(workspaceRoot, "src", "app.js"), "module.exports = 'server';\n", "utf8");
       fs.writeFileSync(

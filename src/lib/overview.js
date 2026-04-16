@@ -1,4 +1,9 @@
 const { fileExists, readText } = require("./fs-utils");
+const {
+  normalizeProofCoverageSummary,
+  normalizeVerificationGateStatus,
+  normalizeVerificationSignalStatus,
+} = require("./evidence-utils");
 const { listAdapters } = require("./adapters");
 const { buildTaskFreshness, loadMemoryFreshness } = require("./freshness");
 const { hasMemoryPlaceholder } = require("./memory-placeholders");
@@ -6,12 +11,13 @@ const { listRecipes } = require("./recipes");
 const { loadRepositorySnapshot } = require("./repository-snapshot");
 const { validateWorkspace } = require("./schema-validator");
 const { listRuns, listTasks } = require("./task-service");
-const { buildTaskVerificationGate } = require("./verification-gates");
+const { buildTaskVerificationGate, normalizeTaskVerificationGate } = require("./verification-gates");
 const {
   ensureWorkflowScaffold,
   projectConfigPath,
   projectProfilePath,
   readProjectConfig,
+  resolveStrictVerification,
   taskFiles,
   workflowRoot,
 } = require("./workspace");
@@ -42,10 +48,17 @@ function buildOverview(workspaceRoot) {
   ensureWorkflowScaffold(workspaceRoot);
 
   const project = readProjectConfig(workspaceRoot);
+  const strictVerification = resolveStrictVerification(workspaceRoot);
   const adapters = listAdapters(workspaceRoot);
   const recipes = listRecipes(workspaceRoot);
-  const repositorySnapshot = loadRepositorySnapshot(workspaceRoot);
-  const tasks = listTasks(workspaceRoot).map((task) => enrichTask(workspaceRoot, task, repositorySnapshot));
+  const repositorySnapshot = loadRepositorySnapshot(workspaceRoot, {
+    strict: strictVerification,
+  });
+  const tasks = listTasks(workspaceRoot).map((task) =>
+    enrichTask(workspaceRoot, task, repositorySnapshot, {
+      strict: strictVerification,
+    })
+  );
   const runs = tasks.flatMap((task) => listRuns(workspaceRoot, task.id));
   const memory = loadMemoryFreshness(workspaceRoot, hasMemoryPlaceholder);
   const validation = validateWorkspace(workspaceRoot);
@@ -149,15 +162,16 @@ function emptyVerificationSignals() {
 
 function countTaskVerificationSignals(tasks) {
   return (Array.isArray(tasks) ? tasks : []).reduce((counts, task) => {
-    const status = String((task && task.verificationSignalStatus) || "").trim().toLowerCase();
+    const rawStatus = String((task && task.verificationSignalStatus) || "").trim().toLowerCase();
+    const status = normalizeVerificationSignalStatus(rawStatus);
 
-    if (status === "verified" || status === "strong") {
+    if (status === "verified") {
       counts.verified += 1;
       counts.strong += 1;
       return counts;
     }
 
-    if (status === "partial" || status === "mixed") {
+    if (status === "partial") {
       counts.partial += 1;
       counts.mixed += 1;
       return counts;
@@ -165,6 +179,9 @@ function countTaskVerificationSignals(tasks) {
 
     if (status === "draft") {
       counts.draft += 1;
+      if (rawStatus === "planned") {
+        counts.planned += 1;
+      }
       return counts;
     }
 
@@ -173,7 +190,7 @@ function countTaskVerificationSignals(tasks) {
   }, emptyVerificationSignals());
 }
 
-function enrichTask(workspaceRoot, task, repositorySnapshot) {
+function enrichTask(workspaceRoot, task, repositorySnapshot, options = {}) {
   const files = taskFiles(workspaceRoot, task.id);
   const runs = listRuns(workspaceRoot, task.id);
   const latestRun = runs[runs.length - 1] || null;
@@ -181,7 +198,11 @@ function enrichTask(workspaceRoot, task, repositorySnapshot) {
   const taskText = readText(files.task, "");
   const verificationText = readText(files.verification, "");
   const freshness = buildTaskFreshness(workspaceRoot, task, runs);
-  const verificationGate = buildTaskVerificationGate(workspaceRoot, task, runs, repositorySnapshot, taskText);
+  const verificationGate = normalizeTaskVerificationGate(
+    buildTaskVerificationGate(workspaceRoot, task, runs, repositorySnapshot, taskText, {
+      strict: options.strict,
+    })
+  );
   const verificationSignal = describeTaskVerificationSignal(verificationGate, verificationText);
 
   return {
@@ -196,10 +217,11 @@ function enrichTask(workspaceRoot, task, repositorySnapshot) {
     freshnessStatus: freshness.summary.status,
     staleDocCount: freshness.summary.staleCount,
     verificationGate,
-    verificationGateStatus: verificationGate.summary.status,
+    verificationGateStatus: normalizeVerificationGateStatus(verificationGate.summary.status) || verificationGate.summary.status,
     relevantChangeCount: verificationGate.summary.relevantChangeCount,
     ambiguousScopeCount: verificationGate.scopeCoverage ? verificationGate.scopeCoverage.ambiguousCount : 0,
-    verificationSignalStatus: verificationSignal.status,
+    verificationSignalStatus:
+      normalizeVerificationSignalStatus(verificationSignal.status) || verificationSignal.status,
     verificationSignalSummary: verificationSignal.summary,
     draftCheckCount: verificationSignal.draftCheckCount,
     plannedVerificationCheckCount: verificationSignal.draftCheckCount,
@@ -234,7 +256,12 @@ function deriveExecutorOutcome(run) {
 }
 
 function describeTaskVerificationSignal(verificationGate, verificationText) {
-  const proofCoverage = verificationGate && verificationGate.proofCoverage ? verificationGate.proofCoverage : {};
+  const normalizedVerificationGate = normalizeTaskVerificationGate(verificationGate);
+  const proofCoverage = normalizeProofCoverageSummary(
+    normalizedVerificationGate && normalizedVerificationGate.proofCoverage
+      ? normalizedVerificationGate.proofCoverage
+      : {}
+  );
   const items = Array.isArray(proofCoverage.items) ? proofCoverage.items : [];
   const verifiedProofCount = items.filter((item) => item && (item.verified || item.strong)).length;
   const draftProofCount = items.filter((item) => item && !(item.verified || item.strong)).length;
@@ -443,6 +470,8 @@ function deriveOverviewRisks(workspaceRoot, tasks, memory, validation) {
     });
 
   tasks.forEach((task) => {
+    const verificationGateStatus = normalizeVerificationGateStatus(task.verificationGateStatus) || task.verificationGateStatus;
+
     if (!task.hasCodexPrompt && !task.hasClaudePrompt) {
       risks.push({
         level: "high",
@@ -471,21 +500,21 @@ function deriveOverviewRisks(workspaceRoot, tasks, memory, validation) {
       });
     }
 
-    if (task.verificationGateStatus === "action-required") {
+    if (verificationGateStatus === "action-required") {
       risks.push({
         level: "high",
         message: `${task.id} has scoped local changes that are newer than the latest verification evidence.`,
       });
     }
 
-    if (task.verificationGateStatus === "incomplete") {
+    if (verificationGateStatus === "incomplete") {
       risks.push({
         level: "high",
         message: `${task.id} has only partial explicit evidence for its scoped local changes.`,
       });
     }
 
-    if (task.verificationGateStatus === "unconfigured") {
+    if (verificationGateStatus === "unconfigured") {
       risks.push({
         level: "medium",
         message: `${task.id} has active local changes but no repo-relative scope hints for diff-aware verification.`,
@@ -533,26 +562,31 @@ function deriveOverviewRisks(workspaceRoot, tasks, memory, validation) {
 function deriveVerification(tasks) {
   return tasks.map((task) => ({
     taskId: task.id,
-    status:
-      task.latestRunStatus === "failed"
-        ? "failed"
-        : task.verificationGateStatus === "action-required"
-          ? "action-required"
-          : task.verificationGateStatus === "incomplete"
-            ? "incomplete"
-          : task.verificationGateStatus === "unconfigured"
-            ? "unconfigured"
-            : task.verificationGateStatus === "covered"
-              ? "covered"
-              : task.latestRunStatus === "passed"
-                ? "evidence-recorded"
-                : "pending",
+    status: deriveVerificationStatus(task),
     summary:
       task.verificationGate && task.verificationGate.summary && task.verificationGate.summary.message
         ? task.verificationGate.summary.message
         : task.latestRunSummary,
     relevantChangeCount: task.relevantChangeCount || 0,
   }));
+}
+
+function deriveVerificationStatus(task) {
+  const verificationGateStatus = normalizeVerificationGateStatus(task.verificationGateStatus) || task.verificationGateStatus;
+
+  return task.latestRunStatus === "failed"
+    ? "failed"
+    : verificationGateStatus === "action-required"
+      ? "action-required"
+      : verificationGateStatus === "incomplete"
+        ? "incomplete"
+        : verificationGateStatus === "unconfigured"
+          ? "unconfigured"
+          : verificationGateStatus === "covered"
+            ? "covered"
+            : task.latestRunStatus === "passed"
+              ? "evidence-recorded"
+              : "pending";
 }
 
 module.exports = {

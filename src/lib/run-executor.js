@@ -65,8 +65,12 @@ async function executeRun(workspaceRoot, taskId, adapterInput, options = {}) {
     errorMessage: execution.errorMessage,
   });
 
-  const persistedRun = persistRunRecord(workspaceRoot, taskId, run);
-  const checkpoint = buildCheckpoint(workspaceRoot, taskId);
+  const persistedRun = persistRunRecord(workspaceRoot, taskId, run, {
+    strict: options.strict,
+  });
+  const checkpoint = buildCheckpoint(workspaceRoot, taskId, {
+    strict: options.strict,
+  });
 
   return {
     adapterId: plan.adapterId,

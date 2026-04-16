@@ -6,22 +6,30 @@ const {
   isVerifiedEvidence,
   normalizeEvidenceFreshnessStatus,
   normalizeArtifactRef,
+  normalizeProofCoverageSummary,
   normalizeProofAnchors,
   normalizeProofPath,
+  normalizeRunRecordForRead,
+  normalizeVerificationGateStatus,
   normalizeVerificationChecks,
 } = require("./evidence-utils");
 const { fileExists, readText } = require("./fs-utils");
 const { buildProofAnchor, loadRepositorySnapshot } = require("./repository-snapshot");
 const { parseManualProofItems } = require("./verification-proof");
-const { taskFiles } = require("./workspace");
+const { resolveStrictVerification, taskFiles } = require("./workspace");
 
 function loadRepositoryDiff(workspaceRoot, options = {}) {
   return loadRepositorySnapshot(workspaceRoot, options);
 }
 
-function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositorySnapshot = null, taskText = null) {
+function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositorySnapshot = null, taskText = null, options = {}) {
   const files = taskFiles(workspaceRoot, taskMeta.id);
-  const workspaceIndex = repositorySnapshot || loadRepositorySnapshot(workspaceRoot);
+  const strictVerification = resolveStrictVerification(workspaceRoot, options.strict);
+  const workspaceIndex =
+    repositorySnapshot ||
+    loadRepositorySnapshot(workspaceRoot, {
+      strict: strictVerification,
+    });
   const scopeBundle = collectTaskScopeHints(workspaceRoot, taskMeta, taskText === null ? readText(files.task, "") : taskText);
   const scopeHints = scopeBundle.hints;
   const verificationText = readText(files.verification, "");
@@ -30,19 +38,30 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
   const latestRunAtMs = latestRun ? parseTime(latestRun.completedAt || latestRun.createdAt) : null;
   const verificationUpdatedAtMs = fileExists(files.verification) ? fs.statSync(files.verification).mtimeMs : null;
   const latestEvidenceAtMs = maxTime([latestRunAtMs, verificationUpdatedAtMs]);
-  const proofCoverage = buildProofCoverage(verificationText, verificationUpdatedAtMs, runs);
+  const proofCoverage = buildProofCoverage(verificationText, verificationUpdatedAtMs, runs, {
+    strict: strictVerification,
+  });
   const scopedFiles = workspaceIndex.files
     .map((workspaceFile) => enrichMatchedFile(scopeHints, workspaceFile))
     .filter((workspaceFile) => workspaceFile.matchedBy.length > 0);
   const coveredScopedFiles = [];
   const relevantChangedFiles = [];
-  const resolveCurrentProofAnchor = createCurrentProofAnchorResolver(workspaceRoot);
+  const resolveCurrentProofAnchor = strictVerification
+    ? createCurrentProofAnchorResolver(workspaceRoot, {
+        strict: strictVerification,
+      })
+    : null;
 
   scopedFiles.forEach((workspaceFile) => {
     const matchingProofItems = findMatchingProofItems(proofCoverage.validItems, workspaceFile.path);
     const proofAtMs = maxTime(matchingProofItems.map((item) => item.recordedAtMs));
     const baselineAtMs = maxTime([taskCreatedAtMs, proofAtMs]);
-    const anchorCoverage = evaluateAnchorCoverage(workspaceFile, matchingProofItems, resolveCurrentProofAnchor);
+    const anchorCoverage = strictVerification
+      ? evaluateAnchorCoverage(workspaceFile, matchingProofItems, resolveCurrentProofAnchor)
+      : {
+          hasAnchors: false,
+          matched: false,
+        };
 
     if (anchorCoverage.hasAnchors) {
       if (anchorCoverage.matched) {
@@ -91,7 +110,9 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
       coveredScopedFiles: [],
       repository: summarizeRepositoryDiff(workspaceIndex, scopedFiles.length),
       evidence: buildEvidenceSummary(latestRunAtMs, verificationUpdatedAtMs, latestEvidenceAtMs),
-      proofCoverage: summarizeProofCoverage(proofCoverage),
+      proofCoverage: summarizeProofCoverage(proofCoverage, {
+        strict: strictVerification,
+      }),
     };
   }
 
@@ -108,7 +129,9 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
       coveredScopedFiles: [],
       repository: summarizeRepositoryDiff(workspaceIndex, 0),
       evidence: buildEvidenceSummary(latestRunAtMs, verificationUpdatedAtMs, latestEvidenceAtMs),
-      proofCoverage: summarizeProofCoverage(proofCoverage),
+      proofCoverage: summarizeProofCoverage(proofCoverage, {
+        strict: strictVerification,
+      }),
     };
   }
 
@@ -127,7 +150,9 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
       coveredScopedFiles,
       repository: summarizeRepositoryDiff(workspaceIndex, scopedFiles.length),
       evidence: buildEvidenceSummary(latestRunAtMs, verificationUpdatedAtMs, latestEvidenceAtMs),
-      proofCoverage: summarizeProofCoverage(proofCoverage),
+      proofCoverage: summarizeProofCoverage(proofCoverage, {
+        strict: strictVerification,
+      }),
     };
   }
 
@@ -145,7 +170,9 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
     coveredScopedFiles,
     repository: summarizeRepositoryDiff(workspaceIndex, scopedFiles.length),
     evidence: buildEvidenceSummary(latestRunAtMs, verificationUpdatedAtMs, latestEvidenceAtMs),
-    proofCoverage: summarizeProofCoverage(proofCoverage),
+    proofCoverage: summarizeProofCoverage(proofCoverage, {
+      strict: strictVerification,
+    }),
   };
 }
 
@@ -442,7 +469,7 @@ function stripInternalFileFields(workspaceFile, proofAtMs, proofItems = [], opti
   };
 }
 
-function createCurrentProofAnchorResolver(workspaceRoot) {
+function createCurrentProofAnchorResolver(workspaceRoot, options = {}) {
   const cache = new Map();
 
   return (workspaceFile) => {
@@ -452,7 +479,12 @@ function createCurrentProofAnchorResolver(workspaceRoot) {
     }
 
     if (!cache.has(cacheKey)) {
-      cache.set(cacheKey, buildProofAnchor(workspaceRoot, workspaceFile.path, workspaceFile));
+      cache.set(
+        cacheKey,
+        buildProofAnchor(workspaceRoot, workspaceFile.path, workspaceFile, {
+          strict: options.strict,
+        })
+      );
     }
 
     return cache.get(cacheKey);
@@ -519,9 +551,9 @@ function matchesProofAnchor(anchor, currentAnchor) {
   return comparedFieldCount > 0;
 }
 
-function buildProofCoverage(verificationText, verificationUpdatedAtMs, runs) {
-  const manualProofItems = parseManualProofItems(verificationText, verificationUpdatedAtMs);
-  const runProofItems = buildRunProofItems(runs);
+function buildProofCoverage(verificationText, verificationUpdatedAtMs, runs, options = {}) {
+  const manualProofItems = parseManualProofItems(verificationText, verificationUpdatedAtMs, options);
+  const runProofItems = buildRunProofItems(runs, options);
   const validItems = [];
   const draftItems = [];
 
@@ -541,25 +573,33 @@ function buildProofCoverage(verificationText, verificationUpdatedAtMs, runs) {
   };
 }
 
-function summarizeProofCoverage(proofCoverage) {
-  const proofItems = proofCoverage.items.map(summarizeProofItem);
+function summarizeProofCoverage(proofCoverage, options = {}) {
+  const strictVerification = options.strict === true;
+  const proofItems = proofCoverage.items.map((item) => summarizeProofItem(item, options));
   const verifiedItems = proofItems.filter((item) => item.verified);
+  const currentVerifiedEvidenceCount = strictVerification
+    ? verifiedItems.filter((item) => item.anchorCount > 0).length
+    : 0;
+  const recordedVerifiedEvidenceCount = strictVerification
+    ? verifiedItems.filter((item) => item.anchorCount === 0).length
+    : 0;
 
   return {
     explicitProofCount: proofCoverage.validItems.length,
     verifiedEvidenceCount: proofCoverage.validItems.length,
     weakProofCount: proofCoverage.draftItems.length,
     draftEvidenceCount: proofCoverage.draftItems.length,
-    anchoredStrongProofCount: verifiedItems.filter((item) => item.anchorCount > 0).length,
-    currentVerifiedEvidenceCount: verifiedItems.filter((item) => item.anchorCount > 0).length,
-    compatibilityStrongProofCount: verifiedItems.filter((item) => item.anchorCount === 0).length,
-    recordedVerifiedEvidenceCount: verifiedItems.filter((item) => item.anchorCount === 0).length,
+    anchoredStrongProofCount: currentVerifiedEvidenceCount,
+    currentVerifiedEvidenceCount,
+    compatibilityStrongProofCount: recordedVerifiedEvidenceCount,
+    recordedVerifiedEvidenceCount,
     items: proofItems,
   };
 }
 
-function buildRunProofItems(runs) {
+function buildRunProofItems(runs, options = {}) {
   return (Array.isArray(runs) ? runs : [])
+    .map((run) => normalizeRunRecordForRead(run))
     .filter((run) => run && run.status === "passed" && Array.isArray(run.scopeProofPaths) && run.scopeProofPaths.length > 0)
     .map((run) => {
       const proofPaths = uniqueStrings((run.scopeProofPaths || []).map(normalizeProofPath).filter(Boolean));
@@ -583,7 +623,9 @@ function buildRunProofItems(runs) {
         sourceLabel: run.id,
         recordedAtMs: parseTime(run.completedAt || run.createdAt),
         paths: proofPaths,
-        anchors: normalizeProofAnchors(run.scopeProofAnchors).filter((anchor) =>
+        anchors: normalizeProofAnchors(run.scopeProofAnchors, {
+          strict: options.strict,
+        }).filter((anchor) =>
           proofPaths.some((proofPath) => matchesScopePattern(proofPath, anchor.path))
         ),
         checks:
@@ -610,19 +652,52 @@ function findMatchingProofItems(items, filePath) {
     .sort((left, right) => left.recordedAtMs - right.recordedAtMs);
 }
 
-function summarizeProofItem(item) {
+function summarizeProofItem(item, options = {}) {
+  const strictVerification = options.strict === true;
   const verified = isVerifiedProofItem(item);
   return {
     sourceType: item.sourceType,
     sourceLabel: item.sourceLabel,
     recordedAt: item.recordedAtMs ? new Date(item.recordedAtMs).toISOString() : null,
     paths: item.paths,
-    anchorCount: Array.isArray(item.anchors) ? item.anchors.length : 0,
+    anchorCount: strictVerification && Array.isArray(item.anchors) ? item.anchors.length : 0,
     checks: item.checks,
     artifacts: item.artifacts,
     verified,
     strong: verified,
   };
+}
+
+function normalizeTaskVerificationGate(value) {
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  const normalized = { ...value };
+  const summaryStatus = normalizeVerificationGateStatus(
+    normalized.summary && normalized.summary.status !== undefined ? normalized.summary.status : normalized.status
+  );
+
+  if (normalized.summary && typeof normalized.summary === "object") {
+    normalized.summary = { ...normalized.summary };
+    if (summaryStatus) {
+      normalized.summary.status = summaryStatus;
+    }
+  } else if (summaryStatus) {
+    normalized.summary = {
+      status: summaryStatus,
+    };
+  }
+
+  if (summaryStatus) {
+    normalized.status = summaryStatus;
+  }
+
+  if (normalized.proofCoverage && typeof normalized.proofCoverage === "object") {
+    normalized.proofCoverage = normalizeProofCoverageSummary(normalized.proofCoverage);
+  }
+
+  return normalized;
 }
 
 function uniqueStrings(values) {
@@ -659,4 +734,5 @@ module.exports = {
   buildTaskVerificationGate,
   loadRepositoryDiff,
   loadRepositorySnapshot: loadRepositoryDiff,
+  normalizeTaskVerificationGate,
 };

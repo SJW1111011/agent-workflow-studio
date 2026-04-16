@@ -235,8 +235,11 @@ function main(argv = process.argv.slice(2)) {
       }
       case "checkpoint": {
         const [taskId] = positionals;
-        assert(taskId, "Usage: checkpoint <taskId> [--root path]");
-        const checkpoint = buildCheckpoint(workspaceRoot, taskId, { logUndo: true });
+        assert(taskId, "Usage: checkpoint <taskId> [--strict] [--root path]");
+        const checkpoint = buildCheckpoint(workspaceRoot, taskId, {
+          logUndo: true,
+          strict: options.strict,
+        });
         print(`Checkpoint updated for ${taskId} with ${checkpoint.runCount} recorded run(s).`);
         break;
       }
@@ -247,11 +250,12 @@ function main(argv = process.argv.slice(2)) {
         const agent = normalizeAdapterId(options.agent || "manual");
         assert(
           taskId && summary,
-          "Usage: done <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--complete] [--root path]"
+          "Usage: done <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--strict] [--complete] [--root path]"
         );
         const result = recordDone(workspaceRoot, taskId, summary, {
           status,
           agent,
+          strict: options.strict,
           complete: options.complete,
           ...buildManualRunFields(options),
         });
@@ -270,12 +274,15 @@ function main(argv = process.argv.slice(2)) {
         const agent = normalizeAdapterId(options.agent || "manual");
         assert(
           taskId && summary,
-          "Usage: run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--root path]"
+          "Usage: run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--strict] [--root path]"
         );
         const run = recordRun(workspaceRoot, taskId, summary, status, agent, buildManualRunFields(options), {
           undoType: "run:add",
+          strict: options.strict,
         });
-        buildCheckpoint(workspaceRoot, taskId);
+        buildCheckpoint(workspaceRoot, taskId, {
+          strict: options.strict,
+        });
         printSmartDefaultMessages(run);
         print(`Recorded run ${run.id} for ${taskId} with status ${run.status}.`);
         break;
@@ -291,8 +298,12 @@ function main(argv = process.argv.slice(2)) {
         break;
       }
       case "validate": {
-        const report = validateWorkspace(workspaceRoot);
-        print(`ok=${report.ok} errors=${report.errorCount} warnings=${report.warningCount}`);
+        const report = validateWorkspace(workspaceRoot, {
+          strict: options.strict,
+        });
+        print(
+          `ok=${report.ok} errors=${report.errorCount} warnings=${report.warningCount} strict=${report.strictVerification}`
+        );
         report.issues.forEach((item) => {
           print(`${item.level.toUpperCase()} | ${item.code} | ${item.target} | ${item.message}`);
         });
@@ -429,12 +440,12 @@ Commands:
   prompt:compile <taskId> [--agent codex|claude] [--root path]
   run:prepare <taskId> [--adapter <adapterId>] [--agent <adapterId>] [--root path]
   run:execute <taskId> [--adapter <adapterId>] [--agent <adapterId>] [--timeout-ms 300000] [--root path]
-  run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--root path]
-  done <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--complete] [--root path]
-  checkpoint <taskId> [--root path]
+  run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--strict] [--root path]
+  done <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--strict] [--complete] [--root path]
+  checkpoint <taskId> [--strict] [--root path]
   undo [--root path]
   overview [--root path]
-  validate [--root path]
+  validate [--strict] [--root path]
 `);
 }
 

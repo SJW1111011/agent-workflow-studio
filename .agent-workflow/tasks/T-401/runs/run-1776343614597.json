@@ -1,0 +1,41 @@
+{
+  "id": "run-1776343614597",
+  "taskId": "T-401",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: --strict opt-in fingerprinting, normal mode hides anchor labels, project.json strictVerification setting",
+  "createdAt": "2026-04-16T12:46:54.597Z",
+  "scopeProofPaths": [
+    "src/lib/verification-gates.js",
+    "src/lib/repository-snapshot.js",
+    "src/lib/verification-proof.js",
+    "src/cli.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "Normal mode: no anchor-backed or compatibility-only in output",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "true",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "project.json strictVerification defaults to false",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (33 files, 165 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "coverage 86.4% >= 85%",
+      "status": "passed",
+      "artifacts": []
+    }
+  ]
+}

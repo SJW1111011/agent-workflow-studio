@@ -302,6 +302,7 @@ function ensureWorkflowScaffold(workspaceRoot) {
       schemaVersion: 1,
       repositoryName: path.basename(workspaceRoot),
       createdAt: new Date().toISOString(),
+      strictVerification: false,
       adapters: ["codex", "claude-code"],
       dashboard: {
         defaultPort: 4173,
@@ -312,10 +313,42 @@ function ensureWorkflowScaffold(workspaceRoot) {
 }
 
 function readProjectConfig(workspaceRoot) {
-  return readJson(projectConfigPath(workspaceRoot), {
+  const config = readJson(projectConfigPath(workspaceRoot), {
     schemaVersion: 1,
     repositoryName: path.basename(workspaceRoot),
+    strictVerification: false,
   });
+
+  return {
+    ...config,
+    strictVerification: normalizeStrictVerification(config.strictVerification, false),
+  };
+}
+
+function resolveStrictVerification(workspaceRoot, value) {
+  if (value !== undefined) {
+    return normalizeStrictVerification(value, false);
+  }
+
+  return readProjectConfig(workspaceRoot).strictVerification === true;
+}
+
+function normalizeStrictVerification(value, fallback = false) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (["1", "true", "yes", "on"].includes(normalized)) {
+      return true;
+    }
+    if (["0", "false", "no", "off"].includes(normalized)) {
+      return false;
+    }
+  }
+
+  return fallback;
 }
 
 function readTaskMeta(workspaceRoot, taskId) {
@@ -355,12 +388,14 @@ module.exports = {
   projectConfigPath,
   projectProfileMarkdownPath,
   projectProfilePath,
+  normalizeStrictVerification,
   readProjectConfig,
   readTaskDoc,
   readTaskMeta,
   recipesIndexPath,
   recipesRoot,
   RECIPE_REGISTRY,
+  resolveStrictVerification,
   resolveWorkspaceRoot,
   runsRoot,
   taskFiles,

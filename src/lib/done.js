@@ -20,13 +20,16 @@ function recordDone(workspaceRoot, taskId, summary, options = {}) {
     },
     {
       undoType: null,
+      strict: options.strict,
     }
   );
 
   const task = shouldMarkTaskDone(options.complete)
     ? updateTaskMeta(workspaceRoot, taskId, { status: "done" })
     : null;
-  const checkpoint = buildCheckpoint(workspaceRoot, taskId);
+  const checkpoint = buildCheckpoint(workspaceRoot, taskId, {
+    strict: options.strict,
+  });
   const runFile = `.agent-workflow/tasks/${taskId}/runs/${run.id}.json`;
   const undoRestoreSnapshots = restoreSnapshots.concat([
     {

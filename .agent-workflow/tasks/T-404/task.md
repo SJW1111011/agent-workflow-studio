@@ -14,13 +14,15 @@ Ensure existing `.agent-workflow/` data created before Phase 3 works transparent
 ## Scope
 
 - In scope:
-  - repo path: src/lib/evidence-utils.js (accept old field values as aliases for new ones)
-  - repo path: src/lib/verification-gates.js (map old gate statuses to new ones on read)
-  - repo path: src/lib/overview.js (map old signal statuses to new ones on read)
-  - repo path: src/lib/verification-proof.js (preserve existing managed anchor blocks when strict is off)
-  - repo path: src/lib/schema-validator.js (accept both old and new vocabulary in validation)
-  - repo path: test/ (add tests with fixture data using old vocabulary)
-  - repo path: README.md (migration guide section)
+  - repo path: src/lib/evidence-utils.js
+  - repo path: src/lib/task-service.js
+  - repo path: src/lib/verification-gates.js
+  - repo path: src/lib/overview.js
+  - repo path: src/lib/verification-proof.js
+  - repo path: src/lib/schema-validator.js
+  - repo path: scripts/smoke-test.js
+  - repo path: test/migration-compatibility.test.js
+  - repo path: README.md
 - Out of scope:
   - repo path: dashboard/ (UI handles whatever the API returns — no special migration logic needed)
   - repo path: rewriting existing files on disk (read compatibility, not write migration)

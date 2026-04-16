@@ -132,6 +132,10 @@ const TOOL_DEFINITIONS = Object.freeze([
           type: "string",
           description: "Task id such as T-001.",
         },
+        strict: {
+          type: "boolean",
+          description: "Enable strict fingerprint-backed verification for this checkpoint refresh.",
+        },
       },
       required: ["taskId"],
     },
@@ -144,7 +148,16 @@ const TOOL_DEFINITIONS = Object.freeze([
   {
     name: "workflow_validate",
     description: "Validate the current workspace workflow scaffold, adapters, tasks, and recorded runs.",
-    inputSchema: emptyInputSchema(),
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        strict: {
+          type: "boolean",
+          description: "Report the effective strict verification mode alongside the validation result.",
+        },
+      },
+    },
   },
   {
     name: "workflow_overview",
@@ -287,6 +300,7 @@ function runDoneTool(workspaceRoot, args) {
       "scopeProofPaths",
       "skipInferTest",
       "status",
+      "strict",
       "summary",
       "taskId",
       "verificationArtifacts",
@@ -301,6 +315,7 @@ function runDoneTool(workspaceRoot, args) {
     status: normalizeRunStatus(args.status),
     agent: normalizeAdapterId(optionalTrimmedString(args.agent) || "manual"),
     complete: optionalBoolean(args.complete, "complete"),
+    strict: optionalBoolean(args.strict, "strict"),
     ...buildManualRunOptions(args, "workflow_done"),
   });
 
@@ -402,6 +417,7 @@ function runRunAddTool(workspaceRoot, args) {
       "scopeProofPaths",
       "skipInferTest",
       "status",
+      "strict",
       "summary",
       "taskId",
       "verificationArtifacts",
@@ -421,9 +437,12 @@ function runRunAddTool(workspaceRoot, args) {
     buildManualRunOptions(args, "workflow_run_add"),
     {
       undoType: "run:add",
+      strict: optionalBoolean(args.strict, "strict"),
     }
   );
-  const checkpoint = buildCheckpoint(workspaceRoot, taskId);
+  const checkpoint = buildCheckpoint(workspaceRoot, taskId, {
+    strict: optionalBoolean(args.strict, "strict"),
+  });
 
   return {
     ok: true,
@@ -438,10 +457,11 @@ function runRunAddTool(workspaceRoot, args) {
 }
 
 function runCheckpointTool(workspaceRoot, args) {
-  assertKnownKeys(args, ["taskId"], "workflow_checkpoint");
+  assertKnownKeys(args, ["strict", "taskId"], "workflow_checkpoint");
   const taskId = requireNonEmptyString(args, "taskId", "workflow_checkpoint");
   const checkpoint = buildCheckpoint(workspaceRoot, taskId, {
     logUndo: true,
+    strict: optionalBoolean(args.strict, "strict"),
   });
 
   return {
@@ -471,14 +491,16 @@ function runUndoTool(workspaceRoot, args) {
 }
 
 function runValidateTool(workspaceRoot, args) {
-  assertKnownKeys(args, [], "workflow_validate");
-  const report = validateWorkspace(workspaceRoot);
+  assertKnownKeys(args, ["strict"], "workflow_validate");
+  const report = validateWorkspace(workspaceRoot, {
+    strict: optionalBoolean(args.strict, "strict"),
+  });
 
   return {
     ok: report.ok === true,
     tool: "workflow_validate",
     workspaceRoot,
-    summary: `ok=${report.ok} errors=${report.errorCount} warnings=${report.warningCount}`,
+    summary: `ok=${report.ok} errors=${report.errorCount} warnings=${report.warningCount} strict=${report.strictVerification}`,
     ...report,
   };
 }
@@ -540,6 +562,10 @@ function buildManualRunInputSchema(options = {}) {
     agent: {
       type: "string",
       description: "Agent or adapter id. Defaults to manual.",
+    },
+    strict: {
+      type: "boolean",
+      description: "Enable strict fingerprint-backed verification instead of the default timestamp-based mode.",
     },
     proofPaths: {
       type: "array",

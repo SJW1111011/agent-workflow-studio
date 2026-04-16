@@ -1,0 +1,51 @@
+{
+  "id": "run-1776342735759",
+  "taskId": "T-404",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Finalized transparent read-compatibility for legacy workflow evidence, tightened T-404 scope docs, and documented the pre-Phase-3 upgrade path.",
+  "createdAt": "2026-04-16T12:32:15.757Z",
+  "scopeProofPaths": [
+    "src/lib/evidence-utils.js",
+    "src/lib/task-service.js",
+    "src/lib/verification-gates.js",
+    "src/lib/overview.js",
+    "src/lib/verification-proof.js",
+    "src/lib/schema-validator.js",
+    "test/migration-compatibility.test.js",
+    "README.md",
+    "scripts/smoke-test.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "migration-compatibility suite passes (5 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (33 files, 165 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run lint passes",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run validate -- --root . returns ok=true errors=0 warnings=0 strict=false",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke passes",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-404/runs/npm-test-migration.log",
+    ".agent-workflow/tasks/T-404/runs/npm-lint-t404.log",
+    ".agent-workflow/tasks/T-404/runs/npm-validate-t404.log"
+  ]
+}

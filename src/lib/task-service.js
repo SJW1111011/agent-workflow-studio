@@ -11,6 +11,7 @@ const {
   normalizeArtifactRefs,
   normalizeProofAnchors,
   normalizeProofPaths,
+  normalizeRunRecordForRead,
   normalizeVerificationChecks,
 } = require("./evidence-utils");
 const { buildScopeProofAnchors, loadRepositorySnapshot } = require("./repository-snapshot");
@@ -22,7 +23,7 @@ const {
 } = require("./task-documents");
 const { inferProofPathsResult, inferTestStatusResult } = require("./smart-defaults");
 const { appendUndoEntry, buildUndoFileList, captureTaskRestoreSnapshots } = require("./undo-log");
-const { ensureWorkflowScaffold, runsRoot, taskFiles, taskRoot } = require("./workspace");
+const { ensureWorkflowScaffold, resolveStrictVerification, runsRoot, taskFiles, taskRoot } = require("./workspace");
 
 const TASK_STATUSES = new Set(["todo", "in_progress", "blocked", "done"]);
 const TASK_PRIORITIES = new Set(["P0", "P1", "P2", "P3"]);
@@ -104,7 +105,7 @@ function listRuns(workspaceRoot, taskId) {
   return fs
     .readdirSync(targetRoot, { withFileTypes: true })
     .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
-    .map((entry) => readJson(path.join(targetRoot, entry.name), null))
+    .map((entry) => normalizeRunRecordForRead(readJson(path.join(targetRoot, entry.name), null)))
     .filter(Boolean)
     .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
 }
@@ -119,7 +120,10 @@ function getTaskDetail(workspaceRoot, taskId) {
   const recipe = getRecipe(workspaceRoot, meta.recipeId);
   const runs = listRuns(workspaceRoot, taskId);
   const taskText = safeRead(files.task);
-  const repositorySnapshot = loadRepositorySnapshot(workspaceRoot);
+  const strictVerification = resolveStrictVerification(workspaceRoot);
+  const repositorySnapshot = loadRepositorySnapshot(workspaceRoot, {
+    strict: strictVerification,
+  });
   return {
     meta,
     recipe: recipe
@@ -136,7 +140,9 @@ function getTaskDetail(workspaceRoot, taskId) {
     checkpointText: safeRead(files.checkpoint),
     runs,
     freshness: buildTaskFreshness(workspaceRoot, meta, runs),
-    verificationGate: buildTaskVerificationGate(workspaceRoot, meta, runs, repositorySnapshot, taskText),
+    verificationGate: buildTaskVerificationGate(workspaceRoot, meta, runs, repositorySnapshot, taskText, {
+      strict: strictVerification,
+    }),
     generatedFiles: buildGeneratedFiles(workspaceRoot, files),
   };
 }
@@ -225,6 +231,7 @@ function appendTaskNote(workspaceRoot, taskId, note, options = {}) {
 function recordRun(workspaceRoot, taskId, summary, status, agent = "manual", fields = {}, options = {}) {
   const undoType = isNonEmptyString(options.undoType) ? options.undoType.trim() : "";
   const restoreSnapshots = undoType ? captureTaskRestoreSnapshots(workspaceRoot, taskId) : null;
+  const strictVerification = resolveStrictVerification(workspaceRoot, options.strict);
   const resolvedDefaults = resolveRunSmartDefaults(workspaceRoot, status, fields);
   const run = createRunRecord(taskId, {
     agent,
@@ -233,7 +240,12 @@ function recordRun(workspaceRoot, taskId, summary, status, agent = "manual", fie
     ...resolvedDefaults.fields,
   });
 
-  const persistedRun = attachRunRuntimeMetadata(persistRunRecord(workspaceRoot, taskId, run), resolvedDefaults);
+  const persistedRun = attachRunRuntimeMetadata(
+    persistRunRecord(workspaceRoot, taskId, run, {
+      strict: strictVerification,
+    }),
+    resolvedDefaults
+  );
 
   if (undoType) {
     const runFile = `.agent-workflow/tasks/${taskId}/runs/${persistedRun.id}.json`;
@@ -379,7 +391,7 @@ function createRunRecord(taskId, fields = {}) {
   };
 }
 
-function persistRunRecord(workspaceRoot, taskId, run) {
+function persistRunRecord(workspaceRoot, taskId, run, options = {}) {
   const { files, taskMeta: meta } = ensureTaskArtifacts(workspaceRoot, taskId, {
     task: true,
     context: true,
@@ -388,8 +400,13 @@ function persistRunRecord(workspaceRoot, taskId, run) {
   });
   const existingRuns = listRuns(workspaceRoot, taskId);
   const taskText = safeRead(files.task);
-  const repositorySnapshot = loadRepositorySnapshot(workspaceRoot);
-  const gateBeforePersist = buildTaskVerificationGate(workspaceRoot, meta, existingRuns, repositorySnapshot, taskText);
+  const strictVerification = resolveStrictVerification(workspaceRoot, options.strict);
+  const repositorySnapshot = loadRepositorySnapshot(workspaceRoot, {
+    strict: strictVerification,
+  });
+  const gateBeforePersist = buildTaskVerificationGate(workspaceRoot, meta, existingRuns, repositorySnapshot, taskText, {
+    strict: strictVerification,
+  });
   const inferredScopeProofPaths =
     run.status === "passed"
       ? Array.from(
@@ -409,11 +426,16 @@ function persistRunRecord(workspaceRoot, taskId, run) {
   );
   const verificationArtifacts = normalizeArtifactRefs(run.verificationArtifacts);
   const scopeProofAnchors =
-    run.status === "passed" && scopeProofPaths.length > 0
+    strictVerification && run.status === "passed" && scopeProofPaths.length > 0
       ? normalizeProofAnchors(
           Array.isArray(run.scopeProofAnchors) && run.scopeProofAnchors.length > 0
             ? run.scopeProofAnchors
-            : buildScopeProofAnchors(workspaceRoot, scopeProofPaths, repositorySnapshot)
+            : buildScopeProofAnchors(workspaceRoot, scopeProofPaths, repositorySnapshot, {
+                strict: strictVerification,
+              }),
+          {
+            strict: strictVerification,
+          }
         )
       : [];
 

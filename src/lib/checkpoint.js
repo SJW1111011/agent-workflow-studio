@@ -4,9 +4,10 @@ const { listRuns } = require("./task-service");
 const { ensureTaskArtifacts } = require("./task-documents");
 const { appendUndoEntry, buildUndoFileList, captureTaskRestoreSnapshots } = require("./undo-log");
 const { buildTaskVerificationGate } = require("./verification-gates");
-const { projectProfilePath } = require("./workspace");
+const { projectProfilePath, resolveStrictVerification } = require("./workspace");
 
 function buildCheckpoint(workspaceRoot, taskId, options = {}) {
+  const strictVerification = resolveStrictVerification(workspaceRoot, options.strict);
   const restoreSnapshots = options.logUndo === true
     ? captureTaskRestoreSnapshots(workspaceRoot, taskId, {
         includeTaskMeta: false,
@@ -20,7 +21,9 @@ function buildCheckpoint(workspaceRoot, taskId, options = {}) {
   });
   const runs = listRuns(workspaceRoot, taskId);
   const latestRun = runs[runs.length - 1] || null;
-  const verificationGate = buildTaskVerificationGate(workspaceRoot, task, runs);
+  const verificationGate = buildTaskVerificationGate(workspaceRoot, task, runs, null, null, {
+    strict: strictVerification,
+  });
   const risks = deriveRisks(workspaceRoot, files, latestRun, verificationGate);
   const completed = [];
 

@@ -1,16 +1,19 @@
+const fs = require("fs");
 const path = require("path");
 const { VALID_CHECK_STATUSES, normalizeProofAnchors } = require("./evidence-utils");
 const { fileExists, readJson } = require("./fs-utils");
 const { listAdapters } = require("./adapters");
 const { listRecipes } = require("./recipes");
-const { listRuns, listTasks } = require("./task-service");
-const { projectConfigPath, taskRoot } = require("./workspace");
+const { listTasks } = require("./task-service");
+const { projectConfigPath, resolveStrictVerification, taskRoot } = require("./workspace");
 
 const RUN_OUTCOMES = new Set(["passed", "failed", "timed-out", "interrupted", "cancelled"]);
 const RUN_FAILURE_CATEGORIES = new Set(["non-zero-exit", "timeout", "interrupted", "launch-error"]);
+const VALID_LEGACY_CHECK_STATUSES = new Set(VALID_CHECK_STATUSES.concat(["verified", "strong", "weak", "draft", "planned"]));
 
-function validateWorkspace(workspaceRoot) {
+function validateWorkspace(workspaceRoot, options = {}) {
   const issues = [];
+  const strictVerification = resolveStrictVerification(workspaceRoot, options.strict);
 
   validateProjectConfig(workspaceRoot, issues);
   validateRecipes(workspaceRoot, issues);
@@ -22,6 +25,7 @@ function validateWorkspace(workspaceRoot) {
     issueCount: issues.length,
     errorCount: issues.filter((issue) => issue.level === "error").length,
     warningCount: issues.filter((issue) => issue.level === "warning").length,
+    strictVerification,
     issues,
   };
 }
@@ -45,6 +49,17 @@ function validateProjectConfig(workspaceRoot, issues) {
 
   if (!Array.isArray(config.adapters)) {
     issues.push(issue("warning", "project.adapters", "project.json should declare supported adapters", configPath));
+  }
+
+  if (config.strictVerification !== undefined && typeof config.strictVerification !== "boolean") {
+    issues.push(
+      issue(
+        "error",
+        "project.strictVerification",
+        "project.json strictVerification must be a boolean when present",
+        configPath
+      )
+    );
   }
 }
 
@@ -146,7 +161,8 @@ function validateTasks(workspaceRoot, issues) {
   const knownRecipeIds = new Set(listRecipes(workspaceRoot).map((recipe) => recipe.id));
 
   listTasks(workspaceRoot).forEach((task) => {
-    const metaPath = path.join(taskRoot(workspaceRoot, task.id), "task.json");
+    const currentTaskRoot = taskRoot(workspaceRoot, task.id);
+    const metaPath = path.join(currentTaskRoot, "task.json");
     if (!isNonEmptyString(task.id)) {
       issues.push(issue("error", "task.id", "Task entry is missing id", metaPath));
     }
@@ -162,8 +178,7 @@ function validateTasks(workspaceRoot, issues) {
       issues.push(issue("error", "task.recipeId.unknown", `Task ${task.id} references unknown recipeId ${task.recipeId}`, metaPath));
     }
 
-    listRuns(workspaceRoot, task.id).forEach((run) => {
-      const runPath = path.join(taskRoot(workspaceRoot, task.id), "runs", `${run.id}.json`);
+    listRawRuns(currentTaskRoot).forEach(({ run, runPath }) => {
       if (!isNonEmptyString(run.id)) {
         issues.push(issue("error", "run.id", `Task ${task.id} has a run without id`, runPath));
       }
@@ -250,6 +265,25 @@ function validateTasks(workspaceRoot, issues) {
   });
 }
 
+function listRawRuns(currentTaskRoot) {
+  const runsDir = path.join(currentTaskRoot, "runs");
+  if (!fs.existsSync(runsDir)) {
+    return [];
+  }
+
+  return fs
+    .readdirSync(runsDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+    .map((entry) => {
+      const runPath = path.join(runsDir, entry.name);
+      return {
+        run: readJson(runPath, null),
+        runPath,
+      };
+    })
+    .filter((entry) => entry.run);
+}
+
 function issue(level, code, message, target) {
   return {
     level,
@@ -272,7 +306,10 @@ function isValidVerificationCheck(value) {
     return false;
   }
 
-  if (value.status !== undefined && !VALID_CHECK_STATUSES.includes(String(value.status || "").trim().toLowerCase())) {
+  if (
+    value.status !== undefined &&
+    !VALID_LEGACY_CHECK_STATUSES.has(String(value.status || "").trim().toLowerCase())
+  ) {
     return false;
   }
 

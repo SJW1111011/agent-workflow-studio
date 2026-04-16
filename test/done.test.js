@@ -8,7 +8,7 @@ const { main } = require("../src/cli");
 const { recordDone } = require("../src/lib/done");
 const { listRuns } = require("../src/lib/task-service");
 const { startDashboardServer } = require("../src/server");
-const { createTaskWorkspace, readJsonFile, readTextFile } = require("./test-helpers");
+const { createTaskWorkspace, readJsonFile, readTextFile, writeTextFile } = require("./test-helpers");
 
 function getFreePort() {
   return new Promise((resolve, reject) => {
@@ -207,6 +207,8 @@ const tests = [
     name: "cli done command forwards proof, check, artifact, and complete options",
     run() {
       const { workspaceRoot, taskId, files } = createTaskWorkspace("done-cli");
+      writeTextFile(path.join(workspaceRoot, "src", "cli.js"), "module.exports = 'cli';\n");
+      writeTextFile(path.join(workspaceRoot, "README.md"), "# Done CLI\n");
 
       const output = captureCliOutput(() => {
         main([
@@ -223,6 +225,7 @@ const tests = [
           "npm test",
           "--artifact",
           `.agent-workflow/tasks/${taskId}/checkpoint.md`,
+          "--strict",
           "--complete",
           "--root",
           workspaceRoot,
@@ -235,6 +238,8 @@ const tests = [
       assert.equal(run.verificationChecks[0].label, "npm test");
       assert.equal(run.verificationChecks[0].status, "passed");
       assert.deepEqual(run.verificationArtifacts, [`.agent-workflow/tasks/${taskId}/checkpoint.md`]);
+      assert.ok(Array.isArray(run.scopeProofAnchors));
+      assert.equal(run.scopeProofAnchors.length, 2);
       assert.equal(readJsonFile(files.meta).status, "done");
       assert.match(output, /Recorded run run-/);
       assert.match(output, /Checkpoint updated for T-001 with 1 recorded run\(s\)\./);

@@ -13,16 +13,16 @@ Content fingerprinting is the most confusing part of the evidence model. Users s
 
 ## Facts
 
-- `repository-snapshot.js` computes SHA1 fingerprints via `hashFileContent()` with an LRU cache (256 entries)
-- `buildScopeProofAnchors()` is called in `persistRunRecord()` to capture fingerprints at evidence recording time
-- `verification-gates.js` compares current fingerprints to recorded anchors to determine freshness
-- `verification-proof.js` manages the `<!-- managed:verification-manual-proof-anchors -->` block in verification.md
-- `overview.js` reports `anchorBackedStrongProofCount` vs `compatibilityStrongProofCount` — this distinction disappears in normal mode
-- T-400 (vocabulary rename) should land first so the labels being hidden are already renamed
+- `workspace.js` now resolves strict mode from either explicit CLI/MCP input or `.agent-workflow/project.json` `strictVerification`
+- `repository-snapshot.js` skips content fingerprint hashing unless strict mode is enabled and now refuses parent-repo Git snapshots when `workspaceRoot` is not the repository root
+- `verification-gates.js` now uses timestamp freshness by default and only evaluates anchor-backed freshness when strict mode is enabled
+- `task-service.js`, `checkpoint.js`, `done.js`, and `run-executor.js` all thread the resolved strict mode through run persistence and checkpoint refresh
+- `task-documents.js` preserves existing managed manual anchor blocks when strict mode is off instead of refreshing or deleting them
+- CLI, MCP, README, smoke coverage, and unit tests were updated together so strict opt-in is exercised explicitly instead of relying on the old default
 
 ## Open questions
 
-- Should `run:execute` (adapter execution) also respect `--strict`? Leaning yes — it calls `persistRunRecord` internally.
+- `run:execute` now respects the resolved strict workspace mode through `persistRunRecord()` and `buildCheckpoint()`
 
 ## Constraints
 
@@ -31,5 +31,5 @@ Content fingerprinting is the most confusing part of the evidence model. Users s
 - Keep the workflow docs current.
 <!-- agent-workflow:managed:context-constraints-meta:end -->
 - Depends on T-400 (vocabulary must be renamed first)
-- Must not delete existing fingerprint data — just stop computing/displaying it in normal mode
+- Must not delete existing fingerprint data; just stop computing or displaying it in normal mode
 - Must pass `npm test`, `npm run lint`, `npm run smoke`

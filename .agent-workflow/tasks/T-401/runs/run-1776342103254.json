@@ -1,0 +1,36 @@
+{
+  "id": "run-1776342103254",
+  "taskId": "T-401",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Made fingerprint verification opt-in via --strict and project defaults.",
+  "createdAt": "2026-04-16T12:21:43.252Z",
+  "scopeProofPaths": [
+    "src/lib/workspace.js",
+    "src/lib/repository-snapshot.js",
+    "src/lib/verification-gates.js",
+    "src/lib/task-service.js",
+    "src/cli.js",
+    "src/lib/mcp-tools.js",
+    "README.md",
+    "test/proof-anchors.test.js",
+    "scripts/smoke-test.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run lint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    }
+  ]
+}

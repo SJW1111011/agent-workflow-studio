@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
 const { createTask } = require("../src/lib/task-service");
-const { ensureWorkflowScaffold, taskFiles } = require("../src/lib/workspace");
+const { ensureWorkflowScaffold, projectConfigPath, taskFiles } = require("../src/lib/workspace");
 
 const REPO_ROOT = path.resolve(__dirname, "..");
 const TEST_TMP_ROOT = path.join(REPO_ROOT, "tmp", "unit-tests");
@@ -109,6 +109,13 @@ function initializeGitRepository(workspaceRoot) {
   runCommand("git", ["config", "user.email", "unit@example.com"], workspaceRoot);
 }
 
+function setProjectStrictVerification(workspaceRoot, value) {
+  const configPath = projectConfigPath(workspaceRoot);
+  const projectConfig = readJsonFile(configPath);
+  projectConfig.strictVerification = Boolean(value);
+  writeJsonFile(configPath, projectConfig);
+}
+
 module.exports = {
   buildRepositoryDiff,
   createTaskWorkspace,
@@ -117,6 +124,7 @@ module.exports = {
   readTextFile,
   runCommand,
   runCommandOutput,
+  setProjectStrictVerification,
   setFileModifiedAt,
   trackTempDirectory,
   writeJsonFile,

@@ -13,14 +13,22 @@ function loadRepositorySnapshot(workspaceRoot, options = {}) {
     throw new Error("workspaceRoot is required to load a repository snapshot.");
   }
 
+  const strictVerification = options.strict !== false;
+
   if (!options.preferFilesystem) {
-    const gitSnapshot = tryLoadGitRepositorySnapshot(workspaceRoot, options);
+    const gitSnapshot = tryLoadGitRepositorySnapshot(workspaceRoot, {
+      ...options,
+      strict: strictVerification,
+    });
     if (gitSnapshot) {
       return gitSnapshot;
     }
   }
 
-  return loadFilesystemSnapshot(workspaceRoot);
+  return loadFilesystemSnapshot(workspaceRoot, {
+    ...options,
+    strict: strictVerification,
+  });
 }
 
 function loadGitRepositorySnapshot(workspaceRoot, options = {}) {
@@ -28,7 +36,10 @@ function loadGitRepositorySnapshot(workspaceRoot, options = {}) {
     throw new Error("workspaceRoot is required to load a repository snapshot.");
   }
 
-  return tryLoadGitRepositorySnapshot(workspaceRoot, options);
+  return tryLoadGitRepositorySnapshot(workspaceRoot, {
+    ...options,
+    strict: options.strict !== false,
+  });
 }
 
 function loadChangedFilePaths(workspaceRoot, options = {}) {
@@ -58,8 +69,13 @@ function loadChangedFilePaths(workspaceRoot, options = {}) {
 
 function tryLoadGitRepositorySnapshot(workspaceRoot, options = {}) {
   const gitCommand = options.gitCommand || "git";
+  const strictVerification = options.strict !== false;
   const repositoryRoot = runGitCommand(gitCommand, ["rev-parse", "--show-toplevel"], workspaceRoot);
   if (!repositoryRoot) {
+    return null;
+  }
+
+  if (path.resolve(repositoryRoot.trim()) !== path.resolve(workspaceRoot)) {
     return null;
   }
 
@@ -75,7 +91,9 @@ function tryLoadGitRepositorySnapshot(workspaceRoot, options = {}) {
     return null;
   }
 
-  const files = parseGitStatusPorcelainV2(statusOutput, workspaceRoot);
+  const files = parseGitStatusPorcelainV2(statusOutput, workspaceRoot, {
+    strict: strictVerification,
+  });
   return {
     mode: "git",
     available: true,
@@ -100,8 +118,13 @@ function loadFilesystemSnapshot(workspaceRoot) {
   };
 }
 
-function buildScopeProofAnchors(workspaceRoot, proofPaths, repositorySnapshot = null) {
-  const snapshot = repositorySnapshot || loadRepositorySnapshot(workspaceRoot);
+function buildScopeProofAnchors(workspaceRoot, proofPaths, repositorySnapshot = null, options = {}) {
+  const strictVerification = options.strict !== false;
+  const snapshot =
+    repositorySnapshot ||
+    loadRepositorySnapshot(workspaceRoot, {
+      strict: strictVerification,
+    });
   const snapshotFilesByPath = new Map(
     (Array.isArray(snapshot.files) ? snapshot.files : [])
       .filter((entry) => normalizeSnapshotPath(entry.path))
@@ -111,20 +134,27 @@ function buildScopeProofAnchors(workspaceRoot, proofPaths, repositorySnapshot = 
   return Array.from(
     new Map(
       (Array.isArray(proofPaths) ? proofPaths : [])
-        .map((proofPath) => buildProofAnchor(workspaceRoot, proofPath, snapshotFilesByPath.get(normalizeSnapshotPath(proofPath))))
+        .map((proofPath) =>
+          buildProofAnchor(workspaceRoot, proofPath, snapshotFilesByPath.get(normalizeSnapshotPath(proofPath)), {
+            strict: strictVerification,
+          })
+        )
         .filter(Boolean)
         .map((anchor) => [anchor.path, anchor])
     ).values()
   );
 }
 
-function buildProofAnchor(workspaceRoot, proofPath, repositoryEntry = null) {
+function buildProofAnchor(workspaceRoot, proofPath, repositoryEntry = null, options = {}) {
+  const strictVerification = options.strict !== false;
   const normalizedPath = normalizeSnapshotPath(proofPath || (repositoryEntry ? repositoryEntry.path : null));
   if (!normalizedPath) {
     return null;
   }
 
-  const directFileAnchor = buildDirectProofAnchor(workspaceRoot, normalizedPath);
+  const directFileAnchor = buildDirectProofAnchor(workspaceRoot, normalizedPath, {
+    strict: strictVerification,
+  });
   if (!repositoryEntry && !directFileAnchor) {
     return null;
   }
@@ -143,9 +173,9 @@ function buildProofAnchor(workspaceRoot, proofPath, repositoryEntry = null) {
           ? true
           : undefined,
     contentFingerprint:
-      repositoryEntry && repositoryEntry.contentFingerprint
+      strictVerification && repositoryEntry && repositoryEntry.contentFingerprint
         ? repositoryEntry.contentFingerprint
-        : directFileAnchor
+        : strictVerification && directFileAnchor
           ? directFileAnchor.contentFingerprint
           : undefined,
   };
@@ -185,7 +215,7 @@ function parseGitChangedFilePaths(output) {
   );
 }
 
-function parseGitStatusPorcelainV2(output, workspaceRoot) {
+function parseGitStatusPorcelainV2(output, workspaceRoot, options = {}) {
   const records = String(output || "")
     .split("\0")
     .filter(Boolean);
@@ -202,6 +232,7 @@ function parseGitStatusPorcelainV2(output, workspaceRoot) {
         buildSnapshotFile(workspaceRoot, record.slice(2), {
           changeType: "untracked",
           gitState: "??",
+          strict: options.strict,
         })
       );
       continue;
@@ -217,6 +248,7 @@ function parseGitStatusPorcelainV2(output, workspaceRoot) {
         buildSnapshotFile(workspaceRoot, parsed.remainder, {
           changeType: deriveChangeTypeFromGitStatus(parsed.fields[1]),
           gitState: normalizeGitState(parsed.fields[1]),
+          strict: options.strict,
         })
       );
       continue;
@@ -235,6 +267,7 @@ function parseGitStatusPorcelainV2(output, workspaceRoot) {
           changeType: "renamed",
           gitState: normalizeGitState(parsed.fields[1]) || "R",
           previousPath: normalizeSnapshotPath(previousPath),
+          strict: options.strict,
         })
       );
       continue;
@@ -250,6 +283,7 @@ function parseGitStatusPorcelainV2(output, workspaceRoot) {
         buildSnapshotFile(workspaceRoot, parsed.remainder, {
           changeType: "modified",
           gitState: normalizeGitState(parsed.fields[1]),
+          strict: options.strict,
         })
       );
     }
@@ -336,7 +370,8 @@ function buildSnapshotFile(workspaceRoot, relativePath, options = {}) {
     exists: Boolean(fileStats),
     modifiedAt: fileStats ? new Date(fileStats.mtimeMs).toISOString() : null,
     modifiedAtMs: fileStats ? fileStats.mtimeMs : null,
-    contentFingerprint: fileStats ? hashFileWithCache(absolutePath, fileStats, normalizedPath) : null,
+    contentFingerprint:
+      options.strict === false || !fileStats ? null : hashFileWithCache(absolutePath, fileStats, normalizedPath),
   };
 }
 
@@ -370,7 +405,7 @@ function hashFileWithCache(filePath, stats = null, relativePath = null) {
   return fingerprint;
 }
 
-function buildDirectProofAnchor(workspaceRoot, relativePath) {
+function buildDirectProofAnchor(workspaceRoot, relativePath, options = {}) {
   const normalizedPath = normalizeSnapshotPath(relativePath);
   const absolutePath = normalizedPath
     ? path.join(workspaceRoot, normalizedPath.split("/").join(path.sep))
@@ -383,7 +418,8 @@ function buildDirectProofAnchor(workspaceRoot, relativePath) {
   return {
     path: normalizedPath,
     exists: true,
-    contentFingerprint: hashFileWithCache(absolutePath, stats, normalizedPath),
+    contentFingerprint:
+      options.strict === false ? undefined : hashFileWithCache(absolutePath, stats, normalizedPath),
   };
 }
 

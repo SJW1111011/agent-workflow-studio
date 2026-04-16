@@ -61,7 +61,7 @@ const tests = [
       assert.equal(gate.coveredScopedFiles[0].proofFreshnessSource, "recorded");
       assert.equal(gate.proofCoverage.explicitProofCount, 1);
       assert.equal(gate.proofCoverage.weakProofCount, 0);
-      assert.equal(gate.proofCoverage.compatibilityStrongProofCount, 1);
+      assert.equal(gate.proofCoverage.compatibilityStrongProofCount, 0);
       assert.equal(gate.proofCoverage.anchoredStrongProofCount, 0);
       assert.equal(gate.coveredScopedFiles[0].proofItems[0].strong, true);
     },
@@ -143,7 +143,11 @@ const tests = [
             modifiedAt: "2026-01-04T00:00:00.000Z",
             contentFingerprint: "sha1:same-fingerprint",
           },
-        ])
+        ]),
+        null,
+        {
+          strict: true,
+        }
       );
 
       assert.equal(gate.summary.status, "covered");
@@ -151,6 +155,54 @@ const tests = [
       assert.equal(gate.coveredScopedFiles.length, 1);
       assert.equal(gate.coveredScopedFiles[0].path, "src/app.js");
       assert.equal(gate.proofCoverage.items[0].anchorCount, 1);
+    },
+  },
+  {
+    name: "default verification mode ignores anchors and falls back to timestamp freshness",
+    run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("verification-anchors-default-mode");
+      const meta = prepareScopedTask(files, ["src/app.js"]);
+      const runs = [
+        {
+          id: "run-anchors-default-001",
+          taskId,
+          status: "passed",
+          summary: "Scoped proof recorded with anchors.",
+          createdAt: "2026-01-03T00:00:00.000Z",
+          completedAt: "2026-01-03T00:00:00.000Z",
+          scopeProofPaths: ["src/app.js"],
+          scopeProofAnchors: [
+            {
+              path: "src/app.js",
+              exists: true,
+              contentFingerprint: "sha1:same-fingerprint",
+            },
+          ],
+          verificationChecks: [{ label: "npm test", status: "passed", details: "anchored scope ok" }],
+          verificationArtifacts: ["artifacts/npm-test.txt"],
+        },
+      ];
+
+      const gate = buildTaskVerificationGate(
+        workspaceRoot,
+        meta,
+        runs,
+        buildRepositoryDiff([
+          {
+            path: "src/app.js",
+            modifiedAt: "2026-01-04T00:00:00.000Z",
+            contentFingerprint: "sha1:same-fingerprint",
+          },
+        ])
+      );
+
+      assert.equal(gate.summary.status, "action-required");
+      assert.equal(gate.summary.relevantChangeCount, 1);
+      assert.equal(gate.coveredScopedFiles.length, 0);
+      assert.equal(gate.relevantChangedFiles[0].path, "src/app.js");
+      assert.equal(gate.proofCoverage.anchoredStrongProofCount, 0);
+      assert.equal(gate.proofCoverage.currentVerifiedEvidenceCount, 0);
+      assert.equal(gate.proofCoverage.recordedVerifiedEvidenceCount, 0);
     },
   },
   {
@@ -221,7 +273,11 @@ const tests = [
             modifiedAt: "2026-01-03T00:00:00.000Z",
             contentFingerprint: "sha1:manual-same",
           },
-        ])
+        ]),
+        null,
+        {
+          strict: true,
+        }
       );
 
       assert.equal(gate.summary.status, "covered");
@@ -302,7 +358,11 @@ const tests = [
             modifiedAt: "2026-01-02T00:00:00.000Z",
             contentFingerprint: "sha1:manual-new",
           },
-        ])
+        ]),
+        null,
+        {
+          strict: true,
+        }
       );
 
       assert.equal(gate.summary.status, "covered");
@@ -346,7 +406,11 @@ const tests = [
             modifiedAt: "2026-01-02T00:00:00.000Z",
             contentFingerprint: "sha1:new-fingerprint",
           },
-        ])
+        ]),
+        null,
+        {
+          strict: true,
+        }
       );
 
       assert.equal(gate.summary.status, "action-required");

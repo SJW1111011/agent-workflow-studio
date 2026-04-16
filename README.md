@@ -81,7 +81,7 @@ That keeps backward compatibility for polling clients while giving the dashboard
 - **`mcp:install` / `mcp:uninstall`** - register or remove the MCP server in Codex, Claude Code, and Cursor without manual JSON or TOML editing
 - **`mcp:serve`** - expose the core workflow operations as MCP tools over stdio for Claude Code, Cursor, and other MCP clients
 - **`verification gate`** - compare repo-relative task scope against the current repository snapshot and show which scoped files still need explicit evidence
-- **`verification records`** - keep passed evidence and refreshed manual verification tied to content fingerprints, not fragile `mtime` alone
+- **`verification records`** - use timestamp-based freshness by default, with opt-in strict fingerprint checks for audit-heavy workflows
 - **`skills:generate`** - write `AGENTS.md`, `CLAUDE.md`, and Claude slash commands so the workflow becomes part of the agent's default context
 - **`dashboard`** - inspect tasks, evidence, freshness, risks, execution state, and quick-create flows from a local control plane at `localhost:4173`
 
@@ -175,7 +175,7 @@ Task creation          Agent execution           Evidence + resume
 
 1. Create a task with `quick` or `task:new`.
 2. Hand the compiled prompt to Codex or Claude Code, or use `run:execute` when a local adapter is ready.
-3. Record evidence and refresh the checkpoint with `done <taskId> "<summary>"` when the work is ready to hand off. `done` and `run:add` infer proof paths from the current git diff by default, auto-advance `task.json` from `todo` to `in_progress` on the first recorded run, and `done --complete` marks the task `done`. `--infer-test` runs `npm test` to derive a passed/failed check from the exit code.
+3. Record evidence and refresh the checkpoint with `done <taskId> "<summary>"` when the work is ready to hand off. `done` and `run:add` infer proof paths from the current git diff by default, auto-advance `task.json` from `todo` to `in_progress` on the first recorded run, and `done --complete` marks the task `done`. `--infer-test` runs `npm test` to derive a passed/failed check from the exit code. Add `--strict` when you want fingerprint-backed freshness for that command, or set `.agent-workflow/project.json` `strictVerification: true` to make strict mode the workspace default.
 4. If the latest workflow operation was wrong, run `npx agent-workflow undo --root .` to roll it back. Undo only touches `.agent-workflow/` state, and it refuses to delete a quick-created task that already has recorded runs.
 5. Review `verification.md`, `checkpoint.md`, and the recorded runs under `.agent-workflow/tasks/<taskId>/runs/`.
 
@@ -202,7 +202,17 @@ npx agent-workflow undo --root .
 Two ideas sit at the center of the project:
 
 - **Verification gate**: compare repo-relative task scope against the current repository snapshot (Git-backed when available, filesystem fallback otherwise) and explain which scoped files still need explicit evidence.
-- **Verification records**: keep passed run evidence and refreshed manual verification tied to content fingerprints, so freshness survives misleading `mtime` churn, branch switches, and agent handoff noise. `draft` evidence still needs checks or artifacts; `verified` evidence includes repo-relative paths plus checks or artifacts.
+- **Verification records**: default freshness is timestamp-based, which keeps the common path simpler and faster. When you opt into `--strict` or set `strictVerification: true`, passed run evidence and refreshed manual verification also carry content fingerprints so freshness survives misleading `mtime` churn, branch switches, and agent handoff noise. `draft` evidence still needs checks or artifacts; `verified` evidence includes repo-relative paths plus checks or artifacts.
+
+## Upgrading from pre-Phase-3
+
+No manual migration step is required for existing `.agent-workflow/` data.
+
+- Older run records that still use legacy evidence aliases are normalized on read, so CLI, MCP, and dashboard task detail can keep loading them.
+- Older `verification.md` managed anchor blocks that still use the `manualProofAnchors` payload are still parsed, and they stay preserved when strict verification is off.
+- Older `checkpoint.md` and `checkpoint.json` files can stay on disk as-is; if you regenerate a checkpoint, the new file will use the current `action-required` / `incomplete` / `unconfigured` wording.
+- `validate --root .` accepts both the old and new verification check vocabulary, so a repo upgrade does not require hand-editing historical run JSON first.
+- If you want managed proof-anchor refresh again, enable strict verification in `.agent-workflow/project.json` with `"strictVerification": true`.
 
 ## Why this exists
 

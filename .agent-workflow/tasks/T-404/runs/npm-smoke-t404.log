@@ -1,0 +1,5 @@
+
+> agent-workflow-studio@0.1.2 smoke
+> node scripts/smoke-test.js
+
+Command failed: D:\node.js\node.exe C:\Users\lenovo\Desktop\agent-workflow-studio\src\cli.js run:execute T-001 --agent codex --root C:\Users\lenovo\Desktop\agent-workflow-studio\tmp\smoke-workspace

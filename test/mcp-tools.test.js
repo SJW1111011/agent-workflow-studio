@@ -153,6 +153,7 @@ const tests = [
         taskId,
         summary: "Manual run captured through MCP.",
         status: "passed",
+        strict: true,
         proofPaths: ["README.md"],
         checks: [
           {
@@ -167,6 +168,8 @@ const tests = [
       assert.equal(result.run.status, "passed");
       assert.ok(Array.isArray(result.run.scopeProofPaths));
       assert.ok(result.run.scopeProofPaths.includes("README.md"));
+      assert.ok(Array.isArray(result.run.scopeProofAnchors));
+      assert.equal(result.run.scopeProofAnchors.length, 1);
       assert.equal(result.checkpointPath, `.agent-workflow/tasks/${taskId}/checkpoint.md`);
       assert.ok(fs.existsSync(path.join(workspaceRoot, result.checkpointPath)));
     },
@@ -211,11 +214,14 @@ const tests = [
     async run() {
       const { workspaceRoot } = createTaskWorkspace("mcp-tool-validate");
 
-      const result = await executeMcpTool(workspaceRoot, "workflow_validate", {});
+      const result = await executeMcpTool(workspaceRoot, "workflow_validate", {
+        strict: true,
+      });
 
       assert.equal(result.tool, "workflow_validate");
       assert.equal(result.ok, true);
       assert.equal(result.errorCount, 0);
+      assert.equal(result.strictVerification, true);
       assert.match(result.summary, /ok=true/);
     },
   },

@@ -10,7 +10,7 @@ const {
 
 const VERIFICATION_MANUAL_PROOF_ANCHOR_BLOCK_ID = "verification-manual-proof-anchors";
 
-function parseManualProofItems(verificationText, verificationUpdatedAtMs) {
+function parseManualProofItems(verificationText, verificationUpdatedAtMs, options = {}) {
   if (!verificationUpdatedAtMs) {
     return [];
   }
@@ -24,7 +24,12 @@ function parseManualProofItems(verificationText, verificationUpdatedAtMs) {
     return [];
   }
 
-  const manualAnchorPayload = parseManagedManualProofAnchors(verificationText);
+  const strictVerification = options.strict === true;
+  const manualAnchorPayload = strictVerification
+    ? parseManagedManualProofAnchors(verificationText)
+    : {
+        records: [],
+      };
   const manualAnchorRecordsBySignature = new Map(
     manualAnchorPayload.records.map((record) => [record.proofSignature, record])
   );

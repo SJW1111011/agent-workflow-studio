@@ -12,6 +12,7 @@ const {
   createTaskWorkspace,
   readJsonFile,
   readTextFile,
+  setProjectStrictVerification,
   writeTextFile,
 } = require("./test-helpers");
 
@@ -126,6 +127,7 @@ const tests = [
     name: "saveTaskDocument preserves managed manual proof anchors while the editor saves freeform verification text",
     run() {
       const { workspaceRoot, taskId, files } = createTaskWorkspace("task-doc-verification-anchors");
+      setProjectStrictVerification(workspaceRoot, true);
 
       writeTextFile(`${workspaceRoot}/src/app.js`, "module.exports = 'anchored';\n");
       writeTextFile(
@@ -180,6 +182,7 @@ const tests = [
     name: "refreshManualProofAnchors inserts the managed evidence section before appended run evidence blocks",
     run() {
       const { workspaceRoot, taskId, files } = createTaskWorkspace("task-doc-refresh-anchors");
+      setProjectStrictVerification(workspaceRoot, true);
 
       writeTextFile(`${workspaceRoot}/src/app.js`, "module.exports = 'refresh';\n");
       writeTextFile(
@@ -220,6 +223,7 @@ const tests = [
     name: "refreshManualProofAnchors keeps task.json updatedAt stable while only rewriting verification.md",
     run() {
       const { workspaceRoot, taskId, files } = createTaskWorkspace("task-doc-refresh-task-meta");
+      setProjectStrictVerification(workspaceRoot, true);
 
       writeTextFile(`${workspaceRoot}/src/app.js`, "module.exports = 'stable-task-meta';\n");
       writeTextFile(

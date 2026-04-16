@@ -1,0 +1,35 @@
+{
+  "id": "run-1776343614952",
+  "taskId": "T-404",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: legacy run records load, old vocabulary accepted, schema validator dual-vocab, migration-compatibility.test.js added",
+  "createdAt": "2026-04-16T12:46:54.951Z",
+  "scopeProofPaths": [
+    "src/lib/schema-validator.js",
+    "src/lib/evidence-utils.js",
+    "test/migration-compatibility.test.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "validate on 16+ pre-Phase-3 tasks: ok=true",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "Legacy run records with old field names load correctly",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "No file rewriting required",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (33 files, 165 tests)",
+      "status": "passed",
+      "artifacts": []
+    }
+  ]
+}

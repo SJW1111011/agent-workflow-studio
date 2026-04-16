@@ -13,16 +13,30 @@ Phase 3 changes the evidence vocabulary (T-400), fingerprint behavior (T-401), a
 
 ## Facts
 
-- Existing run records use `verificationChecks[].status` with values "passed", "failed", "recorded", "info" — these don't change
-- The "strong"/"weak" distinction lives in computed fields (`strongProofCount`, `draftProofCount`) in overview, not in persisted data — renaming is safe
-- Gate statuses ("needs-proof", etc.) are computed on the fly by `buildTaskVerificationGate` — not stored — renaming is safe
-- The only persisted vocabulary is in verification.md text (human-readable) and managed anchor blocks (machine-readable JSON)
-- `schema-validator.js` validates run records, task.json, and adapter configs — must accept both old and new field patterns
-- This project's own `.agent-workflow/` directory has 16 tasks with 30+ runs — it IS the migration test fixture
+- Existing run records already persist the important evidence fields; the migration risk is mostly legacy aliases and older managed markdown payloads.
+- `listRuns()` now read-normalizes legacy run aliases so task detail, server responses, and MCP-overview payloads stay canonical without rewriting JSON on disk.
+- `buildTaskVerificationGate()` now normalizes legacy run payloads even when callers pass raw run objects directly instead of going through `listRuns()`.
+- `buildOverview()` now normalizes legacy gate, signal, and proof-coverage aliases before it counts stats or derives risk summaries.
+- `schema-validator.js` still validates the raw run JSON from disk, but it now accepts legacy verification-check statuses such as `strong` / `weak` alongside the current vocabulary.
+- This repository's own `.agent-workflow/` data still validates cleanly after the compatibility pass: `ok=true errors=0 warnings=0 strict=false`.
 
 ## Open questions
 
-- Should we add a `schemaVersion: 2` to project.json to mark Phase 3 migration? Leaning no — it's backward compatible, no version bump needed.
+- No new `schemaVersion` is needed for Phase 3 compatibility because the migration stays read-only and backward-compatible.
+
+## Progress notes
+
+### 2026-04-16T20:05:00.000Z
+
+Implemented the read-compatibility layer in `evidence-utils`, `task-service`, `verification-gates`, `overview`, and `schema-validator`, then added a dedicated `migration-compatibility` regression that exercises legacy run aliases, legacy manual anchor payloads, old checkpoint wording, and validate compatibility.
+
+### 2026-04-16T20:25:00.000Z
+
+Updated the README upgrade guidance, aligned the smoke fixture with strict-only manual anchor refresh, and reran `npm test`, `npm run lint`, `npm run validate -- --root .`, and `npm run smoke` to confirm the repo still dogfoods cleanly.
+
+### 2026-04-16T12:40:00.000Z
+
+Tightened the task scope to exact repo-relative paths, added explicit proof coverage for `src/lib/verification-proof.js`, and prepared a fresh prompt/checkpoint handoff so the verification gate reflects the completed migration work instead of the earlier draft scope text.
 
 ## Constraints
 
@@ -33,4 +47,4 @@ Phase 3 changes the evidence vocabulary (T-400), fingerprint behavior (T-401), a
 - Must land alongside T-400 and T-401
 - Must not rewrite any existing files on disk
 - Must pass `npm test`, `npm run lint`, `npm run smoke`
-- This project's own `.agent-workflow/` data must work as the smoke test
+- This repository's own `.agent-workflow/` data must keep working as the smoke fixture

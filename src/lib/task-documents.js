@@ -10,7 +10,7 @@ const {
   renderManagedManualProofAnchorLines,
   VERIFICATION_MANUAL_PROOF_ANCHOR_BLOCK_ID,
 } = require("./verification-proof");
-const { taskFiles } = require("./workspace");
+const { resolveStrictVerification, taskFiles } = require("./workspace");
 
 const EDITABLE_TASK_DOCUMENTS = {
   "task.md": {
@@ -254,17 +254,34 @@ function saveTaskDocument(workspaceRoot, taskId, documentName, content) {
   };
 }
 
-function refreshManualProofAnchors(workspaceRoot, taskId) {
+function refreshManualProofAnchors(workspaceRoot, taskId, options = {}) {
   const files = taskFiles(workspaceRoot, taskId);
   if (!fileExists(files.meta)) {
     throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
   }
 
   const taskMeta = readJson(files.meta, {});
+  const strictVerification = resolveStrictVerification(workspaceRoot, options.strict);
   const currentVerificationText = readFileWithFallback(files.verification);
   const verificationUpdatedAtMs = fileExists(files.verification) ? fs.statSync(files.verification).mtimeMs : null;
   const existingAnchorPayload = parseManagedManualProofAnchors(currentVerificationText);
-  const manualProofItems = parseManualProofItems(currentVerificationText, verificationUpdatedAtMs).filter(isVerifiedManualProofItem);
+  const manualProofItems = parseManualProofItems(currentVerificationText, verificationUpdatedAtMs, {
+    strict: strictVerification,
+  }).filter(isVerifiedManualProofItem);
+
+  if (!strictVerification) {
+    return {
+      changed: false,
+      blockedByStrictMode: true,
+      verifiedEvidenceCount: manualProofItems.length,
+      strongProofCount: manualProofItems.length,
+      refreshedCount: 0,
+      skippedCount: 0,
+      clearedCount: 0,
+      content: ensureTrailingNewline(currentVerificationText),
+      updatedAt: taskMeta.updatedAt || null,
+    };
+  }
 
   if (manualProofItems.length === 0 && !existingAnchorPayload.hasBlock) {
     throw badRequest(
@@ -273,11 +290,15 @@ function refreshManualProofAnchors(workspaceRoot, taskId) {
     );
   }
 
-  const repositorySnapshot = loadRepositorySnapshot(workspaceRoot);
+  const repositorySnapshot = loadRepositorySnapshot(workspaceRoot, {
+    strict: strictVerification,
+  });
   const capturedAt = new Date().toISOString();
   const refreshedRecords = manualProofItems
     .map((item) => {
-      const anchors = buildScopeProofAnchors(workspaceRoot, item.paths, repositorySnapshot);
+      const anchors = buildScopeProofAnchors(workspaceRoot, item.paths, repositorySnapshot, {
+        strict: strictVerification,
+      });
       if (anchors.length === 0) {
         return null;
       }

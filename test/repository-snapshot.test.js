@@ -101,6 +101,27 @@ const tests = [
     },
   },
   {
+    name: "scope proof anchors skip content fingerprints when strict mode is disabled",
+    run() {
+      const { workspaceRoot } = createTaskWorkspace("repository-snapshot-proof-anchors-nonstrict");
+      writeTextFile(`${workspaceRoot}/plain.txt`, "fallback\n");
+
+      const snapshot = loadRepositorySnapshot(workspaceRoot, {
+        gitCommand: "definitely-not-a-real-git-command",
+        strict: false,
+      });
+      const anchors = buildScopeProofAnchors(workspaceRoot, ["plain.txt"], snapshot, {
+        strict: false,
+      });
+
+      assert.equal(snapshot.mode, "filesystem");
+      assert.equal(anchors.length, 1);
+      assert.equal(anchors[0].path, "plain.txt");
+      assert.equal(anchors[0].exists, true);
+      assert.equal(anchors[0].contentFingerprint, undefined);
+    },
+  },
+  {
     name: "targeted proof fingerprint hashing reuses cached fingerprints until file mtime changes",
     run() {
       const { workspaceRoot } = createTaskWorkspace("repository-snapshot-cache");

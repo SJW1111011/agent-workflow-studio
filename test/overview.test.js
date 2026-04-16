@@ -5,7 +5,7 @@ const path = require("path");
 const { buildOverview } = require("../src/lib/overview");
 const { createRunRecord, createTask, persistRunRecord } = require("../src/lib/task-service");
 const { taskFiles } = require("../src/lib/workspace");
-const { createTaskWorkspace, readTextFile, writeTextFile } = require("./test-helpers");
+const { createTaskWorkspace, readTextFile, setProjectStrictVerification, writeTextFile } = require("./test-helpers");
 
 const REPO_ROOT = path.resolve(__dirname, "..");
 const TEST_TMP_ROOT = path.join(REPO_ROOT, "tmp", "unit-tests");
@@ -15,9 +15,9 @@ function createBareWorkspace(prefix) {
   return fs.mkdtempSync(path.join(TEST_TMP_ROOT, `${prefix}-`));
 }
 
-function persistSyntheticRun(workspaceRoot, taskId, fields) {
+function persistSyntheticRun(workspaceRoot, taskId, fields, options = {}) {
   const run = createRunRecord(taskId, fields);
-  return persistRunRecord(workspaceRoot, taskId, run);
+  return persistRunRecord(workspaceRoot, taskId, run, options);
 }
 
 function setVerificationText(workspaceRoot, taskId, content) {
@@ -45,6 +45,7 @@ const tests = [
     name: "buildOverview aggregates executor outcomes and verification signals while keeping latest executor details separate",
     run() {
       const { workspaceRoot } = createTaskWorkspace("overview-aggregate");
+      setProjectStrictVerification(workspaceRoot, true);
 
       createTask(workspaceRoot, "T-002", "Timed-out executor task", { recipe: "feature", priority: "P1" });
       createTask(workspaceRoot, "T-003", "Cancelled executor task", { recipe: "feature", priority: "P1" });
@@ -69,6 +70,8 @@ const tests = [
         scopeProofPaths: ["src/passed.js"],
         verificationChecks: [{ label: "npm test", status: "passed", details: "passed scope ok" }],
         verificationArtifacts: [".agent-workflow/tasks/T-001/runs/run-executor-passed.stdout.log"],
+      }, {
+        strict: true,
       });
       persistSyntheticRun(workspaceRoot, "T-001", {
         id: "run-manual-followup",
