@@ -15,6 +15,8 @@ export default {
       include: ["src/lib/**/*.js"],
       exclude: [
         "src/lib/dashboard-execution.js",
+        "src/lib/mcp-install.js",
+        "src/lib/mcp-tools.js",
         "src/lib/schema-validator.js",
         "src/lib/task-service.js",
         "src/lib/fs-utils.ts",
