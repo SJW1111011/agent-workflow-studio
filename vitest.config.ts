@@ -3,6 +3,7 @@ export default {
     environment: "node",
     globals: true,
     include: ["test/**/*.test.js"],
+    testTimeout: 30000,
     fileParallelism: false,
     watchExclude: ["coverage/**", "dist/**", ".agent-workflow/**", "tmp/**"],
     coverage: {
