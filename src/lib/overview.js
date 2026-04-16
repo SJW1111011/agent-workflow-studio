@@ -137,11 +137,13 @@ function countLatestExecutorOutcomes(tasks) {
 
 function emptyVerificationSignals() {
   return {
+    verified: 0,
+    partial: 0,
+    draft: 0,
+    none: 0,
     strong: 0,
     mixed: 0,
-    draft: 0,
     planned: 0,
-    none: 0,
   };
 }
 
@@ -149,23 +151,20 @@ function countTaskVerificationSignals(tasks) {
   return (Array.isArray(tasks) ? tasks : []).reduce((counts, task) => {
     const status = String((task && task.verificationSignalStatus) || "").trim().toLowerCase();
 
-    if (status === "strong") {
+    if (status === "verified" || status === "strong") {
+      counts.verified += 1;
       counts.strong += 1;
       return counts;
     }
 
-    if (status === "mixed") {
+    if (status === "partial" || status === "mixed") {
+      counts.partial += 1;
       counts.mixed += 1;
       return counts;
     }
 
     if (status === "draft") {
       counts.draft += 1;
-      return counts;
-    }
-
-    if (status === "planned") {
-      counts.planned += 1;
       return counts;
     }
 
@@ -202,10 +201,14 @@ function enrichTask(workspaceRoot, task, repositorySnapshot) {
     ambiguousScopeCount: verificationGate.scopeCoverage ? verificationGate.scopeCoverage.ambiguousCount : 0,
     verificationSignalStatus: verificationSignal.status,
     verificationSignalSummary: verificationSignal.summary,
-    plannedVerificationCheckCount: verificationSignal.plannedCheckCount,
+    draftCheckCount: verificationSignal.draftCheckCount,
+    plannedVerificationCheckCount: verificationSignal.draftCheckCount,
     draftProofCount: verificationSignal.draftProofCount,
+    verifiedProofCount: verificationSignal.verifiedProofCount,
     strongProofCount: verificationSignal.strongProofCount,
+    currentVerifiedEvidenceCount: verificationSignal.currentVerifiedEvidenceCount,
     anchorBackedStrongProofCount: verificationSignal.anchorBackedStrongProofCount,
+    recordedVerifiedEvidenceCount: verificationSignal.recordedVerifiedEvidenceCount,
     compatibilityStrongProofCount: verificationSignal.compatibilityStrongProofCount,
   };
 }
@@ -233,114 +236,146 @@ function deriveExecutorOutcome(run) {
 function describeTaskVerificationSignal(verificationGate, verificationText) {
   const proofCoverage = verificationGate && verificationGate.proofCoverage ? verificationGate.proofCoverage : {};
   const items = Array.isArray(proofCoverage.items) ? proofCoverage.items : [];
-  const strongProofCount = items.filter((item) => item && item.strong).length;
-  const draftProofCount = items.filter((item) => item && !item.strong).length;
-  const plannedCheckCount = extractVerificationPlannedChecks(verificationText).length;
-  const anchorBackedStrongProofCount = Number(proofCoverage.anchoredStrongProofCount || 0);
-  const compatibilityStrongProofCount = Number(proofCoverage.compatibilityStrongProofCount || 0);
+  const verifiedProofCount = items.filter((item) => item && (item.verified || item.strong)).length;
+  const draftProofCount = items.filter((item) => item && !(item.verified || item.strong)).length;
+  const draftCheckCount = extractVerificationDraftChecks(verificationText).length;
+  const currentVerifiedEvidenceCount = Number(
+    proofCoverage.currentVerifiedEvidenceCount || proofCoverage.anchoredStrongProofCount || 0
+  );
+  const recordedVerifiedEvidenceCount = Number(
+    proofCoverage.recordedVerifiedEvidenceCount || proofCoverage.compatibilityStrongProofCount || 0
+  );
+  const remainingDraftItemCount = draftProofCount + draftCheckCount;
 
-  if (strongProofCount > 0 && draftProofCount > 0) {
+  if (verifiedProofCount > 0 && remainingDraftItemCount > 0) {
     return {
-      status: "mixed",
-      summary: describeStrongProofFreshnessSummary({
-        strongProofCount,
+      status: "partial",
+      summary: describeVerifiedEvidenceFreshnessSummary({
+        verifiedProofCount,
         draftProofCount,
-        anchorBackedStrongProofCount,
-        compatibilityStrongProofCount,
-        fallback: `${strongProofCount} strong proof item(s), ${draftProofCount} draft proof item(s).`,
-        suffix: ` ${draftProofCount} draft proof item(s) remain.`,
+        draftCheckCount,
+        currentVerifiedEvidenceCount,
+        recordedVerifiedEvidenceCount,
+        fallback: `${verifiedProofCount} verified item(s); ${buildDraftSummaryFragment(draftProofCount, draftCheckCount)} remain.`,
+        suffix: ` ${buildDraftSummaryFragment(draftProofCount, draftCheckCount)} remain.`,
       }),
-      strongProofCount,
+      draftCheckCount,
+      verifiedProofCount,
+      strongProofCount: verifiedProofCount,
       draftProofCount,
-      plannedCheckCount,
-      anchorBackedStrongProofCount,
-      compatibilityStrongProofCount,
+      plannedCheckCount: draftCheckCount,
+      currentVerifiedEvidenceCount,
+      anchorBackedStrongProofCount: currentVerifiedEvidenceCount,
+      recordedVerifiedEvidenceCount,
+      compatibilityStrongProofCount: recordedVerifiedEvidenceCount,
     };
   }
 
-  if (draftProofCount > 0) {
+  if (remainingDraftItemCount > 0) {
     return {
       status: "draft",
-      summary: `${draftProofCount} draft proof item(s) still need stronger detail.`,
-      strongProofCount,
+      summary: describeDraftEvidenceSummary(draftProofCount, draftCheckCount),
+      draftCheckCount,
+      verifiedProofCount,
+      strongProofCount: verifiedProofCount,
       draftProofCount,
-      plannedCheckCount,
-      anchorBackedStrongProofCount,
-      compatibilityStrongProofCount,
+      plannedCheckCount: draftCheckCount,
+      currentVerifiedEvidenceCount,
+      anchorBackedStrongProofCount: currentVerifiedEvidenceCount,
+      recordedVerifiedEvidenceCount,
+      compatibilityStrongProofCount: recordedVerifiedEvidenceCount,
     };
   }
 
-  if (strongProofCount > 0) {
+  if (verifiedProofCount > 0) {
     return {
-      status: "strong",
-      summary: describeStrongProofFreshnessSummary({
-        strongProofCount,
+      status: "verified",
+      summary: describeVerifiedEvidenceFreshnessSummary({
+        verifiedProofCount,
         draftProofCount,
-        anchorBackedStrongProofCount,
-        compatibilityStrongProofCount,
-        fallback:
-          plannedCheckCount > 0
-            ? `${strongProofCount} strong proof item(s); ${plannedCheckCount} planned check(s) remain as notes.`
-            : `${strongProofCount} strong proof item(s) recorded.`,
-        suffix:
-          plannedCheckCount > 0 ? ` ${plannedCheckCount} planned check(s) remain as notes.` : "",
+        draftCheckCount,
+        currentVerifiedEvidenceCount,
+        recordedVerifiedEvidenceCount,
+        fallback: `${verifiedProofCount} verified item(s) recorded.`,
+        suffix: "",
       }),
-      strongProofCount,
+      draftCheckCount,
+      verifiedProofCount,
+      strongProofCount: verifiedProofCount,
       draftProofCount,
-      plannedCheckCount,
-      anchorBackedStrongProofCount,
-      compatibilityStrongProofCount,
-    };
-  }
-
-  if (plannedCheckCount > 0) {
-    return {
-      status: "planned",
-      summary: `${plannedCheckCount} planned check(s) recorded, but no strong proof yet.`,
-      strongProofCount,
-      draftProofCount,
-      plannedCheckCount,
-      anchorBackedStrongProofCount,
-      compatibilityStrongProofCount,
+      plannedCheckCount: draftCheckCount,
+      currentVerifiedEvidenceCount,
+      anchorBackedStrongProofCount: currentVerifiedEvidenceCount,
+      recordedVerifiedEvidenceCount,
+      compatibilityStrongProofCount: recordedVerifiedEvidenceCount,
     };
   }
 
   return {
     status: "none",
-    summary: "No planned checks or explicit proof items recorded.",
-    strongProofCount,
+    summary: "No draft checks or explicit evidence recorded.",
+    draftCheckCount,
+    verifiedProofCount,
+    strongProofCount: verifiedProofCount,
     draftProofCount,
-    plannedCheckCount,
-    anchorBackedStrongProofCount,
-    compatibilityStrongProofCount,
+    plannedCheckCount: draftCheckCount,
+    currentVerifiedEvidenceCount,
+    anchorBackedStrongProofCount: currentVerifiedEvidenceCount,
+    recordedVerifiedEvidenceCount,
+    compatibilityStrongProofCount: recordedVerifiedEvidenceCount,
   };
 }
 
-function describeStrongProofFreshnessSummary({
-  strongProofCount,
+function describeVerifiedEvidenceFreshnessSummary({
+  verifiedProofCount,
   draftProofCount,
-  anchorBackedStrongProofCount,
-  compatibilityStrongProofCount,
+  draftCheckCount,
+  currentVerifiedEvidenceCount,
+  recordedVerifiedEvidenceCount,
   fallback,
   suffix = "",
 }) {
-  if (anchorBackedStrongProofCount > 0 && compatibilityStrongProofCount > 0) {
-    return `${strongProofCount} strong proof item(s): ${anchorBackedStrongProofCount} anchor-backed, ${compatibilityStrongProofCount} compatibility-only.${suffix}`.trim();
+  if (currentVerifiedEvidenceCount > 0 && recordedVerifiedEvidenceCount > 0) {
+    return `${verifiedProofCount} verified item(s): ${currentVerifiedEvidenceCount} current, ${recordedVerifiedEvidenceCount} recorded-only.${suffix}`.trim();
   }
 
-  if (anchorBackedStrongProofCount > 0) {
-    return `${strongProofCount} strong proof item(s), all anchor-backed.${suffix}`.trim();
+  if (currentVerifiedEvidenceCount > 0) {
+    return `${verifiedProofCount} verified item(s), all current.${suffix}`.trim();
   }
 
-  if (compatibilityStrongProofCount > 0 && draftProofCount >= 0) {
-    return `${strongProofCount} strong proof item(s), all compatibility-only.${suffix}`.trim();
+  if (recordedVerifiedEvidenceCount > 0 && (draftProofCount >= 0 || draftCheckCount >= 0)) {
+    return `${verifiedProofCount} verified item(s), recorded from earlier evidence.${suffix}`.trim();
   }
 
   return fallback;
 }
 
-function extractVerificationPlannedChecks(verificationText) {
-  const section = getMarkdownSection(verificationText, "Planned checks");
+function describeDraftEvidenceSummary(draftProofCount, draftCheckCount) {
+  if (draftProofCount > 0 && draftCheckCount > 0) {
+    return `${draftProofCount} draft evidence item(s) and ${draftCheckCount} draft check(s) still need verified detail.`;
+  }
+
+  if (draftProofCount > 0) {
+    return `${draftProofCount} draft evidence item(s) still need checks or artifacts.`;
+  }
+
+  return `${draftCheckCount} draft check(s) recorded, but no verified evidence yet.`;
+}
+
+function buildDraftSummaryFragment(draftProofCount, draftCheckCount) {
+  if (draftProofCount > 0 && draftCheckCount > 0) {
+    return `${draftProofCount} draft evidence item(s) and ${draftCheckCount} draft check(s)`;
+  }
+
+  if (draftProofCount > 0) {
+    return `${draftProofCount} draft evidence item(s)`;
+  }
+
+  return `${draftCheckCount} draft check(s)`;
+}
+
+function extractVerificationDraftChecks(verificationText) {
+  const section = getMarkdownSection(verificationText, "Draft checks") || getMarkdownSection(verificationText, "Planned checks");
   return splitLineEntries(section)
     .map((line) => normalizePlannedCheckLine(line))
     .filter(Boolean);
@@ -436,21 +471,21 @@ function deriveOverviewRisks(workspaceRoot, tasks, memory, validation) {
       });
     }
 
-    if (task.verificationGateStatus === "needs-proof") {
+    if (task.verificationGateStatus === "action-required") {
       risks.push({
         level: "high",
         message: `${task.id} has scoped local changes that are newer than the latest verification evidence.`,
       });
     }
 
-    if (task.verificationGateStatus === "partially-covered") {
+    if (task.verificationGateStatus === "incomplete") {
       risks.push({
         level: "high",
-        message: `${task.id} has only partial explicit proof for its scoped local changes.`,
+        message: `${task.id} has only partial explicit evidence for its scoped local changes.`,
       });
     }
 
-    if (task.verificationGateStatus === "scope-missing") {
+    if (task.verificationGateStatus === "unconfigured") {
       risks.push({
         level: "medium",
         message: `${task.id} has active local changes but no repo-relative scope hints for diff-aware verification.`,
@@ -464,10 +499,14 @@ function deriveOverviewRisks(workspaceRoot, tasks, memory, validation) {
       });
     }
 
-    if (task.verificationGate && task.verificationGate.proofCoverage && task.verificationGate.proofCoverage.weakProofCount > 0) {
+    if (
+      task.verificationGate &&
+      task.verificationGate.proofCoverage &&
+      (task.verificationGate.proofCoverage.draftEvidenceCount > 0 || task.verificationGate.proofCoverage.weakProofCount > 0)
+    ) {
       risks.push({
         level: "medium",
-        message: `${task.id} has weak proof items that do not yet satisfy explicit scoped coverage.`,
+        message: `${task.id} has draft evidence that does not yet satisfy explicit scoped coverage.`,
       });
     }
   });
@@ -497,12 +536,12 @@ function deriveVerification(tasks) {
     status:
       task.latestRunStatus === "failed"
         ? "failed"
-        : task.verificationGateStatus === "needs-proof"
-          ? "needs-proof"
-          : task.verificationGateStatus === "partially-covered"
-            ? "partially-covered"
-          : task.verificationGateStatus === "scope-missing"
-            ? "scope-missing"
+        : task.verificationGateStatus === "action-required"
+          ? "action-required"
+          : task.verificationGateStatus === "incomplete"
+            ? "incomplete"
+          : task.verificationGateStatus === "unconfigured"
+            ? "unconfigured"
             : task.verificationGateStatus === "covered"
               ? "covered"
               : task.latestRunStatus === "passed"

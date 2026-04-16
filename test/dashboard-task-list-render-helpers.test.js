@@ -41,11 +41,11 @@ const tests = [
             staleDocCount: 0,
             verificationGateStatus: "covered",
             relevantChangeCount: 0,
-            verificationSignalStatus: "strong",
-            verificationSignalSummary: "1 strong proof item(s), all anchor-backed.",
-            strongProofCount: 1,
-            anchorBackedStrongProofCount: 1,
-            compatibilityStrongProofCount: 0,
+            verificationSignalStatus: "verified",
+            verificationSignalSummary: "1 verified item(s), all current.",
+            verifiedProofCount: 1,
+            currentVerifiedEvidenceCount: 1,
+            recordedVerifiedEvidenceCount: 0,
             hasCodexPrompt: true,
             hasClaudePrompt: false,
           },
@@ -61,13 +61,13 @@ const tests = [
             latestExecutorSummary: "Cancelled from dashboard.",
             freshnessStatus: "stale",
             staleDocCount: 2,
-            verificationGateStatus: "needs-proof",
+            verificationGateStatus: "action-required",
             relevantChangeCount: 1,
-            verificationSignalStatus: "strong",
-            verificationSignalSummary: "1 strong proof item(s), all compatibility-only.",
-            strongProofCount: 1,
-            anchorBackedStrongProofCount: 0,
-            compatibilityStrongProofCount: 1,
+            verificationSignalStatus: "verified",
+            verificationSignalSummary: "1 verified item(s), recorded from earlier evidence.",
+            verifiedProofCount: 1,
+            currentVerifiedEvidenceCount: 0,
+            recordedVerifiedEvidenceCount: 1,
             hasCodexPrompt: false,
             hasClaudePrompt: true,
           },
@@ -84,9 +84,9 @@ const tests = [
       assert.match(view.markup, /task-card-executor-cancelled/);
       assert.match(view.markup, /task-card .*active/);
       assert.match(view.markup, /Cancelled from dashboard\./);
-      assert.match(view.markup, /Proof needed \(1\)/);
-      assert.match(view.markup, /Proof freshness: 1 compatibility-only/);
-      assert.match(view.markup, /compatibility-only/);
+      assert.match(view.markup, /Action required \(1\)/);
+      assert.match(view.markup, /Proof freshness: 1 recorded-only/);
+      assert.match(view.markup, /verified evidence \(recorded\)/);
       assert.doesNotMatch(view.markup, /T-001 - Passed task/);
     },
   },

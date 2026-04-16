@@ -40,8 +40,8 @@ function buildCheckpoint(workspaceRoot, taskId, options = {}) {
     completed.push("Scoped verification evidence looks current");
   }
 
-  if (verificationGate.summary.status === "partially-covered") {
-    completed.push("Some scoped files are already linked to explicit proof");
+  if (verificationGate.summary.status === "incomplete") {
+    completed.push("Some scoped files are already linked to verified evidence");
   }
 
   const checkpoint = {
@@ -95,24 +95,27 @@ function deriveRisks(workspaceRoot, files, latestRun, verificationGate) {
     risks.push("Latest recorded run failed.");
   }
 
-  if (verificationGate.summary.status === "needs-proof") {
-    risks.push(`Scoped files need explicit proof: ${verificationGate.relevantChangedFiles.map((item) => item.path).join(", ")}`);
+  if (verificationGate.summary.status === "action-required") {
+    risks.push(`Scoped files still need verified evidence: ${verificationGate.relevantChangedFiles.map((item) => item.path).join(", ")}`);
   }
 
-  if (verificationGate.summary.status === "partially-covered") {
-    risks.push(`Some scoped files still need proof: ${verificationGate.relevantChangedFiles.map((item) => item.path).join(", ")}`);
+  if (verificationGate.summary.status === "incomplete") {
+    risks.push(`Some scoped files still need verified evidence: ${verificationGate.relevantChangedFiles.map((item) => item.path).join(", ")}`);
   }
 
-  if (verificationGate.summary.status === "scope-missing") {
-    risks.push("Task scope does not include clear repo-relative paths yet, so diff-aware proof is weak.");
+  if (verificationGate.summary.status === "unconfigured") {
+    risks.push("Task scope does not include clear repo-relative paths yet, so diff-aware verification is limited.");
   }
 
   if (verificationGate.scopeCoverage && verificationGate.scopeCoverage.ambiguousCount > 0) {
     risks.push("Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.");
   }
 
-  if (verificationGate.proofCoverage && verificationGate.proofCoverage.weakProofCount > 0) {
-    risks.push("Some proof items are too weak to satisfy coverage. Add explicit files plus checks or artifacts.");
+  if (
+    verificationGate.proofCoverage &&
+    ((verificationGate.proofCoverage.draftEvidenceCount || 0) > 0 || (verificationGate.proofCoverage.weakProofCount || 0) > 0)
+  ) {
+    risks.push("Some evidence is still draft. Add explicit files plus checks or artifacts.");
   }
 
   return risks;
@@ -163,7 +166,7 @@ ${relevantFileLines}
 
 ${coveredFileLines}
 
-### Explicit proof items
+### Explicit evidence items
 
 ${proofItemLines}
 
@@ -190,21 +193,21 @@ ${riskLines}
 }
 
 function renderNextProofSteps(verificationGate) {
-  if (verificationGate.summary.status === "needs-proof") {
+  if (verificationGate.summary.status === "action-required") {
     const firstPath = verificationGate.relevantChangedFiles && verificationGate.relevantChangedFiles[0]
       ? verificationGate.relevantChangedFiles[0].path
       : "the scoped files above";
     return `Refresh verification.md after checking ${firstPath}, then rebuild or confirm checkpoint.md.`;
   }
 
-  if (verificationGate.summary.status === "partially-covered") {
+  if (verificationGate.summary.status === "incomplete") {
     const firstPath = verificationGate.relevantChangedFiles && verificationGate.relevantChangedFiles[0]
       ? verificationGate.relevantChangedFiles[0].path
       : "the remaining scoped files above";
     return `Keep the existing proof, then add explicit coverage for ${firstPath} before handoff.`;
   }
 
-  if (verificationGate.summary.status === "scope-missing") {
+  if (verificationGate.summary.status === "unconfigured") {
     return "Add repo-relative scope paths in task.md or task.json before trusting the verification state.";
   }
 

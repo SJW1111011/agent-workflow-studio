@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 
 const {
+  isVerifiedEvidence,
   normalizeArtifactRef,
   normalizeProofAnchors,
   normalizeProofPath,
@@ -14,9 +15,11 @@ function parseManualProofItems(verificationText, verificationUpdatedAtMs) {
     return [];
   }
 
+  const verificationBody = stripEvidenceBlocks(verificationText);
   const proofSection =
-    getMarkdownSection(stripEvidenceBlocks(verificationText), "Proof links") ||
-    getMarkdownSection(stripEvidenceBlocks(verificationText), "Proof Links");
+    getMarkdownSection(verificationBody, "Verification records") ||
+    getMarkdownSection(verificationBody, "Proof links") ||
+    getMarkdownSection(verificationBody, "Proof Links");
   if (!proofSection) {
     return [];
   }
@@ -56,7 +59,9 @@ function parseManagedManualProofAnchors(verificationText) {
       version: Number.isInteger(payload && payload.version) ? payload.version : 1,
       hasBlock: true,
       rawBlockBody,
-      records: normalizeManualProofAnchorRecords(payload && payload.manualProofAnchors),
+      records: normalizeManualProofAnchorRecords(
+        payload && (payload.verificationRecords || payload.manualProofAnchors)
+      ),
       parseError: null,
     };
   } catch (error) {
@@ -73,7 +78,7 @@ function parseManagedManualProofAnchors(verificationText) {
 function renderManagedManualProofAnchorLines(records) {
   const payload = {
     version: 1,
-    manualProofAnchors: normalizeManualProofAnchorRecords(records).map((record) => ({
+    verificationRecords: normalizeManualProofAnchorRecords(records).map((record) => ({
       proofSignature: record.proofSignature,
       capturedAt: record.capturedAt,
       paths: record.paths,
@@ -81,7 +86,7 @@ function renderManagedManualProofAnchorLines(records) {
     })),
   };
 
-  return ["### Manual proof anchors", "", "```json"]
+  return ["### Verification records", "", "```json"]
     .concat(JSON.stringify(payload, null, 2).split("\n"))
     .concat(["```"]);
 }
@@ -190,7 +195,7 @@ function parseProofBlock(blockText, options = {}) {
   item.artifacts = uniqueStrings(item.artifacts);
   item.proofSignature = buildManualProofSignature(item);
 
-  if (isStrongProofCandidate(item) && options.manualAnchorRecordsBySignature instanceof Map) {
+  if (isVerifiedEvidenceCandidate(item) && options.manualAnchorRecordsBySignature instanceof Map) {
     const attachedAnchorRecord = options.manualAnchorRecordsBySignature.get(item.proofSignature);
     if (attachedAnchorRecord) {
       item.anchors = attachedAnchorRecord.anchors;
@@ -396,8 +401,8 @@ function hasAnyProofData(item) {
   return item && (item.paths.length > 0 || item.checks.length > 0 || item.artifacts.length > 0);
 }
 
-function isStrongProofCandidate(item) {
-  return Boolean(item && item.paths.length > 0 && (item.checks.length > 0 || item.artifacts.length > 0));
+function isVerifiedEvidenceCandidate(item) {
+  return isVerifiedEvidence(item);
 }
 
 function firstNonEmptyString(values) {

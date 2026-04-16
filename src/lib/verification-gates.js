@@ -3,6 +3,8 @@ const path = require("path");
 const {
   defaultCheckStatusForRunStatus,
   formatVerificationCheck,
+  isVerifiedEvidence,
+  normalizeEvidenceFreshnessStatus,
   normalizeArtifactRef,
   normalizeProofAnchors,
   normalizeProofPath,
@@ -46,13 +48,13 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
       if (anchorCoverage.matched) {
         coveredScopedFiles.push(
           stripInternalFileFields(workspaceFile, proofAtMs, matchingProofItems, {
-            proofFreshnessSource: "anchor-backed",
+            proofFreshnessSource: "current",
           })
         );
       } else {
         relevantChangedFiles.push(
           stripInternalFileFields(workspaceFile, proofAtMs, matchingProofItems, {
-            proofFreshnessSource: "anchor-stale",
+            proofFreshnessSource: "outdated",
           })
         );
       }
@@ -67,7 +69,7 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
     if (isScopedFileCoveredByProof(workspaceFile, proofAtMs)) {
       coveredScopedFiles.push(
         stripInternalFileFields(workspaceFile, proofAtMs, matchingProofItems, {
-          proofFreshnessSource: "compatibility-only",
+          proofFreshnessSource: "recorded",
         })
       );
     }
@@ -77,10 +79,10 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
     const shouldWarnMissingScope = workspaceIndex.fileCount > 0 && (runs.length > 0 || taskMeta.status !== "todo");
     return {
       summary: {
-        status: shouldWarnMissingScope ? "scope-missing" : "ready",
+        status: shouldWarnMissingScope ? "unconfigured" : "ready",
         message: shouldWarnMissingScope
-          ? "This task has no repo-relative scope hints yet, so changed work cannot be tied to explicit proof."
-          : "Add explicit repo-relative paths in the task scope to enable stronger verification gates.",
+          ? "This task has no repo-relative scope yet, so changed work cannot be matched to recorded evidence."
+          : "Add repo-relative scope paths to make evidence coverage automatic.",
         relevantChangeCount: 0,
       },
       scopeHints,
@@ -115,7 +117,7 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
       summary: {
         status: coveredScopedFiles.length > 0 ? "covered" : "ready",
         message: coveredScopedFiles.length > 0
-          ? "Explicit verification now covers the current scoped file set."
+          ? "Recorded verification covers the current scoped file set."
           : "No scoped files have changed since this task was created.",
         relevantChangeCount: 0,
       },
@@ -131,10 +133,10 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
 
   return {
     summary: {
-      status: coveredScopedFiles.length > 0 ? "partially-covered" : "needs-proof",
+      status: coveredScopedFiles.length > 0 ? "incomplete" : "action-required",
       message: coveredScopedFiles.length > 0
-        ? "Some scoped files are explicitly covered, but newer scoped changes still need proof."
-        : "Scoped files are newer than the latest explicit proof linked in verification evidence.",
+        ? "Some scoped files already have verified evidence, but newer scoped changes still need attention."
+        : "Scoped files are newer than the latest verified evidence linked to this task.",
       relevantChangeCount: relevantChangedFiles.length,
     },
     scopeHints,
@@ -435,7 +437,7 @@ function stripInternalFileFields(workspaceFile, proofAtMs, proofItems = [], opti
     previousPath: workspaceFile.previousPath || null,
     matchedBy: workspaceFile.matchedBy,
     proofUpdatedAt: proofAtMs ? new Date(proofAtMs).toISOString() : null,
-    proofFreshnessSource: options.proofFreshnessSource || null,
+    proofFreshnessSource: normalizeEvidenceFreshnessStatus(options.proofFreshnessSource) || null,
     proofItems: proofItems.map(summarizeProofItem),
   };
 }
@@ -521,32 +523,37 @@ function buildProofCoverage(verificationText, verificationUpdatedAtMs, runs) {
   const manualProofItems = parseManualProofItems(verificationText, verificationUpdatedAtMs);
   const runProofItems = buildRunProofItems(runs);
   const validItems = [];
-  const weakItems = [];
+  const draftItems = [];
 
   manualProofItems.concat(runProofItems).forEach((item) => {
-    if (isStrongProofItem(item)) {
+    if (isVerifiedProofItem(item)) {
       validItems.push(item);
     } else {
-      weakItems.push(item);
+      draftItems.push(item);
     }
   });
 
   return {
-    items: validItems.concat(weakItems),
+    items: validItems.concat(draftItems),
     validItems,
-    weakItems,
+    draftItems,
+    weakItems: draftItems,
   };
 }
 
 function summarizeProofCoverage(proofCoverage) {
   const proofItems = proofCoverage.items.map(summarizeProofItem);
-  const strongItems = proofItems.filter((item) => item.strong);
+  const verifiedItems = proofItems.filter((item) => item.verified);
 
   return {
     explicitProofCount: proofCoverage.validItems.length,
-    weakProofCount: proofCoverage.weakItems.length,
-    anchoredStrongProofCount: strongItems.filter((item) => item.anchorCount > 0).length,
-    compatibilityStrongProofCount: strongItems.filter((item) => item.anchorCount === 0).length,
+    verifiedEvidenceCount: proofCoverage.validItems.length,
+    weakProofCount: proofCoverage.draftItems.length,
+    draftEvidenceCount: proofCoverage.draftItems.length,
+    anchoredStrongProofCount: verifiedItems.filter((item) => item.anchorCount > 0).length,
+    currentVerifiedEvidenceCount: verifiedItems.filter((item) => item.anchorCount > 0).length,
+    compatibilityStrongProofCount: verifiedItems.filter((item) => item.anchorCount === 0).length,
+    recordedVerifiedEvidenceCount: verifiedItems.filter((item) => item.anchorCount === 0).length,
     items: proofItems,
   };
 }
@@ -593,8 +600,8 @@ function hasAnyProofData(item) {
   return item.paths.length > 0 || item.checks.length > 0 || item.artifacts.length > 0;
 }
 
-function isStrongProofItem(item) {
-  return item.recordedAtMs && item.paths.length > 0 && (item.checks.length > 0 || item.artifacts.length > 0);
+function isVerifiedProofItem(item) {
+  return Boolean(item && item.recordedAtMs && isVerifiedEvidence(item));
 }
 
 function findMatchingProofItems(items, filePath) {
@@ -604,6 +611,7 @@ function findMatchingProofItems(items, filePath) {
 }
 
 function summarizeProofItem(item) {
+  const verified = isVerifiedProofItem(item);
   return {
     sourceType: item.sourceType,
     sourceLabel: item.sourceLabel,
@@ -612,7 +620,8 @@ function summarizeProofItem(item) {
     anchorCount: Array.isArray(item.anchors) ? item.anchors.length : 0,
     checks: item.checks,
     artifacts: item.artifacts,
-    strong: isStrongProofItem(item),
+    verified,
+    strong: verified,
   };
 }
 

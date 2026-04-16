@@ -42,14 +42,14 @@
     },
     "verification.md": {
       detailField: "verificationText",
-      note: "Run evidence can still append to verification.md after edits. Use Proof links with repo-relative files plus check/result/artifact refs for stronger coverage. The draft shortcut can add planned manual checks and file-only Proof links, but it still stays non-authoritative until you complete the proof. Refresh Proof Anchors only after saving the manual proof text you want to keep.",
+      note: "Run evidence can still append to verification.md after edits. Use Verification records with repo-relative files plus check/result/artifact refs for verified coverage. The draft shortcut can add draft manual checks and file-only verification records, but they stay incomplete until you finish them. Refresh Verification Records only after saving the manual proof text you want to keep.",
       managedSections: [
         "Heading from task id",
-        "Manual proof anchor block under Evidence after an explicit local refresh",
+        "Managed verification record block under Evidence after an explicit local refresh",
       ],
       freeSections: [
-        "Planned checks",
-        "Proof links",
+        "Draft checks",
+        "Verification records",
         "Blocking gaps",
         "Any manual notes between evidence refreshes",
       ],
@@ -161,7 +161,7 @@
 
     return nextProofPaths
       .map(
-        (item, index) => `### Proof ${nextProofNumber + index}
+        (item, index) => `### Record ${nextProofNumber + index}
 
 - Files: ${item}
 - Check:
@@ -222,27 +222,30 @@
     }
 
     if (!normalized) {
-      return `## Planned checks\n\n${draftLines}`;
+      return `## Draft checks\n\n${draftLines}`;
     }
 
-    const plannedRange = findMarkdownSectionRange(normalized, "Planned checks");
+    const plannedRange = findMarkdownSectionRange(normalized, "Draft checks") || findMarkdownSectionRange(normalized, "Planned checks");
     if (plannedRange) {
       const existingBody = normalized.slice(plannedRange.bodyStart, plannedRange.end).trim();
-      const mergedSection = `## Planned checks\n\n${[existingBody, draftLines].filter(Boolean).join("\n")}`;
+      const mergedSection = `## Draft checks\n\n${[existingBody, draftLines].filter(Boolean).join("\n")}`;
       return [normalized.slice(0, plannedRange.start).trimEnd(), mergedSection, normalized.slice(plannedRange.end).trimStart()]
         .filter(Boolean)
         .join("\n\n");
     }
 
-    const proofRange = findMarkdownSectionRange(normalized, "Proof links") || findMarkdownSectionRange(normalized, "Proof Links");
+    const proofRange =
+      findMarkdownSectionRange(normalized, "Verification records") ||
+      findMarkdownSectionRange(normalized, "Proof links") ||
+      findMarkdownSectionRange(normalized, "Proof Links");
     if (proofRange) {
-      const plannedSection = `## Planned checks\n\n${draftLines}`;
+      const plannedSection = `## Draft checks\n\n${draftLines}`;
       return [normalized.slice(0, proofRange.start).trimEnd(), plannedSection, normalized.slice(proofRange.start).trimStart()]
         .filter(Boolean)
         .join("\n\n");
     }
 
-    return `${normalized}\n\n## Planned checks\n\n${draftLines}`;
+    return `${normalized}\n\n## Draft checks\n\n${draftLines}`;
   }
 
   function mergeVerificationProofDraft(currentText, detail) {
@@ -258,13 +261,16 @@
     }
 
     if (!normalized) {
-      return `## Proof links\n\n${draftBlocks}`;
+      return `## Verification records\n\n${draftBlocks}`;
     }
 
-    const proofRange = findMarkdownSectionRange(normalized, "Proof links") || findMarkdownSectionRange(normalized, "Proof Links");
+    const proofRange =
+      findMarkdownSectionRange(normalized, "Verification records") ||
+      findMarkdownSectionRange(normalized, "Proof links") ||
+      findMarkdownSectionRange(normalized, "Proof Links");
     if (proofRange) {
       const existingBody = normalized.slice(proofRange.bodyStart, proofRange.end).trim();
-      const mergedSection = `## ${proofRange.title}\n\n${[existingBody, draftBlocks].filter(Boolean).join("\n\n")}`;
+      const mergedSection = `## Verification records\n\n${[existingBody, draftBlocks].filter(Boolean).join("\n\n")}`;
       return [normalized.slice(0, proofRange.start).trimEnd(), mergedSection, normalized.slice(proofRange.end).trimStart()]
         .filter(Boolean)
         .join("\n\n");
@@ -272,13 +278,13 @@
 
     const blockingRange = findMarkdownSectionRange(normalized, "Blocking gaps");
     if (blockingRange) {
-      const proofSection = `## Proof links\n\n${draftBlocks}`;
+      const proofSection = `## Verification records\n\n${draftBlocks}`;
       return [normalized.slice(0, blockingRange.start).trimEnd(), proofSection, normalized.slice(blockingRange.start).trimStart()]
         .filter(Boolean)
         .join("\n\n");
     }
 
-    return `${normalized}\n\n## Proof links\n\n${draftBlocks}`;
+    return `${normalized}\n\n## Verification records\n\n${draftBlocks}`;
   }
 
   function mergeVerificationProofPlanDraft(currentText, detail) {
@@ -299,7 +305,10 @@
   }
 
   function extractVerificationProofPaths(text) {
-    const proofSection = getMarkdownSection(text, "Proof links") || getMarkdownSection(text, "Proof Links");
+    const proofSection =
+      getMarkdownSection(text, "Verification records") ||
+      getMarkdownSection(text, "Proof links") ||
+      getMarkdownSection(text, "Proof Links");
     const proofPaths = new Set();
 
     splitLineEntries(proofSection).forEach((line) => {
@@ -316,7 +325,7 @@
   }
 
   function extractVerificationPlannedManualChecks(text) {
-    const plannedSection = getMarkdownSection(text, "Planned checks");
+    const plannedSection = getMarkdownSection(text, "Draft checks") || getMarkdownSection(text, "Planned checks");
     const plannedChecks = new Set();
 
     splitLineEntries(plannedSection).forEach((line) => {
@@ -333,7 +342,7 @@
   }
 
   function getNextProofNumber(text) {
-    const matches = Array.from(String(text || "").matchAll(/^###\s+Proof\s+(\d+)/gm));
+    const matches = Array.from(String(text || "").matchAll(/^###\s+(?:Proof|Record)\s+(\d+)/gm));
     if (matches.length === 0) {
       return 1;
     }
@@ -437,7 +446,7 @@
   }
 
   function extractVerificationPlannedChecks(text) {
-    return splitLineEntries(getMarkdownSection(text, "Planned checks"))
+    return splitLineEntries(getMarkdownSection(text, "Draft checks") || getMarkdownSection(text, "Planned checks"))
       .map((line) => normalizeVerificationPlannedCheckLine(line))
       .filter(Boolean);
   }
@@ -460,53 +469,52 @@
   function describeVerificationProofSignals(verificationGate, verificationText = "") {
     const proofCoverage = verificationGate && verificationGate.proofCoverage ? verificationGate.proofCoverage : {};
     const items = Array.isArray(proofCoverage.items) ? proofCoverage.items : [];
-    const strongItems = items.filter((item) => item && item.strong);
-    const weakItems = items.filter((item) => item && !item.strong);
-    const plannedChecks = extractVerificationPlannedChecks(verificationText);
+    const verifiedItems = items.filter((item) => item && (item.verified || item.strong));
+    const draftItems = items.filter((item) => item && !(item.verified || item.strong));
+    const draftChecks = extractVerificationPlannedChecks(verificationText);
 
     let presentation;
-    if (strongItems.length > 0 && weakItems.length > 0) {
+    if (verifiedItems.length > 0 && (draftItems.length > 0 || draftChecks.length > 0)) {
       presentation = {
         tone: "draft",
-        headline: "Some proof is strong, some is still draft",
-        summary: "Strong proof exists, but draft placeholders still need explicit checks, results, or artifact refs.",
+        headline: "Verified evidence recorded; draft items remain",
+        summary: "Verified evidence exists, but some draft checks or draft evidence still need to be completed.",
       };
-    } else if (weakItems.length > 0) {
+    } else if (draftItems.length > 0) {
       presentation = {
         tone: "draft",
-        headline: "Draft proof does not satisfy the gate yet",
-        summary: "Proof links without enough check/result/artifact detail stay non-authoritative.",
+        headline: "Draft evidence does not satisfy the gate yet",
+        summary: "Verification records without enough check/result/artifact detail stay incomplete.",
       };
-    } else if (strongItems.length > 0 && plannedChecks.length > 0) {
+    } else if (draftChecks.length > 0) {
+      presentation = {
+        tone: verifiedItems.length > 0 ? "draft" : "pending",
+        headline: verifiedItems.length > 0 ? "Draft checks remain after verification" : "Draft checks are not verification yet",
+        summary: verifiedItems.length > 0
+          ? "Draft checks can stay as reminders, but they still need to be completed before handoff."
+          : "Draft checks are helpful, but they do not count until backed by explicit verification records.",
+      };
+    } else if (verifiedItems.length > 0) {
       presentation = {
         tone: "passed",
-        headline: "Strong proof recorded; planned checks remain notes",
-        summary: "Planned checks can stay as reminders, but only strong proof satisfies the verification gate.",
-      };
-    } else if (strongItems.length > 0) {
-      presentation = {
-        tone: "passed",
-        headline: "Strong proof recorded",
+        headline: "Verified evidence recorded",
         summary: "Repo-relative paths are explicitly linked to checks or artifacts.",
-      };
-    } else if (plannedChecks.length > 0) {
-      presentation = {
-        tone: "pending",
-        headline: "Planned checks are not proof yet",
-        summary: "Verification plans are helpful, but they do not count until backed by explicit proof.",
       };
     } else {
       presentation = {
         tone: "idle",
-        headline: "No explicit proof recorded",
-        summary: "Add planned checks or strong proof items to make verification intent and coverage visible.",
+        headline: "No explicit evidence recorded",
+        summary: "Add draft checks or verified evidence to make verification intent and coverage visible.",
       };
     }
 
     return {
-      plannedChecks,
-      strongItems,
-      weakItems,
+      draftChecks,
+      plannedChecks: draftChecks,
+      verifiedItems,
+      strongItems: verifiedItems,
+      draftItems,
+      weakItems: draftItems,
       presentation,
     };
   }

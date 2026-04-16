@@ -1,0 +1,214 @@
+{
+  "id": "run-1776274527729",
+  "taskId": "T-400",
+  "agent": "codex",
+  "status": "passed",
+  "summary": "Renamed evidence vocabulary to draft/verified across source helpers, dashboard surfaces, docs, smoke coverage, and regression tests.",
+  "createdAt": "2026-04-15T17:35:27.723Z",
+  "scopeProofPaths": [
+    "README.md",
+    "dashboard/document-helpers.js",
+    "dashboard/execution-detail-helpers.js",
+    "dashboard/form-event-helpers.js",
+    "dashboard/form-state-helpers.js",
+    "dashboard/index.html",
+    "dashboard/task-board-helpers.js",
+    "dashboard/task-detail-helpers.js",
+    "dashboard/task-list-render-helpers.js",
+    "scripts/smoke-test.js",
+    "src/lib/checkpoint.js",
+    "src/lib/evidence-utils.js",
+    "src/lib/mcp-tools.js",
+    "src/lib/overview.js",
+    "src/lib/skill-generator.js",
+    "src/lib/task-documents.js",
+    "src/lib/verification-gates.js",
+    "src/lib/verification-proof.js",
+    "test/dashboard-form-event-helpers.test.js",
+    "test/dashboard-form-state-helpers.test.js",
+    "test/dashboard-task-detail-helpers.test.js",
+    "test/dashboard-task-list-render-helpers.test.js",
+    "test/overview.test.js",
+    "test/server-api.test.js",
+    "test/verification-gates.test.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test passes (32 files, 156 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run lint passes",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke passes",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "dashboard, CLI, MCP, and README surfaces use the draft/verified vocabulary while older records still parse",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-400/runs/npm-test.log",
+    ".agent-workflow/tasks/T-400/runs/npm-lint.log",
+    ".agent-workflow/tasks/T-400/runs/npm-smoke.log"
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "README.md",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:a8af9d2cfa1d1f62b62639a6b2d5aeecdcec9572"
+    },
+    {
+      "path": "dashboard/document-helpers.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:02436f8b7cae228415c56bde03dce3e3cde8a853"
+    },
+    {
+      "path": "dashboard/execution-detail-helpers.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:c41c81eeb2ec5ac42ec8bb750cd13b6069f87678"
+    },
+    {
+      "path": "dashboard/form-event-helpers.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:743c19beccfda8c9876116e089288af3aa4cada7"
+    },
+    {
+      "path": "dashboard/form-state-helpers.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:2c0ce58dd3d003532e07a4f5f6f39c82c3e71153"
+    },
+    {
+      "path": "dashboard/index.html",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:a0508de2f6e692be2be37c304825b40d947de242"
+    },
+    {
+      "path": "dashboard/task-board-helpers.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:ba11fa803b3a60f321fad875d9a2ef0e837319b9"
+    },
+    {
+      "path": "dashboard/task-detail-helpers.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:be16c52e92eaf6d54d3d1dacc7b57465e8106ab6"
+    },
+    {
+      "path": "dashboard/task-list-render-helpers.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:d01aab1ec79df91dce745e3fce97b0c2edf022ef"
+    },
+    {
+      "path": "scripts/smoke-test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:8c7c10e0e55b4794a7771f438db418ee8c14dac9"
+    },
+    {
+      "path": "src/lib/checkpoint.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:165948c797e058e058e4d100380a45a45bd151dd"
+    },
+    {
+      "path": "src/lib/evidence-utils.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:3a23e8bc382b7d3d5e353c6879bd168bb6a1017d"
+    },
+    {
+      "path": "src/lib/mcp-tools.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:ace297b012fce2524102d5986839cff2373ad1b1"
+    },
+    {
+      "path": "src/lib/overview.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:a268feb3f46d447ae87146785b96d9675be70487"
+    },
+    {
+      "path": "src/lib/skill-generator.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:0d4bf8d9c5dd080476e8f258afc6af952ba23120"
+    },
+    {
+      "path": "src/lib/task-documents.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:49a0993e51bf3dcfa17245a228806b4d36658471"
+    },
+    {
+      "path": "src/lib/verification-gates.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:338815d02c1e7dc6608c89a486efdb2bf0e9814f"
+    },
+    {
+      "path": "src/lib/verification-proof.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:ccdc5a08ce4a642243483eb8b447e17b99e0aadf"
+    },
+    {
+      "path": "test/dashboard-form-event-helpers.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:7d2e74e7052e05ee2b156bf4dd70290e39645289"
+    },
+    {
+      "path": "test/dashboard-form-state-helpers.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:f06c3e4b44ae06c2df2bcc3439a3aa515032ba81"
+    },
+    {
+      "path": "test/dashboard-task-detail-helpers.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:012e4e6002d20374ad6e02e1ab86eac254096545"
+    },
+    {
+      "path": "test/dashboard-task-list-render-helpers.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:11b5972d7d3a45fc883fc11d727df3cf24658735"
+    },
+    {
+      "path": "test/overview.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:340d43600c06d01b86f0b22a18c03019a86b4cff"
+    },
+    {
+      "path": "test/server-api.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:b5f66fd295dbe5d39bc507a0da50512112cadfe5"
+    },
+    {
+      "path": "test/verification-gates.test.js",
+      "gitState": "M",
+      "exists": true,
+      "contentFingerprint": "sha1:d623b0b322a460faf98c9575da268bd1552a1e0a"
+    }
+  ]
+}

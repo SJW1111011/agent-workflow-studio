@@ -138,7 +138,7 @@ main().catch((error) => {
     !taskDocConfig.freeSections.includes("Scope") ||
     !Array.isArray(verificationDocConfig.managedSections) ||
     !verificationDocConfig.managedSections.includes("Heading from task id") ||
-    !verificationDocConfig.freeSections.includes("Proof links")
+    !verificationDocConfig.freeSections.includes("Verification records")
   ) {
     throw new Error("Dashboard editor guidance config did not expose managed and free-edit sections.");
   }
@@ -175,7 +175,7 @@ main().catch((error) => {
         relevantChangedFiles: [{ path: "docs/notes.md" }, { path: "README.md" }],
       },
     },
-    "# T-001 Verification\n\n## Planned checks\n\n- automated:\n- manual: Review README.md diff"
+    "# T-001 Verification\n\n## Draft checks\n\n- automated:\n- manual: Review README.md diff"
   );
   const verificationProofDraft = buildVerificationProofDraft(
     {
@@ -183,7 +183,7 @@ main().catch((error) => {
         relevantChangedFiles: [{ path: "docs/notes.md" }, { path: "README.md" }],
       },
     },
-    "# T-001 Verification\n\n## Proof links\n\n### Proof 1\n\n- Files: README.md\n- Check:\n- Result:\n- Artifact:"
+    "# T-001 Verification\n\n## Verification records\n\n### Record 1\n\n- Files: README.md\n- Check:\n- Result:\n- Artifact:"
   );
   const mergedVerificationProofDraft = mergeVerificationProofDraft(
     "# T-001 Verification\n\n## Blocking gaps\n\n- none",
@@ -194,7 +194,7 @@ main().catch((error) => {
     }
   );
   const mergedVerificationPlannedChecks = mergeVerificationPlannedCheckDraft(
-    "# T-001 Verification\n\n## Proof links\n\n### Proof 1\n\n- Files: README.md\n- Check:\n- Result:\n- Artifact:",
+    "# T-001 Verification\n\n## Verification records\n\n### Record 1\n\n- Files: README.md\n- Check:\n- Result:\n- Artifact:",
     {
       verificationGate: {
         relevantChangedFiles: [{ path: "docs/notes.md" }],
@@ -202,7 +202,7 @@ main().catch((error) => {
     }
   );
   const mergedVerificationProofPlan = mergeVerificationProofPlanDraft(
-    "# T-001 Verification\n\n## Planned checks\n\n- automated:\n- manual: Review README.md diff",
+    "# T-001 Verification\n\n## Draft checks\n\n- automated:\n- manual: Review README.md diff",
     {
       verificationGate: {
         relevantChangedFiles: [{ path: "docs/notes.md" }, { path: "README.md" }],
@@ -211,7 +211,7 @@ main().catch((error) => {
   );
   const extractedVerificationPlannedChecks = Array.from(
     extractVerificationPlannedManualChecks(
-      "# T-001 Verification\n\n## Planned checks\n\n- automated:\n- manual: Review docs/notes.md diff\n- manual: Review README.md diff"
+      "# T-001 Verification\n\n## Draft checks\n\n- automated:\n- manual: Review docs/notes.md diff\n- manual: Review README.md diff"
     )
   );
   const parsedRunVerificationDraft = parseRunVerificationDraft({
@@ -229,7 +229,7 @@ main().catch((error) => {
   );
   const extractedVerificationProofPaths = Array.from(
     extractVerificationProofPaths(
-      "# T-001 Verification\n\n## Proof links\n\n### Proof 1\n\n- Files: docs/notes.md, README.md\n- Check:\n- Result:\n- Artifact:"
+      "# T-001 Verification\n\n## Verification records\n\n### Record 1\n\n- Files: docs/notes.md, README.md\n- Check:\n- Result:\n- Artifact:"
     )
   );
   const filteredExecutorTasks = filterTasksByExecutorOutcome(
@@ -283,8 +283,8 @@ main().catch((error) => {
     status: "failed",
     summary: "Executor failed with exit code 1.",
   });
-  const plannedVerificationChecks = extractVerificationPlannedChecks(
-    "# T-001 Verification\n\n## Planned checks\n\n- automated: npm run smoke\n- manual: Review docs/notes.md diff"
+  const draftVerificationChecks = extractVerificationPlannedChecks(
+    "# T-001 Verification\n\n## Draft checks\n\n- automated: npm run smoke\n- manual: Review docs/notes.md diff"
   );
   const draftVerificationSignals = describeVerificationProofSignals(
     {
@@ -297,14 +297,14 @@ main().catch((error) => {
             paths: ["docs/notes.md"],
             checks: [],
             artifacts: [],
-            strong: false,
+            verified: false,
           },
         ],
       },
     },
-    "# T-001 Verification\n\n## Planned checks\n\n- manual: Review docs/notes.md diff"
+    "# T-001 Verification\n\n## Draft checks\n\n- manual: Review docs/notes.md diff"
   );
-  const strongVerificationSignals = describeVerificationProofSignals(
+  const verifiedVerificationSignals = describeVerificationProofSignals(
     {
       proofCoverage: {
         items: [
@@ -315,15 +315,15 @@ main().catch((error) => {
             paths: ["docs/notes.md"],
             checks: ["[passed] Review docs/notes.md diff"],
             artifacts: [".agent-workflow/tasks/T-001/runs/run-1.stdout.log"],
-            strong: true,
+            verified: true,
           },
         ],
       },
     },
-    "# T-001 Verification\n\n## Planned checks\n\n- manual: Review docs/notes.md diff"
+    "# T-001 Verification\n\n## Verification records\n\n### Record 1\n\n- Files: docs/notes.md\n- Check: [passed] Review docs/notes.md diff\n- Artifact: .agent-workflow/tasks/T-001/runs/run-1.stdout.log"
   );
-  const placeholderPlannedVerificationChecks = extractVerificationPlannedChecks(
-    "# T-001 Verification\n\n## Planned checks\n\n- automated:\n- manual:"
+  const placeholderDraftVerificationChecks = extractVerificationPlannedChecks(
+    "# T-001 Verification\n\n## Draft checks\n\n- automated:\n- manual:"
   );
   if (
     mergedPendingPaths !== "README.md\nsrc/server.js\ndocs/notes.md" ||
@@ -331,11 +331,11 @@ main().catch((error) => {
     draftedPendingChecks.join(",") !== "Review docs/notes.md diff,Review README.md diff" ||
     mergedPendingChecks !== "Review README.md diff\npassed | npm run smoke | smoke workspace ok\nReview docs/notes.md diff" ||
     verificationPlannedCheckDraft !== "- manual: Review docs/notes.md diff" ||
-    !verificationProofDraft.includes("### Proof 2") ||
+    !verificationProofDraft.includes("### Record 2") ||
     !verificationProofDraft.includes("- Files: docs/notes.md") ||
-    !mergedVerificationProofDraft.includes("## Proof links") ||
+    !mergedVerificationProofDraft.includes("## Verification records") ||
     !mergedVerificationProofDraft.includes("- Files: docs/notes.md") ||
-    !mergedVerificationPlannedChecks.includes("## Planned checks") ||
+    !mergedVerificationPlannedChecks.includes("## Draft checks") ||
     !mergedVerificationPlannedChecks.includes("- manual: Review docs/notes.md diff") ||
     !mergedVerificationProofPlan.includes("- manual: Review docs/notes.md diff") ||
     !mergedVerificationProofPlan.includes("- Files: docs/notes.md") ||
@@ -375,15 +375,15 @@ main().catch((error) => {
     cancelledRunPresentation.tone !== "cancelled" ||
     !failedRunPresentation ||
     failedRunPresentation.tone !== "failed" ||
-    plannedVerificationChecks.join(",") !== "automated: npm run smoke,manual: Review docs/notes.md diff" ||
+    draftVerificationChecks.join(",") !== "automated: npm run smoke,manual: Review docs/notes.md diff" ||
     !draftVerificationSignals ||
     draftVerificationSignals.presentation.tone !== "draft" ||
     draftVerificationSignals.weakItems.length !== 1 ||
-    draftVerificationSignals.plannedChecks.length !== 1 ||
-    !strongVerificationSignals ||
-    strongVerificationSignals.presentation.tone !== "passed" ||
-    strongVerificationSignals.strongItems.length !== 1 ||
-    placeholderPlannedVerificationChecks.length !== 0 ||
+    draftVerificationSignals.draftChecks.length !== 1 ||
+    !verifiedVerificationSignals ||
+    verifiedVerificationSignals.presentation.tone !== "passed" ||
+    verifiedVerificationSignals.verifiedItems.length !== 1 ||
+    placeholderDraftVerificationChecks.length !== 0 ||
     summarizeExecutorOutcomeFilter(3, 1, "cancelled") !== "Showing 1 of 3 tasks with executor outcome cancelled."
   ) {
     throw new Error("Dashboard pending proof helper utilities did not normalize the current verification gate state.");
@@ -570,8 +570,8 @@ Build the first scanner slice with explicit diff-aware verification.
     path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "checkpoint.md"),
     "utf8"
   );
-  if (!pendingCheckpointText.includes("- Status: needs-proof") || !pendingCheckpointText.includes("- docs/notes.md")) {
-    throw new Error("Checkpoint did not surface scoped files awaiting proof.");
+  if (!pendingCheckpointText.includes("- Status: action-required") || !pendingCheckpointText.includes("- docs/notes.md")) {
+    throw new Error("Checkpoint did not surface scoped files awaiting verified evidence.");
   }
 
   const t003Runs = loadRunRecords(path.join(tempRoot, ".agent-workflow", "tasks", "T-003", "runs"));
@@ -618,8 +618,8 @@ Build the first scanner slice with explicit diff-aware verification.
       throw new Error("Overview did not expose stale task freshness.");
     }
     const t001VerificationGate = (overview.verification || []).find((item) => item.taskId === "T-001");
-    if (!t001VerificationGate || t001VerificationGate.status !== "needs-proof") {
-      throw new Error("Overview did not expose diff-aware verification proof requirements.");
+    if (!t001VerificationGate || t001VerificationGate.status !== "action-required") {
+      throw new Error("Overview did not expose diff-aware verification evidence requirements.");
     }
 
     const quickTask = await requestJson(`http://127.0.0.1:${port}/api/quick`, "POST", {
@@ -911,8 +911,8 @@ Ship a dashboard markdown editor.
     if (!detail.meta || detail.meta.recipeId !== "feature") {
       throw new Error("Task detail payload is missing recipe information.");
     }
-    if (!detail.verificationGate || detail.verificationGate.summary.status !== "needs-proof") {
-      throw new Error("Task detail did not expose a diff-aware proof requirement.");
+    if (!detail.verificationGate || detail.verificationGate.summary.status !== "action-required") {
+      throw new Error("Task detail did not expose a diff-aware verification evidence requirement.");
     }
     const relevantNoteChange = (detail.verificationGate.relevantChangedFiles || []).find((file) => file.path === "docs/notes.md");
     if (!relevantNoteChange) {
@@ -927,7 +927,7 @@ Ship a dashboard markdown editor.
     const weakProofDetail = await requestJson(`http://127.0.0.1:${port}/api/tasks/T-001/documents/verification.md`, "PUT", {
       content: `# T-001 Verification
 
-## Planned checks
+## Draft checks
 
 - automated: node fake-runner.js
 - manual: reviewed the latest scanner-related work after the executor run
@@ -937,8 +937,8 @@ Ship a dashboard markdown editor.
 - none
 `,
     });
-    if (!weakProofDetail.verificationGate || weakProofDetail.verificationGate.summary.status !== "needs-proof") {
-      throw new Error("Generic verification text should not satisfy scoped proof requirements.");
+    if (!weakProofDetail.verificationGate || weakProofDetail.verificationGate.summary.status !== "action-required") {
+      throw new Error("Generic verification text should not satisfy scoped verification evidence requirements.");
     }
     const draftedProofDetail = await requestJson(`http://127.0.0.1:${port}/api/tasks/T-001/documents/verification.md`, "PUT", {
       content: mergeVerificationProofPlanDraft(weakProofDetail.verificationText, weakProofDetail),
@@ -947,22 +947,22 @@ Ship a dashboard markdown editor.
       !draftedProofDetail.verificationText.includes("- Files: docs/notes.md") ||
       !draftedProofDetail.verificationText.includes("- manual: Review docs/notes.md diff")
     ) {
-      throw new Error("Verification draft shortcut did not insert the pending proof plan into verification.md.");
+      throw new Error("Verification draft shortcut did not insert the pending evidence plan into verification.md.");
     }
-    if (!draftedProofDetail.verificationGate || draftedProofDetail.verificationGate.summary.status !== "needs-proof") {
-      throw new Error("Drafted verification proof plans should not satisfy the verification gate by themselves.");
+    if (!draftedProofDetail.verificationGate || draftedProofDetail.verificationGate.summary.status !== "action-required") {
+      throw new Error("Drafted verification evidence plans should not satisfy the verification gate by themselves.");
     }
     const manualProofDetail = await requestJson(`http://127.0.0.1:${port}/api/tasks/T-001/documents/verification.md`, "PUT", {
       content: `# T-001 Verification
 
-## Planned checks
+## Draft checks
 
 - automated: node fake-runner.js
 - manual: reviewed docs/notes.md after the executor run
 
-## Proof links
+## Verification records
 
-### Proof 1
+### Record 1
 
 - Files: docs/notes.md
 - Check: reviewed docs/notes.md diff after the executor run
@@ -975,18 +975,18 @@ Ship a dashboard markdown editor.
 `,
     });
     if (!manualProofDetail.verificationGate || manualProofDetail.verificationGate.summary.status !== "covered") {
-      throw new Error("Structured proof links did not satisfy the diff-aware gate.");
+      throw new Error("Structured verification records did not satisfy the diff-aware gate.");
     }
     const manualProofItem = ((manualProofDetail.verificationGate.proofCoverage || {}).items || []).find(
       (item) => item.sourceType === "manual" && (item.paths || []).includes("docs/notes.md")
     );
     if (
       !manualProofItem ||
-      !manualProofItem.strong ||
+      !manualProofItem.verified ||
       !(manualProofItem.artifacts || []).includes(executorRun.stdoutFile) ||
       !(manualProofItem.checks || []).some((check) => check.includes("result: passed"))
     ) {
-      throw new Error("Manual proof item was not parsed into strong scoped coverage.");
+      throw new Error("Manual verification record was not parsed into verified scoped coverage.");
     }
     const manualAnchorRefreshDetail = await requestJson(
       `http://127.0.0.1:${port}/api/tasks/T-001/verification/anchors/refresh`,
@@ -998,7 +998,7 @@ Ship a dashboard markdown editor.
       manualAnchorRefreshDetail.manualProofAnchorRefresh.refreshedCount !== 1 ||
       !manualAnchorRefreshDetail.verificationText.includes("verification-manual-proof-anchors:start")
     ) {
-      throw new Error("Manual proof anchor refresh did not persist the managed verification anchor block.");
+      throw new Error("Manual verification record refresh did not persist the managed verification anchor block.");
     }
     const anchoredManualProofItem = ((manualAnchorRefreshDetail.verificationGate.proofCoverage || {}).items || []).find(
       (item) => item.sourceType === "manual" && (item.paths || []).includes("docs/notes.md")
@@ -1013,8 +1013,8 @@ Ship a dashboard markdown editor.
       "utf8"
     );
     const reopenedManualProofDetail = await fetchJson(`http://127.0.0.1:${port}/api/tasks/T-001`);
-    if (!reopenedManualProofDetail.verificationGate || reopenedManualProofDetail.verificationGate.summary.status !== "needs-proof") {
-      throw new Error("Manual proof anchors did not reopen proof after the scoped file changed again.");
+    if (!reopenedManualProofDetail.verificationGate || reopenedManualProofDetail.verificationGate.summary.status !== "action-required") {
+      throw new Error("Manual verification records did not reopen required evidence after the scoped file changed again.");
     }
     const structuredDashboardRun = parseRunEvidenceDraft({
       status: "passed",
@@ -1052,13 +1052,13 @@ Ship a dashboard markdown editor.
     );
     if (
       !runProofItem ||
-      !runProofItem.strong ||
+      !runProofItem.verified ||
       !(runProofItem.paths || []).includes("docs/notes.md") ||
       !(runProofItem.checks || []).some((check) => check.includes("[passed] Reviewed docs/notes.md diff after the executor run")) ||
       !(runProofItem.checks || []).some((check) => check.includes("[passed] executor stdout captured")) ||
       !(runProofItem.artifacts || []).includes(executorRun.stdoutFile)
     ) {
-      throw new Error("Run evidence was not exposed as a strong structured proof item.");
+      throw new Error("Run evidence was not exposed as a verified structured evidence item.");
     }
     const coveredCheckpointText = fs.readFileSync(
       path.join(tempRoot, ".agent-workflow", "tasks", "T-001", "checkpoint.md"),
@@ -1182,8 +1182,8 @@ Ship a dashboard markdown editor.
     }
     if (
       !overview2.stats.verificationSignals ||
-      overview2.stats.verificationSignals.strong !== 1 ||
-      overview2.stats.verificationSignals.mixed !== 0 ||
+      overview2.stats.verificationSignals.verified !== 0 ||
+      overview2.stats.verificationSignals.partial !== 1 ||
       overview2.stats.verificationSignals.draft !== 0 ||
       overview2.stats.verificationSignals.planned !== 0 ||
       overview2.stats.verificationSignals.none !== 4
@@ -1198,8 +1198,9 @@ Ship a dashboard markdown editor.
     if (
       !t001OverviewTask ||
       t001OverviewTask.latestExecutorOutcome !== "passed" ||
-      t001OverviewTask.verificationSignalStatus !== "strong" ||
-      !String(t001OverviewTask.verificationSignalSummary || "").includes("strong proof")
+      t001OverviewTask.verificationSignalStatus !== "partial" ||
+      !String(t001OverviewTask.verificationSignalSummary || "").includes("verified item") ||
+      !String(t001OverviewTask.verificationSignalSummary || "").includes("draft check")
     ) {
       throw new Error("Overview task summary did not preserve the latest executor outcome and verification signal for T-001.");
     }

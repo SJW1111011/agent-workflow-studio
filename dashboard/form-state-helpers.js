@@ -26,9 +26,9 @@
       freeMarkup: renderGuidanceList(hasDetail ? config.freeSections : [], "Select a task to view editable sections."),
       guardrailNote: hasDetail
         ? activeDocumentName === "verification.md" && paths.length > 0
-          ? "Managed markers are maintained automatically on save. The verification draft shortcut can add planned checks plus file placeholders, but you still need real Check/Result/Artifact content before treating it as evidence. Save first before refreshing proof anchors so the managed anchor state matches the text you just reviewed."
+          ? "Managed markers are maintained automatically on save. The verification draft shortcut can add draft checks plus file placeholders, but you still need real Check/Result/Artifact content before treating it as verified evidence. Save first before refreshing verification records so the managed state matches the text you just reviewed."
           : activeDocumentName === "verification.md"
-            ? "Managed markers are maintained automatically on save. Save first before refreshing proof anchors so the managed anchor state matches the current verification text."
+            ? "Managed markers are maintained automatically on save. Save first before refreshing verification records so the managed state matches the current verification text."
             : "Managed markers are maintained automatically on save; you can focus on the surrounding markdown."
         : "Select a task to view editor guardrails.",
       draftProofButtonDisabled: !canDraftVerificationProof,
@@ -36,7 +36,7 @@
         ? `Draft Proof Plan From Pending Files (${paths.length})`
         : "Draft Proof Plan From Pending Files",
       refreshProofAnchorsButtonDisabled: !canRefreshVerificationAnchors,
-      refreshProofAnchorsButtonText: "Refresh Proof Anchors",
+      refreshProofAnchorsButtonText: "Refresh Verification Records",
       disableInputs: !hasDetail,
     };
   }

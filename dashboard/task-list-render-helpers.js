@@ -131,24 +131,28 @@
   }
 
   function formatTaskVerificationFreshnessSummary(task) {
-    const strongProofCount = Number((task && task.strongProofCount) || 0);
-    if (strongProofCount <= 0) {
+    const verifiedProofCount = Number((task && (task.verifiedProofCount || task.strongProofCount)) || 0);
+    if (verifiedProofCount <= 0) {
       return "";
     }
 
-    const anchorBackedStrongProofCount = Number((task && task.anchorBackedStrongProofCount) || 0);
-    const compatibilityStrongProofCount = Number((task && task.compatibilityStrongProofCount) || 0);
+    const currentVerifiedEvidenceCount = Number(
+      (task && (task.currentVerifiedEvidenceCount || task.anchorBackedStrongProofCount)) || 0
+    );
+    const recordedVerifiedEvidenceCount = Number(
+      (task && (task.recordedVerifiedEvidenceCount || task.compatibilityStrongProofCount)) || 0
+    );
 
-    if (anchorBackedStrongProofCount > 0 && compatibilityStrongProofCount > 0) {
-      return `${anchorBackedStrongProofCount} anchor-backed, ${compatibilityStrongProofCount} compatibility-only`;
+    if (currentVerifiedEvidenceCount > 0 && recordedVerifiedEvidenceCount > 0) {
+      return `${currentVerifiedEvidenceCount} current, ${recordedVerifiedEvidenceCount} recorded-only`;
     }
 
-    if (anchorBackedStrongProofCount > 0) {
-      return `${anchorBackedStrongProofCount} anchor-backed`;
+    if (currentVerifiedEvidenceCount > 0) {
+      return `${currentVerifiedEvidenceCount} current`;
     }
 
-    if (compatibilityStrongProofCount > 0) {
-      return `${compatibilityStrongProofCount} compatibility-only`;
+    if (recordedVerifiedEvidenceCount > 0) {
+      return `${recordedVerifiedEvidenceCount} recorded-only`;
     }
 
     return "";
@@ -160,8 +164,10 @@
       return "";
     }
 
-    const compatibilityStrongProofCount = Number((task && task.compatibilityStrongProofCount) || 0);
-    return `<span class="tag ${compatibilityStrongProofCount > 0 ? "warn" : ""}">${escapeHtml(summary)}</span>`;
+    const recordedVerifiedEvidenceCount = Number(
+      (task && (task.recordedVerifiedEvidenceCount || task.compatibilityStrongProofCount)) || 0
+    );
+    return `<span class="tag ${recordedVerifiedEvidenceCount > 0 ? "warn" : ""}">${escapeHtml(summary)}</span>`;
   }
 
   function escapeHtml(value) {

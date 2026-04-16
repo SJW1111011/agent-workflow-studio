@@ -7,13 +7,13 @@ const {
 
 const tests = [
   {
-    name: "renderVerificationGate separates planned, weak, and strong proof signals",
+    name: "renderVerificationGate separates draft and verified evidence signals",
     run() {
       const markup = renderVerificationGate(
         {
           summary: {
-            status: "needs-proof",
-            message: "One scoped change still needs explicit proof.",
+            status: "action-required",
+            message: "One scoped change still needs verified evidence.",
             relevantChangeCount: 1,
           },
           repository: {
@@ -48,7 +48,11 @@ const tests = [
           ],
           proofCoverage: {
             explicitProofCount: 2,
+            verifiedEvidenceCount: 1,
+            draftEvidenceCount: 1,
             weakProofCount: 1,
+            currentVerifiedEvidenceCount: 1,
+            recordedVerifiedEvidenceCount: 0,
             anchoredStrongProofCount: 1,
             compatibilityStrongProofCount: 0,
             items: [
@@ -69,7 +73,7 @@ const tests = [
                 anchorCount: 1,
                 checks: ["[passed] Reviewed README.md diff"],
                 artifacts: [".agent-workflow/tasks/T-001/runs/run-1.stdout.log"],
-                strong: true,
+                verified: true,
               },
             ],
           },
@@ -77,18 +81,19 @@ const tests = [
         [
           "# T-001 Verification",
           "",
-          "## Planned checks",
+          "## Draft checks",
           "",
           "- manual: Review docs/notes.md diff",
           "",
         ].join("\n")
       );
 
-      assert.match(markup, /Explicit proof needed/);
-      assert.match(markup, /1 planned check\(s\)/);
-      assert.match(markup, /1 draft proof item\(s\)/);
-      assert.match(markup, /1 strong proof item\(s\)/);
-      assert.match(markup, /1 anchor-backed strong proof item\(s\)/);
+      assert.match(markup, /Action required/);
+      assert.match(markup, /1 draft check\(s\)/);
+      assert.match(markup, /1 draft evidence item\(s\)/);
+      assert.match(markup, /1 verified item\(s\)/);
+      assert.match(markup, /1 current verified item\(s\)/);
+      assert.match(markup, /1 current match\(es\)/);
       assert.match(markup, /Proof freshness/);
       assert.match(markup, /docs\/notes\.md/);
       assert.match(markup, /README\.md/);
@@ -119,7 +124,7 @@ const tests = [
           ],
           taskText: "# T-001 - Refactor dashboard task detail",
           contextText: "# T-001 Context",
-          verificationText: "# T-001 Verification\n\n## Planned checks\n\n- manual: Review dashboard diff",
+          verificationText: "# T-001 Verification\n\n## Draft checks\n\n- manual: Review dashboard diff",
           checkpointText: "# T-001 Checkpoint",
           runs: [
             {
@@ -209,12 +214,15 @@ const tests = [
               {
                 path: "dashboard/app.js",
                 proofUpdatedAt: "2026-04-07T11:06:00.000Z",
-                proofFreshnessSource: "compatibility-only",
+                proofFreshnessSource: "recorded",
                 matchedBy: [{ pattern: "dashboard/app.js", source: "task.md#scope" }],
               },
             ],
             proofCoverage: {
               explicitProofCount: 1,
+              verifiedEvidenceCount: 1,
+              currentVerifiedEvidenceCount: 0,
+              recordedVerifiedEvidenceCount: 1,
               weakProofCount: 0,
               anchoredStrongProofCount: 0,
               compatibilityStrongProofCount: 1,
@@ -227,7 +235,7 @@ const tests = [
                   anchorCount: 0,
                   checks: ["[passed] Reviewed dashboard/app.js diff"],
                   artifacts: [".agent-workflow/tasks/T-001/runs/run-1.stdout.log"],
-                  strong: true,
+                  verified: true,
                 },
               ],
             },
@@ -252,7 +260,7 @@ const tests = [
       assert.match(markup, /Freshness/);
       assert.match(markup, /Verification Gate/);
       assert.match(markup, /Scoped diff is covered/);
-      assert.match(markup, /compatibility-only/);
+      assert.match(markup, /recorded-only/);
       assert.match(markup, /task-missing-proof/);
       assert.match(markup, /Runner command for codex resolves locally/);
     },

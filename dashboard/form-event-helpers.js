@@ -188,18 +188,18 @@
       const pendingPaths = deps.getPendingProofPaths(deps.getActiveTaskDetail());
 
       if (deps.getActiveDocumentName() !== "verification.md") {
-        deps.setActionStatus("Switch the editor to verification.md before drafting proof links.", "error");
+        deps.setActionStatus("Switch the editor to verification.md before drafting verification records.", "error");
         return;
       }
 
       if (pendingPaths.length === 0) {
-        deps.setActionStatus("No pending scoped files are available for proof-link drafting right now.", "error");
+        deps.setActionStatus("No pending scoped files are available for verification-record drafting right now.", "error");
         return;
       }
 
       input.value = deps.mergeVerificationProofPlanDraft(input.value, deps.getActiveTaskDetail());
       deps.setActionStatus(
-        `Drafted planned checks and proof-link placeholders for ${pendingPaths.length} pending scoped file(s). Fill Check/Result/Artifact before treating them as proof.`,
+        `Drafted draft checks and verification-record placeholders for ${pendingPaths.length} pending scoped file(s). Fill Check/Result/Artifact before treating them as verified evidence.`,
         "success"
       );
     });
@@ -207,9 +207,9 @@
     doc.getElementById("document-refresh-proof-anchors").addEventListener("click", async () => {
       try {
         const detail = deps.getActiveTaskDetail();
-        const taskId = requireActiveTaskId(detail, "Select a task before refreshing manual proof anchors.");
+        const taskId = requireActiveTaskId(detail, "Select a task before refreshing verification records.");
         if (deps.getActiveDocumentName() !== "verification.md") {
-          deps.setActionStatus("Switch the editor to verification.md before refreshing proof anchors.", "error");
+          deps.setActionStatus("Switch the editor to verification.md before refreshing verification records.", "error");
           return;
         }
 
@@ -223,13 +223,13 @@
           )
         ) {
           deps.setActionStatus(
-            "Save verification.md before refreshing proof anchors so the managed anchors match the latest proof text.",
+            "Save verification.md before refreshing verification records so the managed data matches the latest proof text.",
             "error"
           );
           return;
         }
 
-        deps.setActionStatus(`Refreshing proof anchors for ${taskId}...`, "");
+        deps.setActionStatus(`Refreshing verification records for ${taskId}...`, "");
         const response = await deps.postJson(
           `/api/tasks/${encodeURIComponent(taskId)}/verification/anchors/refresh`,
           {}
@@ -345,33 +345,33 @@
   }
 
   function buildManualProofAnchorRefreshMessage(taskId, refreshSummary = {}) {
-    const strongProofCount = Number(refreshSummary.strongProofCount || 0);
+    const verifiedEvidenceCount = Number(refreshSummary.verifiedEvidenceCount || refreshSummary.strongProofCount || 0);
     const refreshedCount = Number(refreshSummary.refreshedCount || 0);
     const skippedCount = Number(refreshSummary.skippedCount || 0);
     const clearedCount = Number(refreshSummary.clearedCount || 0);
     const changed = Boolean(refreshSummary.changed);
 
-    if (clearedCount > 0 && strongProofCount === 0) {
-      return `Cleared ${clearedCount} stale manual proof anchor record(s) for ${taskId}; no strong manual proof items remain.`;
+    if (clearedCount > 0 && verifiedEvidenceCount === 0) {
+      return `Cleared ${clearedCount} stale verification record(s) for ${taskId}; no verified manual evidence remains.`;
     }
 
     if (refreshedCount > 0 && skippedCount > 0) {
-      return `Refreshed ${refreshedCount} manual proof anchor record(s) for ${taskId}; ${skippedCount} strong proof item(s) stay on compatibility-only freshness.`;
+      return `Refreshed ${refreshedCount} verification record(s) for ${taskId}; ${skippedCount} verified item(s) remain recorded-only.`;
     }
 
     if (refreshedCount > 0 && !changed) {
-      return `Manual proof anchors are already current for ${taskId}.`;
+      return `Verification records are already current for ${taskId}.`;
     }
 
     if (refreshedCount > 0) {
-      return `Refreshed ${refreshedCount} manual proof anchor record(s) for ${taskId}.`;
+      return `Refreshed ${refreshedCount} verification record(s) for ${taskId}.`;
     }
 
     if (skippedCount > 0) {
-      return `No manual proof anchors were captured for ${taskId}; ${skippedCount} strong proof item(s) stay on compatibility-only freshness.`;
+      return `No verification records were captured for ${taskId}; ${skippedCount} verified item(s) remain recorded-only.`;
     }
 
-    return `Manual proof anchors are already current for ${taskId}.`;
+    return `Verification records are already current for ${taskId}.`;
   }
 
   function requireActiveTaskId(activeTaskDetail, errorMessage) {

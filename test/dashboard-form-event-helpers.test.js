@@ -187,7 +187,7 @@ const tests = [
           strongProofCount: 3,
           clearedCount: 0,
         }),
-        /Refreshed 2 manual proof anchor record\(s\)/
+        /Refreshed 2 verification record\(s\)/
       );
       assert.match(
         buildManualProofAnchorRefreshMessage("T-001", {
@@ -197,7 +197,7 @@ const tests = [
           strongProofCount: 0,
           clearedCount: 1,
         }),
-        /Cleared 1 stale manual proof anchor record\(s\)/
+        /Cleared 1 stale verification record\(s\)/
       );
     },
   },

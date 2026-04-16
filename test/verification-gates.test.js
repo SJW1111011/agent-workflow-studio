@@ -58,7 +58,7 @@ const tests = [
       assert.equal(gate.summary.relevantChangeCount, 0);
       assert.equal(gate.coveredScopedFiles.length, 1);
       assert.equal(gate.coveredScopedFiles[0].path, "src/app.js");
-      assert.equal(gate.coveredScopedFiles[0].proofFreshnessSource, "compatibility-only");
+      assert.equal(gate.coveredScopedFiles[0].proofFreshnessSource, "recorded");
       assert.equal(gate.proofCoverage.explicitProofCount, 1);
       assert.equal(gate.proofCoverage.weakProofCount, 0);
       assert.equal(gate.proofCoverage.compatibilityStrongProofCount, 1);
@@ -98,7 +98,7 @@ const tests = [
         ])
       );
 
-      assert.equal(gate.summary.status, "partially-covered");
+      assert.equal(gate.summary.status, "incomplete");
       assert.equal(gate.summary.relevantChangeCount, 1);
       assert.equal(gate.coveredScopedFiles.length, 1);
       assert.equal(gate.coveredScopedFiles[0].path, "src/app.js");
@@ -228,7 +228,7 @@ const tests = [
       assert.equal(gate.summary.relevantChangeCount, 0);
       assert.equal(gate.coveredScopedFiles.length, 1);
       assert.equal(gate.coveredScopedFiles[0].path, "src/app.js");
-      assert.equal(gate.coveredScopedFiles[0].proofFreshnessSource, "anchor-backed");
+      assert.equal(gate.coveredScopedFiles[0].proofFreshnessSource, "current");
       assert.equal(gate.proofCoverage.items[0].sourceType, "manual");
       assert.equal(gate.proofCoverage.items[0].anchorCount, 1);
       assert.equal(gate.proofCoverage.anchoredStrongProofCount, 1);
@@ -349,11 +349,11 @@ const tests = [
         ])
       );
 
-      assert.equal(gate.summary.status, "needs-proof");
+      assert.equal(gate.summary.status, "action-required");
       assert.equal(gate.summary.relevantChangeCount, 1);
       assert.equal(gate.coveredScopedFiles.length, 0);
       assert.equal(gate.relevantChangedFiles[0].path, "src/app.js");
-      assert.equal(gate.relevantChangedFiles[0].proofFreshnessSource, "anchor-stale");
+      assert.equal(gate.relevantChangedFiles[0].proofFreshnessSource, "outdated");
     },
   },
   {
@@ -386,7 +386,7 @@ const tests = [
         buildRepositoryDiff([{ path: "src/app.js", modifiedAt: "2026-01-02T00:00:00.000Z" }])
       );
 
-      assert.equal(gate.summary.status, "needs-proof");
+      assert.equal(gate.summary.status, "action-required");
       assert.equal(gate.summary.relevantChangeCount, 1);
       assert.equal(gate.proofCoverage.explicitProofCount, 0);
       assert.equal(gate.proofCoverage.weakProofCount, 1);
@@ -412,10 +412,10 @@ const tests = [
         buildRepositoryDiff([{ path: "src/app.js", modifiedAt: "2026-01-02T00:00:00.000Z" }])
       );
 
-      assert.equal(gate.summary.status, "scope-missing");
+      assert.equal(gate.summary.status, "unconfigured");
       assert.equal(gate.scopeCoverage.hintCount, 0);
       assert.ok(gate.scopeCoverage.ambiguousCount >= 1);
-      assert.match(gate.summary.message, /no repo-relative scope hints/i);
+      assert.match(gate.summary.message, /no repo-relative scope/i);
     },
   },
 ];

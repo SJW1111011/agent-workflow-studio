@@ -1,6 +1,13 @@
 const path = require("path");
 
 const VALID_CHECK_STATUSES = ["passed", "failed", "recorded", "info"];
+const CHECK_STATUS_ALIASES = Object.freeze({
+  verified: "passed",
+  strong: "passed",
+  weak: "recorded",
+  draft: "recorded",
+  planned: "recorded",
+});
 
 function normalizeProofPath(value) {
   return normalizeRelativePath(value);
@@ -145,11 +152,123 @@ function defaultCheckStatusForRunStatus(status) {
 
 function normalizeCheckStatus(status, fallbackStatus = "recorded") {
   const normalized = String(status || "").trim().toLowerCase();
-  if (VALID_CHECK_STATUSES.includes(normalized)) {
-    return normalized;
+  const aliased = CHECK_STATUS_ALIASES[normalized] || normalized;
+  if (VALID_CHECK_STATUSES.includes(aliased)) {
+    return aliased;
   }
 
   return VALID_CHECK_STATUSES.includes(fallbackStatus) ? fallbackStatus : "recorded";
+}
+
+function normalizeVerificationTier(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) {
+    return "";
+  }
+
+  if (normalized === "verified" || normalized === "strong") {
+    return "verified";
+  }
+
+  if (normalized === "partial" || normalized === "mixed") {
+    return "partial";
+  }
+
+  if (normalized === "draft" || normalized === "weak" || normalized === "planned") {
+    return "draft";
+  }
+
+  if (normalized === "none") {
+    return "none";
+  }
+
+  return "";
+}
+
+function normalizeVerificationSignalStatus(value) {
+  const normalized = normalizeVerificationTier(value);
+  return normalized && normalized !== "partial" ? normalized : normalized === "partial" ? "partial" : "";
+}
+
+function normalizeVerificationGateStatus(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) {
+    return "";
+  }
+
+  if (normalized === "action-required" || normalized === "needs-proof") {
+    return "action-required";
+  }
+
+  if (normalized === "incomplete" || normalized === "partially-covered") {
+    return "incomplete";
+  }
+
+  if (normalized === "unconfigured" || normalized === "scope-missing") {
+    return "unconfigured";
+  }
+
+  if (normalized === "covered" || normalized === "ready") {
+    return normalized;
+  }
+
+  return "";
+}
+
+function normalizeEvidenceFreshnessStatus(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) {
+    return "";
+  }
+
+  if (normalized === "current" || normalized === "anchor-backed") {
+    return "current";
+  }
+
+  if (normalized === "recorded" || normalized === "compatibility-only") {
+    return "recorded";
+  }
+
+  if (normalized === "outdated" || normalized === "anchor-stale") {
+    return "outdated";
+  }
+
+  return "";
+}
+
+function isVerifiedEvidence(value) {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  if (typeof value.verified === "boolean") {
+    return value.verified;
+  }
+
+  if (typeof value.strong === "boolean") {
+    return value.strong;
+  }
+
+  const normalizedTier = normalizeVerificationTier(
+    firstNonEmptyString([value.tier, value.status, value.quality, value.proofTier])
+  );
+  if (normalizedTier === "verified") {
+    return true;
+  }
+  if (normalizedTier === "draft") {
+    return false;
+  }
+
+  const proofPaths = normalizeProofPaths(value.paths || value.scopeProofPaths);
+  const checks = uniqueStrings(
+    []
+      .concat(toArray(value.checks))
+      .concat(toArray(value.verificationChecks))
+      .filter(Boolean)
+  );
+  const artifacts = normalizeArtifactRefs(value.artifacts || value.verificationArtifacts);
+
+  return proofPaths.length > 0 && (checks.length > 0 || artifacts.length > 0);
 }
 
 function normalizeRelativePath(value) {
@@ -207,11 +326,17 @@ module.exports = {
   VALID_CHECK_STATUSES,
   defaultCheckStatusForRunStatus,
   formatVerificationCheck,
+  isVerifiedEvidence,
+  normalizeCheckStatus,
+  normalizeEvidenceFreshnessStatus,
   normalizeArtifactRef,
   normalizeArtifactRefs,
+  normalizeVerificationGateStatus,
   normalizeProofAnchors,
   normalizeProofPath,
   normalizeProofPaths,
+  normalizeVerificationSignalStatus,
+  normalizeVerificationTier,
   normalizeVerificationChecks,
   summarizeVerificationChecks,
 };

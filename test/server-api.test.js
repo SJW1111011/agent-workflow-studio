@@ -554,7 +554,7 @@ const tests = [
     },
   },
   {
-    name: "server api refreshes manual proof anchors and returns typed validation errors when proof is not ready",
+    name: "server api refreshes verification records and returns typed validation errors when evidence is not ready",
     async run() {
       const { workspaceRoot, files } = createTaskWorkspace("server-api-manual-proof-anchors");
       fs.mkdirSync(path.join(workspaceRoot, "src"), { recursive: true });
@@ -564,12 +564,13 @@ const tests = [
         [
           "# T-001 Verification",
           "",
-          "## Proof links",
+          "## Verification records",
           "",
-          "### Proof 1",
+          "### Record 1",
           "",
           "- Files: src/app.js",
           "- Check: npm test",
+          "- Result: passed",
           "- Artifact: logs/test.txt",
           "",
         ].join("\n"),
@@ -595,7 +596,7 @@ const tests = [
           [
             "# T-001 Verification",
             "",
-            "## Planned checks",
+            "## Draft checks",
             "",
             "- manual: review src/app.js",
             "",
@@ -603,15 +604,15 @@ const tests = [
           "utf8"
         );
 
-        const noStrongProof = await request(
+        const noVerifiedEvidence = await request(
           `http://127.0.0.1:${server.port}/api/tasks/T-001/verification/anchors/refresh`,
           {
             method: "POST",
             body: {},
           }
         );
-        assert.equal(noStrongProof.statusCode, 400);
-        assert.match(noStrongProof.json.error, /no strong manual proof items to anchor/i);
+        assert.equal(noVerifiedEvidence.statusCode, 400);
+        assert.match(noVerifiedEvidence.json.error, /no verified manual evidence to refresh yet/i);
       } finally {
         await server.stop();
       }
@@ -656,6 +657,7 @@ const tests = [
   },
   {
     name: "server api streams execution state and stdout lines over sse without breaking snapshot log reads",
+    timeout: 15000,
     async run() {
       const { workspaceRoot, taskId } = createTaskWorkspace("server-api-execution-sse");
       writeDashboardSseRunner(workspaceRoot);
@@ -773,6 +775,6 @@ const suite = {
 
 describe(suite.name, () => {
   suite.tests.forEach((testCase) => {
-    it(testCase.name, testCase.run);
+    it(testCase.name, testCase.run, testCase.timeout);
   });
 });

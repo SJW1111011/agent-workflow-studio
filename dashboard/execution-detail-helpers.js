@@ -629,26 +629,33 @@
   }
 
   function formatVerificationGateLabel(status, relevantChangeCount) {
-    if (status === "needs-proof") {
-      return `Proof needed (${relevantChangeCount})`;
+    if (status === "action-required" || status === "needs-proof") {
+      return `Action required (${relevantChangeCount})`;
     }
-    if (status === "partially-covered") {
-      return `Partial proof (${relevantChangeCount})`;
+    if (status === "incomplete" || status === "partially-covered") {
+      return `Incomplete (${relevantChangeCount})`;
     }
     if (status === "covered") {
-      return `Proof covered (${relevantChangeCount})`;
+      return relevantChangeCount > 0 ? `Covered (${relevantChangeCount})` : "Covered";
     }
-    if (status === "scope-missing") {
-      return "Scope hint needed";
+    if (status === "unconfigured" || status === "scope-missing") {
+      return "Scope not set";
     }
     if (status === "unavailable") {
       return "Diff unavailable";
     }
-    return relevantChangeCount > 0 ? `Proof ready (${relevantChangeCount})` : "Proof ready";
+    return relevantChangeCount > 0 ? `Ready (${relevantChangeCount})` : "Ready";
   }
 
   function isVerificationGateWarning(status) {
-    return status === "needs-proof" || status === "partially-covered" || status === "scope-missing";
+    return (
+      status === "action-required" ||
+      status === "needs-proof" ||
+      status === "incomplete" ||
+      status === "partially-covered" ||
+      status === "unconfigured" ||
+      status === "scope-missing"
+    );
   }
 
   function normalizeOpenStreams(value) {

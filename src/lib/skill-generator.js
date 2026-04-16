@@ -36,7 +36,7 @@ After creation, edit the generated task.md:
 
 Then read context.md and verification.md:
 - context.md: fill Why now, Facts, Open questions
-- verification.md: fill Planned checks (automated and manual)
+- verification.md: fill Draft checks (automated and manual)
 
 Show the user a summary of the created task when done.
 `,
@@ -67,10 +67,10 @@ Steps:
 2. Run \`npx agent-workflow validate --root .\`
 3. Read and summarize:
    - Total tasks and their statuses (todo / in_progress / done)
-   - Which tasks have strong proof, which need proof
+   - Which tasks have verified evidence, which still need attention
    - Any validation warnings or errors
 4. If there are risks or stale docs, tell the user what needs attention
-5. Suggest next actions (e.g. "T-002 needs proof for src/auth.js")
+5. Suggest next actions (e.g. "T-002 still needs verified evidence for src/auth.js")
 `,
 };
 

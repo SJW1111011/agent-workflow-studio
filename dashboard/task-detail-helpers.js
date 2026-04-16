@@ -21,9 +21,9 @@
             headline: "Verification helpers unavailable",
             summary: "Verification proof signals could not be derived in this environment.",
           },
-          plannedChecks: [],
-          weakItems: [],
-          strongItems: [],
+          draftChecks: [],
+          draftItems: [],
+          verifiedItems: [],
         });
   const formatTimestampLabel =
     typeof executionHelpers.formatTimestampLabel === "function"
@@ -32,7 +32,7 @@
   const isVerificationGateWarning =
     typeof executionHelpers.isVerificationGateWarning === "function"
       ? executionHelpers.isVerificationGateWarning
-      : (status) => status === "needs-proof" || status === "partially-covered" || status === "scope-missing";
+      : (status) => status === "action-required" || status === "incomplete" || status === "unconfigured";
   const renderExecutionStateMarkup =
     typeof executionHelpers.renderExecutionStateMarkup === "function"
       ? executionHelpers.renderExecutionStateMarkup
@@ -214,6 +214,9 @@
     const scopeCoverage = verificationGate.scopeCoverage || {};
     const proofCoverage = verificationGate.proofCoverage || {};
     const proofSignals = describeVerificationProofSignals(verificationGate, verificationText);
+    const draftChecks = proofSignals.draftChecks || proofSignals.plannedChecks || [];
+    const draftItems = proofSignals.draftItems || proofSignals.weakItems || [];
+    const verifiedItems = proofSignals.verifiedItems || proofSignals.strongItems || [];
     const proofFreshness = describeProofFreshnessModes(proofCoverage);
     const scopeHints = (verificationGate.scopeHints || []).length
       ? (verificationGate.scopeHints || [])
@@ -263,30 +266,30 @@
           )
           .join("")
       : '<div class="empty">No scoped files are explicitly linked to proof yet.</div>';
-    const plannedChecks = proofSignals.plannedChecks.length
-      ? proofSignals.plannedChecks
+    const plannedChecks = draftChecks.length
+      ? draftChecks
           .map(
             (item) => `
               <article class="list-item proof-item-card proof-item-planned">
                 <h3>${escapeHtml(item)}</h3>
-                <p class="subtle">Planned checks are notes until they are backed by explicit proof paths plus checks or artifacts.</p>
+                <p class="subtle">Draft checks are notes until they are backed by explicit files plus checks or artifacts.</p>
                 <div class="tag-row">
-                  <span class="tag">${escapeHtml("planned")}</span>
+                  <span class="tag">${escapeHtml("draft")}</span>
                 </div>
               </article>
             `
           )
           .join("")
-      : '<div class="empty">No planned checks recorded in verification.md.</div>';
+      : '<div class="empty">No draft checks recorded in verification.md.</div>';
     const weakProofItems = renderVerificationProofItems(
-      proofSignals.weakItems,
+      draftItems,
       "draft",
-      "Draft proof still needs stronger check/result/artifact detail."
+      "Draft evidence still needs stronger check/result/artifact detail."
     );
     const strongProofItems = renderVerificationProofItems(
-      proofSignals.strongItems,
-      "strong",
-      "No strong proof items recorded yet."
+      verifiedItems,
+      "verified",
+      "No verified evidence recorded yet."
     );
     const ambiguousScopeEntries = (scopeCoverage.ambiguousEntries || []).length
       ? (scopeCoverage.ambiguousEntries || [])
@@ -312,39 +315,43 @@
           <span class="tag">${escapeHtml(`${summary.relevantChangeCount || 0} relevant change(s)`)}</span>
           <span class="tag">${escapeHtml(`${(verificationGate.repository && verificationGate.repository.scopedFileCount) || 0} scoped file(s)`)}</span>
           <span class="tag">${escapeHtml(`${scopeCoverage.hintCount || 0} scope hint(s)`)}</span>
-          ${proofSignals.plannedChecks.length > 0 ? `<span class="tag">${escapeHtml(`${proofSignals.plannedChecks.length} planned check(s)`)}</span>` : ""}
+          ${draftChecks.length > 0 ? `<span class="tag">${escapeHtml(`${draftChecks.length} draft check(s)`)}</span>` : ""}
           ${(scopeCoverage.ambiguousCount || 0) > 0 ? `<span class="tag warn">${escapeHtml(`${scopeCoverage.ambiguousCount} ambiguous`)}</span>` : ""}
-          ${(proofCoverage.explicitProofCount || 0) > 0 ? `<span class="tag">${escapeHtml(`${proofCoverage.explicitProofCount} explicit proof item(s)`)}</span>` : ""}
-          ${(proofCoverage.weakProofCount || 0) > 0 ? `<span class="tag warn">${escapeHtml(`${proofCoverage.weakProofCount} weak proof item(s)`)}</span>` : ""}
+          ${(verifiedItems.length > 0 || (proofCoverage.verifiedEvidenceCount || 0) > 0)
+            ? `<span class="tag">${escapeHtml(`${verifiedItems.length || proofCoverage.verifiedEvidenceCount} verified item(s)`)}</span>`
+            : ""}
+          ${(draftItems.length > 0 || (proofCoverage.draftEvidenceCount || proofCoverage.weakProofCount || 0) > 0)
+            ? `<span class="tag warn">${escapeHtml(`${draftItems.length || proofCoverage.draftEvidenceCount || proofCoverage.weakProofCount} draft evidence item(s)`)}</span>`
+            : ""}
         </div>
         <p class="subtle">Latest run: ${escapeHtml(formatTimestampLabel(evidence.latestRunAt))}</p>
         <p class="subtle">Verification updated: ${escapeHtml(formatTimestampLabel(evidence.verificationUpdatedAt))}</p>
         <p class="subtle">Latest evidence: ${escapeHtml(formatTimestampLabel(evidence.latestEvidenceAt))}</p>
         <div class="verification-signal-grid">
           ${renderStatusBanner("Verification signal", proofSignals.presentation)}
-          ${renderStatusBanner("Planned checks", {
-            tone: proofSignals.plannedChecks.length > 0 ? "pending" : "idle",
-            headline: proofSignals.plannedChecks.length > 0 ? `${proofSignals.plannedChecks.length} planned check(s)` : "No planned checks",
+          ${renderStatusBanner("Draft checks", {
+            tone: draftChecks.length > 0 ? "draft" : "idle",
+            headline: draftChecks.length > 0 ? `${draftChecks.length} draft check(s)` : "No draft checks",
             summary:
-              proofSignals.plannedChecks.length > 0
-                ? "Planned checks are intent only; they do not satisfy the verification gate."
-                : "No planned checks are currently recorded in verification.md.",
+              draftChecks.length > 0
+                ? "Draft checks are intent only; they do not satisfy the verification gate yet."
+                : "No draft checks are currently recorded in verification.md.",
           })}
-          ${renderStatusBanner("Draft proof", {
-            tone: proofSignals.weakItems.length > 0 ? "draft" : "idle",
-            headline: proofSignals.weakItems.length > 0 ? `${proofSignals.weakItems.length} draft proof item(s)` : "No draft proof",
+          ${renderStatusBanner("Draft evidence", {
+            tone: draftItems.length > 0 ? "draft" : "idle",
+            headline: draftItems.length > 0 ? `${draftItems.length} draft evidence item(s)` : "No draft evidence",
             summary:
-              proofSignals.weakItems.length > 0
-                ? "Draft proof names files or intent, but still needs concrete checks, results, or artifact refs."
-                : "No weak proof placeholders are currently recorded.",
+              draftItems.length > 0
+                ? "Draft evidence names files or intent, but still needs concrete checks, results, or artifact refs."
+                : "No draft evidence placeholders are currently recorded.",
           })}
-          ${renderStatusBanner("Strong proof", {
-            tone: proofSignals.strongItems.length > 0 ? "passed" : "idle",
-            headline: proofSignals.strongItems.length > 0 ? `${proofSignals.strongItems.length} strong proof item(s)` : "No strong proof",
+          ${renderStatusBanner("Verified evidence", {
+            tone: verifiedItems.length > 0 ? "passed" : "idle",
+            headline: verifiedItems.length > 0 ? `${verifiedItems.length} verified item(s)` : "No verified evidence",
             summary:
-              proofSignals.strongItems.length > 0
-                ? "Strong proof ties repo-relative paths to checks or artifacts."
-                : "No strong proof items are currently recorded.",
+              verifiedItems.length > 0
+                ? "Verified evidence ties repo-relative paths to checks or artifacts."
+                : "No verified evidence items are currently recorded.",
           })}
           ${renderStatusBanner("Proof freshness", proofFreshness)}
         </div>
@@ -362,15 +369,15 @@
         <div class="list">${coveredFiles}</div>
       </article>
       <article class="list-item">
-        <h3>Planned Checks</h3>
+        <h3>Draft Checks</h3>
         <div class="list">${plannedChecks}</div>
       </article>
       <article class="list-item">
-        <h3>Draft / Weak Proof</h3>
+        <h3>Draft Evidence</h3>
         <div class="list">${weakProofItems}</div>
       </article>
       <article class="list-item">
-        <h3>Strong Proof</h3>
+        <h3>Verified Evidence</h3>
         <div class="list">${strongProofItems}</div>
       </article>
       <article class="list-item">
@@ -395,11 +402,13 @@
             <p class="subtle">${escapeHtml(item.paths && item.paths.length > 0 ? item.paths.join(", ") : "No proof paths recorded.")}</p>
             <p class="subtle">${escapeHtml(item.artifacts && item.artifacts.length > 0 ? item.artifacts.join(", ") : "No artifact refs recorded.")}</p>
             <div class="tag-row">
-              <span class="tag ${item.strong ? "" : "warn"}">${escapeHtml(item.strong ? "strong proof" : "weak proof")}</span>
+              <span class="tag ${(item.verified || item.strong) ? "" : "warn"}">${escapeHtml(
+                item.verified || item.strong ? "verified evidence" : "draft evidence"
+              )}</span>
               ${
-                item.strong
+                item.verified || item.strong
                   ? `<span class="tag ${item.anchorCount > 0 ? "" : "warn"}">${escapeHtml(
-                      item.anchorCount > 0 ? `${item.anchorCount} anchor(s)` : "compatibility-only"
+                      item.anchorCount > 0 ? `${item.anchorCount} current match(es)` : "recorded-only"
                     )}</span>`
                   : ""
               }
@@ -412,62 +421,66 @@
   }
 
   function describeProofFreshnessModes(proofCoverage) {
-    const anchoredStrongProofCount = Number((proofCoverage && proofCoverage.anchoredStrongProofCount) || 0);
-    const compatibilityStrongProofCount = Number((proofCoverage && proofCoverage.compatibilityStrongProofCount) || 0);
+    const anchoredStrongProofCount = Number(
+      (proofCoverage && (proofCoverage.currentVerifiedEvidenceCount || proofCoverage.anchoredStrongProofCount)) || 0
+    );
+    const compatibilityStrongProofCount = Number(
+      (proofCoverage && (proofCoverage.recordedVerifiedEvidenceCount || proofCoverage.compatibilityStrongProofCount)) || 0
+    );
 
     if (anchoredStrongProofCount > 0 && compatibilityStrongProofCount > 0) {
       return {
         tone: "pending",
-        headline: `${anchoredStrongProofCount} anchor-backed, ${compatibilityStrongProofCount} compatibility-only`,
-        summary: "Some strong proof is content-anchored, but some still relies on compatibility timestamps rather than matching fingerprints.",
+        headline: `${anchoredStrongProofCount} current, ${compatibilityStrongProofCount} recorded-only`,
+        summary: "Some verified evidence is matched to current files, but some still relies on previously recorded verification details.",
       };
     }
 
     if (anchoredStrongProofCount > 0) {
       return {
         tone: "passed",
-        headline: `${anchoredStrongProofCount} anchor-backed strong proof item(s)`,
-        summary: "Current freshness is being validated by matching proof anchors against the current repository snapshot.",
+        headline: `${anchoredStrongProofCount} current verified item(s)`,
+        summary: "Current freshness is being validated against the current repository snapshot.",
       };
     }
 
     if (compatibilityStrongProofCount > 0) {
       return {
         tone: "pending",
-        headline: `${compatibilityStrongProofCount} compatibility-only strong proof item(s)`,
-        summary: "Strong proof exists, but freshness still depends on recorded time rather than matching proof anchors.",
+        headline: `${compatibilityStrongProofCount} recorded-only verified item(s)`,
+        summary: "Verified evidence exists, but freshness still depends on earlier recorded details.",
       };
     }
 
     return {
       tone: "idle",
-      headline: "No strong proof freshness mode yet",
-      summary: "Add strong proof first, then anchors can harden freshness beyond compatibility timestamps.",
+      headline: "No verified freshness mode yet",
+      summary: "Add verified evidence first, then freshness can be compared against current files.",
     };
   }
 
   function formatVerificationGateHeading(status) {
-    if (status === "needs-proof") {
-      return "Explicit proof needed";
+    if (status === "action-required" || status === "needs-proof") {
+      return "Action required";
     }
 
-    if (status === "partially-covered") {
-      return "Proof is only partial";
+    if (status === "incomplete" || status === "partially-covered") {
+      return "Coverage is incomplete";
     }
 
     if (status === "covered") {
       return "Scoped diff is covered";
     }
 
-    if (status === "scope-missing") {
-      return "Scope hints missing";
+    if (status === "unconfigured" || status === "scope-missing") {
+      return "Scope not configured";
     }
 
     if (status === "unavailable") {
       return "Diff-aware gate unavailable";
     }
 
-    return "No extra proof required";
+    return "No extra evidence required";
   }
 
   function renderChangeMatchSummary(changedFile) {
@@ -480,16 +493,16 @@
   }
 
   function renderProofFreshnessSourceTag(source) {
-    if (source === "anchor-backed") {
-      return '<span class="tag">anchor-backed</span>';
+    if (source === "current" || source === "anchor-backed") {
+      return '<span class="tag">current</span>';
     }
 
-    if (source === "compatibility-only") {
-      return '<span class="tag warn">compatibility-only</span>';
+    if (source === "recorded" || source === "compatibility-only") {
+      return '<span class="tag warn">recorded-only</span>';
     }
 
-    if (source === "anchor-stale") {
-      return '<span class="tag warn">anchor stale</span>';
+    if (source === "outdated" || source === "anchor-stale") {
+      return '<span class="tag warn">outdated</span>';
     }
 
     return "";

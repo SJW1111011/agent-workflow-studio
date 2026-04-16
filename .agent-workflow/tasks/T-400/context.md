@@ -25,6 +25,20 @@ The current evidence model exposes five different terms for proof quality (plann
 
 - Should internal code also rename (e.g., `isStrongManualProofItem` → `isVerifiedProofItem`)? Leaning yes for consistency, but can be a follow-up if too disruptive.
 
+## Progress notes
+
+### 2026-04-16T10:20:00.000Z
+
+Reviewed the required project memory, the T-400 task bundle, and the evidence/overview/dashboard helpers. Confirmed the user-facing rename has to reach core status values, dashboard render helpers, managed verification record wording, README terminology, and backward-compatible parsing for older verification blocks.
+
+### 2026-04-16T10:45:00.000Z
+
+Implemented the first rename pass across `src/lib/` and the dashboard helpers so new output uses `verified`, `partial`, `draft`, `action-required`, `incomplete`, and `unconfigured`. Added compatibility handling for older labels and verification-record payloads while keeping old records readable.
+
+### 2026-04-16T17:31:00.000Z
+
+Finished the compatibility and verification sweep. Updated the smoke contract plus the remaining dashboard/server/task-document expectations to the new draft/verified wording, then reran the focused suite and the full `npm test`, `npm run lint`, and `npm run smoke` commands with artifacts saved under `.agent-workflow/tasks/T-400/runs/`.
+
 ## Constraints
 
 <!-- agent-workflow:managed:context-constraints-meta:start -->

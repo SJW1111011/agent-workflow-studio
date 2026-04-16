@@ -184,10 +184,12 @@ const tests = [
         none: 1,
       });
       assert.deepEqual(overview.stats.verificationSignals, {
+        verified: 1,
+        partial: 1,
         strong: 1,
         mixed: 1,
-        draft: 1,
-        planned: 1,
+        draft: 2,
+        planned: 0,
         none: 1,
       });
 
@@ -195,11 +197,11 @@ const tests = [
       assert.equal(t001.latestExecutorOutcome, "passed");
       assert.equal(t001.latestExecutorSummary, "Executor completed with exit code 0.");
       assert.equal(t001.latestExecutorAt, "2026-01-02T00:00:00.000Z");
-      assert.equal(t001.verificationSignalStatus, "strong");
+      assert.equal(t001.verificationSignalStatus, "verified");
       assert.equal(t001.strongProofCount, 1);
       assert.equal(t001.anchorBackedStrongProofCount, 1);
       assert.equal(t001.compatibilityStrongProofCount, 0);
-      assert.match(t001.verificationSignalSummary, /anchor-backed/);
+      assert.match(t001.verificationSignalSummary, /all current/i);
       assert.ok(readTextFile(taskFiles(workspaceRoot, "T-001").verification).includes(passedExecutorRun.summary));
 
       assert.equal(t002.latestExecutorOutcome, "timed-out");
@@ -207,15 +209,15 @@ const tests = [
       assert.equal(t002.draftProofCount, 1);
 
       assert.equal(t003.latestExecutorOutcome, "cancelled");
-      assert.equal(t003.verificationSignalStatus, "planned");
-      assert.equal(t003.plannedVerificationCheckCount, 1);
+      assert.equal(t003.verificationSignalStatus, "draft");
+      assert.equal(t003.draftCheckCount, 1);
 
       assert.equal(t004.latestExecutorOutcome, "interrupted");
-      assert.equal(t004.verificationSignalStatus, "mixed");
+      assert.equal(t004.verificationSignalStatus, "partial");
       assert.equal(t004.strongProofCount, 1);
       assert.equal(t004.draftProofCount, 1);
       assert.equal(t004.compatibilityStrongProofCount, 1);
-      assert.match(t004.verificationSignalSummary, /compatibility-only/);
+      assert.match(t004.verificationSignalSummary, /recorded from earlier evidence/i);
 
       assert.equal(t005.latestExecutorOutcome, null);
       assert.equal(t005.verificationSignalStatus, "none");

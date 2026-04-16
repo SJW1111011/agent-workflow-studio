@@ -67,12 +67,17 @@
 
   function normalizeVerificationSignalStats(value) {
     const source = value && typeof value === "object" ? value : {};
+    const verified = normalizeStatCount(source.verified !== undefined ? source.verified : source.strong);
+    const partial = normalizeStatCount(source.partial !== undefined ? source.partial : source.mixed);
+    const draft = normalizeStatCount(source.draft) + normalizeStatCount(source.planned);
     return {
-      strong: normalizeStatCount(source.strong),
-      mixed: normalizeStatCount(source.mixed),
-      draft: normalizeStatCount(source.draft),
-      planned: normalizeStatCount(source.planned),
+      verified,
+      partial,
+      draft,
       none: normalizeStatCount(source.none),
+      strong: verified,
+      mixed: partial,
+      planned: 0,
     };
   }
 
@@ -89,7 +94,7 @@
 
   function countTasksWithVerificationSignals(verificationStats) {
     const normalized = normalizeVerificationSignalStats(verificationStats);
-    return normalized.strong + normalized.mixed + normalized.draft + normalized.planned;
+    return normalized.verified + normalized.partial + normalized.draft;
   }
 
   function renderExecutorOutcomeStatCard(totalTasks, executorStats, escapeHtml) {
@@ -134,13 +139,12 @@
     const annotatedTasks = countTasksWithVerificationSignals(normalized);
     const summary =
       totalTasks > 0
-        ? `${annotatedTasks} of ${totalTasks} tasks have planned or explicit verification signals.`
+        ? `${annotatedTasks} of ${totalTasks} tasks have draft or verified verification signals.`
         : "No tasks yet.";
     const breakdown = [
-      ["Strong", normalized.strong, false],
-      ["Mixed", normalized.mixed, true],
+      ["Verified", normalized.verified, false],
+      ["Partial", normalized.partial, true],
       ["Draft", normalized.draft, true],
-      ["Planned", normalized.planned, false],
       ["None", normalized.none, false],
     ];
 
@@ -167,68 +171,73 @@
 
 function describeTaskVerificationSignal(task) {
   const status = String((task && task.verificationSignalStatus) || "").trim().toLowerCase();
-  const summary = String((task && task.verificationSignalSummary) || "").trim();
-  const anchorBackedStrongProofCount = Number((task && task.anchorBackedStrongProofCount) || 0);
-  const compatibilityStrongProofCount = Number((task && task.compatibilityStrongProofCount) || 0);
-  const freshnessLabel = describeVerificationFreshnessLabel(anchorBackedStrongProofCount, compatibilityStrongProofCount);
+  const summary = sanitizeVerificationSummary(String((task && task.verificationSignalSummary) || "").trim());
+  const currentVerifiedEvidenceCount = Number(
+    (task && (task.currentVerifiedEvidenceCount || task.anchorBackedStrongProofCount)) || 0
+  );
+  const recordedVerifiedEvidenceCount = Number(
+    (task && (task.recordedVerifiedEvidenceCount || task.compatibilityStrongProofCount)) || 0
+  );
+  const freshnessLabel = describeVerificationFreshnessLabel(currentVerifiedEvidenceCount, recordedVerifiedEvidenceCount);
 
-  if (status === "strong") {
+  if (status === "verified" || status === "strong") {
     return {
       label:
-        freshnessLabel === "anchor-backed"
-          ? "anchor-backed proof"
-          : freshnessLabel === "compatibility-only"
-            ? "compatibility proof"
-            : freshnessLabel === "mixed freshness"
-              ? "mixed freshness"
-              : "strong proof",
-      warn: freshnessLabel === "compatibility-only" || freshnessLabel === "mixed freshness",
-      summary: summary || "Strong proof is recorded.",
+        freshnessLabel === "current"
+          ? "verified evidence"
+          : freshnessLabel === "recorded"
+            ? "verified evidence (recorded)"
+            : freshnessLabel === "mixed"
+              ? "verified evidence (mixed freshness)"
+              : "verified evidence",
+      warn: freshnessLabel === "recorded" || freshnessLabel === "mixed",
+      summary: summary || "Verified evidence is recorded.",
     };
   }
 
-  if (status === "mixed") {
+  if (status === "partial" || status === "mixed") {
     return {
-      label: "strong + draft",
-        warn: true,
-        summary: summary || "Some proof is strong, but draft placeholders remain.",
-      };
-    }
+      label: "verified + draft",
+      warn: true,
+      summary: summary || "Verified evidence exists, but draft items remain.",
+    };
+  }
 
-    if (status === "draft") {
-      return {
-        label: "draft proof",
-        warn: true,
-        summary: summary || "Draft proof exists, but it does not satisfy the gate yet.",
-      };
-    }
-
-    if (status === "planned") {
-      return {
-        label: "planned checks",
-        warn: false,
-        summary: summary || "Planned checks are recorded, but no strong proof exists yet.",
-      };
-    }
+  if (status === "draft" || status === "planned") {
+    return {
+      label: "draft evidence",
+      warn: true,
+      summary: summary || "Draft evidence exists, but it does not satisfy the gate yet.",
+    };
+  }
 
   return {
-    label: "no proof notes",
+    label: "no evidence notes",
     warn: false,
-    summary: summary || "No planned checks or explicit proof items are recorded.",
+    summary: summary || "No draft checks or explicit evidence are recorded.",
   };
 }
 
-function describeVerificationFreshnessLabel(anchorBackedStrongProofCount, compatibilityStrongProofCount) {
-  if (anchorBackedStrongProofCount > 0 && compatibilityStrongProofCount > 0) {
-    return "mixed freshness";
+function sanitizeVerificationSummary(summary) {
+  const normalized = String(summary || "").trim();
+  if (!normalized) {
+    return "";
   }
 
-  if (anchorBackedStrongProofCount > 0) {
-    return "anchor-backed";
+  return /(strong proof|weak proof|planned check|compatibility-only|anchor-backed)/i.test(normalized) ? "" : normalized;
+}
+
+function describeVerificationFreshnessLabel(currentVerifiedEvidenceCount, recordedVerifiedEvidenceCount) {
+  if (currentVerifiedEvidenceCount > 0 && recordedVerifiedEvidenceCount > 0) {
+    return "mixed";
   }
 
-  if (compatibilityStrongProofCount > 0) {
-    return "compatibility-only";
+  if (currentVerifiedEvidenceCount > 0) {
+    return "current";
+  }
+
+  if (recordedVerifiedEvidenceCount > 0) {
+    return "recorded";
   }
 
   return "";

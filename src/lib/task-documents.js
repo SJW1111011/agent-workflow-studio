@@ -1,6 +1,7 @@
 const fs = require("fs");
 const { fileExists, readJson, writeFile, writeJson } = require("./fs-utils");
 const { badRequest, notFound } = require("./http-errors");
+const { isVerifiedEvidence } = require("./evidence-utils");
 const { buildScopeProofAnchors, loadRepositorySnapshot } = require("./repository-snapshot");
 const { getRecipe } = require("./recipes");
 const {
@@ -107,14 +108,14 @@ ${renderManagedLines(
 function renderVerificationMarkdown(taskMeta) {
   return ensureTrailingNewline(`# ${taskMeta.id} Verification
 
-## Planned checks
+## Draft checks
 
 - automated:
 - manual:
 
-## Proof links
+## Verification records
 
-### Proof 1
+### Record 1
 
 - Files:
 - Check:
@@ -263,11 +264,11 @@ function refreshManualProofAnchors(workspaceRoot, taskId) {
   const currentVerificationText = readFileWithFallback(files.verification);
   const verificationUpdatedAtMs = fileExists(files.verification) ? fs.statSync(files.verification).mtimeMs : null;
   const existingAnchorPayload = parseManagedManualProofAnchors(currentVerificationText);
-  const manualProofItems = parseManualProofItems(currentVerificationText, verificationUpdatedAtMs).filter(isStrongManualProofItem);
+  const manualProofItems = parseManualProofItems(currentVerificationText, verificationUpdatedAtMs).filter(isVerifiedManualProofItem);
 
   if (manualProofItems.length === 0 && !existingAnchorPayload.hasBlock) {
     throw badRequest(
-      `verification.md has no strong manual proof items to anchor yet for task ${taskId}.`,
+      `verification.md has no verified manual evidence to refresh yet for task ${taskId}.`,
       "manual_proof_anchors_unavailable"
     );
   }
@@ -310,6 +311,7 @@ function refreshManualProofAnchors(workspaceRoot, taskId) {
 
   return {
     changed,
+    verifiedEvidenceCount: manualProofItems.length,
     strongProofCount: manualProofItems.length,
     refreshedCount: refreshedRecords.length,
     skippedCount,
@@ -651,8 +653,8 @@ function ensureTrailingNewline(content) {
   return `${String(content || "").replace(/\r\n/g, "\n").replace(/\s+$/, "")}\n`;
 }
 
-function isStrongManualProofItem(item) {
-  return Boolean(item && item.paths.length > 0 && (item.checks.length > 0 || item.artifacts.length > 0));
+function isVerifiedManualProofItem(item) {
+  return isVerifiedEvidence(item);
 }
 
 function readFileWithFallback(filePath) {

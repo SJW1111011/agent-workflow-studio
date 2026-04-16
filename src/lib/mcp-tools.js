@@ -211,11 +211,12 @@ async function callMcpTool(workspaceRoot, name, argumentsValue) {
 }
 
 function buildToolCallResult(payload) {
+  const normalizedPayload = decorateEvidenceVocabulary(payload);
   return {
     content: [
       {
         type: "text",
-        text: JSON.stringify(payload, null, 2),
+        text: JSON.stringify(normalizedPayload, null, 2),
       },
     ],
   };
@@ -794,6 +795,53 @@ function buildToolErrorPayload(error) {
 
 function cloneJson(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function decorateEvidenceVocabulary(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => decorateEvidenceVocabulary(item));
+  }
+
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  const decorated = Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [key, decorateEvidenceVocabulary(item)])
+  );
+
+  if (typeof decorated.strong === "boolean" && decorated.verified === undefined) {
+    decorated.verified = decorated.strong;
+  }
+
+  if (typeof decorated.strongProofCount === "number" && decorated.verifiedProofCount === undefined) {
+    decorated.verifiedProofCount = decorated.strongProofCount;
+  }
+
+  if (typeof decorated.plannedVerificationCheckCount === "number" && decorated.draftCheckCount === undefined) {
+    decorated.draftCheckCount = decorated.plannedVerificationCheckCount;
+  }
+
+  if (typeof decorated.anchorBackedStrongProofCount === "number" && decorated.currentVerifiedEvidenceCount === undefined) {
+    decorated.currentVerifiedEvidenceCount = decorated.anchorBackedStrongProofCount;
+  }
+
+  if (
+    typeof decorated.compatibilityStrongProofCount === "number" &&
+    decorated.recordedVerifiedEvidenceCount === undefined
+  ) {
+    decorated.recordedVerifiedEvidenceCount = decorated.compatibilityStrongProofCount;
+  }
+
+  if (typeof decorated.weakProofCount === "number" && decorated.draftEvidenceCount === undefined) {
+    decorated.draftEvidenceCount = decorated.weakProofCount;
+  }
+
+  if (typeof decorated.explicitProofCount === "number" && decorated.verifiedEvidenceCount === undefined) {
+    decorated.verifiedEvidenceCount = decorated.explicitProofCount;
+  }
+
+  return decorated;
 }
 
 module.exports = {

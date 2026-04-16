@@ -24,7 +24,7 @@ Replace the current four-tier proof vocabulary (planned / weak / draft / strong)
   - repo path: dashboard/overview-render-helpers.js (update labels)
   - repo path: dashboard/task-detail-helpers.js (update verification card labels)
   - repo path: test/ (update assertions for new names)
-  - repo path: README.md (document simplified vocabulary)
+  - repo path: README.md
 - Out of scope:
   - repo path: src/lib/repository-snapshot.js (fingerprinting logic unchanged)
   - repo path: src/lib/freshness.js (staleness thresholds unchanged)

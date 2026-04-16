@@ -30,7 +30,7 @@ A local-first workflow loop for turning messy agent sessions into bundled tasks,
 <p align="center">
   <img
     src="https://raw.githubusercontent.com/SJW1111011/agent-workflow-studio/main/docs/assets/agent-workflow-hero.png"
-    alt="Agent Workflow Studio workflow diagram showing quick creation, execution and verification, proof anchors, checkpoints, and the local dashboard"
+    alt="Agent Workflow Studio workflow diagram showing quick creation, execution and verification, checkpoints, and the local dashboard"
     width="1100"
   />
 </p>
@@ -80,8 +80,8 @@ That keeps backward compatibility for polling clients while giving the dashboard
 - **`undo`** - roll back the latest workflow-layer operation (`quick`, `run:add`, `done`, or explicit `checkpoint`) without touching source files or git history
 - **`mcp:install` / `mcp:uninstall`** - register or remove the MCP server in Codex, Claude Code, and Cursor without manual JSON or TOML editing
 - **`mcp:serve`** - expose the core workflow operations as MCP tools over stdio for Claude Code, Cursor, and other MCP clients
-- **`verification gate`** - compare repo-relative task scope against the current repository snapshot and show which scoped files still need explicit proof
-- **`proof anchors`** - keep passed evidence and refreshed manual proof tied to content fingerprints, not fragile `mtime` alone
+- **`verification gate`** - compare repo-relative task scope against the current repository snapshot and show which scoped files still need explicit evidence
+- **`verification records`** - keep passed evidence and refreshed manual verification tied to content fingerprints, not fragile `mtime` alone
 - **`skills:generate`** - write `AGENTS.md`, `CLAUDE.md`, and Claude slash commands so the workflow becomes part of the agent's default context
 - **`dashboard`** - inspect tasks, evidence, freshness, risks, execution state, and quick-create flows from a local control plane at `localhost:4173`
 
@@ -164,7 +164,7 @@ Task creation          Agent execution           Evidence + resume
 |                      - run-request.codex.json                       |
 |                      - launch.codex.md                              |
 |                      - checkpoint.md                                |
-|                      - runs/ evidence + proof anchors               |
+|                      - runs/ evidence + verification records        |
 +-------------------------------------------------------------------+
          |                                         |
          v                                         v
@@ -201,8 +201,8 @@ npx agent-workflow undo --root .
 
 Two ideas sit at the center of the project:
 
-- **Verification gate**: compare repo-relative task scope against the current repository snapshot (Git-backed when available, filesystem fallback otherwise) and explain which scoped files still need explicit proof.
-- **Proof anchor**: persist content fingerprints with passed run evidence and refreshed manual proof, so freshness survives misleading `mtime` churn, branch switches, and agent handoff noise. Strong proof requires `paths + checks or artifacts`; path-only proof stays weak.
+- **Verification gate**: compare repo-relative task scope against the current repository snapshot (Git-backed when available, filesystem fallback otherwise) and explain which scoped files still need explicit evidence.
+- **Verification records**: keep passed run evidence and refreshed manual verification tied to content fingerprints, so freshness survives misleading `mtime` churn, branch switches, and agent handoff noise. `draft` evidence still needs checks or artifacts; `verified` evidence includes repo-relative paths plus checks or artifacts.
 
 ## Why this exists
 
@@ -304,7 +304,7 @@ npm test
 - [MCP Setup](docs/MCP_SETUP.md) - Codex, Claude Code, and Cursor auto-install plus manual configuration examples
 - [Release Notes 0.1.2](docs/RELEASE_NOTES_0.1.2.md) - the published release summary for the current npm version
 - [Architecture](docs/ARCHITECTURE.md) - how the scaffold, dashboard, adapters, and evidence model fit together
-- [Verification Design](docs/VERIFICATION_FRESHNESS_DESIGN.md) - verification gates, proof anchors, and freshness rules
+- [Verification Design](docs/VERIFICATION_FRESHNESS_DESIGN.md) - verification gates, verification records, and freshness rules
 - [Executor Design](docs/RUN_EXECUTE_DESIGN.md) - local executor planning, preflight, and evidence capture
 - [Adapters](docs/ADAPTERS.md) - built-in adapters and custom adapter scaffolding
 - [Changelog](CHANGELOG.md) - released changes plus current unreleased docs polish

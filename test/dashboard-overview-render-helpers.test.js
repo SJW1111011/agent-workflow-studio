@@ -27,10 +27,10 @@ const tests = [
             none: 1,
           },
           verificationSignals: {
-            strong: 1,
-            mixed: 1,
-            draft: 0,
-            planned: 1,
+            verified: 1,
+            partial: 1,
+            draft: 1,
+            planned: 0,
             none: 1,
           },
         },
@@ -76,12 +76,12 @@ const tests = [
         [
           {
             taskId: "T-001",
-            summary: "One scoped file still needs proof.",
-            status: "needs-proof",
+            summary: "One scoped file still needs verified evidence.",
+            status: "action-required",
             relevantChangeCount: 1,
           },
         ],
-        (status) => status === "needs-proof"
+        (status) => status === "action-required"
       );
       const runsMarkup = renderRunsMarkup(
         [
@@ -117,7 +117,7 @@ const tests = [
 
       assert.match(memoryMarkup, /architecture\.md/);
       assert.match(memoryMarkup, /Updated 2026-04-07T13:00:00.000Z/);
-      assert.match(verificationMarkup, /needs-proof/);
+      assert.match(verificationMarkup, /action-required/);
       assert.match(verificationMarkup, /1 changed file\(s\)/);
       assert.match(runsMarkup, /failed/);
       assert.match(runsMarkup, /Exit code 1\./);
