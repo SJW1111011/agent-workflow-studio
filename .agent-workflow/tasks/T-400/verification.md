@@ -46,3 +46,16 @@
 - Verification check: [passed] npm run lint passes
 - Verification check: [passed] npm run smoke passes
 - Verification check: [passed] dashboard, CLI, MCP, and README surfaces use the draft/verified vocabulary while older records still parse
+
+## Evidence 2026-04-16T11:45:47.856Z
+
+- Agent: manual
+- Status: passed
+- Scoped files covered: src/lib/evidence-utils.js, src/lib/overview.js, src/lib/verification-gates.js, src/lib/verification-proof.js, src/lib/checkpoint.js, dashboard/task-detail-helpers.js
+- Summary: Claude Code review passed: draft/verified two-tier vocabulary, gate statuses renamed, dashboard backward compat, old data loads correctly, 85.62% coverage
+- Verification check: [passed] signal: strong→verified, mixed→partial, planned→draft
+- Verification check: [passed] gate: needs-proof→action-required, partially-covered→incomplete, scope-missing→unconfigured
+- Verification check: [passed] backward compat: old values accepted as aliases
+- Verification check: [passed] validate on 16 pre-Phase-3 tasks: ok=true
+- Verification check: [passed] npm test passes (32 files, 156 tests)
+- Verification check: [passed] coverage 85.62% >= 85%

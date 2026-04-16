@@ -1,0 +1,80 @@
+{
+  "id": "run-1776339947857",
+  "taskId": "T-400",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: draft/verified two-tier vocabulary, gate statuses renamed, dashboard backward compat, old data loads correctly, 85.62% coverage",
+  "createdAt": "2026-04-16T11:45:47.856Z",
+  "scopeProofPaths": [
+    "src/lib/evidence-utils.js",
+    "src/lib/overview.js",
+    "src/lib/verification-gates.js",
+    "src/lib/verification-proof.js",
+    "src/lib/checkpoint.js",
+    "dashboard/task-detail-helpers.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "signal: strong→verified, mixed→partial, planned→draft",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "gate: needs-proof→action-required, partially-covered→incomplete, scope-missing→unconfigured",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "backward compat: old values accepted as aliases",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "validate on 16 pre-Phase-3 tasks: ok=true",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (32 files, 156 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "coverage 85.62% >= 85%",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "scopeProofAnchors": [
+    {
+      "path": "src/lib/evidence-utils.js",
+      "exists": true,
+      "contentFingerprint": "sha1:3a23e8bc382b7d3d5e353c6879bd168bb6a1017d"
+    },
+    {
+      "path": "src/lib/overview.js",
+      "exists": true,
+      "contentFingerprint": "sha1:a268feb3f46d447ae87146785b96d9675be70487"
+    },
+    {
+      "path": "src/lib/verification-gates.js",
+      "exists": true,
+      "contentFingerprint": "sha1:338815d02c1e7dc6608c89a486efdb2bf0e9814f"
+    },
+    {
+      "path": "src/lib/verification-proof.js",
+      "exists": true,
+      "contentFingerprint": "sha1:ccdc5a08ce4a642243483eb8b447e17b99e0aadf"
+    },
+    {
+      "path": "src/lib/checkpoint.js",
+      "exists": true,
+      "contentFingerprint": "sha1:165948c797e058e058e4d100380a45a45bd151dd"
+    },
+    {
+      "path": "dashboard/task-detail-helpers.js",
+      "exists": true,
+      "contentFingerprint": "sha1:be16c52e92eaf6d54d3d1dacc7b57465e8106ab6"
+    }
+  ]
+}
