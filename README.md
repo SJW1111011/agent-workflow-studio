@@ -15,11 +15,11 @@ Local-first · Git-native · npm-installable · MCP-ready
 
 ## Who is this for?
 
-| You are... | Recommended path | Time to first task |
-|------------|------------------|--------------------|
-| A developer using Claude Code, Codex, or Cursor | **MCP tools** — say "create a task" in your editor | 2 minutes (one-time setup) |
-| A developer who prefers the terminal | **CLI** — `quick --lite` + `done` | 30 seconds |
-| A team running auditable agent workflows | **Full mode** — task docs, prompt compilation, evidence gates | 5 minutes per task |
+| You are...                                      | Recommended path                                              | Time to first task         |
+| ----------------------------------------------- | ------------------------------------------------------------- | -------------------------- |
+| A developer using Claude Code, Codex, or Cursor | **MCP tools** — say "create a task" in your editor            | 2 minutes (one-time setup) |
+| A developer who prefers the terminal            | **CLI** — `quick --lite` + `done`                             | 30 seconds                 |
+| A team running auditable agent workflows        | **Full mode** — task docs, prompt compilation, evidence gates | 5 minutes per task         |
 
 ## How it works
 
