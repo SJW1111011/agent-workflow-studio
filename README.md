@@ -9,23 +9,21 @@
   <img src="https://img.shields.io/badge/runtime%20deps-1-blue?style=for-the-badge" alt="One runtime dependency for MCP support">
 </p>
 
-> **Built largely by Codex in a single session (default 258k context, repeatedly compacted and spanning more than 50 commits over 7 days), with Claude Code providing evaluation, suggestions, and code review.**
-> This project is both the tool and the proof that structured agent workflows work.
+Track what your coding agents do. Record evidence. Resume where you left off.
 
-Make every Codex and Claude Code run leave an auditable evidence trail.
+Local-first · Git-native · npm-installable · MCP-ready
 
-Local-first - Git-native - npm-installable - MCP-ready
+## Who is this for?
 
-Agent Workflow Studio turns:
-
-- tasks into strong prompts
-- runs into evidence
-- evidence into refreshed docs and checkpoints
-- long jobs into resumable handoffs instead of lost context
+| You are... | Recommended path | Time to first task |
+|------------|------------------|--------------------|
+| A developer using Claude Code, Codex, or Cursor | **MCP tools** — say "create a task" in your editor | 2 minutes (one-time setup) |
+| A developer who prefers the terminal | **CLI** — `quick --lite` + `done` | 30 seconds |
+| A team running auditable agent workflows | **Full mode** — task docs, prompt compilation, evidence gates | 5 minutes per task |
 
 ## How it works
 
-A local-first workflow loop for turning messy agent sessions into bundled tasks, auditable evidence, and durable checkpoints.
+A local-first workflow loop: create a task, do the work, record what happened.
 
 <p align="center">
   <img
@@ -37,16 +35,45 @@ A local-first workflow loop for turning messy agent sessions into bundled tasks,
 
 ## Try it in 1 minute
 
+### Path 1: MCP (recommended for editor users)
+
 ```bash
 npm install agent-workflow-studio
 npx agent-workflow init --root .
-npx agent-workflow quick "My first task" --task-id T-001 --agent codex --root .
+npx agent-workflow mcp:install --root .
+```
+
+Then in Claude Code, Codex, or Cursor:
+
+```
+"create a task called 'Add authentication'"
+"list my tasks"
+"mark T-001 done with 'implemented JWT login'"
+```
+
+### Path 2: CLI (quick and light)
+
+```bash
+npm install agent-workflow-studio
+npx agent-workflow init --root .
+npx agent-workflow quick "Add authentication" --lite --root .
+# ... do the work ...
+npx agent-workflow done T-001 "Implemented JWT login" --complete --root .
+```
+
+### Path 3: Full workflow (auditable)
+
+```bash
+npm install agent-workflow-studio
+npx agent-workflow init --root .
+npx agent-workflow quick "Add authentication" --task-id T-001 --agent codex --root .
+# Fill in task.md, context.md, verification.md
+# Hand prompt.codex.md to Codex
+npx agent-workflow done T-001 "Implemented JWT login" --status passed --complete --root .
 npx agent-workflow dashboard --root . --port 4173
 ```
 
-Then open `http://localhost:4173`.
-
-For the cleaner helper-directory install flow, see [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md).
+For the helper-directory install flow, see [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md).
 
 ## See the dashboard
 
@@ -173,13 +200,35 @@ Task creation          Agent execution           Evidence + resume
 
 ## Daily workflow
 
-1. Create a task with `quick` or `task:new`.
-2. Hand the compiled prompt to Codex or Claude Code, or use `run:execute` when a local adapter is ready.
-3. Record evidence and refresh the checkpoint with `done <taskId> "<summary>"` when the work is ready to hand off. `done` and `run:add` infer proof paths from the current git diff by default, auto-advance `task.json` from `todo` to `in_progress` on the first recorded run, and `done --complete` marks the task `done`. If `.agent-workflow/project.json` sets `"autoInferTest": true`, those commands also run `npm test` and record the exit code as a verification check; `--skip-test` suppresses that for a single command. Add `--strict` when you want fingerprint-backed freshness for that command, or set `.agent-workflow/project.json` `strictVerification: true` to make strict mode the workspace default.
+### The fast path (most users)
 
-That gives repos with `"autoInferTest": true` a full zero-flag path: `done T-001 "summary"` records git-diff proof paths plus the inferred `npm test` result as verified evidence.
-4. If the latest workflow operation was wrong, run `npx agent-workflow undo --root .` to roll it back. Undo only touches `.agent-workflow/` state, and it refuses to delete a quick-created task that already has recorded runs.
-5. Review `verification.md`, `checkpoint.md`, and the recorded runs under `.agent-workflow/tasks/<taskId>/runs/`.
+```bash
+npx agent-workflow quick "Fix the login bug" --lite --root .
+# ... fix the bug ...
+npx agent-workflow done T-001 "Fixed race condition in session handler" --complete --root .
+```
+
+That's it. `done` auto-infers changed files from `git diff`, records evidence, refreshes the checkpoint, and marks the task complete. Zero flags needed for the common case.
+
+### The MCP path (editor users)
+
+If you've run `mcp:install`, just talk to your agent:
+
+```
+"create a lite task for fixing the login bug"
+"I'm done — fixed race condition in session handler, mark it complete"
+"undo that"
+```
+
+### The full path (audit / compliance)
+
+1. Create a task with `quick` or `task:new` (Full mode).
+2. Fill in `task.md` (scope, deliverables, risks), `context.md`, and `verification.md`.
+3. Compile the prompt: `prompt:compile T-001 --root .`
+4. Hand the prompt to Codex or Claude Code, or use `run:execute` with a local adapter.
+5. Record evidence: `done T-001 "summary" --status passed --proof-path src/auth.js --check "tests pass" --complete --root .`
+6. Add `--strict` for fingerprint-backed freshness, or set `strictVerification: true` in `project.json`.
+7. Review `checkpoint.md` and the verification gate.
 
 ## Undo the latest workflow action
 
@@ -218,15 +267,12 @@ No manual migration step is required for existing `.agent-workflow/` data.
 
 ## Why this exists
 
-Most teams using coding agents still lack:
+Coding agents are powerful but forgetful. They lose context between sessions, leave no audit trail, and can't resume interrupted work. Agent Workflow Studio is the missing layer:
 
-- stable project memory
-- structured task context
-- trustworthy verification state
-- resumable checkpoints
-- a shared control plane across Codex and Claude Code
-
-Agent Workflow Studio is designed to become that missing layer.
+- **Task memory** — structured context that survives session boundaries
+- **Evidence trail** — what changed, what was verified, what's still open
+- **Resumable checkpoints** — pick up where you (or the agent) left off
+- **Shared control plane** — one dashboard across Codex, Claude Code, and Cursor
 
 ## Commands
 
@@ -332,6 +378,10 @@ GitHub Actions now also enforces the Node 18/20/22 matrix, uploads the Node 22 c
 ## Community
 
 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) defines how we collaborate. Issues and PRs should stay focused on strong prompts, evidence quality, checkpoints, and agent handoff durability.
+
+## Project history
+
+Built largely by Codex in a single session (default 258k context, repeatedly compacted and spanning more than 50 commits over 7 days), with Claude Code providing evaluation, suggestions, and code review. The project itself is managed by agent-workflow-studio — 24 tasks across 4 completed phases, each reviewed against a structured checklist. This is both the tool and the proof that structured agent workflows work.
 
 ## License
 

@@ -11,9 +11,9 @@
 
 ---
 
-## Phase 0 - Infrastructure Modernization (Tech Debt)
+## Phase 0 - Infrastructure Modernization (Tech Debt) - COMPLETE
 
-**Goal:** Establish a healthy engineering foundation for all subsequent work.
+**Completed 2026-04-16.** Tasks T-100 ~ T-103.
 
 | Task | Description |
 |------|-------------|
@@ -33,9 +33,9 @@
 
 ---
 
-## Phase 1 - Cut the Ceremony (Core Overhaul, Highest User Value)
+## Phase 1 - Cut the Ceremony (Core Overhaul, Highest User Value) - COMPLETE
 
-**Goal:** 90% of daily tasks can be recorded in 30 seconds, not 5 minutes.
+**Completed 2026-04-16.** Tasks T-200 ~ T-204.
 
 | Change | Detail |
 |--------|--------|
@@ -55,9 +55,9 @@
 
 ---
 
-## Phase 2 - Real Agent Integration (File Protocol to Integration Platform)
+## Phase 2 - Real Agent Integration (File Protocol to Integration Platform) - COMPLETE
 
-**Goal:** Users say "create a task for X" inside Claude Code and the full pipeline runs automatically.
+**Completed 2026-04-16.** Tasks T-300 ~ T-304.
 
 | Change | Detail |
 |--------|--------|
@@ -74,9 +74,9 @@
 
 ---
 
-## Phase 3 - Evidence Model Simplification (Make Complexity Invisible)
+## Phase 3 - Evidence Model Simplification (Make Complexity Invisible) - COMPLETE
 
-**Goal:** New users never need to learn "proof anchor" to use the tool effectively.
+**Completed 2026-04-17.** Tasks T-400 ~ T-404.
 
 | Change | Detail |
 |--------|--------|
@@ -93,9 +93,17 @@
 
 ---
 
-## Phase 4 - Dashboard Rebuild
+## Phase 4 - Dashboard Rebuild - IN PROGRESS
 
 **Goal:** Move from a demo page to a real control plane.
+
+| Task | Description |
+|------|-------------|
+| T-500 | Vite + Preact scaffold: build pipeline, dev server, 5-tab component shell |
+| T-501 | Component migration: convert 11 render-helpers to Preact JSX with hooks state |
+| T-502 | SSE real-time updates: replace 900ms polling with EventSource subscriptions |
+| T-503 | Dark mode + responsive: system theme detection, mobile layout, Lighthouse >= 90 |
+| T-504 | Multi-task views: kanban board and timeline alongside existing list |
 
 | Change | Detail |
 |--------|--------|
@@ -155,7 +163,21 @@ Phases 1 and 2 can run in parallel because they mostly touch different modules. 
 
 ---
 
-## Execution Model: Codex + Claude Code Loop
+## How Users Work with Agent Workflow Studio
+
+Most users follow the **fast path**: create a task, do the work, record what happened.
+
+```text
+MCP or CLI: quick --lite "title"
+        -> do the work (write code, run tests, etc.)
+        -> MCP or CLI: done "summary" --complete
+```
+
+MCP tools (`workflow_quick`, `workflow_done`, etc.) are the recommended integration for editor users. The CLI is the fallback for terminal users.
+
+## How We Build This Project
+
+This project itself uses a stricter workflow because we are building the tool with the tool (dogfooding). This is a **power-user pattern**, not the expected user workflow:
 
 ```text
 Claude Code creates task (task.md / context.md / verification.md)
@@ -169,7 +191,7 @@ Claude Code creates task (task.md / context.md / verification.md)
         -> Fail -> create correction task for Codex
 ```
 
-When Phase 2 MCP integration is complete, this loop can be semi-automated inside Claude Code.
+This loop produced 24 tasks across 4 phases (T-100 ~ T-404), each reviewed against `.agent-workflow/review-checklist.md`. The MCP integration (Phase 2) now makes it possible to run parts of this loop from inside Claude Code without switching to a terminal.
 
 ---
 

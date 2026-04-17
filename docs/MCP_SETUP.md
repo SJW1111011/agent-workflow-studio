@@ -19,6 +19,32 @@ The server exposes these MCP tools:
 
 All tool handlers delegate to the same durable workflow modules used by the CLI, so MCP calls update `.agent-workflow/` the same way terminal commands do.
 
+## Recommended workflow after setup
+
+Once MCP is configured, you don't need to use the terminal. Talk to your agent naturally:
+
+**Creating tasks:**
+- "create a lite task for adding authentication"
+- "create a full task called 'Refactor database layer' with codex as the agent"
+
+**Recording work:**
+- "mark T-001 done with 'implemented JWT login' and complete it"
+- "add a draft run to T-002 with summary 'WIP on database migration'"
+
+**Checking status:**
+- "list my workflow tasks"
+- "show me the workspace overview"
+- "validate the workflow"
+
+**Mid-execution updates:**
+- "update T-001 priority to P0"
+- "add a note to T-001: found a race condition in the session handler"
+
+**Undoing mistakes:**
+- "undo the last workflow operation"
+
+The MCP tools map directly to CLI commands — `workflow_quick` = `quick`, `workflow_done` = `done`, etc. If MCP is unavailable, fall back to the CLI.
+
 ## Quick install
 
 Install the MCP server into the client config you want to use:

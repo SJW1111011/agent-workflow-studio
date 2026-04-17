@@ -1,14 +1,24 @@
 # Agent Workflow Studio - Agent Guide
 
-This file teaches any coding agent how to use agent-workflow-studio to manage tasks, record evidence, and maintain project memory.
+This file teaches any coding agent how to use agent-workflow-studio. When `skills:generate` is run, this guide is copied into `CLAUDE.md` and `AGENTS.md` at the target repository root.
 
-If you are an agent reading this, follow the instructions below whenever the user asks you to work on a task in this repository.
+## Choose your workflow
 
-When `skills:generate` is run, this guide is copied into `CLAUDE.md` (for Claude Code) and `AGENTS.md` (for Codex) at the target repository root so both agents pick it up automatically.
+Pick the path that matches your environment:
 
-## Prefer MCP when available
+### MCP path (recommended when available)
 
-If you are running inside Codex, Claude Code, or Cursor and MCP is available, prefer the MCP tools over copy-pasting terminal commands. Install the workflow server once with the matching client:
+If you are running inside Codex, Claude Code, or Cursor with MCP configured, use the `workflow_*` tools directly. No terminal commands needed.
+
+```
+workflow_quick({ title: "Add auth", mode: "lite" })
+# ... do the work ...
+workflow_done({ taskId: "T-001", summary: "Implemented JWT login", complete: true })
+```
+
+Other useful tools: `workflow_task_list`, `workflow_overview`, `workflow_update_task`, `workflow_append_note`, `workflow_undo`, `workflow_validate`.
+
+Install MCP once per client:
 
 ```bash
 npx agent-workflow mcp:install --client codex --root .
@@ -16,7 +26,28 @@ npx agent-workflow mcp:install --client claude --root .
 npx agent-workflow mcp:install --client cursor --root .
 ```
 
-After that, use the exposed `workflow_*` tools as the primary integration path and fall back to raw CLI commands when MCP is not available.
+### CLI path (when MCP is not available)
+
+```bash
+npx agent-workflow quick "Add auth" --lite --root .
+# ... do the work ...
+npx agent-workflow done T-001 "Implemented JWT login" --complete --root .
+```
+
+`done` auto-infers changed files from `git diff`. Zero flags needed for the common case.
+
+### Full audit path (compliance / heavy review)
+
+```bash
+npx agent-workflow quick "Add auth" --full --agent codex --root .
+# Fill in task.md, context.md, verification.md
+npx agent-workflow prompt:compile T-001 --root .
+# Hand prompt to agent, or use run:execute
+npx agent-workflow done T-001 "Implemented JWT login" --status passed \
+  --proof-path src/auth.js --check "tests pass" --complete --root .
+```
+
+Add `--strict` for fingerprint-backed evidence freshness.
 
 ## Workflow state
 
@@ -48,41 +79,34 @@ npx agent-workflow validate --root .
 
 ## Before starting any task
 
-1. Read the project memory:
-   - `.agent-workflow/memory/product.md`
-   - `.agent-workflow/memory/architecture.md`
-   - `.agent-workflow/memory/domain-rules.md`
-2. Check existing tasks: `npx agent-workflow task:list --root .`
-3. If no task exists for the current work, create one:
-   - Use `npx agent-workflow quick "<task title>" --lite --root .` for the fastest capture flow.
-   - Use `npx agent-workflow quick "<task title>" --full --root .` when you want context, verification, prompt, run-prep, and checkpoint files immediately.
-   - The current CLI default is still Full Mode, so plain `quick "<task title>"` behaves like `--full`.
-4. Open `task.md` and fill in:
-   - Goal: one paragraph describing the user outcome
-   - Scope: repo-relative paths using `repo path: src/auth/` format
-   - Deliverables: what will be produced
-   - Risks: what could go wrong
-5. If `context.md` and `verification.md` already exist, fill them in immediately.
-6. If they do not exist yet because the task was created in Lite Mode, let `prompt:compile`, `run:prepare`, `run:add`, `done`, or `checkpoint` materialize them when needed.
+1. Check existing tasks: `npx agent-workflow task:list --root .` (or `workflow_task_list` via MCP)
+2. If no task exists for the current work, create one:
+   - **Lite** (default for most work): `quick "title" --lite` — creates only `task.json` + `task.md`
+   - **Full** (audit/compliance): `quick "title" --full` — creates all docs + prompt + checkpoint
+3. Optionally read project memory under `.agent-workflow/memory/` for context.
 
 ## After completing work
 
-1. Identify which files you changed that are within the task scope.
-2. Prefer the one-step completion command:
-   ```bash
-   npx agent-workflow done <taskId> "<one-line summary>" \
-     --status passed \
-     --proof-path <changed-file-1> \
-     --proof-path <changed-file-2> \
-     --check "<what you verified>" \
-     --root .
-   ```
-   Add `--complete` when the task should also move to `done`. Use `--status draft` if verification is incomplete.
-3. If you need the older explicit flow, keep using:
-   ```bash
-   npx agent-workflow run:add <taskId> "<one-line summary>" --status passed --root .
-   npx agent-workflow checkpoint <taskId> --root .
-   ```
+Use `done` — it records evidence, refreshes the checkpoint, and optionally marks the task complete in one step:
+
+```bash
+npx agent-workflow done <taskId> "<summary>" --complete --root .
+```
+
+Or via MCP:
+
+```
+workflow_done({ taskId: "T-001", summary: "what I did", complete: true })
+```
+
+`done` auto-infers proof paths from `git diff` and auto-advances task status from `todo` to `in_progress`. Add `--status passed` and `--check "tests pass"` when you have specific verification to record.
+
+If you need the older explicit flow:
+
+```bash
+npx agent-workflow run:add <taskId> "<summary>" --status passed --root .
+npx agent-workflow checkpoint <taskId> --root .
+```
 
 ## Checking workflow status
 
