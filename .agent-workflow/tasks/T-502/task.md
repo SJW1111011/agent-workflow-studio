@@ -17,7 +17,8 @@ Replace the dashboard's 900ms setTimeout polling with SSE EventSource subscripti
   - repo path: dashboard-next/src/hooks/useExecutionSSE.js (new — EventSource hook for execution state)
   - repo path: dashboard-next/src/hooks/useLogSSE.js (new — EventSource hook for log streaming)
   - repo path: dashboard-next/src/components/ExecutionPanel.jsx (consume SSE hooks instead of polling)
-  - repo path: dashboard-next/src/context/DashboardContext.jsx (remove polling logic)
+  - repo path: dashboard-next/src/hooks/useDashboardState.js (remove 900ms polling loop, keep snapshot fallback)
+  - repo path: dashboard-next/src/context/DashboardContext.jsx (wire updated dashboard state shape if needed)
 - Out of scope:
   - repo path: src/server.js (SSE endpoints already exist from T-301)
   - repo path: dashboard/ (old dashboard unchanged)

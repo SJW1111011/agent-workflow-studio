@@ -1,5 +1,6 @@
 import { useEffect, useReducer, useRef } from "preact/hooks";
 import useApi from "./useApi.js";
+import useExecutionSSE from "./useExecutionSSE.js";
 import {
   describeExecutionState,
   isActiveExecutionState,
@@ -175,10 +176,36 @@ function normalizeLogStateShape(logState) {
   };
 }
 
+function compactExecutionSnapshot(executionState) {
+  const state = executionState && typeof executionState === "object" ? executionState : {};
+  return {
+    outcome: state.outcome || null,
+    runId: state.runId || null,
+    status: state.status || "idle",
+    updatedAt: state.updatedAt || null,
+  };
+}
+
+function executionSnapshotMatchesEvent(executionState, event) {
+  if (!event || typeof event !== "object") {
+    return false;
+  }
+
+  const current = compactExecutionSnapshot(executionState);
+  return (
+    current.outcome === (event.outcome || null) &&
+    current.runId === (event.runId || null) &&
+    current.status === (event.status || "idle") &&
+    current.updatedAt === (event.updatedAt || null)
+  );
+}
+
 export default function useDashboardState() {
   const api = useApi();
   const [state, dispatch] = useReducer(reducer, initialState);
   const stateRef = useRef(initialState);
+  const executionRefreshTokenRef = useRef(0);
+  const executionSse = useExecutionSSE(state.activeTaskId);
 
   const {
     loadOverview,
@@ -406,6 +433,40 @@ export default function useDashboardState() {
     }
   }
 
+  async function syncExecutionState(taskId, options = {}) {
+    if (!taskId) {
+      return null;
+    }
+
+    const previousExecutionState = options.previousExecutionState || stateRef.current.executionState;
+    const requestToken = ++executionRefreshTokenRef.current;
+
+    try {
+      const nextState = await loadTaskExecution(taskId);
+      if (stateRef.current.activeTaskId !== taskId || executionRefreshTokenRef.current !== requestToken) {
+        return nextState;
+      }
+
+      dispatch({ type: "execution/set", payload: nextState });
+      await refreshExecutionLogs(taskId, nextState);
+
+      if (options.refreshDashboardOnCompletion && isActiveExecutionState(previousExecutionState) && !isActiveExecutionState(nextState)) {
+        const completionStatus = buildExecutionCompletionStatus(nextState, taskId, describeExecutionState);
+        await refreshDashboard(taskId);
+        if (completionStatus) {
+          setActionStatus(completionStatus.message, completionStatus.tone);
+        }
+      }
+
+      return nextState;
+    } catch (error) {
+      if (options.reportErrors !== false) {
+        setActionStatus(error.message, "error");
+      }
+      throw error;
+    }
+  }
+
   async function toggleExecutionStream(taskId, stream) {
     const currentLogState = normalizeLogStateShape(stateRef.current.logState);
     const toggled = toggleExecutionLogStreamState(currentLogState, taskId, stream);
@@ -520,38 +581,49 @@ export default function useDashboardState() {
 
   useEffect(() => {
     const taskId = state.activeTaskId;
+    const nextEvent = executionSse.event;
+    if (!taskId || !nextEvent || executionSse.eventCount === 0) {
+      return undefined;
+    }
+
+    if (nextEvent.taskId && nextEvent.taskId !== taskId) {
+      return undefined;
+    }
+
+    const currentExecutionState = stateRef.current.executionState;
+    if (executionSnapshotMatchesEvent(currentExecutionState, nextEvent)) {
+      return undefined;
+    }
+
+    syncExecutionState(taskId, {
+      previousExecutionState: currentExecutionState,
+      refreshDashboardOnCompletion: true,
+      reportErrors: true,
+    }).catch(() => {});
+
+    return undefined;
+  }, [executionSse.eventCount, state.activeTaskId]);
+
+  useEffect(() => {
+    const taskId = state.activeTaskId;
     const executionState = state.executionState;
-    if (!taskId || !isActiveExecutionState(executionState)) {
+    if (!taskId || !isActiveExecutionState(executionState) || executionSse.status === "open") {
       return undefined;
     }
 
     const pollHandle = setTimeout(async () => {
-      try {
-        const nextState = await loadTaskExecution(taskId);
-        if (stateRef.current.activeTaskId !== taskId) {
-          return;
-        }
-
-        dispatch({ type: "execution/set", payload: nextState });
-        await refreshExecutionLogs(taskId, nextState);
-
-        if (!isActiveExecutionState(nextState)) {
-          const completionStatus = buildExecutionCompletionStatus(nextState, taskId, describeExecutionState);
-          await refreshDashboard(taskId);
-          if (completionStatus) {
-            setActionStatus(completionStatus.message, completionStatus.tone);
-          }
-        }
-      } catch (error) {
-        setActionStatus(error.message, "error");
-      }
+      syncExecutionState(taskId, {
+        previousExecutionState: executionState,
+        refreshDashboardOnCompletion: true,
+        reportErrors: true,
+      }).catch(() => {});
     }, 900);
 
     return () => {
       clearTimeout(pollHandle);
     };
   }, [
-    loadTaskExecution,
+    executionSse.status,
     state.activeTaskId,
     state.executionState?.activity,
     state.executionState?.runId,
@@ -562,6 +634,8 @@ export default function useDashboardState() {
 
   return {
     api,
+    executionConnectionError: executionSse.error,
+    executionConnectionStatus: executionSse.status,
     requestState,
     state,
     refreshDashboard,

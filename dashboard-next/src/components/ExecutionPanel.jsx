@@ -1,12 +1,46 @@
 import { useDashboardContext } from "../context/DashboardContext.jsx";
+import useLogSSE from "../hooks/useLogSSE.js";
 import {
   describeExecutionPresentation,
   describeExecutionState,
   formatTimestampLabel,
+  isActiveExecutionState,
   resolveExecutionLogSource,
 } from "../utils/execution.js";
 
-function LogPanel({ entry, stream }) {
+function describeExecutionConnectionLabel(status) {
+  if (status === "open") {
+    return "live sse";
+  }
+  if (status === "connecting") {
+    return "sse reconnecting";
+  }
+  return "snapshot polling";
+}
+
+function describeLogStatus(log, stream, liveConnectionStatus) {
+  if (log.source !== "execution") {
+    return `Reading ${stream} output from recorded run ${log.runId || "log"}.`;
+  }
+
+  if (liveConnectionStatus === "open") {
+    return `Streaming live ${stream} output from the active local execution.`;
+  }
+
+  if (liveConnectionStatus === "connecting") {
+    return `Reconnecting live ${stream} output. Snapshot fallback remains active until SSE resumes.`;
+  }
+
+  if (liveConnectionStatus === "error" || liveConnectionStatus === "unsupported") {
+    return `Polling ${stream} output because the live SSE stream is unavailable.`;
+  }
+
+  return log.active
+    ? `Reading live ${stream} output from the active local execution.`
+    : `Reading ${stream} output captured for the latest dashboard execution.`;
+}
+
+function LogPanel({ entry, liveConnectionStatus = "idle", stream }) {
   if (!entry || entry.status === "loading") {
     return <p className="subtle">{`Loading ${stream}...`}</p>;
   }
@@ -26,14 +60,8 @@ function LogPanel({ entry, stream }) {
 
   return (
     <>
-      <p className="subtle">
-        {log.source === "execution"
-          ? log.active
-            ? `Reading live ${stream} output from the active local execution.`
-            : `Reading ${stream} output captured for the latest dashboard execution.`
-          : `Reading ${stream} output from recorded run ${log.runId || "log"}.`}
-      </p>
-      <p className="subtle">Log path: {log.path}</p>
+      <p className="subtle">{describeLogStatus(log, stream, liveConnectionStatus)}</p>
+      {log.path ? <p className="subtle">Log path: {log.path}</p> : null}
       {log.truncated ? <p className="subtle">{`Showing last ${log.content.length} of ${log.size} chars.`}</p> : null}
       {log.updatedAt ? (
         <p className="subtle">{`${log.active ? "Auto-refreshing" : "Last updated"} ${formatTimestampLabel(log.updatedAt)}`}</p>
@@ -44,9 +72,29 @@ function LogPanel({ entry, stream }) {
 }
 
 export default function ExecutionPanel({ detail }) {
-  const { state, toggleExecutionStream } = useDashboardContext();
+  const { api, executionConnectionStatus, state, toggleExecutionStream } = useDashboardContext();
   const taskId = detail?.meta?.id;
   const executionState = detail?.executionState || state.executionState;
+  const executionLogs = state.logState.taskId === taskId ? state.logState.executionLogs : {};
+  const openStreams = state.logState.taskId === taskId ? state.logState.openStreams : [];
+  const streamSources = {
+    stdout: resolveExecutionLogSource(taskId, executionState, "stdout"),
+    stderr: resolveExecutionLogSource(taskId, executionState, "stderr"),
+  };
+  const stdoutLog = useLogSSE(taskId, "stdout", {
+    enabled: openStreams.includes("stdout") && streamSources.stdout?.kind === "execution",
+    initialEntry: executionLogs.stdout,
+    loadSnapshot: api.loadTaskExecutionLog,
+  });
+  const stderrLog = useLogSSE(taskId, "stderr", {
+    enabled: openStreams.includes("stderr") && streamSources.stderr?.kind === "execution",
+    initialEntry: executionLogs.stderr,
+    loadSnapshot: api.loadTaskExecutionLog,
+  });
+  const liveLogs = {
+    stderr: stderrLog,
+    stdout: stdoutLog,
+  };
 
   if (!taskId) {
     return <div className="empty">Select a task to view local execution status.</div>;
@@ -54,9 +102,8 @@ export default function ExecutionPanel({ detail }) {
 
   const presentation = describeExecutionPresentation(executionState);
   const description = describeExecutionState(executionState);
-  const openStreams = state.logState.taskId === taskId ? state.logState.openStreams : [];
   const streams = ["stdout", "stderr"].filter(
-    (stream) => resolveExecutionLogSource(taskId, executionState, stream) || openStreams.includes(stream)
+    (stream) => streamSources[stream] || openStreams.includes(stream)
   );
 
   return (
@@ -68,6 +115,9 @@ export default function ExecutionPanel({ detail }) {
           <span className={description.warn ? "tag warn" : "tag"}>{description.statusLabel}</span>
           {executionState?.adapterId ? <span className="tag">{executionState.adapterId}</span> : null}
           {executionState?.runId ? <span className="tag">{executionState.runId}</span> : null}
+          {isActiveExecutionState(executionState) ? (
+            <span className="tag">{describeExecutionConnectionLabel(executionConnectionStatus)}</span>
+          ) : null}
           {executionState?.updatedAt ? <span className="tag">{formatTimestampLabel(executionState.updatedAt)}</span> : null}
         </div>
         {Array.isArray(executionState?.blockingIssues) && executionState.blockingIssues.length > 0 ? (
@@ -96,7 +146,7 @@ export default function ExecutionPanel({ detail }) {
           <div className="form-inline-actions">
             {streams.map((stream) => {
               const isOpen = openStreams.includes(stream);
-              const source = resolveExecutionLogSource(taskId, executionState, stream);
+              const source = streamSources[stream];
               const label = isOpen ? `Hide ${stream}` : source?.kind === "execution" ? `Tail ${stream}` : `View ${stream}`;
 
               return (
@@ -115,7 +165,17 @@ export default function ExecutionPanel({ detail }) {
           {streams.map((stream) =>
             openStreams.includes(stream) ? (
               <div className="run-log-panel" id={`execution-log-${stream}`} key={`panel:${stream}`}>
-                <LogPanel entry={state.logState.executionLogs[stream]} stream={stream} />
+                <LogPanel
+                  entry={
+                    streamSources[stream]?.kind === "execution"
+                      ? liveLogs[stream].entry || executionLogs[stream]
+                      : executionLogs[stream]
+                  }
+                  liveConnectionStatus={
+                    streamSources[stream]?.kind === "execution" ? liveLogs[stream].connectionStatus : "idle"
+                  }
+                  stream={stream}
+                />
               </div>
             ) : null
           )}

@@ -1,0 +1,36 @@
+{
+  "id": "run-1776444097607",
+  "taskId": "T-502",
+  "agent": "codex",
+  "status": "passed",
+  "summary": "Refined the live log merge path so SSE updates replace trailing partial snapshot lines instead of duplicating them, and reran the automated checks against the final dashboard SSE implementation. Manual browser validation is still pending.",
+  "createdAt": "2026-04-17T16:41:37.606Z",
+  "scopeProofPaths": [
+    "dashboard-next/src/hooks/useExecutionSSE.js",
+    "dashboard-next/src/hooks/useLogSSE.js",
+    "dashboard-next/src/hooks/useDashboardState.js",
+    "dashboard-next/src/components/ExecutionPanel.jsx",
+    ".agent-workflow/tasks/T-502/verification.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "passed | npm run lint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "passed | npm run dashboard:build",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "passed | npm test",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-502/runs/verification-20260418.md",
+    "dashboard-next/dist/index.html"
+  ]
+}
