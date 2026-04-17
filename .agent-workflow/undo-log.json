@@ -1,323 +1,5 @@
 [
   {
-    "type": "checkpoint",
-    "taskId": "T-400",
-    "timestamp": "2026-04-16T01:27:54.243Z",
-    "files": [
-      ".agent-workflow/tasks/T-400/checkpoint.json",
-      ".agent-workflow/tasks/T-400/checkpoint.md",
-      ".agent-workflow/tasks/T-400/context.md",
-      ".agent-workflow/tasks/T-400/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-400/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-400 Context\n\n## Why now\n\nThe current evidence model exposes five different terms for proof quality (planned, weak, draft, strong, compatibility-only) plus three for freshness (anchor-backed, anchor-stale, compatibility-only). New users see these in checkpoint.md, verification gate cards, and CLI output without context. This is the #1 onboarding barrier — confirmed by the original project evaluation that called the evidence model \"theoretical.\" Simplifying vocabulary is the foundation for all other Phase 3 tasks.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Current proof tiers: planned (from verification.md checks section), weak/draft (recorded without full proof), strong (paths + checks/artifacts + timestamp)\n- Current gate statuses: ready, covered, partially-covered, needs-proof, scope-missing\n- Current signals: strong, mixed, draft, planned, none\n- Current freshness: anchor-backed, compatibility-only, anchor-stale\n- `verification-proof.js` uses `isStrongManualProofItem()` to classify — checks paths.length > 0 AND (checks.length > 0 OR artifacts.length > 0)\n- Dashboard string comparisons are scattered across `overview-render-helpers.js` and `task-detail-helpers.js`\n- MCP tools in `mcp-tools.js` return verification signal fields from `overview.js`\n\n## Open questions\n\n- Should internal code also rename (e.g., `isStrongManualProofItem` → `isVerifiedProofItem`)? Leaning yes for consistency, but can be a follow-up if too disruptive.\n\n## Progress notes\n\n### 2026-04-16T10:20:00.000Z\n\nReviewed the required project memory, the T-400 task bundle, and the evidence/overview/dashboard helpers. Confirmed the user-facing rename has to reach core status values, dashboard render helpers, managed verification record wording, README terminology, and backward-compatible parsing for older verification blocks.\n\n### 2026-04-16T10:45:00.000Z\n\nImplemented the first rename pass across `src/lib/` and the dashboard helpers so new output uses `verified`, `partial`, `draft`, `action-required`, `incomplete`, and `unconfigured`. Added compatibility handling for older labels and verification-record payloads while keeping old records readable.\n\n### 2026-04-16T17:31:00.000Z\n\nFinished the compatibility and verification sweep. Updated the smoke contract plus the remaining dashboard/server/task-document expectations to the new draft/verified wording, then reran the focused suite and the full `npm test`, `npm run lint`, and `npm run smoke` commands with artifacts saved under `.agent-workflow/tasks/T-400/runs/`.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Must not break reads of existing run records or verification.md content\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n- No runtime dependencies added\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-400/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-400 Verification\n\n## Draft checks\n\n- automated: `npm test`\n- automated: `npm run lint`\n- automated: `npm run smoke`\n- manual: inspect CLI, MCP, dashboard, and README output for the new evidence vocabulary\n\n## Verification records\n\n### Record 1\n\n- Files: `src/lib/evidence-utils.js`, `src/lib/verification-proof.js`, `src/lib/verification-gates.js`, `src/lib/overview.js`, `src/lib/checkpoint.js`, `src/lib/task-documents.js`, `src/lib/mcp-tools.js`\n- Check: renamed the core evidence, gate, freshness, and signal helpers to the `draft` / `verified` vocabulary while preserving legacy aliases for existing records\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-400/runs/npm-test.log`\n\n### Record 2\n\n- Files: `dashboard/document-helpers.js`, `dashboard/execution-detail-helpers.js`, `dashboard/form-event-helpers.js`, `dashboard/form-state-helpers.js`, `dashboard/index.html`, `dashboard/task-board-helpers.js`, `dashboard/task-detail-helpers.js`, `dashboard/task-list-render-helpers.js`\n- Check: verified the dashboard editor, board, detail, and refresh flows now present `draft`, `verified`, `action-required`, `incomplete`, `unconfigured`, and `recorded-only` wording consistently\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-400/runs/npm-smoke.log`\n\n### Record 3\n\n- Files: `README.md`, `scripts/smoke-test.js`, `test/overview.test.js`, `test/verification-gates.test.js`, `test/dashboard-task-detail-helpers.test.js`, `test/dashboard-task-list-render-helpers.test.js`, `test/dashboard-form-state-helpers.test.js`, `test/dashboard-form-event-helpers.test.js`, `test/server-api.test.js`\n- Check: updated the docs and regression coverage so the simplified vocabulary is asserted directly while legacy proof headings and statuses still load through compatibility fallbacks\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-400/runs/npm-test.log`, `.agent-workflow/tasks/T-400/runs/npm-lint.log`, `.agent-workflow/tasks/T-400/runs/npm-smoke.log`\n\n## Blocking gaps\n\n- none\n\n## Evidence 2026-04-15T17:35:27.723Z\n\n- Agent: codex\n- Status: passed\n- Scoped files covered: README.md, dashboard/document-helpers.js, dashboard/execution-detail-helpers.js, dashboard/form-event-helpers.js, dashboard/form-state-helpers.js, dashboard/index.html, dashboard/task-board-helpers.js, dashboard/task-detail-helpers.js, dashboard/task-list-render-helpers.js, scripts/smoke-test.js, src/lib/checkpoint.js, src/lib/evidence-utils.js, src/lib/mcp-tools.js, src/lib/overview.js, src/lib/skill-generator.js, src/lib/task-documents.js, src/lib/verification-gates.js, src/lib/verification-proof.js, test/dashboard-form-event-helpers.test.js, test/dashboard-form-state-helpers.test.js, test/dashboard-task-detail-helpers.test.js, test/dashboard-task-list-render-helpers.test.js, test/overview.test.js, test/server-api.test.js, test/verification-gates.test.js\n- Verification artifacts: .agent-workflow/tasks/T-400/runs/npm-test.log, .agent-workflow/tasks/T-400/runs/npm-lint.log, .agent-workflow/tasks/T-400/runs/npm-smoke.log\n- Proof artifacts: .agent-workflow/tasks/T-400/runs/npm-test.log, .agent-workflow/tasks/T-400/runs/npm-lint.log, .agent-workflow/tasks/T-400/runs/npm-smoke.log\n- Summary: Renamed evidence vocabulary to draft/verified across source helpers, dashboard surfaces, docs, smoke coverage, and regression tests.\n- Verification check: [passed] npm test passes (32 files, 156 tests)\n- Verification check: [passed] npm run lint passes\n- Verification check: [passed] npm run smoke passes\n- Verification check: [passed] dashboard, CLI, MCP, and README surfaces use the draft/verified vocabulary while older records still parse\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-400/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-400\",\n  \"generatedAt\": \"2026-04-15T17:37:07.723Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 20,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-400/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-400 Checkpoint\n\nGenerated at: 2026-04-15T17:37:07.723Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Unify evidence vocabulary — merge weak/strong/draft into two tiers with user-friendly names\n- Priority: P0\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Scope hints: 20\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- README.md\n- dashboard/task-detail-helpers.js\n- src/lib/checkpoint.js\n- src/lib/evidence-utils.js\n- src/lib/mcp-tools.js\n- src/lib/overview.js\n- src/lib/task-documents.js\n- src/lib/verification-gates.js\n- src/lib/verification-proof.js\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=src/lib/evidence-utils.js, src/lib/verification-proof.js, src/lib/verification-gates.js, src/lib/overview.js, src/lib/checkpoint.js, src/lib/task-documents.js, src/lib/mcp-tools.js | checks=renamed the core evidence, gate, freshness, and signal helpers to the `draft` / `verified` vocabulary while preserving legacy aliases for existing records (result: passed) | artifacts=.agent-workflow/tasks/T-400/runs/npm-test.log\n- manual:verification.md#proof-2 | paths=dashboard/document-helpers.js, dashboard/execution-detail-helpers.js, dashboard/form-event-helpers.js, dashboard/form-state-helpers.js, dashboard/index.html, dashboard/task-board-helpers.js, dashboard/task-detail-helpers.js, dashboard/task-list-render-helpers.js | checks=verified the dashboard editor, board, detail, and refresh flows now present `draft`, `verified`, `action-required`, `incomplete`, `unconfigured`, and `recorded-only` wording consistently (result: passed) | artifacts=.agent-workflow/tasks/T-400/runs/npm-smoke.log\n- manual:verification.md#proof-3 | paths=README.md, scripts/smoke-test.js, test/overview.test.js, test/verification-gates.test.js, test/dashboard-task-detail-helpers.test.js, test/dashboard-task-list-render-helpers.test.js, test/dashboard-form-state-helpers.test.js, test/dashboard-form-event-helpers.test.js, test/server-api.test.js | checks=updated the docs and regression coverage so the simplified vocabulary is asserted directly while legacy proof headings and statuses still load through compatibility fallbacks (result: passed) | artifacts=.agent-workflow/tasks/T-400/runs/npm-test.log, .agent-workflow/tasks/T-400/runs/npm-lint.log, .agent-workflow/tasks/T-400/runs/npm-smoke.log\n- run:run-1776274527729 | paths=README.md, dashboard/document-helpers.js, dashboard/execution-detail-helpers.js, dashboard/form-event-helpers.js, dashboard/form-state-helpers.js, dashboard/index.html, dashboard/task-board-helpers.js, dashboard/task-detail-helpers.js, dashboard/task-list-render-helpers.js, scripts/smoke-test.js, src/lib/checkpoint.js, src/lib/evidence-utils.js, src/lib/mcp-tools.js, src/lib/overview.js, src/lib/skill-generator.js, src/lib/task-documents.js, src/lib/verification-gates.js, src/lib/verification-proof.js, test/dashboard-form-event-helpers.test.js, test/dashboard-form-state-helpers.test.js, test/dashboard-task-detail-helpers.test.js, test/dashboard-task-list-render-helpers.test.js, test/overview.test.js, test/server-api.test.js, test/verification-gates.test.js | checks=[passed] npm test passes (32 files, 156 tests); [passed] npm run lint passes; [passed] npm run smoke passes; [passed] dashboard, CLI, MCP, and README surfaces use the draft/verified vocabulary while older records still parse | artifacts=.agent-workflow/tasks/T-400/runs/npm-test.log, .agent-workflow/tasks/T-400/runs/npm-lint.log, .agent-workflow/tasks/T-400/runs/npm-smoke.log\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Renamed evidence vocabulary to draft/verified across source helpers, dashboard surfaces, docs, smoke coverage, and regression tests.\n- Timestamp: 2026-04-15T17:35:27.723Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
-        }
-      ]
-    }
-  },
-  {
-    "type": "run:add",
-    "taskId": "T-400",
-    "timestamp": "2026-04-16T11:45:48.026Z",
-    "files": [
-      ".agent-workflow/tasks/T-400/checkpoint.json",
-      ".agent-workflow/tasks/T-400/checkpoint.md",
-      ".agent-workflow/tasks/T-400/context.md",
-      ".agent-workflow/tasks/T-400/runs",
-      ".agent-workflow/tasks/T-400/runs/run-1776339947857.json",
-      ".agent-workflow/tasks/T-400/task.json",
-      ".agent-workflow/tasks/T-400/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-400/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-400\",\n  \"title\": \"Unify evidence vocabulary — merge weak/strong/draft into two tiers with user-friendly names\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P0\",\n  \"status\": \"in_progress\",\n  \"createdAt\": \"2026-04-15T16:35:36.641Z\",\n  \"updatedAt\": \"2026-04-16T01:27:28.6193912Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-400/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-400 Context\n\n## Why now\n\nThe current evidence model exposes five different terms for proof quality (planned, weak, draft, strong, compatibility-only) plus three for freshness (anchor-backed, anchor-stale, compatibility-only). New users see these in checkpoint.md, verification gate cards, and CLI output without context. This is the #1 onboarding barrier — confirmed by the original project evaluation that called the evidence model \"theoretical.\" Simplifying vocabulary is the foundation for all other Phase 3 tasks.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Current proof tiers: planned (from verification.md checks section), weak/draft (recorded without full proof), strong (paths + checks/artifacts + timestamp)\n- Current gate statuses: ready, covered, partially-covered, needs-proof, scope-missing\n- Current signals: strong, mixed, draft, planned, none\n- Current freshness: anchor-backed, compatibility-only, anchor-stale\n- `verification-proof.js` uses `isStrongManualProofItem()` to classify — checks paths.length > 0 AND (checks.length > 0 OR artifacts.length > 0)\n- Dashboard string comparisons are scattered across `overview-render-helpers.js` and `task-detail-helpers.js`\n- MCP tools in `mcp-tools.js` return verification signal fields from `overview.js`\n\n## Open questions\n\n- Should internal code also rename (e.g., `isStrongManualProofItem` → `isVerifiedProofItem`)? Leaning yes for consistency, but can be a follow-up if too disruptive.\n\n## Progress notes\n\n### 2026-04-16T10:20:00.000Z\n\nReviewed the required project memory, the T-400 task bundle, and the evidence/overview/dashboard helpers. Confirmed the user-facing rename has to reach core status values, dashboard render helpers, managed verification record wording, README terminology, and backward-compatible parsing for older verification blocks.\n\n### 2026-04-16T10:45:00.000Z\n\nImplemented the first rename pass across `src/lib/` and the dashboard helpers so new output uses `verified`, `partial`, `draft`, `action-required`, `incomplete`, and `unconfigured`. Added compatibility handling for older labels and verification-record payloads while keeping old records readable.\n\n### 2026-04-16T17:31:00.000Z\n\nFinished the compatibility and verification sweep. Updated the smoke contract plus the remaining dashboard/server/task-document expectations to the new draft/verified wording, then reran the focused suite and the full `npm test`, `npm run lint`, and `npm run smoke` commands with artifacts saved under `.agent-workflow/tasks/T-400/runs/`.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Must not break reads of existing run records or verification.md content\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n- No runtime dependencies added\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-400/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-400 Verification\n\n## Draft checks\n\n- automated: `npm test`\n- automated: `npm run lint`\n- automated: `npm run smoke`\n- manual: inspect CLI, MCP, dashboard, and README output for the new evidence vocabulary\n\n## Verification records\n\n### Record 1\n\n- Files: `src/lib/evidence-utils.js`, `src/lib/verification-proof.js`, `src/lib/verification-gates.js`, `src/lib/overview.js`, `src/lib/checkpoint.js`, `src/lib/task-documents.js`, `src/lib/mcp-tools.js`\n- Check: renamed the core evidence, gate, freshness, and signal helpers to the `draft` / `verified` vocabulary while preserving legacy aliases for existing records\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-400/runs/npm-test.log`\n\n### Record 2\n\n- Files: `dashboard/document-helpers.js`, `dashboard/execution-detail-helpers.js`, `dashboard/form-event-helpers.js`, `dashboard/form-state-helpers.js`, `dashboard/index.html`, `dashboard/task-board-helpers.js`, `dashboard/task-detail-helpers.js`, `dashboard/task-list-render-helpers.js`\n- Check: verified the dashboard editor, board, detail, and refresh flows now present `draft`, `verified`, `action-required`, `incomplete`, `unconfigured`, and `recorded-only` wording consistently\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-400/runs/npm-smoke.log`\n\n### Record 3\n\n- Files: `README.md`, `scripts/smoke-test.js`, `test/overview.test.js`, `test/verification-gates.test.js`, `test/dashboard-task-detail-helpers.test.js`, `test/dashboard-task-list-render-helpers.test.js`, `test/dashboard-form-state-helpers.test.js`, `test/dashboard-form-event-helpers.test.js`, `test/server-api.test.js`\n- Check: updated the docs and regression coverage so the simplified vocabulary is asserted directly while legacy proof headings and statuses still load through compatibility fallbacks\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-400/runs/npm-test.log`, `.agent-workflow/tasks/T-400/runs/npm-lint.log`, `.agent-workflow/tasks/T-400/runs/npm-smoke.log`\n\n## Blocking gaps\n\n- none\n\n## Evidence 2026-04-15T17:35:27.723Z\n\n- Agent: codex\n- Status: passed\n- Scoped files covered: README.md, dashboard/document-helpers.js, dashboard/execution-detail-helpers.js, dashboard/form-event-helpers.js, dashboard/form-state-helpers.js, dashboard/index.html, dashboard/task-board-helpers.js, dashboard/task-detail-helpers.js, dashboard/task-list-render-helpers.js, scripts/smoke-test.js, src/lib/checkpoint.js, src/lib/evidence-utils.js, src/lib/mcp-tools.js, src/lib/overview.js, src/lib/skill-generator.js, src/lib/task-documents.js, src/lib/verification-gates.js, src/lib/verification-proof.js, test/dashboard-form-event-helpers.test.js, test/dashboard-form-state-helpers.test.js, test/dashboard-task-detail-helpers.test.js, test/dashboard-task-list-render-helpers.test.js, test/overview.test.js, test/server-api.test.js, test/verification-gates.test.js\n- Verification artifacts: .agent-workflow/tasks/T-400/runs/npm-test.log, .agent-workflow/tasks/T-400/runs/npm-lint.log, .agent-workflow/tasks/T-400/runs/npm-smoke.log\n- Proof artifacts: .agent-workflow/tasks/T-400/runs/npm-test.log, .agent-workflow/tasks/T-400/runs/npm-lint.log, .agent-workflow/tasks/T-400/runs/npm-smoke.log\n- Summary: Renamed evidence vocabulary to draft/verified across source helpers, dashboard surfaces, docs, smoke coverage, and regression tests.\n- Verification check: [passed] npm test passes (32 files, 156 tests)\n- Verification check: [passed] npm run lint passes\n- Verification check: [passed] npm run smoke passes\n- Verification check: [passed] dashboard, CLI, MCP, and README surfaces use the draft/verified vocabulary while older records still parse\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-400/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-400\",\n  \"generatedAt\": \"2026-04-16T01:27:54.224Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 20,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-400/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-400 Checkpoint\n\nGenerated at: 2026-04-16T01:27:54.224Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Unify evidence vocabulary — merge weak/strong/draft into two tiers with user-friendly names\n- Priority: P0\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Scope hints: 20\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- README.md\n- dashboard/task-detail-helpers.js\n- src/lib/checkpoint.js\n- src/lib/evidence-utils.js\n- src/lib/mcp-tools.js\n- src/lib/overview.js\n- src/lib/task-documents.js\n- src/lib/verification-gates.js\n- src/lib/verification-proof.js\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=src/lib/evidence-utils.js, src/lib/verification-proof.js, src/lib/verification-gates.js, src/lib/overview.js, src/lib/checkpoint.js, src/lib/task-documents.js, src/lib/mcp-tools.js | checks=renamed the core evidence, gate, freshness, and signal helpers to the `draft` / `verified` vocabulary while preserving legacy aliases for existing records (result: passed) | artifacts=.agent-workflow/tasks/T-400/runs/npm-test.log\n- manual:verification.md#proof-2 | paths=dashboard/document-helpers.js, dashboard/execution-detail-helpers.js, dashboard/form-event-helpers.js, dashboard/form-state-helpers.js, dashboard/index.html, dashboard/task-board-helpers.js, dashboard/task-detail-helpers.js, dashboard/task-list-render-helpers.js | checks=verified the dashboard editor, board, detail, and refresh flows now present `draft`, `verified`, `action-required`, `incomplete`, `unconfigured`, and `recorded-only` wording consistently (result: passed) | artifacts=.agent-workflow/tasks/T-400/runs/npm-smoke.log\n- manual:verification.md#proof-3 | paths=README.md, scripts/smoke-test.js, test/overview.test.js, test/verification-gates.test.js, test/dashboard-task-detail-helpers.test.js, test/dashboard-task-list-render-helpers.test.js, test/dashboard-form-state-helpers.test.js, test/dashboard-form-event-helpers.test.js, test/server-api.test.js | checks=updated the docs and regression coverage so the simplified vocabulary is asserted directly while legacy proof headings and statuses still load through compatibility fallbacks (result: passed) | artifacts=.agent-workflow/tasks/T-400/runs/npm-test.log, .agent-workflow/tasks/T-400/runs/npm-lint.log, .agent-workflow/tasks/T-400/runs/npm-smoke.log\n- run:run-1776274527729 | paths=README.md, dashboard/document-helpers.js, dashboard/execution-detail-helpers.js, dashboard/form-event-helpers.js, dashboard/form-state-helpers.js, dashboard/index.html, dashboard/task-board-helpers.js, dashboard/task-detail-helpers.js, dashboard/task-list-render-helpers.js, scripts/smoke-test.js, src/lib/checkpoint.js, src/lib/evidence-utils.js, src/lib/mcp-tools.js, src/lib/overview.js, src/lib/skill-generator.js, src/lib/task-documents.js, src/lib/verification-gates.js, src/lib/verification-proof.js, test/dashboard-form-event-helpers.test.js, test/dashboard-form-state-helpers.test.js, test/dashboard-task-detail-helpers.test.js, test/dashboard-task-list-render-helpers.test.js, test/overview.test.js, test/server-api.test.js, test/verification-gates.test.js | checks=[passed] npm test passes (32 files, 156 tests); [passed] npm run lint passes; [passed] npm run smoke passes; [passed] dashboard, CLI, MCP, and README surfaces use the draft/verified vocabulary while older records still parse | artifacts=.agent-workflow/tasks/T-400/runs/npm-test.log, .agent-workflow/tasks/T-400/runs/npm-lint.log, .agent-workflow/tasks/T-400/runs/npm-smoke.log\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Renamed evidence vocabulary to draft/verified across source helpers, dashboard surfaces, docs, smoke coverage, and regression tests.\n- Timestamp: 2026-04-15T17:35:27.723Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-400/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-400/runs/run-1776339947857.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-400/runs/run-1776339947857.json",
-      "runId": "run-1776339947857"
-    }
-  },
-  {
-    "type": "checkpoint",
-    "taskId": "T-400",
-    "timestamp": "2026-04-16T11:45:48.619Z",
-    "files": [
-      ".agent-workflow/tasks/T-400/checkpoint.json",
-      ".agent-workflow/tasks/T-400/checkpoint.md",
-      ".agent-workflow/tasks/T-400/context.md",
-      ".agent-workflow/tasks/T-400/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-400/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-400 Context\n\n## Why now\n\nThe current evidence model exposes five different terms for proof quality (planned, weak, draft, strong, compatibility-only) plus three for freshness (anchor-backed, anchor-stale, compatibility-only). New users see these in checkpoint.md, verification gate cards, and CLI output without context. This is the #1 onboarding barrier — confirmed by the original project evaluation that called the evidence model \"theoretical.\" Simplifying vocabulary is the foundation for all other Phase 3 tasks.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Current proof tiers: planned (from verification.md checks section), weak/draft (recorded without full proof), strong (paths + checks/artifacts + timestamp)\n- Current gate statuses: ready, covered, partially-covered, needs-proof, scope-missing\n- Current signals: strong, mixed, draft, planned, none\n- Current freshness: anchor-backed, compatibility-only, anchor-stale\n- `verification-proof.js` uses `isStrongManualProofItem()` to classify — checks paths.length > 0 AND (checks.length > 0 OR artifacts.length > 0)\n- Dashboard string comparisons are scattered across `overview-render-helpers.js` and `task-detail-helpers.js`\n- MCP tools in `mcp-tools.js` return verification signal fields from `overview.js`\n\n## Open questions\n\n- Should internal code also rename (e.g., `isStrongManualProofItem` → `isVerifiedProofItem`)? Leaning yes for consistency, but can be a follow-up if too disruptive.\n\n## Progress notes\n\n### 2026-04-16T10:20:00.000Z\n\nReviewed the required project memory, the T-400 task bundle, and the evidence/overview/dashboard helpers. Confirmed the user-facing rename has to reach core status values, dashboard render helpers, managed verification record wording, README terminology, and backward-compatible parsing for older verification blocks.\n\n### 2026-04-16T10:45:00.000Z\n\nImplemented the first rename pass across `src/lib/` and the dashboard helpers so new output uses `verified`, `partial`, `draft`, `action-required`, `incomplete`, and `unconfigured`. Added compatibility handling for older labels and verification-record payloads while keeping old records readable.\n\n### 2026-04-16T17:31:00.000Z\n\nFinished the compatibility and verification sweep. Updated the smoke contract plus the remaining dashboard/server/task-document expectations to the new draft/verified wording, then reran the focused suite and the full `npm test`, `npm run lint`, and `npm run smoke` commands with artifacts saved under `.agent-workflow/tasks/T-400/runs/`.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Must not break reads of existing run records or verification.md content\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n- No runtime dependencies added\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-400/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-400 Verification\n\n## Draft checks\n\n- automated: `npm test`\n- automated: `npm run lint`\n- automated: `npm run smoke`\n- manual: inspect CLI, MCP, dashboard, and README output for the new evidence vocabulary\n\n## Verification records\n\n### Record 1\n\n- Files: `src/lib/evidence-utils.js`, `src/lib/verification-proof.js`, `src/lib/verification-gates.js`, `src/lib/overview.js`, `src/lib/checkpoint.js`, `src/lib/task-documents.js`, `src/lib/mcp-tools.js`\n- Check: renamed the core evidence, gate, freshness, and signal helpers to the `draft` / `verified` vocabulary while preserving legacy aliases for existing records\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-400/runs/npm-test.log`\n\n### Record 2\n\n- Files: `dashboard/document-helpers.js`, `dashboard/execution-detail-helpers.js`, `dashboard/form-event-helpers.js`, `dashboard/form-state-helpers.js`, `dashboard/index.html`, `dashboard/task-board-helpers.js`, `dashboard/task-detail-helpers.js`, `dashboard/task-list-render-helpers.js`\n- Check: verified the dashboard editor, board, detail, and refresh flows now present `draft`, `verified`, `action-required`, `incomplete`, `unconfigured`, and `recorded-only` wording consistently\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-400/runs/npm-smoke.log`\n\n### Record 3\n\n- Files: `README.md`, `scripts/smoke-test.js`, `test/overview.test.js`, `test/verification-gates.test.js`, `test/dashboard-task-detail-helpers.test.js`, `test/dashboard-task-list-render-helpers.test.js`, `test/dashboard-form-state-helpers.test.js`, `test/dashboard-form-event-helpers.test.js`, `test/server-api.test.js`\n- Check: updated the docs and regression coverage so the simplified vocabulary is asserted directly while legacy proof headings and statuses still load through compatibility fallbacks\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-400/runs/npm-test.log`, `.agent-workflow/tasks/T-400/runs/npm-lint.log`, `.agent-workflow/tasks/T-400/runs/npm-smoke.log`\n\n## Blocking gaps\n\n- none\n\n## Evidence 2026-04-15T17:35:27.723Z\n\n- Agent: codex\n- Status: passed\n- Scoped files covered: README.md, dashboard/document-helpers.js, dashboard/execution-detail-helpers.js, dashboard/form-event-helpers.js, dashboard/form-state-helpers.js, dashboard/index.html, dashboard/task-board-helpers.js, dashboard/task-detail-helpers.js, dashboard/task-list-render-helpers.js, scripts/smoke-test.js, src/lib/checkpoint.js, src/lib/evidence-utils.js, src/lib/mcp-tools.js, src/lib/overview.js, src/lib/skill-generator.js, src/lib/task-documents.js, src/lib/verification-gates.js, src/lib/verification-proof.js, test/dashboard-form-event-helpers.test.js, test/dashboard-form-state-helpers.test.js, test/dashboard-task-detail-helpers.test.js, test/dashboard-task-list-render-helpers.test.js, test/overview.test.js, test/server-api.test.js, test/verification-gates.test.js\n- Verification artifacts: .agent-workflow/tasks/T-400/runs/npm-test.log, .agent-workflow/tasks/T-400/runs/npm-lint.log, .agent-workflow/tasks/T-400/runs/npm-smoke.log\n- Proof artifacts: .agent-workflow/tasks/T-400/runs/npm-test.log, .agent-workflow/tasks/T-400/runs/npm-lint.log, .agent-workflow/tasks/T-400/runs/npm-smoke.log\n- Summary: Renamed evidence vocabulary to draft/verified across source helpers, dashboard surfaces, docs, smoke coverage, and regression tests.\n- Verification check: [passed] npm test passes (32 files, 156 tests)\n- Verification check: [passed] npm run lint passes\n- Verification check: [passed] npm run smoke passes\n- Verification check: [passed] dashboard, CLI, MCP, and README surfaces use the draft/verified vocabulary while older records still parse\n\n## Evidence 2026-04-16T11:45:47.856Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/evidence-utils.js, src/lib/overview.js, src/lib/verification-gates.js, src/lib/verification-proof.js, src/lib/checkpoint.js, dashboard/task-detail-helpers.js\n- Summary: Claude Code review passed: draft/verified two-tier vocabulary, gate statuses renamed, dashboard backward compat, old data loads correctly, 85.62% coverage\n- Verification check: [passed] signal: strong→verified, mixed→partial, planned→draft\n- Verification check: [passed] gate: needs-proof→action-required, partially-covered→incomplete, scope-missing→unconfigured\n- Verification check: [passed] backward compat: old values accepted as aliases\n- Verification check: [passed] validate on 16 pre-Phase-3 tasks: ok=true\n- Verification check: [passed] npm test passes (32 files, 156 tests)\n- Verification check: [passed] coverage 85.62% >= 85%\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-400/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-400\",\n  \"generatedAt\": \"2026-04-16T11:45:48.165Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 2,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"2 run(s) recorded\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"No current workspace files match this task's declared scope.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 20,\n    \"ambiguousScopeCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-400/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-400 Checkpoint\n\nGenerated at: 2026-04-16T11:45:48.165Z\n\n## Completed\n\n- Prompt compiled\n- 2 run(s) recorded\n- Task context captured\n\n## Confirmed facts\n\n- Title: Unify evidence vocabulary — merge weak/strong/draft into two tiers with user-friendly names\n- Priority: P0\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 2\n\n## Verification gate\n\n- Status: ready\n- Summary: No current workspace files match this task's declared scope.\n- Scope hints: 20\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=src/lib/evidence-utils.js, src/lib/verification-proof.js, src/lib/verification-gates.js, src/lib/overview.js, src/lib/checkpoint.js, src/lib/task-documents.js, src/lib/mcp-tools.js | checks=renamed the core evidence, gate, freshness, and signal helpers to the `draft` / `verified` vocabulary while preserving legacy aliases for existing records (result: passed) | artifacts=.agent-workflow/tasks/T-400/runs/npm-test.log\n- manual:verification.md#proof-2 | paths=dashboard/document-helpers.js, dashboard/execution-detail-helpers.js, dashboard/form-event-helpers.js, dashboard/form-state-helpers.js, dashboard/index.html, dashboard/task-board-helpers.js, dashboard/task-detail-helpers.js, dashboard/task-list-render-helpers.js | checks=verified the dashboard editor, board, detail, and refresh flows now present `draft`, `verified`, `action-required`, `incomplete`, `unconfigured`, and `recorded-only` wording consistently (result: passed) | artifacts=.agent-workflow/tasks/T-400/runs/npm-smoke.log\n- manual:verification.md#proof-3 | paths=README.md, scripts/smoke-test.js, test/overview.test.js, test/verification-gates.test.js, test/dashboard-task-detail-helpers.test.js, test/dashboard-task-list-render-helpers.test.js, test/dashboard-form-state-helpers.test.js, test/dashboard-form-event-helpers.test.js, test/server-api.test.js | checks=updated the docs and regression coverage so the simplified vocabulary is asserted directly while legacy proof headings and statuses still load through compatibility fallbacks (result: passed) | artifacts=.agent-workflow/tasks/T-400/runs/npm-test.log, .agent-workflow/tasks/T-400/runs/npm-lint.log, .agent-workflow/tasks/T-400/runs/npm-smoke.log\n- run:run-1776274527729 | paths=README.md, dashboard/document-helpers.js, dashboard/execution-detail-helpers.js, dashboard/form-event-helpers.js, dashboard/form-state-helpers.js, dashboard/index.html, dashboard/task-board-helpers.js, dashboard/task-detail-helpers.js, dashboard/task-list-render-helpers.js, scripts/smoke-test.js, src/lib/checkpoint.js, src/lib/evidence-utils.js, src/lib/mcp-tools.js, src/lib/overview.js, src/lib/skill-generator.js, src/lib/task-documents.js, src/lib/verification-gates.js, src/lib/verification-proof.js, test/dashboard-form-event-helpers.test.js, test/dashboard-form-state-helpers.test.js, test/dashboard-task-detail-helpers.test.js, test/dashboard-task-list-render-helpers.test.js, test/overview.test.js, test/server-api.test.js, test/verification-gates.test.js | checks=[passed] npm test passes (32 files, 156 tests); [passed] npm run lint passes; [passed] npm run smoke passes; [passed] dashboard, CLI, MCP, and README surfaces use the draft/verified vocabulary while older records still parse | artifacts=.agent-workflow/tasks/T-400/runs/npm-test.log, .agent-workflow/tasks/T-400/runs/npm-lint.log, .agent-workflow/tasks/T-400/runs/npm-smoke.log\n- run:run-1776339947857 | paths=src/lib/evidence-utils.js, src/lib/overview.js, src/lib/verification-gates.js, src/lib/verification-proof.js, src/lib/checkpoint.js, dashboard/task-detail-helpers.js | checks=[passed] signal: strong→verified, mixed→partial, planned→draft; [passed] gate: needs-proof→action-required, partially-covered→incomplete, scope-missing→unconfigured; [passed] backward compat: old values accepted as aliases; [passed] validate on 16 pre-Phase-3 tasks: ok=true; [passed] npm test passes (32 files, 156 tests); [passed] coverage 85.62% >= 85% | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Claude Code review passed: draft/verified two-tier vocabulary, gate statuses renamed, dashboard backward compat, old data loads correctly, 85.62% coverage\n- Timestamp: 2026-04-16T11:45:47.856Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
-        }
-      ]
-    }
-  },
-  {
-    "type": "run:add",
-    "taskId": "T-401",
-    "timestamp": "2026-04-16T12:21:43.567Z",
-    "files": [
-      ".agent-workflow/tasks/T-401/checkpoint.json",
-      ".agent-workflow/tasks/T-401/checkpoint.md",
-      ".agent-workflow/tasks/T-401/context.md",
-      ".agent-workflow/tasks/T-401/runs",
-      ".agent-workflow/tasks/T-401/runs/run-1776342103254.json",
-      ".agent-workflow/tasks/T-401/task.json",
-      ".agent-workflow/tasks/T-401/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-401/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-401\",\n  \"title\": \"Fingerprint opt-in — make proof anchor fingerprinting --strict only, default to timestamp-based\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P0\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-15T16:35:37.187Z\",\n  \"updatedAt\": \"2026-04-15T16:35:37.187Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-401/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-401 Context\n\n## Why now\n\nContent fingerprinting is the most confusing part of the evidence model. Users see \"anchor-backed\" vs \"compatibility-only\" labels without understanding why. The fingerprint computation also adds latency (SHA1 of every scoped file). Making it opt-in removes the cognitive and performance overhead for the 90% of users who don't need audit-grade proof, while preserving it for the 10% who do.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `workspace.js` now resolves strict mode from either explicit CLI/MCP input or `.agent-workflow/project.json` `strictVerification`\n- `repository-snapshot.js` skips content fingerprint hashing unless strict mode is enabled and now refuses parent-repo Git snapshots when `workspaceRoot` is not the repository root\n- `verification-gates.js` now uses timestamp freshness by default and only evaluates anchor-backed freshness when strict mode is enabled\n- `task-service.js`, `checkpoint.js`, `done.js`, and `run-executor.js` all thread the resolved strict mode through run persistence and checkpoint refresh\n- `task-documents.js` preserves existing managed manual anchor blocks when strict mode is off instead of refreshing or deleting them\n- CLI, MCP, README, smoke coverage, and unit tests were updated together so strict opt-in is exercised explicitly instead of relying on the old default\n\n## Open questions\n\n- `run:execute` now respects the resolved strict workspace mode through `persistRunRecord()` and `buildCheckpoint()`\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-400 (vocabulary must be renamed first)\n- Must not delete existing fingerprint data; just stop computing or displaying it in normal mode\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-401/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-401 Verification\n\n## Planned checks\n\n- automated: `npm test`\n- automated: `npm run lint`\n- automated: `npm run smoke`\n- manual: review default timestamp mode vs strict opt-in call sites and task docs for consistency\n\n## Proof links\n\n### Proof 1\n\n- Files: src/lib/workspace.js, src/lib/repository-snapshot.js, src/lib/verification-gates.js, src/lib/task-service.js, src/lib/checkpoint.js, src/lib/done.js, src/lib/run-executor.js, src/lib/mcp-tools.js, src/cli.js, .agent-workflow/project.json\n- Check: strict resolution and fingerprint gating review\n- Result: passed\n- Artifact: README.md\n\n### Proof 2\n\n- Files: test/proof-anchors.test.js, test/verification-gates.test.js, test/repository-snapshot.test.js, test/overview.test.js, test/done.test.js, test/mcp-tools.test.js, test/task-documents.test.js, test/server-api.test.js, test/test-helpers.js, scripts/smoke-test.js\n- Check: `npm test`; `npm run lint`; `npm run smoke`\n- Result: passed\n- Artifact: scripts/smoke-test.js\n\n## Blocking gaps\n\n- None\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-401/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-401\",\n  \"generatedAt\": \"2026-04-15T16:35:37.436Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add explicit repo-relative paths in the task scope to enable stronger verification gates.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-401/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-401 Checkpoint\n\nGenerated at: 2026-04-15T16:35:37.436Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: Fingerprint opt-in — make proof anchor fingerprinting --strict only, default to timestamp-based\n- Priority: P0\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add explicit repo-relative paths in the task scope to enable stronger verification gates.\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit proof items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-401/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-401/runs/run-1776342103254.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-401/runs/run-1776342103254.json",
-      "runId": "run-1776342103254"
-    }
-  },
-  {
-    "type": "run:add",
-    "taskId": "T-404",
-    "timestamp": "2026-04-16T12:25:57.406Z",
-    "files": [
-      ".agent-workflow/tasks/T-404/checkpoint.json",
-      ".agent-workflow/tasks/T-404/checkpoint.md",
-      ".agent-workflow/tasks/T-404/context.md",
-      ".agent-workflow/tasks/T-404/runs",
-      ".agent-workflow/tasks/T-404/runs/run-1776342357185.json",
-      ".agent-workflow/tasks/T-404/task.json",
-      ".agent-workflow/tasks/T-404/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-404/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-404\",\n  \"title\": \"Transparent data migration — existing .agent-workflow data works with new evidence model without manual changes\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P1\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-15T16:35:39.087Z\",\n  \"updatedAt\": \"2026-04-15T16:35:39.087Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-404/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-404 Context\n\n## Why now\n\nPhase 3 changes the evidence vocabulary (T-400), fingerprint behavior (T-401), and display format (T-402). The project is already published to npm at v0.1.2 with real users. If upgrading breaks their existing `.agent-workflow/` data, it violates guiding principle #3 (backward compatibility). This task must land alongside T-400/T-401 to ensure the transition is invisible.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Existing run records already persist the important evidence fields; the migration risk is mostly legacy aliases and older managed markdown payloads.\n- `listRuns()` now read-normalizes legacy run aliases so task detail, server responses, and MCP-overview payloads stay canonical without rewriting JSON on disk.\n- `buildTaskVerificationGate()` now normalizes legacy run payloads even when callers pass raw run objects directly instead of going through `listRuns()`.\n- `buildOverview()` now normalizes legacy gate, signal, and proof-coverage aliases before it counts stats or derives risk summaries.\n- `schema-validator.js` still validates the raw run JSON from disk, but it now accepts legacy verification-check statuses such as `strong` / `weak` alongside the current vocabulary.\n- This repository's own `.agent-workflow/` data still validates cleanly after the compatibility pass: `ok=true errors=0 warnings=0 strict=false`.\n\n## Open questions\n\n- No new `schemaVersion` is needed for Phase 3 compatibility because the migration stays read-only and backward-compatible.\n\n## Progress notes\n\n### 2026-04-16T20:05:00.000Z\n\nImplemented the read-compatibility layer in `evidence-utils`, `task-service`, `verification-gates`, `overview`, and `schema-validator`, then added a dedicated `migration-compatibility` regression that exercises legacy run aliases, legacy manual anchor payloads, old checkpoint wording, and validate compatibility.\n\n### 2026-04-16T20:25:00.000Z\n\nUpdated the README upgrade guidance, aligned the smoke fixture with strict-only manual anchor refresh, and reran `npm test`, `npm run lint`, `npm run validate -- --root .`, and `npm run smoke` to confirm the repo still dogfoods cleanly.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Must land alongside T-400 and T-401\n- Must not rewrite any existing files on disk\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n- This repository's own `.agent-workflow/` data must keep working as the smoke fixture\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-404/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-404 Verification\n\n## Planned checks\n\n- automated: `npm test`\n- automated: `npm run lint`\n- automated: `npm run validate -- --root .`\n- automated: `npm run smoke`\n- manual: inspect legacy run alias handling, legacy manual anchor preservation, and regenerated checkpoint wording\n\n## Proof links\n\n### Proof 1\n\n- Files: `src/lib/evidence-utils.js`, `src/lib/task-service.js`, `src/lib/verification-gates.js`, `src/lib/overview.js`, `src/lib/schema-validator.js`, `test/migration-compatibility.test.js`\n- Check: legacy run aliases, legacy manual anchor payloads, legacy checkpoint wording, and validate compatibility all pass through the new read-normalization path without rewriting historical files\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-404/runs/npm-test-migration.log`\n\n### Proof 2\n\n- Files: `README.md`\n- Check: added an \"Upgrading from pre-Phase-3\" section that explains the no-manual-migration path and the strict-verification note for managed anchor refresh\n- Result: passed\n- Artifact:\n\n### Proof 3\n\n- Files: `.agent-workflow/project.json`, `.agent-workflow/tasks/`\n- Check: `npm run validate -- --root .` returns `ok=true errors=0 warnings=0 strict=false` against the repository's own dogfood workflow state\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-404/runs/npm-validate-t404.log`\n\n### Proof 4\n\n- Files: `scripts/smoke-test.js`\n- Check: `npm run smoke` passes after the smoke fixture explicitly enables strict verification before refreshing manual proof anchors\n- Result: passed\n- Artifact: direct command output only; redirecting the smoke run on this Windows machine changes the nested `run:execute` behavior, so the pass was verified from the live command result instead of a saved log\n\n### Proof 5\n\n- Files: repo-wide\n- Check: `npm test` passes (33 files, 165 tests) and `npm run lint` passes after the migration compatibility changes land\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-404/runs/npm-lint-t404.log`\n\n## Blocking gaps\n\n- No blocking gaps for the scoped migration change. The only verification caveat is that smoke-log redirection is unstable on this Windows machine, so the smoke pass is evidenced by the live command result rather than a durable log file.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-404/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-404\",\n  \"generatedAt\": \"2026-04-15T16:35:39.428Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add explicit repo-relative paths in the task scope to enable stronger verification gates.\",\n    \"relevantChangeCount\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-404/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-404 Checkpoint\n\nGenerated at: 2026-04-15T16:35:39.428Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: Transparent data migration — existing .agent-workflow data works with new evidence model without manual changes\n- Priority: P1\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add explicit repo-relative paths in the task scope to enable stronger verification gates.\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit proof items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-404/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-404/runs/run-1776342357185.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-404/runs/run-1776342357185.json",
-      "runId": "run-1776342357185"
-    }
-  },
-  {
-    "type": "done",
-    "taskId": "T-404",
-    "timestamp": "2026-04-16T12:32:16.754Z",
-    "files": [
-      ".agent-workflow/tasks/T-404/checkpoint.json",
-      ".agent-workflow/tasks/T-404/checkpoint.md",
-      ".agent-workflow/tasks/T-404/context.md",
-      ".agent-workflow/tasks/T-404/runs",
-      ".agent-workflow/tasks/T-404/runs/run-1776342735759.json",
-      ".agent-workflow/tasks/T-404/task.json",
-      ".agent-workflow/tasks/T-404/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-404/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-404\",\n  \"title\": \"Transparent data migration — existing .agent-workflow data works with new evidence model without manual changes\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P1\",\n  \"status\": \"in_progress\",\n  \"createdAt\": \"2026-04-15T16:35:39.087Z\",\n  \"updatedAt\": \"2026-04-16T12:25:57.185Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-404/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-404 Context\n\n## Why now\n\nPhase 3 changes the evidence vocabulary (T-400), fingerprint behavior (T-401), and display format (T-402). The project is already published to npm at v0.1.2 with real users. If upgrading breaks their existing `.agent-workflow/` data, it violates guiding principle #3 (backward compatibility). This task must land alongside T-400/T-401 to ensure the transition is invisible.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Existing run records already persist the important evidence fields; the migration risk is mostly legacy aliases and older managed markdown payloads.\n- `listRuns()` now read-normalizes legacy run aliases so task detail, server responses, and MCP-overview payloads stay canonical without rewriting JSON on disk.\n- `buildTaskVerificationGate()` now normalizes legacy run payloads even when callers pass raw run objects directly instead of going through `listRuns()`.\n- `buildOverview()` now normalizes legacy gate, signal, and proof-coverage aliases before it counts stats or derives risk summaries.\n- `schema-validator.js` still validates the raw run JSON from disk, but it now accepts legacy verification-check statuses such as `strong` / `weak` alongside the current vocabulary.\n- This repository's own `.agent-workflow/` data still validates cleanly after the compatibility pass: `ok=true errors=0 warnings=0 strict=false`.\n\n## Open questions\n\n- No new `schemaVersion` is needed for Phase 3 compatibility because the migration stays read-only and backward-compatible.\n\n## Progress notes\n\n### 2026-04-16T20:05:00.000Z\n\nImplemented the read-compatibility layer in `evidence-utils`, `task-service`, `verification-gates`, `overview`, and `schema-validator`, then added a dedicated `migration-compatibility` regression that exercises legacy run aliases, legacy manual anchor payloads, old checkpoint wording, and validate compatibility.\n\n### 2026-04-16T20:25:00.000Z\n\nUpdated the README upgrade guidance, aligned the smoke fixture with strict-only manual anchor refresh, and reran `npm test`, `npm run lint`, `npm run validate -- --root .`, and `npm run smoke` to confirm the repo still dogfoods cleanly.\n\n### 2026-04-16T12:40:00.000Z\n\nTightened the task scope to exact repo-relative paths, added explicit proof coverage for `src/lib/verification-proof.js`, and prepared a fresh prompt/checkpoint handoff so the verification gate reflects the completed migration work instead of the earlier draft scope text.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Must land alongside T-400 and T-401\n- Must not rewrite any existing files on disk\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n- This repository's own `.agent-workflow/` data must keep working as the smoke fixture\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-404/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-404 Verification\n\n## Planned checks\n\n- automated: `npm test`\n- automated: `npm run lint`\n- automated: `npm run validate -- --root .`\n- automated: `npm run smoke`\n- manual: inspect legacy run alias handling, legacy manual anchor preservation, and regenerated checkpoint wording\n\n## Proof links\n\n### Proof 1\n\n- Files: `src/lib/evidence-utils.js`, `src/lib/task-service.js`, `src/lib/verification-gates.js`, `src/lib/overview.js`, `src/lib/verification-proof.js`, `src/lib/schema-validator.js`, `test/migration-compatibility.test.js`\n- Check: legacy run aliases, legacy manual anchor payloads, legacy checkpoint wording, strict-off manual anchor preservation, and validate compatibility all pass through the new read-normalization path without rewriting historical files\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-404/runs/npm-test-migration.log`\n\n### Proof 2\n\n- Files: `README.md`\n- Check: added an \"Upgrading from pre-Phase-3\" section that explains the no-manual-migration path and the strict-verification note for managed anchor refresh\n- Result: passed\n- Artifact:\n\n### Proof 3\n\n- Files: `.agent-workflow/project.json`, `.agent-workflow/tasks/`\n- Check: `npm run validate -- --root .` returns `ok=true errors=0 warnings=0 strict=false` against the repository's own dogfood workflow state\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-404/runs/npm-validate-t404.log`\n\n### Proof 4\n\n- Files: `scripts/smoke-test.js`\n- Check: `npm run smoke` passes after the smoke fixture explicitly enables strict verification before refreshing manual proof anchors\n- Result: passed\n- Artifact: direct command output only; redirecting the smoke run on this Windows machine changes the nested `run:execute` behavior, so the pass was verified from the live command result instead of a saved log\n\n### Proof 5\n\n- Files: repo-wide\n- Check: `npm test` passes (33 files, 165 tests) and `npm run lint` passes after the migration compatibility changes land\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-404/runs/npm-lint-t404.log`\n\n## Blocking gaps\n\n- No blocking gaps for the scoped migration change. The only verification caveat is that smoke-log redirection is unstable on this Windows machine, so the smoke pass is evidenced by the live command result rather than a durable log file.\n\n## Evidence 2026-04-16T12:25:57.185Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/evidence-utils.js, src/lib/task-service.js, src/lib/verification-gates.js, src/lib/overview.js, src/lib/schema-validator.js, test/migration-compatibility.test.js, README.md, scripts/smoke-test.js\n- Verification artifacts: .agent-workflow/tasks/T-404/runs/npm-test-migration.log, .agent-workflow/tasks/T-404/runs/npm-lint-t404.log, .agent-workflow/tasks/T-404/runs/npm-validate-t404.log\n- Proof artifacts: .agent-workflow/tasks/T-404/runs/npm-test-migration.log, .agent-workflow/tasks/T-404/runs/npm-lint-t404.log, .agent-workflow/tasks/T-404/runs/npm-validate-t404.log\n- Summary: Added transparent read-compatibility for legacy workflow data and documented the pre-Phase-3 upgrade path.\n- Verification check: [passed] migration-compatibility suite passes (5 tests)\n- Verification check: [passed] npm test passes (33 files, 165 tests)\n- Verification check: [passed] npm run lint passes\n- Verification check: [passed] npm run validate -- --root . returns ok=true errors=0 warnings=0 strict=false\n- Verification check: [passed] npm run smoke passes\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-404/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-404\",\n  \"generatedAt\": \"2026-04-16T12:25:57.596Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [\n    \"Some scoped files still need verified evidence: src/lib/verification-proof.js\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Some scoped files are already linked to verified evidence\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"incomplete\",\n    \"message\": \"Some scoped files already have verified evidence, but newer scoped changes still need attention.\",\n    \"relevantChangeCount\": 1,\n    \"scopeHintCount\": 15,\n    \"ambiguousScopeCount\": 1,\n    \"relevantChangedFiles\": [\n      {\n        \"path\": \"src/lib/verification-proof.js\",\n        \"modifiedAt\": \"2026-04-16T11:59:30.001Z\",\n        \"changeType\": \"modified\",\n        \"gitState\": \"M\",\n        \"previousPath\": null,\n        \"matchedBy\": [\n          {\n            \"pattern\": \"src/lib/verification-proof.js\",\n            \"source\": \"task.md\"\n          }\n        ],\n        \"proofUpdatedAt\": null,\n        \"proofFreshnessSource\": null,\n        \"proofItems\": []\n      }\n    ]\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-404/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-404 Checkpoint\n\nGenerated at: 2026-04-16T12:25:57.596Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Some scoped files are already linked to verified evidence\n\n## Confirmed facts\n\n- Title: Transparent data migration — existing .agent-workflow data works with new evidence model without manual changes\n- Priority: P1\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: incomplete\n- Summary: Some scoped files already have verified evidence, but newer scoped changes still need attention.\n- Scope hints: 15\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 1\n\n### Scoped files awaiting proof\n\n- src/lib/verification-proof.js\n\n### Scoped files already linked to proof\n\n- scripts/smoke-test.js\n- src/lib/evidence-utils.js\n- src/lib/overview.js\n- src/lib/schema-validator.js\n- src/lib/task-service.js\n- src/lib/verification-gates.js\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=src/lib/evidence-utils.js, src/lib/task-service.js, src/lib/verification-gates.js, src/lib/overview.js, src/lib/schema-validator.js, test/migration-compatibility.test.js | checks=legacy run aliases, legacy manual anchor payloads, legacy checkpoint wording, and validate compatibility all pass through the new read-normalization path without rewriting historical files (result: passed) | artifacts=.agent-workflow/tasks/T-404/runs/npm-test-migration.log\n- manual:verification.md#proof-2 | paths=README.md | checks=added an \"Upgrading from pre-Phase-3\" section that explains the no-manual-migration path and the strict-verification note for managed anchor refresh (result: passed) | artifacts=none\n- manual:verification.md#proof-3 | paths=.agent-workflow/project.json, .agent-workflow/tasks/ | checks=`npm run validate -- --root .` returns `ok=true errors=0 warnings=0 strict=false` against the repository's own dogfood workflow state (result: passed) | artifacts=.agent-workflow/tasks/T-404/runs/npm-validate-t404.log\n- manual:verification.md#proof-4 | paths=scripts/smoke-test.js | checks=`npm run smoke` passes after the smoke fixture explicitly enables strict verification before refreshing manual proof anchors (result: passed) | artifacts=run:execute\n- manual:verification.md#proof-5 | paths=repo-wide | checks=`npm test` passes (33 files, 165 tests) and `npm run lint` passes after the migration compatibility changes land (result: passed) | artifacts=.agent-workflow/tasks/T-404/runs/npm-lint-t404.log\n- run:run-1776342357185 | paths=src/lib/evidence-utils.js, src/lib/task-service.js, src/lib/verification-gates.js, src/lib/overview.js, src/lib/schema-validator.js, test/migration-compatibility.test.js, README.md, scripts/smoke-test.js | checks=[passed] migration-compatibility suite passes (5 tests); [passed] npm test passes (33 files, 165 tests); [passed] npm run lint passes; [passed] npm run validate -- --root . returns ok=true errors=0 warnings=0 strict=false; [passed] npm run smoke passes | artifacts=.agent-workflow/tasks/T-404/runs/npm-test-migration.log, .agent-workflow/tasks/T-404/runs/npm-lint-t404.log, .agent-workflow/tasks/T-404/runs/npm-validate-t404.log\n\n### Scope entries that need tightening\n\n- repo path: README.md (migration guide section) (task.md)\n\n## Risks\n\n- Some scoped files still need verified evidence: src/lib/verification-proof.js\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: Added transparent read-compatibility for legacy workflow data and documented the pre-Phase-3 upgrade path.\n- Timestamp: 2026-04-16T12:25:57.185Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Keep the existing proof, then add explicit coverage for src/lib/verification-proof.js before handoff.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-404/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-404/runs/run-1776342735759.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-404/runs/run-1776342735759.json",
-      "runId": "run-1776342735759"
-    }
-  },
-  {
     "type": "run:add",
     "taskId": "T-401",
     "timestamp": "2026-04-16T12:46:54.735Z",
@@ -987,6 +669,191 @@
           "content": "# T-403 Checkpoint\n\nGenerated at: 2026-04-17T08:59:35.076Z\n\n## Completed\n\n- Prompt compiled\n- 2 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Auto evidence extraction — git diff paths and test exit code populate evidence automatically on every run\n- Priority: P1\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 2\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (11/11 scoped files)\n- Scope hints: 27\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- .agent-workflow/project.json\n- README.md\n- src/cli.js\n- src/lib/done.js\n- src/lib/mcp-tools.js\n- src/lib/schema-validator.js\n- src/lib/task-service.js\n- src/lib/workspace.js\n- src/server.js\n- test/smart-defaults.test.js\n- test/test-helpers.js\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=src/lib/workspace.js, src/lib/task-service.js, src/lib/done.js, src/cli.js, src/lib/mcp-tools.js, src/server.js, src/lib/schema-validator.js, .agent-workflow/project.json | checks=project-level `autoInferTest` now flows into shared run smart defaults, proof-path inference stays on by default, `--skip-test` still suppresses inference, and CLI / MCP / API call sites no longer require an explicit infer flag to pick up the project setting (result: passed) | artifacts=.agent-workflow/tasks/T-403/runs/npm-test.log\n- manual:verification.md#proof-2 | paths=test/smart-defaults.test.js, test/test-helpers.js | checks=regression coverage now asserts project-configured test inference for `done` and `run:add`, keeps explicit overrides ahead of smart defaults, reports missing test scripts cleanly, and honors `--skip-test` (result: passed) | artifacts=.agent-workflow/tasks/T-403/runs/npm-test.log\n- manual:verification.md#proof-3 | paths=README.md, .agent-workflow/tasks/T-403/task.json, .agent-workflow/tasks/T-403/context.md, .agent-workflow/tasks/T-403/verification.md | checks=documented the zero-flag `done T-001 \"summary\"` flow for repos that opt into `autoInferTest`, refreshed task scope metadata, and recorded the verification plan plus progress notes (result: passed) | artifacts=.agent-workflow/tasks/T-403/runs/npm-lint.log, .agent-workflow/tasks/T-403/runs/npm-smoke.log\n- run:run-1776391400405 | paths=src/lib/workspace.js, src/lib/task-service.js, src/lib/done.js, src/cli.js, src/lib/mcp-tools.js, src/server.js, src/lib/schema-validator.js, test/test-helpers.js, test/smart-defaults.test.js, README.md, .agent-workflow/project.json, .agent-workflow/tasks/T-403/task.json, .agent-workflow/tasks/T-403/context.md, .agent-workflow/tasks/T-403/verification.md | checks=[passed] npm test passes (33 files, 168 tests); [passed] npm run lint passes; [passed] npm run smoke passes; [passed] README, CLI help, MCP schema text, and API passthroughs reflect project-level autoInferTest plus per-run --skip-test override | artifacts=.agent-workflow/tasks/T-403/runs/npm-test.log, .agent-workflow/tasks/T-403/runs/npm-lint.log, .agent-workflow/tasks/T-403/runs/npm-smoke.log\n- run:run-1776416374799 | paths=src/lib/workspace.js, src/lib/smart-defaults.js, src/cli.js | checks=[passed] autoInferTest defaults to false; [passed] resolveAutoInferTest reads project config; [passed] true; [passed] npm test passes (33 files, 168 tests) | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Claude Code review passed: autoInferTest project setting, resolveAutoInferTest, --skip-test flag\n- Timestamp: 2026-04-17T08:59:34.798Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
         }
       ]
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-500",
+    "timestamp": "2026-04-17T09:11:45.205Z",
+    "files": [
+      ".agent-workflow/tasks/T-500",
+      ".agent-workflow/tasks/T-500/checkpoint.json",
+      ".agent-workflow/tasks/T-500/checkpoint.md",
+      ".agent-workflow/tasks/T-500/context.md",
+      ".agent-workflow/tasks/T-500/launch.codex.md",
+      ".agent-workflow/tasks/T-500/prompt.codex.md",
+      ".agent-workflow/tasks/T-500/run-request.codex.json",
+      ".agent-workflow/tasks/T-500/runs",
+      ".agent-workflow/tasks/T-500/task.json",
+      ".agent-workflow/tasks/T-500/task.md",
+      ".agent-workflow/tasks/T-500/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-500",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-501",
+    "timestamp": "2026-04-17T09:11:45.518Z",
+    "files": [
+      ".agent-workflow/tasks/T-501",
+      ".agent-workflow/tasks/T-501/checkpoint.json",
+      ".agent-workflow/tasks/T-501/checkpoint.md",
+      ".agent-workflow/tasks/T-501/context.md",
+      ".agent-workflow/tasks/T-501/launch.codex.md",
+      ".agent-workflow/tasks/T-501/prompt.codex.md",
+      ".agent-workflow/tasks/T-501/run-request.codex.json",
+      ".agent-workflow/tasks/T-501/runs",
+      ".agent-workflow/tasks/T-501/task.json",
+      ".agent-workflow/tasks/T-501/task.md",
+      ".agent-workflow/tasks/T-501/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-501",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-502",
+    "timestamp": "2026-04-17T09:11:45.816Z",
+    "files": [
+      ".agent-workflow/tasks/T-502",
+      ".agent-workflow/tasks/T-502/checkpoint.json",
+      ".agent-workflow/tasks/T-502/checkpoint.md",
+      ".agent-workflow/tasks/T-502/context.md",
+      ".agent-workflow/tasks/T-502/launch.codex.md",
+      ".agent-workflow/tasks/T-502/prompt.codex.md",
+      ".agent-workflow/tasks/T-502/run-request.codex.json",
+      ".agent-workflow/tasks/T-502/runs",
+      ".agent-workflow/tasks/T-502/task.json",
+      ".agent-workflow/tasks/T-502/task.md",
+      ".agent-workflow/tasks/T-502/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-502",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-503",
+    "timestamp": "2026-04-17T09:11:46.114Z",
+    "files": [
+      ".agent-workflow/tasks/T-503",
+      ".agent-workflow/tasks/T-503/checkpoint.json",
+      ".agent-workflow/tasks/T-503/checkpoint.md",
+      ".agent-workflow/tasks/T-503/context.md",
+      ".agent-workflow/tasks/T-503/launch.codex.md",
+      ".agent-workflow/tasks/T-503/prompt.codex.md",
+      ".agent-workflow/tasks/T-503/run-request.codex.json",
+      ".agent-workflow/tasks/T-503/runs",
+      ".agent-workflow/tasks/T-503/task.json",
+      ".agent-workflow/tasks/T-503/task.md",
+      ".agent-workflow/tasks/T-503/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-503",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-504",
+    "timestamp": "2026-04-17T09:11:46.488Z",
+    "files": [
+      ".agent-workflow/tasks/T-504",
+      ".agent-workflow/tasks/T-504/checkpoint.json",
+      ".agent-workflow/tasks/T-504/checkpoint.md",
+      ".agent-workflow/tasks/T-504/context.md",
+      ".agent-workflow/tasks/T-504/launch.codex.md",
+      ".agent-workflow/tasks/T-504/prompt.codex.md",
+      ".agent-workflow/tasks/T-504/run-request.codex.json",
+      ".agent-workflow/tasks/T-504/runs",
+      ".agent-workflow/tasks/T-504/task.json",
+      ".agent-workflow/tasks/T-504/task.md",
+      ".agent-workflow/tasks/T-504/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-504",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "done",
+    "taskId": "T-500",
+    "timestamp": "2026-04-17T14:01:06.316Z",
+    "files": [
+      ".agent-workflow/tasks/T-500/checkpoint.json",
+      ".agent-workflow/tasks/T-500/checkpoint.md",
+      ".agent-workflow/tasks/T-500/context.md",
+      ".agent-workflow/tasks/T-500/runs",
+      ".agent-workflow/tasks/T-500/runs/run-1776434465894.json",
+      ".agent-workflow/tasks/T-500/task.json",
+      ".agent-workflow/tasks/T-500/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-500/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-500\",\n  \"title\": \"Vite + Preact scaffold — build pipeline, dev server, component shell replacing vanilla HTML\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P0\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-17T09:11:45.052Z\",\n  \"updatedAt\": \"2026-04-17T09:11:45.052Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-500/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-500 Context\n\n## Why now\n\nThe current dashboard is 14 vanilla JS files using global state, string-based rendering, and script-tag modules. That architecture blocks the next UI phase. This scaffold task lands the Vite + Preact build pipeline, keeps the warm-beige design language, and preserves the legacy dashboard as the truthful fallback so later migration tasks can move real features without first reinventing the toolchain.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Current dashboard: 14 files, ~4,472 lines JS + 884 lines CSS, zero build step\n- Tab-based routing already exists across 5 sections: overview, tasks, actions, verification, and runs\n- `dashboard-next/` now contains a minimal Vite + Preact shell with Header, TabBar, layout wrapper, and placeholder content for those 5 tabs\n- `dashboard-next/src/styles/variables.css` carries forward the legacy warm-beige CSS variables, while `app.css` trims the layout down to scaffold-only panels\n- Root scripts now expose `npm run dashboard:dev` and `npm run dashboard:build`, backed by repo-level Vite and Preact dev dependencies plus a nested `dashboard-next/package.json` manifest\n- `src/server.js` now serves `dashboard-next/dist/` when `index.html` exists and falls back to `dashboard/` when it does not or when `--legacy-dashboard` is passed\n- Smoke coverage now forces `--legacy-dashboard` so the feature-complete legacy UI still owns workflow mutation checks while the scaffold remains placeholder-only\n- Added test coverage for the new CLI help surface and the server's modern-vs-legacy asset selection path\n- Verified on 2026-04-17: `npm run dashboard:build`, `npm run lint`, `npm test`, and `npm run smoke` all passed; live checks confirmed the built shell, legacy fallback, Vite dev server on `127.0.0.1:5173`, and `/api/health` proxying back to `127.0.0.1:4173`\n\n## Open questions\n\n- When the real feature migration lands, should the built `dashboard-next/dist/` bundle start shipping in the published package by default, or stay repo-local until the new shell reaches parity?\n- When should the README switch its primary dashboard instructions from the legacy control plane to the new shell workflow?\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Old dashboard must remain functional as fallback\n- Preact and Vite are devDeps only - no runtime deps for CLI users\n- Must not break any existing CLI, API, or test behavior\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n- Keep the new shell honest: no fake data migration, no hidden API contract changes, and no removal of the legacy dashboard before later tasks port the real features\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-500/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-500 Verification\n\n## Draft checks\n\n- automated: `npm run dashboard:build`\n- automated: `npm run lint`\n- automated: `npm test`\n- automated: `npm run smoke`\n- manual: start `node src/server.js --root . --port 4176` after the build and confirm `/` serves the built shell\n- manual: start `node src/server.js --root . --port 4177 --legacy-dashboard` and confirm the legacy script-tag dashboard still loads\n- manual: start `node src/server.js --root . --port 4173 --legacy-dashboard` plus `npm run dashboard:dev -- --host 127.0.0.1`, then confirm `http://127.0.0.1:5173/` serves the Vite client and `/api/health` proxies through\n\n## Verification records\n\n### Record 1\n\n- Files: .gitignore, README.md, docs/ARCHITECTURE.md, eslint.config.mjs, package.json, package-lock.json, scripts/smoke-test.js, src/cli.js, src/server.js, test/cli.test.js, test/server-static-dashboard.test.js, dashboard-next/index.html, dashboard-next/package.json, dashboard-next/vite.config.js, dashboard-next/src/App.jsx, dashboard-next/src/main.jsx, dashboard-next/src/components/Header.jsx, dashboard-next/src/components/Layout.jsx, dashboard-next/src/components/TabBar.jsx, dashboard-next/src/components/TabButton.jsx, dashboard-next/src/styles/app.css, dashboard-next/src/styles/variables.css\n- Check: `npm run dashboard:build`; `npm run lint`; `npm test`; `npm run smoke`; live server checks for built-shell default, `--legacy-dashboard` fallback, and Vite dev-server proxying\n- Result: passed\n- Artifact: dashboard-next/dist/index.html; .agent-workflow/tasks/T-500/runs/runtime-check-20260417.md\n\n## Blocking gaps\n\n- Feature migration is intentionally still open: the new shell proves the pipeline and layout only, while the legacy dashboard remains the truthful workflow UI.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-500/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-500\",\n  \"generatedAt\": \"2026-04-17T09:11:45.197Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add repo-relative scope paths to make evidence coverage automatic.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-500/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-500 Checkpoint\n\nGenerated at: 2026-04-17T09:11:45.197Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: Vite + Preact scaffold — build pipeline, dev server, component shell replacing vanilla HTML\n- Priority: P0\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add repo-relative scope paths to make evidence coverage automatic.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-500/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-500/runs/run-1776434465894.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-500/runs/run-1776434465894.json",
+      "runId": "run-1776434465894"
     }
   }
 ]

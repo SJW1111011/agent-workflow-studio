@@ -1,0 +1,246 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  background:
+    radial-gradient(circle at top left, rgba(239, 108, 51, 0.22), transparent 28%),
+    radial-gradient(circle at top right, rgba(15, 108, 92, 0.18), transparent 26%),
+    linear-gradient(180deg, #fbf6ee 0%, var(--bg) 60%, #efe5d4 100%);
+}
+
+button,
+h1,
+h2,
+h3,
+p,
+ul {
+  margin: 0;
+}
+
+.page-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0 48px;
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 32px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 8px);
+  background: linear-gradient(135deg, rgba(255, 248, 240, 0.94), rgba(248, 241, 232, 0.76));
+  box-shadow: var(--shadow);
+}
+
+.hero-copy {
+  display: grid;
+  gap: 14px;
+}
+
+.eyebrow,
+.panel-eyebrow {
+  color: var(--accent-2);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 6vw, 58px);
+  line-height: 0.98;
+  max-width: 620px;
+}
+
+.lede,
+.panel-copy p,
+.scaffold-card p,
+.roadmap-list {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.hero-meta,
+.status-stack {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.badge,
+.status-pill {
+  padding: 12px 14px;
+  border: 1px solid rgba(24, 34, 29, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: 0 8px 24px rgba(24, 34, 29, 0.06);
+}
+
+.badge {
+  max-width: 280px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.status-pill {
+  display: grid;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.status-pill span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.status-pill strong {
+  font-size: 16px;
+}
+
+.tab-bar {
+  display: flex;
+  gap: 6px;
+  margin-top: 16px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.82);
+  box-shadow: 0 4px 16px rgba(24, 34, 29, 0.06);
+}
+
+.tab-button {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.tab-button:hover {
+  transform: translateY(-1px);
+  background: rgba(24, 34, 29, 0.05);
+  color: var(--ink);
+}
+
+.tab-button.active {
+  background: linear-gradient(135deg, rgba(24, 34, 29, 0.9), rgba(46, 72, 60, 0.92));
+  color: #f9f5ef;
+  box-shadow: 0 2px 8px rgba(24, 34, 29, 0.15);
+}
+
+.layout {
+  display: grid;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.panel {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+
+.panel-wide {
+  display: grid;
+  gap: 20px;
+}
+
+.hero-panel {
+  grid-template-columns: minmax(0, 1.3fr) auto;
+  align-items: start;
+}
+
+.panel-copy {
+  display: grid;
+  gap: 12px;
+}
+
+.panel-copy h2,
+.panel-copy h3,
+.scaffold-card h3 {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.1;
+}
+
+.scaffold-card {
+  display: grid;
+  gap: 10px;
+  min-height: 180px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.82), rgba(255, 248, 239, 0.62));
+}
+
+.scaffold-card:nth-child(2) {
+  transform: translateY(10px);
+}
+
+.scaffold-card:nth-child(3) {
+  transform: translateY(22px);
+}
+
+.roadmap-panel {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+.roadmap-list {
+  padding-left: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .hero,
+  .hero-panel,
+  .roadmap-panel,
+  .card-grid,
+  .tab-bar {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .tab-button {
+    width: 100%;
+  }
+
+  .scaffold-card:nth-child(2),
+  .scaffold-card:nth-child(3) {
+    transform: none;
+  }
+}

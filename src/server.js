@@ -33,13 +33,14 @@ function main(argv = process.argv.slice(2)) {
   const { options } = parseArgs(argv);
   const workspaceRoot = resolveWorkspaceRoot(options.root);
   return startDashboardServer(workspaceRoot, {
+    legacyDashboard: options["legacy-dashboard"],
     port: options.port,
   });
 }
 
 function startDashboardServer(workspaceRoot, options = {}) {
   const port = normalizeServerPort(options.port);
-  const dashboardRoot = path.join(__dirname, "..", "dashboard");
+  const dashboardAssets = resolveDashboardAssets(options);
   const executionBridge = createDashboardExecutionBridge(workspaceRoot);
 
   const server = http.createServer((request, response) => {
@@ -286,7 +287,7 @@ function startDashboardServer(workspaceRoot, options = {}) {
           return sendJson(response, 200, validateWorkspace(workspaceRoot));
         }
 
-        return serveStatic(dashboardRoot, requestUrl.pathname, response);
+        return serveStatic(dashboardAssets.root, requestUrl.pathname, response);
       })
       .catch((error) => {
         sendJson(response, getHttpStatusCode(error), buildErrorPayload(error));
@@ -574,10 +575,21 @@ function normalizeServerPort(value) {
 
   const numeric = Number(value);
   if (!Number.isInteger(numeric) || numeric <= 0) {
-    throw new Error("Usage: dashboard [--root path] [--port 4173]");
+    throw new Error("Usage: dashboard [--root path] [--port 4173] [--legacy-dashboard]");
   }
 
   return numeric;
+}
+
+function resolveDashboardAssets(options = {}) {
+  const legacyRoot = options.legacyDashboardRoot || path.join(__dirname, "..", "dashboard");
+  const modernRoot = options.modernDashboardRoot || path.join(__dirname, "..", "dashboard-next", "dist");
+  const useModern = !options.legacyDashboard && fs.existsSync(path.join(modernRoot, "index.html"));
+
+  return {
+    mode: useModern ? "modern" : "legacy",
+    root: useModern ? modernRoot : legacyRoot,
+  };
 }
 
 function parseTaskDocumentRoute(pathname) {
@@ -709,6 +721,7 @@ function parseTaskExecutionCancelRoute(pathname) {
 module.exports = {
   main,
   parseArgs,
+  resolveDashboardAssets,
   startDashboardServer,
 };
 

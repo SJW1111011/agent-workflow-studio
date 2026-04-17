@@ -237,6 +237,13 @@ It gives a faster way to see and edit:
 
 The dashboard does not own a second state model. It reads and writes the same repo-local files the CLI uses.
 
+The current repo now has two frontend layers during the migration:
+
+- `dashboard/` remains the legacy zero-build dashboard with the full workflow UI
+- `dashboard-next/` is a Vite + Preact shell scaffold that builds into `dashboard-next/dist/`
+
+`src/server.js` serves the built `dashboard-next/dist/` bundle when it exists, and falls back to `dashboard/` when it does not or when the caller passes `--legacy-dashboard`.
+
 ### 5. Agent skill layer
 
 `skills:generate` turns the workflow into agent-readable guidance.

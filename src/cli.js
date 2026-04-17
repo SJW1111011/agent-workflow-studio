@@ -58,6 +58,7 @@ function main(argv = process.argv.slice(2)) {
       }
       case "dashboard": {
         startDashboardServer(workspaceRoot, {
+          legacyDashboard: options["legacy-dashboard"],
           port: options.port,
         });
         return;
@@ -426,7 +427,7 @@ Commands:
   scan [--root path]
   memory:bootstrap [--output .agent-workflow/handoffs/memory-bootstrap.md] [--root path]
   memory:validate [--root path]
-  dashboard [--root path] [--port 4173]
+  dashboard [--root path] [--port 4173] [--legacy-dashboard]
   mcp:serve [--root path]
   mcp:install [--client claude|cursor|codex] [--root path]
   mcp:uninstall [--client claude|cursor|codex] [--root path]

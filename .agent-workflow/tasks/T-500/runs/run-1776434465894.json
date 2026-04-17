@@ -1,0 +1,73 @@
+{
+  "id": "run-1776434465894",
+  "taskId": "T-500",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Delivered the Vite + Preact dashboard scaffold with legacy fallback, validation coverage, and live runtime checks.",
+  "createdAt": "2026-04-17T14:01:05.893Z",
+  "scopeProofPaths": [
+    ".gitignore",
+    "README.md",
+    "docs/ARCHITECTURE.md",
+    "eslint.config.mjs",
+    "package.json",
+    "package-lock.json",
+    "scripts/smoke-test.js",
+    "src/cli.js",
+    "src/server.js",
+    "test/cli.test.js",
+    "test/server-static-dashboard.test.js",
+    "dashboard-next/index.html",
+    "dashboard-next/package.json",
+    "dashboard-next/vite.config.js",
+    "dashboard-next/src/App.jsx",
+    "dashboard-next/src/main.jsx",
+    "dashboard-next/src/components/Header.jsx",
+    "dashboard-next/src/components/Layout.jsx",
+    "dashboard-next/src/components/TabBar.jsx",
+    "dashboard-next/src/components/TabButton.jsx",
+    "dashboard-next/src/styles/app.css",
+    "dashboard-next/src/styles/variables.css"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm run dashboard:build",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run lint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "verified built dashboard default server response after dist generation",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "verified legacy dashboard fallback with --legacy-dashboard",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "verified vite dev server startup and /api/health proxy",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    "dashboard-next/dist/index.html",
+    ".agent-workflow/tasks/T-500/runs/runtime-check-20260417.md"
+  ]
+}

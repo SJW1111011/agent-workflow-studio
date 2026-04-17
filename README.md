@@ -87,6 +87,27 @@ Track tasks, runs, risks, executor outcomes, and verification signals from one l
   />
 </p>
 
+The current workflow UI still lives in the legacy dashboard while the new `dashboard-next/` Vite + Preact shell is being scaffolded.
+
+For feature-complete task operations today, keep using:
+
+```bash
+npx agent-workflow dashboard --root . --port 4173 --legacy-dashboard
+```
+
+For scaffold development in this repository, run the local API server on `4173`, then start the new shell on `5173`:
+
+```bash
+npm run dashboard -- --root . --port 4173
+npm run dashboard:dev
+```
+
+When you want the repo-local server to serve the built Preact shell instead of the legacy HTML bundle, generate `dashboard-next/dist/` first:
+
+```bash
+npm run dashboard:build
+```
+
 ## Real-time execution streams
 
 Dashboard execution still keeps the existing snapshot routes, but it now also exposes SSE endpoints for live subscribers:
@@ -313,7 +334,8 @@ No absolute paths are written into workflow files. The CLI and dashboard resolve
 ```text
 agent-workflow-studio/
   src/           CLI + core modules
-  dashboard/     static frontend (zero build step)
+  dashboard/     legacy static dashboard fallback
+  dashboard-next/ Vite + Preact shell source
   docs/          design docs and guides
   scripts/       smoke test + unit test runner
   test/          unit tests
@@ -345,6 +367,9 @@ npm run scan -- --root ../some-repo
 npm run memory:bootstrap -- --root ../some-repo
 npm run quick -- "Build the scanner" --task-id T-001 --priority P1 --agent codex --root ../some-repo
 npm run dashboard -- --root ../some-repo --port 4173
+npm run dashboard:dev
+npm run dashboard:build
+npm run dashboard -- --root ../some-repo --port 4173 --legacy-dashboard
 npm run mcp:serve -- --root ../some-repo
 npm run run:execute -- T-001 --agent codex --root ../some-repo
 npx agent-workflow done T-001 "Scanner pass completed." --root ../some-repo

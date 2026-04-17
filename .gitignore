@@ -1,5 +1,6 @@
 node_modules/
 dist/
+dashboard-next/dist/
 coverage/
 .npm-cache-tmp/
 tmp/

@@ -586,7 +586,7 @@ Build the first scanner slice with explicit diff-aware verification.
   }
 
   const port = 4317;
-  const server = spawn(process.execPath, [serverPath, "--root", tempRoot, "--port", String(port)], {
+  const server = spawn(process.execPath, [serverPath, "--root", tempRoot, "--port", String(port), "--legacy-dashboard"], {
     cwd: projectRoot,
     stdio: "ignore",
   });

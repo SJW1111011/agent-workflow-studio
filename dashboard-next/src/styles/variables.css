@@ -1,0 +1,13 @@
+:root {
+  --bg: #f7f2e8;
+  --panel: rgba(255, 251, 245, 0.84);
+  --ink: #18221d;
+  --muted: #57645d;
+  --line: rgba(24, 34, 29, 0.1);
+  --accent: #ef6c33;
+  --accent-2: #0f6c5c;
+  --shadow: 0 20px 60px rgba(24, 34, 29, 0.12);
+  --radius: 24px;
+  --font-sans: "Aptos", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-display: "Georgia", "Times New Roman", serif;
+}

@@ -1,0 +1,14 @@
+{
+  "name": "dashboard-next",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.2",
+    "preact": "^10.26.9",
+    "vite": "^6.4.2"
+  }
+}

@@ -25,6 +25,7 @@ export default [
       ".claude/**",
       "coverage/**",
       "dist/**",
+      "dashboard-next/dist/**",
       "node_modules/**",
       "tmp/**",
     ],
@@ -67,6 +68,25 @@ export default [
         ...globals.browser,
         ...globals.node,
       },
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      "no-unused-vars": "off",
+      "no-useless-escape": "off",
+    },
+  },
+  {
+    ...js.configs.recommended,
+    files: ["dashboard-next/**/*.js", "dashboard-next/**/*.jsx"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+      globals: globals.browser,
     },
     rules: {
       ...js.configs.recommended.rules,
