@@ -94,9 +94,13 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
     }
   });
 
+  const scopeCoverage = summarizeScopeCoverage(scopeBundle, scopedFiles, coveredScopedFiles);
+  const coveragePercent = calculateCoveragePercent(scopeCoverage.coveredFileCount, scopeCoverage.scopedFileCount);
+
   if (scopeHints.length === 0) {
     const shouldWarnMissingScope = workspaceIndex.fileCount > 0 && (runs.length > 0 || taskMeta.status !== "todo");
     return {
+      coveragePercent,
       summary: {
         status: shouldWarnMissingScope ? "unconfigured" : "ready",
         message: shouldWarnMissingScope
@@ -105,7 +109,7 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
         relevantChangeCount: 0,
       },
       scopeHints,
-      scopeCoverage: summarizeScopeCoverage(scopeBundle),
+      scopeCoverage,
       relevantChangedFiles: [],
       coveredScopedFiles: [],
       repository: summarizeRepositoryDiff(workspaceIndex, scopedFiles.length),
@@ -118,13 +122,14 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
 
   if (scopedFiles.length === 0) {
     return {
+      coveragePercent,
       summary: {
         status: "ready",
         message: "No current workspace files match this task's declared scope.",
         relevantChangeCount: 0,
       },
       scopeHints,
-      scopeCoverage: summarizeScopeCoverage(scopeBundle),
+      scopeCoverage,
       relevantChangedFiles: [],
       coveredScopedFiles: [],
       repository: summarizeRepositoryDiff(workspaceIndex, 0),
@@ -137,6 +142,7 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
 
   if (relevantChangedFiles.length === 0) {
     return {
+      coveragePercent,
       summary: {
         status: coveredScopedFiles.length > 0 ? "covered" : "ready",
         message: coveredScopedFiles.length > 0
@@ -145,7 +151,7 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
         relevantChangeCount: 0,
       },
       scopeHints,
-      scopeCoverage: summarizeScopeCoverage(scopeBundle),
+      scopeCoverage,
       relevantChangedFiles: [],
       coveredScopedFiles,
       repository: summarizeRepositoryDiff(workspaceIndex, scopedFiles.length),
@@ -157,6 +163,7 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
   }
 
   return {
+    coveragePercent,
     summary: {
       status: coveredScopedFiles.length > 0 ? "incomplete" : "action-required",
       message: coveredScopedFiles.length > 0
@@ -165,7 +172,7 @@ function buildTaskVerificationGate(workspaceRoot, taskMeta, runs = [], repositor
       relevantChangeCount: relevantChangedFiles.length,
     },
     scopeHints,
-    scopeCoverage: summarizeScopeCoverage(scopeBundle),
+    scopeCoverage,
     relevantChangedFiles,
     coveredScopedFiles,
     repository: summarizeRepositoryDiff(workspaceIndex, scopedFiles.length),
@@ -447,12 +454,27 @@ function summarizeRepositoryDiff(workspaceIndex, scopedFileCount) {
   };
 }
 
-function summarizeScopeCoverage(scopeBundle) {
+function summarizeScopeCoverage(scopeBundle, scopedFiles = [], coveredScopedFiles = []) {
+  const scopedFileCount = Array.isArray(scopedFiles) ? scopedFiles.length : 0;
+  const coveredFileCount = Array.isArray(coveredScopedFiles) ? coveredScopedFiles.length : 0;
   return {
     hintCount: scopeBundle.hints.length,
     ambiguousCount: scopeBundle.ambiguousEntries.length,
     ambiguousEntries: scopeBundle.ambiguousEntries,
+    scopedFileCount,
+    coveredFileCount,
+    uncoveredFileCount: Math.max(scopedFileCount - coveredFileCount, 0),
   };
+}
+
+function calculateCoveragePercent(coveredFileCount, scopedFileCount) {
+  const covered = normalizeNonNegativeInteger(coveredFileCount);
+  const total = normalizeNonNegativeInteger(scopedFileCount);
+  if (total === 0) {
+    return 0;
+  }
+
+  return Math.round((covered / total) * 100);
 }
 
 function stripInternalFileFields(workspaceFile, proofAtMs, proofItems = [], options = {}) {
@@ -697,6 +719,38 @@ function normalizeTaskVerificationGate(value) {
     normalized.proofCoverage = normalizeProofCoverageSummary(normalized.proofCoverage);
   }
 
+  const scopedFileCount = normalizeNonNegativeInteger(
+    normalized.scopeCoverage && normalized.scopeCoverage.scopedFileCount !== undefined
+      ? normalized.scopeCoverage.scopedFileCount
+      : normalized.repository && normalized.repository.scopedFileCount !== undefined
+        ? normalized.repository.scopedFileCount
+        : Array.isArray(normalized.relevantChangedFiles) || Array.isArray(normalized.coveredScopedFiles)
+          ? ((normalized.relevantChangedFiles || []).length + (normalized.coveredScopedFiles || []).length)
+          : 0
+  );
+  const coveredFileCount = normalizeNonNegativeInteger(
+    normalized.scopeCoverage && normalized.scopeCoverage.coveredFileCount !== undefined
+      ? normalized.scopeCoverage.coveredFileCount
+      : Array.isArray(normalized.coveredScopedFiles)
+        ? normalized.coveredScopedFiles.length
+        : 0
+  );
+
+  if (normalized.scopeCoverage && typeof normalized.scopeCoverage === "object") {
+    normalized.scopeCoverage = {
+      ...normalized.scopeCoverage,
+      scopedFileCount,
+      coveredFileCount,
+      uncoveredFileCount: Math.max(scopedFileCount - coveredFileCount, 0),
+    };
+  }
+
+  const normalizedCoveragePercent = normalizeCoveragePercent(normalized.coveragePercent);
+  normalized.coveragePercent =
+    normalizedCoveragePercent === null
+      ? calculateCoveragePercent(coveredFileCount, scopedFileCount)
+      : normalizedCoveragePercent;
+
   return normalized;
 }
 
@@ -728,6 +782,24 @@ function looksLikePathDirective(value) {
 
 function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function normalizeCoveragePercent(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return null;
+  }
+
+  return Math.max(0, Math.min(100, Math.round(numeric)));
+}
+
+function normalizeNonNegativeInteger(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric < 0) {
+    return 0;
+  }
+
+  return Math.round(numeric);
 }
 
 module.exports = {

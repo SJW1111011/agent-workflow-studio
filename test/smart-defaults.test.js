@@ -11,6 +11,7 @@ const {
   createTaskWorkspace,
   initializeGitRepository,
   runCommand,
+  setProjectAutoInferTest,
   writeJsonFile,
   writeTextFile,
 } = require("./test-helpers");
@@ -128,6 +129,7 @@ const tests = [
     run() {
       const { workspaceRoot, taskId } = createTaskWorkspace("smart-defaults-done-test");
       initializeGitRepository(workspaceRoot);
+      setProjectAutoInferTest(workspaceRoot, true);
       writeTextFile(`${workspaceRoot}/README.md`, "# Smart defaults\n");
       writePackageJson(workspaceRoot, {
         test: 'node -e "process.exit(0)"',
@@ -137,7 +139,7 @@ const tests = [
       writeTextFile(`${workspaceRoot}/README.md`, "# Smart defaults\n\nchanged\n");
 
       captureCliOutput(() => {
-        main(["done", taskId, "Recorded with inferred test.", "--infer-test", "--root", workspaceRoot]);
+        main(["done", taskId, "Recorded with inferred test.", "--root", workspaceRoot]);
       });
 
       const run = listRuns(workspaceRoot, taskId)[0];
@@ -152,6 +154,7 @@ const tests = [
     run() {
       const { workspaceRoot, taskId } = createTaskWorkspace("smart-defaults-overrides");
       initializeGitRepository(workspaceRoot);
+      setProjectAutoInferTest(workspaceRoot, true);
       writeTextFile(`${workspaceRoot}/README.md`, "# Smart defaults\n");
       writePackageJson(workspaceRoot, {
         test: 'node -e "process.exit(2)"',
@@ -175,10 +178,36 @@ const tests = [
     },
   },
   {
+    name: "cli run:add uses project autoInferTest with zero extra flags",
+    run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("smart-defaults-run-add-test");
+      initializeGitRepository(workspaceRoot);
+      setProjectAutoInferTest(workspaceRoot, true);
+      writeTextFile(`${workspaceRoot}/README.md`, "# Smart defaults\n");
+      writePackageJson(workspaceRoot, {
+        test: 'node -e "process.exit(0)"',
+      });
+      commitAll(workspaceRoot, "initial");
+
+      writeTextFile(`${workspaceRoot}/README.md`, "# Smart defaults\n\nchanged\n");
+
+      captureCliOutput(() => {
+        main(["run:add", taskId, "Recorded with project-configured test inference.", "--root", workspaceRoot]);
+      });
+
+      const run = listRuns(workspaceRoot, taskId)[0];
+      assert.equal(run.status, "passed");
+      assert.deepEqual(run.scopeProofPaths, ["README.md"]);
+      assert.equal(run.verificationChecks[0].label, "npm test");
+      assert.equal(run.verificationChecks[0].status, "passed");
+    },
+  },
+  {
     name: "cli done prints an info message and skips inferred test status when no test script exists",
     run() {
       const { workspaceRoot, taskId } = createTaskWorkspace("smart-defaults-no-test-script");
       initializeGitRepository(workspaceRoot);
+      setProjectAutoInferTest(workspaceRoot, true);
       writeTextFile(`${workspaceRoot}/README.md`, "# Smart defaults\n");
       writePackageJson(workspaceRoot, {
         lint: 'node -e "process.exit(0)"',
@@ -188,13 +217,37 @@ const tests = [
       writeTextFile(`${workspaceRoot}/README.md`, "# Smart defaults\n\nchanged\n");
 
       const output = captureCliOutput(() => {
-        main(["done", taskId, "Recorded without a test script.", "--infer-test", "--root", workspaceRoot]);
+        main(["done", taskId, "Recorded without a test script.", "--root", workspaceRoot]);
       });
 
       const run = listRuns(workspaceRoot, taskId)[0];
       assert.equal(run.status, "draft");
       assert.equal(run.verificationChecks, undefined);
       assert.match(output, /no test script/i);
+    },
+  },
+  {
+    name: "cli done skips inferred test status when --skip-test is used",
+    run() {
+      const { workspaceRoot, taskId } = createTaskWorkspace("smart-defaults-skip-test");
+      initializeGitRepository(workspaceRoot);
+      setProjectAutoInferTest(workspaceRoot, true);
+      writeTextFile(`${workspaceRoot}/README.md`, "# Smart defaults\n");
+      writePackageJson(workspaceRoot, {
+        test: 'node -e "process.exit(0)"',
+      });
+      commitAll(workspaceRoot, "initial");
+
+      writeTextFile(`${workspaceRoot}/README.md`, "# Smart defaults\n\nchanged\n");
+
+      captureCliOutput(() => {
+        main(["done", taskId, "Recorded with tests skipped.", "--skip-test", "--root", workspaceRoot]);
+      });
+
+      const run = listRuns(workspaceRoot, taskId)[0];
+      assert.equal(run.status, "draft");
+      assert.deepEqual(run.scopeProofPaths, ["README.md"]);
+      assert.equal(run.verificationChecks, undefined);
     },
   },
 ];

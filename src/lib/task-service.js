@@ -23,7 +23,14 @@ const {
 } = require("./task-documents");
 const { inferProofPathsResult, inferTestStatusResult } = require("./smart-defaults");
 const { appendUndoEntry, buildUndoFileList, captureTaskRestoreSnapshots } = require("./undo-log");
-const { ensureWorkflowScaffold, resolveStrictVerification, runsRoot, taskFiles, taskRoot } = require("./workspace");
+const {
+  ensureWorkflowScaffold,
+  resolveAutoInferTest,
+  resolveStrictVerification,
+  runsRoot,
+  taskFiles,
+  taskRoot,
+} = require("./workspace");
 
 const TASK_STATUSES = new Set(["todo", "in_progress", "blocked", "done"]);
 const TASK_PRIORITIES = new Set(["P0", "P1", "P2", "P3"]);
@@ -308,7 +315,7 @@ function resolveRunSmartDefaults(workspaceRoot, status, fields = {}) {
     nextFields.scopeProofPaths = inferredProofPaths.proofPaths;
   }
 
-  if (input.inferTestStatus === true && input.skipInferTest !== true) {
+  if (input.skipInferTest !== true && resolveAutoInferTest(workspaceRoot, input.inferTestStatus)) {
     const inferredTestStatus = inferTestStatusResult(workspaceRoot, inferenceOptions);
     messages.push(...inferredTestStatus.messages);
     if (inferredTestStatus.result) {

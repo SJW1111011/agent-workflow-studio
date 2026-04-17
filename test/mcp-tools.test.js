@@ -3,7 +3,16 @@ const fs = require("fs");
 const path = require("path");
 
 const { executeMcpTool } = require("../src/lib/mcp-tools");
-const { createTaskWorkspace, readJsonFile, readTextFile, writeTextFile } = require("./test-helpers");
+const { createTaskWorkspace, readJsonFile, readTextFile, writeJsonFile, writeTextFile } = require("./test-helpers");
+
+function setTaskScope(files, scope, createdAt = "2026-01-01T00:00:00.000Z") {
+  const meta = readJsonFile(files.meta);
+  meta.scope = scope;
+  meta.status = "in_progress";
+  meta.createdAt = createdAt;
+  meta.updatedAt = createdAt;
+  writeJsonFile(files.meta, meta);
+}
 
 const tests = [
   {
@@ -51,6 +60,7 @@ const tests = [
       const { workspaceRoot, taskId, files } = createTaskWorkspace("mcp-tool-done");
 
       writeTextFile(path.join(workspaceRoot, "README.md"), "# MCP done\n");
+      setTaskScope(files, ["README.md"]);
 
       const result = await executeMcpTool(workspaceRoot, "workflow_done", {
         taskId,
@@ -74,6 +84,8 @@ const tests = [
       assert.ok(Array.isArray(result.run.verificationArtifacts));
       assert.ok(result.run.verificationArtifacts.includes(".agent-workflow/tasks/T-001/checkpoint.md"));
       assert.equal(readJsonFile(files.meta).status, "done");
+      assert.equal(result.checkpoint.verificationGate.coveragePercent, 100);
+      assert.match(readTextFile(files.checkpoint), /Evidence coverage: 100% \(1\/1 scoped files\)/);
       assert.match(readTextFile(files.checkpoint), /Latest run status: passed/);
     },
   },
@@ -228,15 +240,28 @@ const tests = [
   {
     name: "workflow_overview returns the shared workspace summary payload",
     async run() {
-      const { workspaceRoot, taskId } = createTaskWorkspace("mcp-tool-overview");
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("mcp-tool-overview");
+      writeTextFile(path.join(workspaceRoot, "README.md"), "# MCP overview\n");
+      setTaskScope(files, ["README.md"]);
+
+      await executeMcpTool(workspaceRoot, "workflow_run_add", {
+        taskId,
+        summary: "Overview proof captured.",
+        status: "passed",
+        proofPaths: ["README.md"],
+        checks: ["Reviewed README.md diff"],
+      });
 
       const result = await executeMcpTool(workspaceRoot, "workflow_overview", {});
+      const task = result.tasks.find((item) => item.id === taskId);
 
       assert.equal(result.ok, true);
       assert.equal(result.tool, "workflow_overview");
       assert.equal(result.initialized, true);
       assert.ok(Array.isArray(result.tasks));
-      assert.ok(result.tasks.some((task) => task.id === taskId));
+      assert.ok(task);
+      assert.equal(task.coveragePercent, 100);
+      assert.equal(result.stats.coveragePercent, 100);
       assert.ok(result.stats);
     },
   },

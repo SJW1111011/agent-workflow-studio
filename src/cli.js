@@ -250,7 +250,7 @@ function main(argv = process.argv.slice(2)) {
         const agent = normalizeAdapterId(options.agent || "manual");
         assert(
           taskId && summary,
-          "Usage: done <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--strict] [--complete] [--root path]"
+          "Usage: done <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--skip-test] [--strict] [--complete] [--root path]"
         );
         const result = recordDone(workspaceRoot, taskId, summary, {
           status,
@@ -274,7 +274,7 @@ function main(argv = process.argv.slice(2)) {
         const agent = normalizeAdapterId(options.agent || "manual");
         assert(
           taskId && summary,
-          "Usage: run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--strict] [--root path]"
+          "Usage: run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--skip-test] [--strict] [--root path]"
         );
         const run = recordRun(workspaceRoot, taskId, summary, status, agent, buildManualRunFields(options), {
           undoType: "run:add",
@@ -374,8 +374,8 @@ function buildManualRunFields(options = {}) {
     verificationChecks: getOptionalOptionList(options, "check"),
     verificationArtifacts: getOptionalOptionList(options, "artifact"),
     inferScopeProofPaths: options["proof-path"] === undefined,
-    inferTestStatus: options["infer-test"] === true,
-    skipInferTest: options["skip-test"] === true,
+    inferTestStatus: options["infer-test"] === true ? true : undefined,
+    skipInferTest: options["skip-test"] === true ? true : undefined,
   };
 }
 
@@ -440,8 +440,8 @@ Commands:
   prompt:compile <taskId> [--agent codex|claude] [--root path]
   run:prepare <taskId> [--adapter <adapterId>] [--agent <adapterId>] [--root path]
   run:execute <taskId> [--adapter <adapterId>] [--agent <adapterId>] [--timeout-ms 300000] [--root path]
-  run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--strict] [--root path]
-  done <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--infer-test] [--skip-test] [--strict] [--complete] [--root path]
+  run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--skip-test] [--strict] [--root path]
+  done <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--skip-test] [--strict] [--complete] [--root path]
   checkpoint <taskId> [--strict] [--root path]
   undo [--root path]
   overview [--root path]

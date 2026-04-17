@@ -112,7 +112,7 @@ function startDashboardServer(workspaceRoot, options = {}) {
             workspaceRoot,
             taskId,
             body.summary,
-            body.status || "draft",
+            body.status,
             body.agent || "manual",
             buildManualRunFieldsFromBody(body),
             {
@@ -131,7 +131,7 @@ function startDashboardServer(workspaceRoot, options = {}) {
           }
 
           const result = recordDone(workspaceRoot, taskDoneRoute.taskId, body.summary, {
-            status: body.status || "draft",
+            status: body.status,
             agent: body.agent || "manual",
             complete: body.complete,
             ...buildManualRunFieldsFromBody(body),
@@ -561,6 +561,9 @@ function buildManualRunFieldsFromBody(body = {}) {
     scopeProofPaths: body.scopeProofPaths || body.proofPaths,
     verificationChecks: body.verificationChecks || body.checks,
     verificationArtifacts: body.verificationArtifacts || body.artifacts,
+    inferScopeProofPaths: body.inferScopeProofPaths,
+    inferTestStatus: body.inferTestStatus,
+    skipInferTest: body.skipInferTest,
   };
 }
 

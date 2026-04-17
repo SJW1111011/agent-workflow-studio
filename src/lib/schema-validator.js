@@ -61,6 +61,17 @@ function validateProjectConfig(workspaceRoot, issues) {
       )
     );
   }
+
+  if (config.autoInferTest !== undefined && typeof config.autoInferTest !== "boolean") {
+    issues.push(
+      issue(
+        "error",
+        "project.autoInferTest",
+        "project.json autoInferTest must be a boolean when present",
+        configPath
+      )
+    );
+  }
 }
 
 function validateRecipes(workspaceRoot, issues) {

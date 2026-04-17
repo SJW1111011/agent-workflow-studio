@@ -5,7 +5,14 @@ const path = require("path");
 const { buildOverview } = require("../src/lib/overview");
 const { createRunRecord, createTask, persistRunRecord } = require("../src/lib/task-service");
 const { taskFiles } = require("../src/lib/workspace");
-const { createTaskWorkspace, readTextFile, setProjectStrictVerification, writeTextFile } = require("./test-helpers");
+const {
+  createTaskWorkspace,
+  readJsonFile,
+  readTextFile,
+  setProjectStrictVerification,
+  writeJsonFile,
+  writeTextFile,
+} = require("./test-helpers");
 
 const REPO_ROOT = path.resolve(__dirname, "..");
 const TEST_TMP_ROOT = path.join(REPO_ROOT, "tmp", "unit-tests");
@@ -22,6 +29,16 @@ function persistSyntheticRun(workspaceRoot, taskId, fields, options = {}) {
 
 function setVerificationText(workspaceRoot, taskId, content) {
   writeTextFile(taskFiles(workspaceRoot, taskId).verification, content);
+}
+
+function setTaskScope(workspaceRoot, taskId, scope, createdAt = "2026-01-01T00:00:00.000Z") {
+  const files = taskFiles(workspaceRoot, taskId);
+  const meta = readJsonFile(files.meta);
+  meta.scope = scope;
+  meta.status = "in_progress";
+  meta.createdAt = createdAt;
+  meta.updatedAt = createdAt;
+  writeJsonFile(files.meta, meta);
 }
 
 const tests = [
@@ -57,6 +74,11 @@ const tests = [
       writeTextFile(path.join(workspaceRoot, "src", "planned.js"), "module.exports = 'planned';\n");
       writeTextFile(path.join(workspaceRoot, "src", "mixed-strong.js"), "module.exports = 'mixed-strong';\n");
       writeTextFile(path.join(workspaceRoot, "src", "mixed-draft.js"), "module.exports = 'mixed-draft';\n");
+
+      setTaskScope(workspaceRoot, "T-001", ["src/passed.js"]);
+      setTaskScope(workspaceRoot, "T-002", ["src/draft.js"]);
+      setTaskScope(workspaceRoot, "T-003", ["src/planned.js"]);
+      setTaskScope(workspaceRoot, "T-004", ["src/mixed-strong.js", "src/mixed-draft.js"]);
 
       const passedExecutorRun = persistSyntheticRun(workspaceRoot, "T-001", {
         id: "run-executor-passed",
@@ -178,6 +200,9 @@ const tests = [
       assert.equal(overview.initialized, true);
       assert.equal(overview.stats.tasks, 5);
       assert.equal(overview.stats.runs, 5);
+      assert.equal(overview.stats.coveragePercent, 40);
+      assert.equal(overview.stats.coveredScopedFiles, 2);
+      assert.equal(overview.stats.totalScopedFiles, 5);
       assert.deepEqual(overview.stats.executorOutcomes, {
         passed: 1,
         failed: 0,
@@ -200,22 +225,30 @@ const tests = [
       assert.equal(t001.latestExecutorOutcome, "passed");
       assert.equal(t001.latestExecutorSummary, "Executor completed with exit code 0.");
       assert.equal(t001.latestExecutorAt, "2026-01-02T00:00:00.000Z");
+      assert.equal(t001.coveragePercent, 100);
+      assert.equal(t001.coveredScopedFileCount, 1);
+      assert.equal(t001.scopedFileCount, 1);
       assert.equal(t001.verificationSignalStatus, "verified");
-      assert.equal(t001.strongProofCount, 1);
-      assert.equal(t001.anchorBackedStrongProofCount, 1);
+      assert.equal(t001.strongProofCount, 2);
+      assert.equal(t001.anchorBackedStrongProofCount, 2);
       assert.equal(t001.compatibilityStrongProofCount, 0);
       assert.match(t001.verificationSignalSummary, /all current/i);
       assert.ok(readTextFile(taskFiles(workspaceRoot, "T-001").verification).includes(passedExecutorRun.summary));
 
       assert.equal(t002.latestExecutorOutcome, "timed-out");
+      assert.equal(t002.coveragePercent, 0);
       assert.equal(t002.verificationSignalStatus, "draft");
       assert.equal(t002.draftProofCount, 1);
 
       assert.equal(t003.latestExecutorOutcome, "cancelled");
+      assert.equal(t003.coveragePercent, 0);
       assert.equal(t003.verificationSignalStatus, "draft");
       assert.equal(t003.draftCheckCount, 1);
 
       assert.equal(t004.latestExecutorOutcome, "interrupted");
+      assert.equal(t004.coveragePercent, 50);
+      assert.equal(t004.coveredScopedFileCount, 1);
+      assert.equal(t004.scopedFileCount, 2);
       assert.equal(t004.verificationSignalStatus, "partial");
       assert.equal(t004.strongProofCount, 1);
       assert.equal(t004.draftProofCount, 1);

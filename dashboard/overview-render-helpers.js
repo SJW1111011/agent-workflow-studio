@@ -30,6 +30,7 @@
           </article>
         `
       )
+      .concat([renderCoverageStatCard(stats, totalTasks, escape, normalizeCount)])
       .concat(renderExecutorCard ? [renderExecutorCard(totalTasks, stats.executorOutcomes, escape)] : [])
       .concat(renderVerificationCard ? [renderVerificationCard(totalTasks, stats.verificationSignals, escape)] : [])
       .join("");
@@ -109,16 +110,41 @@
   function renderVerificationMarkup(items, isVerificationGateWarning) {
     const isWarning = typeof isVerificationGateWarning === "function" ? isVerificationGateWarning : () => false;
 
-    return renderCollectionMarkup(items, (item) => `
-      <article class="list-item">
-        <h3>${escapeHtml(item.taskId)}</h3>
-        <p>${escapeHtml(item.summary)}</p>
-        <div class="tag-row">
-          <span class="tag ${item.status === "failed" || isWarning(item.status) ? "warn" : ""}">${escapeHtml(item.status)}</span>
-          ${item.relevantChangeCount ? `<span class="tag">${escapeHtml(`${item.relevantChangeCount} changed file(s)`)}</span>` : ""}
-        </div>
+    return renderCollectionMarkup(items, (item) => {
+      const coverage = describeVerificationCoverage(item);
+      return `
+        <article class="list-item">
+          <h3>${escapeHtml(item.taskId)}</h3>
+          <p>${escapeHtml(item.summary)}</p>
+          <div class="tag-row">
+            <span class="tag ${item.status === "failed" || isWarning(item.status) ? "warn" : ""}">${escapeHtml(item.status)}</span>
+            <span class="tag ${coverage.warn ? "warn" : ""}">${escapeHtml(coverage.label)}</span>
+            ${coverage.detail ? `<span class="tag">${escapeHtml(coverage.detail)}</span>` : ""}
+            ${item.relevantChangeCount ? `<span class="tag">${escapeHtml(`${item.relevantChangeCount} changed file(s)`)}</span>` : ""}
+          </div>
+        </article>
+      `;
+    });
+  }
+
+  function renderCoverageStatCard(stats, totalTasks, escapeHtml, normalizeCount) {
+    const coveragePercent = normalizeCount(stats.coveragePercent);
+    const coveredScopedFiles = normalizeCount(stats.coveredScopedFiles);
+    const totalScopedFiles = normalizeCount(stats.totalScopedFiles);
+    const summary =
+      totalScopedFiles > 0
+        ? `${coveredScopedFiles} of ${totalScopedFiles} scoped files have verified evidence.`
+        : totalTasks > 0
+          ? "No scoped files are configured yet."
+          : "No tasks yet.";
+
+    return `
+      <article class="stat-card stat-card-breakdown">
+        <h3>Evidence Coverage</h3>
+        <strong>${escapeHtml(totalScopedFiles > 0 ? `${coveragePercent}%` : "No scope")}</strong>
+        <p class="stat-caption">${escapeHtml(summary)}</p>
       </article>
-    `);
+    `;
   }
 
   function renderRisksMarkup(risks) {
@@ -188,6 +214,35 @@
     }
 
     return `Updated ${date.toLocaleString()}`;
+  }
+
+  function describeVerificationCoverage(item) {
+    const scopeHintCount = normalizeStatCount(item && item.scopeHintCount);
+    const scopedFileCount = normalizeStatCount(item && item.scopedFileCount);
+    const coveredScopedFileCount = normalizeStatCount(item && item.coveredScopedFileCount);
+    const coveragePercent = normalizeStatCount(item && item.coveragePercent);
+
+    if (scopeHintCount === 0) {
+      return {
+        label: "no scope defined",
+        detail: "",
+        warn: true,
+      };
+    }
+
+    if (scopedFileCount === 0) {
+      return {
+        label: "no scoped files matched",
+        detail: "",
+        warn: false,
+      };
+    }
+
+    return {
+      label: `${coveragePercent}% covered`,
+      detail: `${coveredScopedFileCount}/${scopedFileCount} scoped files`,
+      warn: coveragePercent < 100,
+    };
   }
 
   function escapeHtml(value) {

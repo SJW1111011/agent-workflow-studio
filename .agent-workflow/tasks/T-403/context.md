@@ -22,6 +22,24 @@ T-202 (Phase 1) added smart defaults as opt-in. With T-400 (vocabulary) and T-40
 
 - Should `autoInferTest` default to `true` or `false`? Leaning `false` — users should opt in because test suites vary in speed and reliability.
 
+## Progress notes
+
+### 2026-04-17T01:55:00.000Z
+
+Reviewed the T-403 task bundle, project memory, smart-default resolution path, CLI help text, MCP schemas, and the dashboard API entrypoints. Confirmed proof-path inference is already on by default, while test inference still defaults off in the CLI and MCP call sites and needs a project-level `autoInferTest` setting plus pass-through changes so omitted flags can still infer `npm test`.
+
+### 2026-04-17T01:58:49.000Z
+
+Patched the shared project-config/default path, updated the CLI/MCP/API surfaces, and refreshed the README plus task metadata for the new `autoInferTest` workflow. The focused `npm test -- test/smart-defaults.test.js` regression pass succeeded with 10/10 tests green before the full repository verification sweep.
+
+### 2026-04-17T02:01:00.000Z
+
+Completed the full verification sweep with `npm test`, `npm run lint`, and `npm run smoke`, saving the logs under `.agent-workflow/tasks/T-403/runs/`. Because the repository already had unrelated dirty files outside T-403, the final task evidence will use explicit proof paths instead of raw git-diff inference so the recorded run does not accidentally claim someone else's in-progress changes.
+
+### 2026-04-17T02:03:20.000Z
+
+Recorded the durable T-403 run with explicit proof paths, verification checks, and log artifacts, then refreshed the checkpoint. The checkpoint now reports `covered` verification status with 100% evidence coverage across the 11 scoped files currently changed for this task.
+
 ## Constraints
 
 <!-- agent-workflow:managed:context-constraints-meta:start -->

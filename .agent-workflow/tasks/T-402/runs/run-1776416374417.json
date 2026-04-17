@@ -1,0 +1,47 @@
+{
+  "id": "run-1776416374417",
+  "taskId": "T-402",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Claude Code review passed: coveragePercent in gate output, checkpoint, MCP overview, dashboard coverage bar",
+  "createdAt": "2026-04-17T08:59:34.416Z",
+  "scopeProofPaths": [
+    "src/lib/verification-gates.js",
+    "src/lib/checkpoint.js",
+    "src/lib/overview.js",
+    "dashboard/task-detail-helpers.js",
+    "dashboard/styles.css"
+  ],
+  "verificationChecks": [
+    {
+      "label": "coveragePercent computed correctly (0 for unconfigured)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "Checkpoint shows Evidence coverage line",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "MCP overview returns coveragePercent",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "Dashboard has coverage bar styles",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (33 files, 168 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "coverage 86.76% >= 85%",
+      "status": "passed",
+      "artifacts": []
+    }
+  ]
+}

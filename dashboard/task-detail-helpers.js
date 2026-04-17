@@ -213,6 +213,7 @@
     const summary = verificationGate.summary;
     const scopeCoverage = verificationGate.scopeCoverage || {};
     const proofCoverage = verificationGate.proofCoverage || {};
+    const coverageView = describeVerificationCoverage(verificationGate);
     const proofSignals = describeVerificationProofSignals(verificationGate, verificationText);
     const draftChecks = proofSignals.draftChecks || proofSignals.plannedChecks || [];
     const draftItems = proofSignals.draftItems || proofSignals.weakItems || [];
@@ -308,12 +309,22 @@
 
     return `
       <article class="list-item">
-        <h3>${escapeHtml(formatVerificationGateHeading(summary.status))}</h3>
-        <p>${escapeHtml(summary.message || "No verification gate summary available.")}</p>
+        <p class="status-banner-label">${escapeHtml("Evidence coverage")}</p>
+        <div class="coverage-hero">
+          <strong class="coverage-number">${escapeHtml(coverageView.badge)}</strong>
+          <div class="coverage-copy">
+            <h3>${escapeHtml(coverageView.title)}</h3>
+            <p>${escapeHtml(summary.message || "No verification gate summary available.")}</p>
+            <p class="subtle">${escapeHtml(coverageView.detail)}</p>
+          </div>
+        </div>
+        ${renderCoverageBar(coverageView)}
+        <p class="subtle">${escapeHtml(`Gate state: ${formatVerificationGateHeading(summary.status)}`)}</p>
         <div class="tag-row">
           <span class="tag ${isVerificationGateWarning(summary.status) ? "warn" : ""}">${escapeHtml(summary.status || "unknown")}</span>
+          <span class="tag ${coverageView.warn ? "warn" : ""}">${escapeHtml(coverageView.tag)}</span>
           <span class="tag">${escapeHtml(`${summary.relevantChangeCount || 0} relevant change(s)`)}</span>
-          <span class="tag">${escapeHtml(`${(verificationGate.repository && verificationGate.repository.scopedFileCount) || 0} scoped file(s)`)}</span>
+          <span class="tag">${escapeHtml(`${coverageView.scopedFileCount} scoped file(s)`)}</span>
           <span class="tag">${escapeHtml(`${scopeCoverage.hintCount || 0} scope hint(s)`)}</span>
           ${draftChecks.length > 0 ? `<span class="tag">${escapeHtml(`${draftChecks.length} draft check(s)`)}</span>` : ""}
           ${(scopeCoverage.ambiguousCount || 0) > 0 ? `<span class="tag warn">${escapeHtml(`${scopeCoverage.ambiguousCount} ambiguous`)}</span>` : ""}
@@ -418,6 +429,87 @@
         `
       )
       .join("");
+  }
+
+  function describeVerificationCoverage(verificationGate) {
+    const scopeCoverage = verificationGate && verificationGate.scopeCoverage ? verificationGate.scopeCoverage : {};
+    const scopeHintCount = normalizeNonNegativeInteger(
+      scopeCoverage.hintCount !== undefined
+        ? scopeCoverage.hintCount
+        : Array.isArray(verificationGate && verificationGate.scopeHints)
+          ? verificationGate.scopeHints.length
+          : 0
+    );
+    const scopedFileCount = normalizeNonNegativeInteger(
+      scopeCoverage.scopedFileCount !== undefined
+        ? scopeCoverage.scopedFileCount
+        : verificationGate && verificationGate.repository && verificationGate.repository.scopedFileCount !== undefined
+          ? verificationGate.repository.scopedFileCount
+          : 0
+    );
+    const coveredFileCount = normalizeNonNegativeInteger(
+      scopeCoverage.coveredFileCount !== undefined
+        ? scopeCoverage.coveredFileCount
+        : verificationGate && Array.isArray(verificationGate.coveredScopedFiles)
+          ? verificationGate.coveredScopedFiles.length
+          : 0
+    );
+    const coveragePercent = normalizeCoveragePercent(verificationGate && verificationGate.coveragePercent);
+
+    if (scopeHintCount === 0) {
+      return {
+        badge: "No scope",
+        title: "No scope defined",
+        detail: "Add repo-relative scope paths to make evidence coverage automatic.",
+        tag: "no scope defined",
+        fillPercent: 0,
+        scopedFileCount,
+        coveredFileCount,
+        showBar: false,
+        warn: true,
+      };
+    }
+
+    if (scopedFileCount === 0) {
+      return {
+        badge: "No files",
+        title: "No scoped files matched",
+        detail: "The current workspace has no files that match this task's declared scope yet.",
+        tag: "no scoped files matched",
+        fillPercent: 0,
+        scopedFileCount,
+        coveredFileCount,
+        showBar: false,
+        warn: false,
+      };
+    }
+
+    return {
+      badge: `${coveragePercent}%`,
+      title: `${coveredFileCount}/${scopedFileCount} scoped file(s) covered`,
+      detail:
+        coveragePercent === 100
+          ? "All scoped files are linked to verified evidence."
+          : `${Math.max(scopedFileCount - coveredFileCount, 0)} scoped file(s) still need verified evidence.`,
+      tag: `${coveragePercent}% covered`,
+      fillPercent: coveragePercent,
+      scopedFileCount,
+      coveredFileCount,
+      showBar: true,
+      warn: coveragePercent < 100,
+    };
+  }
+
+  function renderCoverageBar(coverageView) {
+    if (!coverageView || !coverageView.showBar) {
+      return "";
+    }
+
+    return `
+      <div class="coverage-bar" aria-hidden="true">
+        <span class="coverage-bar-fill ${coverageView.warn ? "coverage-bar-fill-warn" : ""}" style="width: ${escapeHtml(coverageView.fillPercent)}%"></span>
+      </div>
+    `;
   }
 
   function describeProofFreshnessModes(proofCoverage) {
@@ -535,6 +627,24 @@
       return "failed";
     }
     return normalized || "idle";
+  }
+
+  function normalizeCoveragePercent(value) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) {
+      return 0;
+    }
+
+    return Math.max(0, Math.min(100, Math.round(numeric)));
+  }
+
+  function normalizeNonNegativeInteger(value) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric) || numeric < 0) {
+      return 0;
+    }
+
+    return Math.round(numeric);
   }
 
   function escapeHtml(value) {

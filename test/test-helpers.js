@@ -116,6 +116,13 @@ function setProjectStrictVerification(workspaceRoot, value) {
   writeJsonFile(configPath, projectConfig);
 }
 
+function setProjectAutoInferTest(workspaceRoot, value) {
+  const configPath = projectConfigPath(workspaceRoot);
+  const projectConfig = readJsonFile(configPath);
+  projectConfig.autoInferTest = Boolean(value);
+  writeJsonFile(configPath, projectConfig);
+}
+
 module.exports = {
   buildRepositoryDiff,
   createTaskWorkspace,
@@ -124,6 +131,7 @@ module.exports = {
   readTextFile,
   runCommand,
   runCommandOutput,
+  setProjectAutoInferTest,
   setProjectStrictVerification,
   setFileModifiedAt,
   trackTempDirectory,

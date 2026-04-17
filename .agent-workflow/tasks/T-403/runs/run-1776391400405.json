@@ -1,0 +1,51 @@
+{
+  "id": "run-1776391400405",
+  "taskId": "T-403",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Enabled project-level autoInferTest defaults and documented the zero-flag workflow.",
+  "createdAt": "2026-04-17T02:03:20.404Z",
+  "scopeProofPaths": [
+    "src/lib/workspace.js",
+    "src/lib/task-service.js",
+    "src/lib/done.js",
+    "src/cli.js",
+    "src/lib/mcp-tools.js",
+    "src/server.js",
+    "src/lib/schema-validator.js",
+    "test/test-helpers.js",
+    "test/smart-defaults.test.js",
+    "README.md",
+    ".agent-workflow/project.json",
+    ".agent-workflow/tasks/T-403/task.json",
+    ".agent-workflow/tasks/T-403/context.md",
+    ".agent-workflow/tasks/T-403/verification.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test passes (33 files, 168 tests)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run lint passes",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke passes",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "README, CLI help, MCP schema text, and API passthroughs reflect project-level autoInferTest plus per-run --skip-test override",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-403/runs/npm-test.log",
+    ".agent-workflow/tasks/T-403/runs/npm-lint.log",
+    ".agent-workflow/tasks/T-403/runs/npm-smoke.log"
+  ]
+}

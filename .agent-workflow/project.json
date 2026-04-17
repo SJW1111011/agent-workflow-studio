@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "repositoryName": "agent-workflow-studio",
   "createdAt": "2026-04-08T11:30:03.403Z",
+  "autoInferTest": false,
   "strictVerification": false,
   "adapters": [
     "codex",

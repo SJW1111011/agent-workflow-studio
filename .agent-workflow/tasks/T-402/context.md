@@ -22,6 +22,12 @@ T-400 renames the vocabulary; T-401 hides fingerprinting. But the verification g
 
 - Should coverage include draft evidence or only verified evidence? Leaning verified-only for the percentage, with draft noted separately.
 
+## Progress notes
+
+- 2026-04-17T01:27:00.000Z: Read the required workflow docs, traced the verification-gate data flow, and mapped the source/test files that need additive coverage-percent changes.
+- 2026-04-17T01:29:00.000Z: Implemented additive `coveragePercent` plumbing through verification gates, checkpoint output, overview aggregation, dashboard coverage UI, and focused tests; targeted Vitest coverage-first checks are passing.
+- 2026-04-17T01:36:00.000Z: Passed `npm run lint`, `npm test`, and `npm run smoke`; re-recorded the T-402 run with explicit scoped proof paths and refreshed the checkpoint so coverage reflects 15/15 scoped files.
+
 ## Constraints
 
 <!-- agent-workflow:managed:context-constraints-meta:start -->

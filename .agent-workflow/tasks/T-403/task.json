@@ -3,12 +3,33 @@
   "title": "Auto evidence extraction — git diff paths and test exit code populate evidence automatically on every run",
   "recipeId": "feature",
   "priority": "P1",
-  "status": "todo",
+  "status": "in_progress",
   "createdAt": "2026-04-15T16:35:38.464Z",
-  "updatedAt": "2026-04-15T16:35:38.464Z",
-  "goal": "",
-  "scope": [],
+  "updatedAt": "2026-04-17T08:59:34.798Z",
+  "goal": "Make done and run:add infer git-diff proof paths by default and optionally infer npm test results from a project-level autoInferTest setting, so zero-flag evidence capture is the normal path.",
+  "scope": [
+    "src/lib/smart-defaults.js",
+    "src/lib/task-service.js",
+    "src/cli.js",
+    "src/lib/done.js",
+    "src/lib/mcp-tools.js",
+    "src/server.js",
+    "src/lib/workspace.js",
+    "src/lib/schema-validator.js",
+    "test/smart-defaults.test.js",
+    "test/test-helpers.js",
+    "README.md",
+    ".agent-workflow/project.json"
+  ],
   "nonGoals": [],
-  "requiredDocs": [],
-  "verificationCommands": []
+  "requiredDocs": [
+    ".agent-workflow/project-profile.md",
+    ".agent-workflow/memory/product.md",
+    ".agent-workflow/memory/architecture.md"
+  ],
+  "verificationCommands": [
+    "npm test",
+    "npm run lint",
+    "npm run smoke"
+  ]
 }

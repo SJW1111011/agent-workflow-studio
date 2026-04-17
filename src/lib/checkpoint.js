@@ -47,6 +47,8 @@ function buildCheckpoint(workspaceRoot, taskId, options = {}) {
     completed.push("Some scoped files are already linked to verified evidence");
   }
 
+  const scopeCoverage = getScopeCoverageSummary(verificationGate);
+
   const checkpoint = {
     taskId,
     generatedAt: new Date().toISOString(),
@@ -58,8 +60,11 @@ function buildCheckpoint(workspaceRoot, taskId, options = {}) {
       status: verificationGate.summary.status,
       message: verificationGate.summary.message,
       relevantChangeCount: verificationGate.summary.relevantChangeCount,
-      scopeHintCount: verificationGate.scopeCoverage ? verificationGate.scopeCoverage.hintCount : verificationGate.scopeHints.length,
-      ambiguousScopeCount: verificationGate.scopeCoverage ? verificationGate.scopeCoverage.ambiguousCount : 0,
+      coveragePercent: normalizeCoveragePercent(verificationGate.coveragePercent),
+      scopeHintCount: scopeCoverage.hintCount,
+      ambiguousScopeCount: scopeCoverage.ambiguousCount,
+      scopedFileCount: scopeCoverage.scopedFileCount,
+      coveredFileCount: scopeCoverage.coveredFileCount,
       relevantChangedFiles: verificationGate.relevantChangedFiles,
     },
   };
@@ -127,7 +132,7 @@ function deriveRisks(workspaceRoot, files, latestRun, verificationGate) {
 function renderCheckpointMarkdown(task, checkpoint, latestRun, verificationGate) {
   const completedLines = checkpoint.completed.map((item) => `- ${item}`).join("\n") || "- None yet";
   const riskLines = checkpoint.risks.map((item) => `- ${item}`).join("\n") || "- No immediate risks detected";
-  const scopeCoverage = verificationGate.scopeCoverage || { hintCount: verificationGate.scopeHints.length, ambiguousCount: 0, ambiguousEntries: [] };
+  const scopeCoverage = getScopeCoverageSummary(verificationGate);
   const relevantFileLines = (verificationGate.relevantChangedFiles || []).map((item) => `- ${item.path}`).join("\n") || "- None";
   const coveredFileLines = (verificationGate.coveredScopedFiles || []).map((item) => `- ${item.path}`).join("\n") || "- None";
   const ambiguousScopeLines = (scopeCoverage.ambiguousEntries || []).map((item) => `- ${item.value} (${item.source})`).join("\n") || "- None";
@@ -157,6 +162,7 @@ ${completedLines}
 
 - Status: ${verificationGate.summary.status}
 - Summary: ${verificationGate.summary.message}
+- Evidence coverage: ${formatEvidenceCoverageLabel(verificationGate, scopeCoverage)}
 - Scope hints: ${scopeCoverage.hintCount}
 - Ambiguous scope entries: ${scopeCoverage.ambiguousCount}
 - Scoped files awaiting proof: ${verificationGate.summary.relevantChangeCount}
@@ -219,6 +225,75 @@ function renderNextProofSteps(verificationGate) {
   }
 
   return "Refresh verification.md and checkpoint.md again if scoped files change.";
+}
+
+function getScopeCoverageSummary(verificationGate) {
+  const scopeCoverage =
+    verificationGate && verificationGate.scopeCoverage
+      ? verificationGate.scopeCoverage
+      : {
+          hintCount: Array.isArray(verificationGate && verificationGate.scopeHints) ? verificationGate.scopeHints.length : 0,
+          ambiguousCount: 0,
+          ambiguousEntries: [],
+        };
+
+  const scopedFileCount = normalizeNonNegativeInteger(
+    scopeCoverage.scopedFileCount !== undefined
+      ? scopeCoverage.scopedFileCount
+      : verificationGate &&
+            verificationGate.repository &&
+            verificationGate.repository.scopedFileCount !== undefined
+        ? verificationGate.repository.scopedFileCount
+        : (verificationGate && verificationGate.relevantChangedFiles ? verificationGate.relevantChangedFiles.length : 0) +
+          (verificationGate && verificationGate.coveredScopedFiles ? verificationGate.coveredScopedFiles.length : 0)
+  );
+  const coveredFileCount = normalizeNonNegativeInteger(
+    scopeCoverage.coveredFileCount !== undefined
+      ? scopeCoverage.coveredFileCount
+      : verificationGate && Array.isArray(verificationGate.coveredScopedFiles)
+        ? verificationGate.coveredScopedFiles.length
+        : 0
+  );
+
+  return {
+    ...scopeCoverage,
+    hintCount: normalizeNonNegativeInteger(scopeCoverage.hintCount),
+    ambiguousCount: normalizeNonNegativeInteger(scopeCoverage.ambiguousCount),
+    ambiguousEntries: Array.isArray(scopeCoverage.ambiguousEntries) ? scopeCoverage.ambiguousEntries : [],
+    scopedFileCount,
+    coveredFileCount,
+    uncoveredFileCount: Math.max(scopedFileCount - coveredFileCount, 0),
+  };
+}
+
+function formatEvidenceCoverageLabel(verificationGate, scopeCoverage = getScopeCoverageSummary(verificationGate)) {
+  if ((scopeCoverage.hintCount || 0) === 0) {
+    return "no scope defined";
+  }
+
+  if ((scopeCoverage.scopedFileCount || 0) === 0) {
+    return "no scoped files matched";
+  }
+
+  return `${normalizeCoveragePercent(verificationGate && verificationGate.coveragePercent)}% (${scopeCoverage.coveredFileCount}/${scopeCoverage.scopedFileCount} scoped files)`;
+}
+
+function normalizeCoveragePercent(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.min(100, Math.round(numeric)));
+}
+
+function normalizeNonNegativeInteger(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric < 0) {
+    return 0;
+  }
+
+  return Math.round(numeric);
 }
 
 module.exports = {

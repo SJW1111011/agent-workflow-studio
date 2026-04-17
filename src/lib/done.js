@@ -15,8 +15,8 @@ function recordDone(workspaceRoot, taskId, summary, options = {}) {
       verificationChecks: options.verificationChecks,
       verificationArtifacts: options.verificationArtifacts,
       inferScopeProofPaths: options.inferScopeProofPaths !== false,
-      inferTestStatus: options.inferTestStatus === true,
-      skipInferTest: options.skipInferTest === true,
+      inferTestStatus: options.inferTestStatus,
+      skipInferTest: options.skipInferTest === true ? true : undefined,
     },
     {
       undoType: null,

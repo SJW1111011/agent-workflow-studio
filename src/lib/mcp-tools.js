@@ -58,7 +58,8 @@ const TOOL_DEFINITIONS = Object.freeze([
   },
   {
     name: "workflow_done",
-    description: "Record run evidence and refresh the checkpoint in one step, with an optional complete flag to mark the task done.",
+    description:
+      "Record run evidence and refresh the checkpoint in one step, inferring proof paths from git diff by default and using the workspace test-inference setting unless you override it.",
     inputSchema: buildManualRunInputSchema({
       includeComplete: true,
     }),
@@ -118,7 +119,8 @@ const TOOL_DEFINITIONS = Object.freeze([
   },
   {
     name: "workflow_run_add",
-    description: "Record a manual run with optional proof paths, verification checks, and artifacts, then refresh the checkpoint.",
+    description:
+      "Record a manual run with optional proof paths, checks, and artifacts, inferring proof paths from git diff by default and using the workspace test-inference setting unless you override it.",
     inputSchema: buildManualRunInputSchema(),
   },
   {
@@ -538,8 +540,8 @@ function buildManualRunOptions(args, toolName) {
       "inferScopeProofPaths",
       proofPaths.provided ? false : true
     ),
-    inferTestStatus: inferBooleanArgument(args, "inferTestStatus", false),
-    skipInferTest: inferBooleanArgument(args, "skipInferTest", false),
+    inferTestStatus: optionalBoolean(args.inferTestStatus, "inferTestStatus"),
+    skipInferTest: optionalBoolean(args.skipInferTest, "skipInferTest"),
   };
 }
 
@@ -569,14 +571,14 @@ function buildManualRunInputSchema(options = {}) {
     },
     proofPaths: {
       type: "array",
-      description: "Optional repo-relative proof paths. Alias: scopeProofPaths.",
+      description: "Optional repo-relative proof paths. Alias: scopeProofPaths. When omitted, the current git diff is used by default.",
       items: {
         type: "string",
       },
     },
     scopeProofPaths: {
       type: "array",
-      description: "Alias for proofPaths.",
+      description: "Alias for proofPaths. When omitted, the current git diff is used by default.",
       items: {
         type: "string",
       },
@@ -611,11 +613,13 @@ function buildManualRunInputSchema(options = {}) {
     },
     inferTestStatus: {
       type: "boolean",
-      description: "Run npm test and derive a passed or failed check from the exit code.",
+      description:
+        "Optional per-call override for npm test inference. True forces inference for this call; false disables it even if project.json autoInferTest is true.",
     },
     skipInferTest: {
       type: "boolean",
-      description: "Skip npm test inference even if inferTestStatus would otherwise run.",
+      description:
+        "Skip npm test inference even if project.json autoInferTest or inferTestStatus would otherwise run.",
     },
   };
 

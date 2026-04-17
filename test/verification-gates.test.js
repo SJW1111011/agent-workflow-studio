@@ -56,6 +56,9 @@ const tests = [
 
       assert.equal(gate.summary.status, "covered");
       assert.equal(gate.summary.relevantChangeCount, 0);
+      assert.equal(gate.coveragePercent, 100);
+      assert.equal(gate.scopeCoverage.scopedFileCount, 1);
+      assert.equal(gate.scopeCoverage.coveredFileCount, 1);
       assert.equal(gate.coveredScopedFiles.length, 1);
       assert.equal(gate.coveredScopedFiles[0].path, "src/app.js");
       assert.equal(gate.coveredScopedFiles[0].proofFreshnessSource, "recorded");
@@ -100,6 +103,9 @@ const tests = [
 
       assert.equal(gate.summary.status, "incomplete");
       assert.equal(gate.summary.relevantChangeCount, 1);
+      assert.equal(gate.coveragePercent, 50);
+      assert.equal(gate.scopeCoverage.scopedFileCount, 2);
+      assert.equal(gate.scopeCoverage.coveredFileCount, 1);
       assert.equal(gate.coveredScopedFiles.length, 1);
       assert.equal(gate.coveredScopedFiles[0].path, "src/app.js");
       assert.equal(gate.relevantChangedFiles.length, 1);
@@ -152,6 +158,7 @@ const tests = [
 
       assert.equal(gate.summary.status, "covered");
       assert.equal(gate.summary.relevantChangeCount, 0);
+      assert.equal(gate.coveragePercent, 100);
       assert.equal(gate.coveredScopedFiles.length, 1);
       assert.equal(gate.coveredScopedFiles[0].path, "src/app.js");
       assert.equal(gate.proofCoverage.items[0].anchorCount, 1);
@@ -198,6 +205,7 @@ const tests = [
 
       assert.equal(gate.summary.status, "action-required");
       assert.equal(gate.summary.relevantChangeCount, 1);
+      assert.equal(gate.coveragePercent, 0);
       assert.equal(gate.coveredScopedFiles.length, 0);
       assert.equal(gate.relevantChangedFiles[0].path, "src/app.js");
       assert.equal(gate.proofCoverage.anchoredStrongProofCount, 0);
@@ -282,6 +290,7 @@ const tests = [
 
       assert.equal(gate.summary.status, "covered");
       assert.equal(gate.summary.relevantChangeCount, 0);
+      assert.equal(gate.coveragePercent, 100);
       assert.equal(gate.coveredScopedFiles.length, 1);
       assert.equal(gate.coveredScopedFiles[0].path, "src/app.js");
       assert.equal(gate.coveredScopedFiles[0].proofFreshnessSource, "current");
@@ -415,6 +424,7 @@ const tests = [
 
       assert.equal(gate.summary.status, "action-required");
       assert.equal(gate.summary.relevantChangeCount, 1);
+      assert.equal(gate.coveragePercent, 0);
       assert.equal(gate.coveredScopedFiles.length, 0);
       assert.equal(gate.relevantChangedFiles[0].path, "src/app.js");
       assert.equal(gate.relevantChangedFiles[0].proofFreshnessSource, "outdated");
@@ -452,6 +462,7 @@ const tests = [
 
       assert.equal(gate.summary.status, "action-required");
       assert.equal(gate.summary.relevantChangeCount, 1);
+      assert.equal(gate.coveragePercent, 0);
       assert.equal(gate.proofCoverage.explicitProofCount, 0);
       assert.equal(gate.proofCoverage.weakProofCount, 1);
       assert.equal(gate.proofCoverage.items[0].strong, false);
@@ -477,6 +488,7 @@ const tests = [
       );
 
       assert.equal(gate.summary.status, "unconfigured");
+      assert.equal(gate.coveragePercent, 0);
       assert.equal(gate.scopeCoverage.hintCount, 0);
       assert.ok(gate.scopeCoverage.ambiguousCount >= 1);
       assert.match(gate.summary.message, /no repo-relative scope/i);

@@ -302,6 +302,7 @@ function ensureWorkflowScaffold(workspaceRoot) {
       schemaVersion: 1,
       repositoryName: path.basename(workspaceRoot),
       createdAt: new Date().toISOString(),
+      autoInferTest: false,
       strictVerification: false,
       adapters: ["codex", "claude-code"],
       dashboard: {
@@ -316,11 +317,13 @@ function readProjectConfig(workspaceRoot) {
   const config = readJson(projectConfigPath(workspaceRoot), {
     schemaVersion: 1,
     repositoryName: path.basename(workspaceRoot),
+    autoInferTest: false,
     strictVerification: false,
   });
 
   return {
     ...config,
+    autoInferTest: normalizeAutoInferTest(config.autoInferTest, false),
     strictVerification: normalizeStrictVerification(config.strictVerification, false),
   };
 }
@@ -333,7 +336,23 @@ function resolveStrictVerification(workspaceRoot, value) {
   return readProjectConfig(workspaceRoot).strictVerification === true;
 }
 
+function resolveAutoInferTest(workspaceRoot, value) {
+  if (value !== undefined) {
+    return normalizeAutoInferTest(value, false);
+  }
+
+  return readProjectConfig(workspaceRoot).autoInferTest === true;
+}
+
 function normalizeStrictVerification(value, fallback = false) {
+  return normalizeBooleanSetting(value, fallback);
+}
+
+function normalizeAutoInferTest(value, fallback = false) {
+  return normalizeBooleanSetting(value, fallback);
+}
+
+function normalizeBooleanSetting(value, fallback = false) {
   if (typeof value === "boolean") {
     return value;
   }
@@ -385,6 +404,7 @@ module.exports = {
   handoffsRoot,
   listTaskIds,
   memoryRoot,
+  normalizeAutoInferTest,
   projectConfigPath,
   projectProfileMarkdownPath,
   projectProfilePath,
@@ -395,6 +415,7 @@ module.exports = {
   recipesIndexPath,
   recipesRoot,
   RECIPE_REGISTRY,
+  resolveAutoInferTest,
   resolveStrictVerification,
   resolveWorkspaceRoot,
   runsRoot,

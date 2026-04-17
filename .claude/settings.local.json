@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node src/cli.js quick \"CI matrix — GitHub Actions for Node 18/20/22, coverage, automated npm publish\" --task-id T-103 --priority P2 --agent codex --root .)",
+      "Bash(node src/cli.js task:list --root .)",
+      "Bash(node src/cli.js validate --root .)",
+      "Bash(npm run:*)",
+      "Bash(node --input-type=module -e \"import pkg, { workspace } from 'agent-workflow-studio'; import { createRequire } from 'node:module'; const require = createRequire\\(import.meta.url\\); const cjs = require\\('agent-workflow-studio'\\); console.log\\('singleton:', workspace === cjs.workspace && pkg.workspace === cjs.workspace\\)\")",
+      "Bash(npm test:*)",
+      "Bash(node scripts/smoke-test.js)"
+    ]
+  }
+}

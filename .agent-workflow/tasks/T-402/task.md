@@ -19,8 +19,10 @@ Add a single `coveragePercent` number to the verification gate output that tells
   - repo path: src/lib/overview.js (include coveragePercent in overview stats)
   - repo path: src/lib/mcp-tools.js (include coveragePercent in tool results)
   - repo path: dashboard/task-detail-helpers.js (render coverage bar/percentage)
+  - repo path: dashboard/task-list-render-helpers.js (show percentage-first coverage on task cards)
   - repo path: dashboard/overview-render-helpers.js (aggregate coverage in overview)
-  - repo path: test/ (update tests)
+  - repo path: dashboard/styles.css (style shared coverage UI elements)
+  - repo path: test/
   - repo path: README.md
 - Out of scope:
   - repo path: src/lib/evidence-utils.js (unchanged)

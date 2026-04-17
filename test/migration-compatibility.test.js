@@ -99,6 +99,7 @@ const tests = [
       );
 
       assert.equal(gate.summary.status, "covered");
+      assert.equal(gate.coveragePercent, 100);
       assert.equal(gate.proofCoverage.verifiedEvidenceCount, 1);
       assert.equal(gate.proofCoverage.items[0].verified, true);
       assert.equal(gate.coveredScopedFiles[0].path, "src/app.js");
@@ -230,7 +231,9 @@ const tests = [
       const checkpointText = getTaskDetail(workspaceRoot, taskId).checkpointText;
 
       assert.ok(["ready", "covered", "action-required", "incomplete", "unconfigured"].includes(checkpoint.verificationGate.status));
+      assert.equal(checkpoint.verificationGate.coveragePercent, 0);
       assert.match(checkpointText, new RegExp(`- Status: ${checkpoint.verificationGate.status}`));
+      assert.match(checkpointText, /- Evidence coverage: 0% \(0\/1 scoped files\)/);
       assert.doesNotMatch(checkpointText, /needs-proof/);
       assert.doesNotMatch(checkpointText, /partially-covered/);
     },

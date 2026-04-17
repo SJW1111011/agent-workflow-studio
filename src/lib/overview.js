@@ -87,17 +87,24 @@ function emptyStats() {
     runs: 0,
     risks: 0,
     memoryDocs: 0,
+    coveragePercent: 0,
+    coveredScopedFiles: 0,
+    totalScopedFiles: 0,
     executorOutcomes: emptyExecutorOutcomes(),
     verificationSignals: emptyVerificationSignals(),
   };
 }
 
 function buildOverviewStats(tasks, runs, risks, memory) {
+  const coverage = summarizeTaskCoverage(tasks);
   return {
     tasks: tasks.length,
     runs: runs.length,
     risks: risks.length,
     memoryDocs: memory.length,
+    coveragePercent: coverage.coveragePercent,
+    coveredScopedFiles: coverage.coveredScopedFiles,
+    totalScopedFiles: coverage.totalScopedFiles,
     executorOutcomes: countLatestExecutorOutcomes(tasks),
     verificationSignals: countTaskVerificationSignals(tasks),
   };
@@ -203,6 +210,28 @@ function enrichTask(workspaceRoot, task, repositorySnapshot, options = {}) {
       strict: options.strict,
     })
   );
+  const scopeCoverage = verificationGate.scopeCoverage || {};
+  const scopeHintCount = normalizeNonNegativeInteger(
+    scopeCoverage.hintCount !== undefined
+      ? scopeCoverage.hintCount
+      : Array.isArray(verificationGate.scopeHints)
+        ? verificationGate.scopeHints.length
+        : 0
+  );
+  const scopedFileCount = normalizeNonNegativeInteger(
+    scopeCoverage.scopedFileCount !== undefined
+      ? scopeCoverage.scopedFileCount
+      : verificationGate.repository && verificationGate.repository.scopedFileCount !== undefined
+        ? verificationGate.repository.scopedFileCount
+        : 0
+  );
+  const coveredScopedFileCount = normalizeNonNegativeInteger(
+    scopeCoverage.coveredFileCount !== undefined
+      ? scopeCoverage.coveredFileCount
+      : Array.isArray(verificationGate.coveredScopedFiles)
+        ? verificationGate.coveredScopedFiles.length
+        : 0
+  );
   const verificationSignal = describeTaskVerificationSignal(verificationGate, verificationText);
 
   return {
@@ -217,9 +246,13 @@ function enrichTask(workspaceRoot, task, repositorySnapshot, options = {}) {
     freshnessStatus: freshness.summary.status,
     staleDocCount: freshness.summary.staleCount,
     verificationGate,
+    coveragePercent: normalizeCoveragePercent(verificationGate.coveragePercent),
     verificationGateStatus: normalizeVerificationGateStatus(verificationGate.summary.status) || verificationGate.summary.status,
     relevantChangeCount: verificationGate.summary.relevantChangeCount,
-    ambiguousScopeCount: verificationGate.scopeCoverage ? verificationGate.scopeCoverage.ambiguousCount : 0,
+    scopeHintCount,
+    scopedFileCount,
+    coveredScopedFileCount,
+    ambiguousScopeCount: normalizeNonNegativeInteger(scopeCoverage.ambiguousCount),
     verificationSignalStatus:
       normalizeVerificationSignalStatus(verificationSignal.status) || verificationSignal.status,
     verificationSignalSummary: verificationSignal.summary,
@@ -567,6 +600,10 @@ function deriveVerification(tasks) {
       task.verificationGate && task.verificationGate.summary && task.verificationGate.summary.message
         ? task.verificationGate.summary.message
         : task.latestRunSummary,
+    coveragePercent: normalizeCoveragePercent(task.coveragePercent),
+    scopeHintCount: normalizeNonNegativeInteger(task.scopeHintCount),
+    scopedFileCount: normalizeNonNegativeInteger(task.scopedFileCount),
+    coveredScopedFileCount: normalizeNonNegativeInteger(task.coveredScopedFileCount),
     relevantChangeCount: task.relevantChangeCount || 0,
   }));
 }
@@ -587,6 +624,47 @@ function deriveVerificationStatus(task) {
             : task.latestRunStatus === "passed"
               ? "evidence-recorded"
               : "pending";
+}
+
+function summarizeTaskCoverage(tasks) {
+  const totals = (Array.isArray(tasks) ? tasks : []).reduce(
+    (result, task) => {
+      const scopedFileCount = normalizeNonNegativeInteger(task && task.scopedFileCount);
+      const coveredScopedFileCount = normalizeNonNegativeInteger(task && task.coveredScopedFileCount);
+
+      result.totalScopedFiles += scopedFileCount;
+      result.coveredScopedFiles += Math.min(coveredScopedFileCount, scopedFileCount);
+      return result;
+    },
+    {
+      coveredScopedFiles: 0,
+      totalScopedFiles: 0,
+    }
+  );
+
+  return {
+    ...totals,
+    coveragePercent:
+      totals.totalScopedFiles > 0 ? Math.round((totals.coveredScopedFiles / totals.totalScopedFiles) * 100) : 0,
+  };
+}
+
+function normalizeCoveragePercent(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.min(100, Math.round(numeric)));
+}
+
+function normalizeNonNegativeInteger(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric < 0) {
+    return 0;
+  }
+
+  return Math.round(numeric);
 }
 
 module.exports = {

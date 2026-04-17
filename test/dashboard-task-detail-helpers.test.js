@@ -28,8 +28,11 @@ const tests = [
           scopeCoverage: {
             hintCount: 1,
             ambiguousCount: 1,
+            scopedFileCount: 2,
+            coveredFileCount: 1,
             ambiguousEntries: [{ value: "notes", source: "task.md#scope" }],
           },
+          coveragePercent: 50,
           relevantChangedFiles: [
             {
               path: "docs/notes.md",
@@ -88,7 +91,10 @@ const tests = [
         ].join("\n")
       );
 
-      assert.match(markup, /Action required/);
+      assert.match(markup, /50%/);
+      assert.match(markup, /1\/2 scoped file\(s\) covered/);
+      assert.match(markup, /Gate state: Action required/);
+      assert.match(markup, /50% covered/);
       assert.match(markup, /1 draft check\(s\)/);
       assert.match(markup, /1 draft evidence item\(s\)/);
       assert.match(markup, /1 verified item\(s\)/);
@@ -198,8 +204,11 @@ const tests = [
             scopeCoverage: {
               hintCount: 1,
               ambiguousCount: 0,
+              scopedFileCount: 1,
+              coveredFileCount: 1,
               ambiguousEntries: [],
             },
+            coveragePercent: 100,
             scopeHints: [{ pattern: "dashboard/app.js", source: "task.md#scope" }],
             relevantChangedFiles: [
               {
@@ -259,10 +268,46 @@ const tests = [
       assert.match(markup, /View stdout/);
       assert.match(markup, /Freshness/);
       assert.match(markup, /Verification Gate/);
-      assert.match(markup, /Scoped diff is covered/);
+      assert.match(markup, /100%/);
+      assert.match(markup, /1\/1 scoped file\(s\) covered/);
+      assert.match(markup, /Gate state: Scoped diff is covered/);
       assert.match(markup, /recorded-only/);
       assert.match(markup, /task-missing-proof/);
       assert.match(markup, /Runner command for codex resolves locally/);
+    },
+  },
+  {
+    name: "renderVerificationGate shows no scope defined instead of 0 percent when scope is missing",
+    run() {
+      const markup = renderVerificationGate({
+        summary: {
+          status: "unconfigured",
+          message: "This task has no repo-relative scope yet, so changed work cannot be matched to recorded evidence.",
+          relevantChangeCount: 0,
+        },
+        coveragePercent: 0,
+        repository: {
+          scopedFileCount: 0,
+        },
+        scopeHints: [],
+        scopeCoverage: {
+          hintCount: 0,
+          ambiguousCount: 1,
+          scopedFileCount: 0,
+          coveredFileCount: 0,
+          ambiguousEntries: [{ value: "docs", source: "task.md" }],
+        },
+        relevantChangedFiles: [],
+        coveredScopedFiles: [],
+        proofCoverage: {
+          items: [],
+        },
+        evidence: {},
+      });
+
+      assert.match(markup, /No scope defined/);
+      assert.match(markup, /no scope defined/);
+      assert.doesNotMatch(markup, />0%</);
     },
   },
 ];

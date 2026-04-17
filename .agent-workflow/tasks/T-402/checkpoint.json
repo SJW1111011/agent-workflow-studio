@@ -1,22 +1,75 @@
 {
   "taskId": "T-402",
-  "generatedAt": "2026-04-15T16:35:38.007Z",
-  "latestRunStatus": "none",
-  "runCount": 0,
+  "generatedAt": "2026-04-17T08:59:35.317Z",
+  "latestRunStatus": "passed",
+  "runCount": 2,
   "risks": [
-    "No execution evidence recorded yet.",
-    "Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths."
+    "Some scoped files still need verified evidence: src/lib/mcp-tools.js, test/smart-defaults.test.js, test/test-helpers.js"
   ],
   "completed": [
     "Prompt compiled",
-    "Task context captured"
+    "2 run(s) recorded",
+    "Task context captured",
+    "Some scoped files are already linked to verified evidence"
   ],
   "verificationGate": {
-    "status": "ready",
-    "message": "Add explicit repo-relative paths in the task scope to enable stronger verification gates.",
-    "relevantChangeCount": 0,
-    "scopeHintCount": 0,
-    "ambiguousScopeCount": 1,
-    "relevantChangedFiles": []
+    "status": "incomplete",
+    "message": "Some scoped files already have verified evidence, but newer scoped changes still need attention.",
+    "relevantChangeCount": 3,
+    "coveragePercent": 83,
+    "scopeHintCount": 20,
+    "ambiguousScopeCount": 0,
+    "scopedFileCount": 18,
+    "coveredFileCount": 15,
+    "relevantChangedFiles": [
+      {
+        "path": "src/lib/mcp-tools.js",
+        "modifiedAt": "2026-04-17T01:56:48.899Z",
+        "changeType": "modified",
+        "gitState": "M",
+        "previousPath": null,
+        "matchedBy": [
+          {
+            "pattern": "src/lib/mcp-tools.js",
+            "source": "task.md"
+          }
+        ],
+        "proofUpdatedAt": null,
+        "proofFreshnessSource": null,
+        "proofItems": []
+      },
+      {
+        "path": "test/smart-defaults.test.js",
+        "modifiedAt": "2026-04-17T01:56:48.902Z",
+        "changeType": "modified",
+        "gitState": "M",
+        "previousPath": null,
+        "matchedBy": [
+          {
+            "pattern": "test/",
+            "source": "task.md"
+          }
+        ],
+        "proofUpdatedAt": null,
+        "proofFreshnessSource": null,
+        "proofItems": []
+      },
+      {
+        "path": "test/test-helpers.js",
+        "modifiedAt": "2026-04-17T01:56:48.901Z",
+        "changeType": "modified",
+        "gitState": "M",
+        "previousPath": null,
+        "matchedBy": [
+          {
+            "pattern": "test/",
+            "source": "task.md"
+          }
+        ],
+        "proofUpdatedAt": null,
+        "proofFreshnessSource": null,
+        "proofItems": []
+      }
+    ]
   }
 }

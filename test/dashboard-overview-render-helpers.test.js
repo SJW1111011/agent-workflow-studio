@@ -18,6 +18,9 @@ const tests = [
           runs: 9,
           risks: 2,
           memoryDocs: 5,
+          coveragePercent: 75,
+          coveredScopedFiles: 3,
+          totalScopedFiles: 4,
           executorOutcomes: {
             passed: 1,
             failed: 1,
@@ -52,6 +55,9 @@ const tests = [
 
       assert.match(markup, /<h3>Tasks<\/h3>/);
       assert.match(markup, /<strong>4<\/strong>/);
+      assert.match(markup, /Evidence Coverage/);
+      assert.match(markup, /75%/);
+      assert.match(markup, /3 of 4 scoped files have verified evidence\./);
       assert.match(markup, /executor 4/);
       assert.match(markup, /verification 4/);
     },
@@ -78,6 +84,10 @@ const tests = [
             taskId: "T-001",
             summary: "One scoped file still needs verified evidence.",
             status: "action-required",
+            coveragePercent: 50,
+            scopeHintCount: 1,
+            scopedFileCount: 2,
+            coveredScopedFileCount: 1,
             relevantChangeCount: 1,
           },
         ],
@@ -118,6 +128,8 @@ const tests = [
       assert.match(memoryMarkup, /architecture\.md/);
       assert.match(memoryMarkup, /Updated 2026-04-07T13:00:00.000Z/);
       assert.match(verificationMarkup, /action-required/);
+      assert.match(verificationMarkup, /50% covered/);
+      assert.match(verificationMarkup, /1\/2 scoped files/);
       assert.match(verificationMarkup, /1 changed file\(s\)/);
       assert.match(runsMarkup, /failed/);
       assert.match(runsMarkup, /Exit code 1\./);

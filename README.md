@@ -80,7 +80,7 @@ That keeps backward compatibility for polling clients while giving the dashboard
 - **`undo`** - roll back the latest workflow-layer operation (`quick`, `run:add`, `done`, or explicit `checkpoint`) without touching source files or git history
 - **`mcp:install` / `mcp:uninstall`** - register or remove the MCP server in Codex, Claude Code, and Cursor without manual JSON or TOML editing
 - **`mcp:serve`** - expose the core workflow operations as MCP tools over stdio for Claude Code, Cursor, and other MCP clients
-- **`verification gate`** - compare repo-relative task scope against the current repository snapshot and show which scoped files still need explicit evidence
+- **`verification gate`** - compare repo-relative task scope against the current repository snapshot and surface evidence coverage as a percentage, while still listing which scoped files need explicit evidence
 - **`verification records`** - use timestamp-based freshness by default, with opt-in strict fingerprint checks for audit-heavy workflows
 - **`skills:generate`** - write `AGENTS.md`, `CLAUDE.md`, and Claude slash commands so the workflow becomes part of the agent's default context
 - **`dashboard`** - inspect tasks, evidence, freshness, risks, execution state, and quick-create flows from a local control plane at `localhost:4173`
@@ -175,7 +175,9 @@ Task creation          Agent execution           Evidence + resume
 
 1. Create a task with `quick` or `task:new`.
 2. Hand the compiled prompt to Codex or Claude Code, or use `run:execute` when a local adapter is ready.
-3. Record evidence and refresh the checkpoint with `done <taskId> "<summary>"` when the work is ready to hand off. `done` and `run:add` infer proof paths from the current git diff by default, auto-advance `task.json` from `todo` to `in_progress` on the first recorded run, and `done --complete` marks the task `done`. `--infer-test` runs `npm test` to derive a passed/failed check from the exit code. Add `--strict` when you want fingerprint-backed freshness for that command, or set `.agent-workflow/project.json` `strictVerification: true` to make strict mode the workspace default.
+3. Record evidence and refresh the checkpoint with `done <taskId> "<summary>"` when the work is ready to hand off. `done` and `run:add` infer proof paths from the current git diff by default, auto-advance `task.json` from `todo` to `in_progress` on the first recorded run, and `done --complete` marks the task `done`. If `.agent-workflow/project.json` sets `"autoInferTest": true`, those commands also run `npm test` and record the exit code as a verification check; `--skip-test` suppresses that for a single command. Add `--strict` when you want fingerprint-backed freshness for that command, or set `.agent-workflow/project.json` `strictVerification: true` to make strict mode the workspace default.
+
+That gives repos with `"autoInferTest": true` a full zero-flag path: `done T-001 "summary"` records git-diff proof paths plus the inferred `npm test` result as verified evidence.
 4. If the latest workflow operation was wrong, run `npx agent-workflow undo --root .` to roll it back. Undo only touches `.agent-workflow/` state, and it refuses to delete a quick-created task that already has recorded runs.
 5. Review `verification.md`, `checkpoint.md`, and the recorded runs under `.agent-workflow/tasks/<taskId>/runs/`.
 
@@ -201,7 +203,7 @@ npx agent-workflow undo --root .
 
 Two ideas sit at the center of the project:
 
-- **Verification gate**: compare repo-relative task scope against the current repository snapshot (Git-backed when available, filesystem fallback otherwise) and explain which scoped files still need explicit evidence.
+- **Verification gate**: compare repo-relative task scope against the current repository snapshot (Git-backed when available, filesystem fallback otherwise), report what percentage of scoped files have verified evidence, and still explain which files need attention.
 - **Verification records**: default freshness is timestamp-based, which keeps the common path simpler and faster. When you opt into `--strict` or set `strictVerification: true`, passed run evidence and refreshed manual verification also carry content fingerprints so freshness survives misleading `mtime` churn, branch switches, and agent handoff noise. `draft` evidence still needs checks or artifacts; `verified` evidence includes repo-relative paths plus checks or artifacts.
 
 ## Upgrading from pre-Phase-3
@@ -252,7 +254,7 @@ Both Codex and Claude Code have been dogfooded on this repository with real loca
 
 - Recipes (`audit`, `feature`, `review`) are indexed in `.agent-workflow/recipes/index.json` and attached to tasks via `recipeId`
 - `validate` checks project config, adapters, tasks, and run records for missing or malformed fields
-- The dashboard surfaces schema issues, memory freshness, and verification gate status in one view
+- The dashboard surfaces schema issues, memory freshness, and evidence coverage in one view
 
 See [docs/RECIPES_AND_SCHEMA.md](docs/RECIPES_AND_SCHEMA.md).
 
@@ -299,7 +301,7 @@ npm run quick -- "Build the scanner" --task-id T-001 --priority P1 --agent codex
 npm run dashboard -- --root ../some-repo --port 4173
 npm run mcp:serve -- --root ../some-repo
 npm run run:execute -- T-001 --agent codex --root ../some-repo
-npx agent-workflow done T-001 "Scanner pass completed." --infer-test --root ../some-repo
+npx agent-workflow done T-001 "Scanner pass completed." --root ../some-repo
 npx agent-workflow done T-001 "Docs-only follow-up." --proof-path README.md --status draft --root ../some-repo
 npm run validate -- --root ../some-repo
 npm test

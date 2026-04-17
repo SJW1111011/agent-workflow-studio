@@ -1,0 +1,46 @@
+{
+  "id": "run-1776389736959",
+  "taskId": "T-402",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Implemented coveragePercent across verification gates, checkpoint output, overview stats, and dashboard coverage UI.",
+  "createdAt": "2026-04-17T01:35:36.958Z",
+  "scopeProofPaths": [
+    "README.md",
+    "dashboard/overview-render-helpers.js",
+    "dashboard/styles.css",
+    "dashboard/task-detail-helpers.js",
+    "dashboard/task-list-render-helpers.js",
+    "src/lib/checkpoint.js",
+    "src/lib/overview.js",
+    "src/lib/verification-gates.js",
+    "test/dashboard-overview-render-helpers.test.js",
+    "test/dashboard-task-detail-helpers.test.js",
+    "test/dashboard-task-list-render-helpers.test.js",
+    "test/mcp-tools.test.js",
+    "test/migration-compatibility.test.js",
+    "test/overview.test.js",
+    "test/verification-gates.test.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm run lint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-402/verification.md",
+    ".agent-workflow/tasks/T-402/checkpoint.md"
+  ]
+}

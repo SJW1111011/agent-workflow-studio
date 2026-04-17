@@ -41,6 +41,10 @@ const tests = [
             staleDocCount: 0,
             verificationGateStatus: "covered",
             relevantChangeCount: 0,
+            coveragePercent: 100,
+            scopeHintCount: 1,
+            scopedFileCount: 1,
+            coveredScopedFileCount: 1,
             verificationSignalStatus: "verified",
             verificationSignalSummary: "1 verified item(s), all current.",
             verifiedProofCount: 1,
@@ -63,6 +67,10 @@ const tests = [
             staleDocCount: 2,
             verificationGateStatus: "action-required",
             relevantChangeCount: 1,
+            coveragePercent: 50,
+            scopeHintCount: 1,
+            scopedFileCount: 2,
+            coveredScopedFileCount: 1,
             verificationSignalStatus: "verified",
             verificationSignalSummary: "1 verified item(s), recorded from earlier evidence.",
             verifiedProofCount: 1,
@@ -84,7 +92,8 @@ const tests = [
       assert.match(view.markup, /task-card-executor-cancelled/);
       assert.match(view.markup, /task-card .*active/);
       assert.match(view.markup, /Cancelled from dashboard\./);
-      assert.match(view.markup, /Action required \(1\)/);
+      assert.match(view.markup, /Coverage: 50% \(1\/2 scoped files\)/);
+      assert.match(view.markup, /50% covered/);
       assert.match(view.markup, /Proof freshness: 1 recorded-only/);
       assert.match(view.markup, /verified evidence \(recorded\)/);
       assert.doesNotMatch(view.markup, /T-001 - Passed task/);
