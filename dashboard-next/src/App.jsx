@@ -1,112 +1,129 @@
-import { useState } from "preact/hooks";
 import Header from "./components/Header.jsx";
 import Layout from "./components/Layout.jsx";
+import Overview from "./components/Overview.jsx";
 import TabBar from "./components/TabBar.jsx";
+import TaskDetail from "./components/TaskDetail.jsx";
+import TaskList from "./components/TaskList.jsx";
+import Forms from "./components/Forms.jsx";
+import { DashboardProvider, useDashboardContext } from "./context/DashboardContext.jsx";
+import { describeRunPresentation, formatTimestampLabel, formatVerificationGateLabel, isVerificationGateWarning } from "./utils/execution.js";
 
 const TABS = [
-  {
-    id: "overview",
-    label: "Overview",
-    eyebrow: "Foundation",
-    title: "Shared product signals land here first.",
-    body: "Overview cards, adapters, schema, memory freshness, and risk summaries migrate into composable Preact panels after the shell is in place.",
-  },
-  {
-    id: "tasks",
-    label: "Tasks",
-    eyebrow: "Queue",
-    title: "Task board and detail stay in the legacy dashboard for now.",
-    body: "This tab reserves the layout for the future task list, task detail, and selection flows without porting the current mutation surface yet.",
-  },
-  {
-    id: "actions",
-    label: "Actions",
-    eyebrow: "Operations",
-    title: "Quick create and evidence forms move in the next migration pass.",
-    body: "The Preact scaffold keeps the destination for task creation, doc editing, and run recording visible while `--legacy-dashboard` still powers those workflows today.",
-  },
-  {
-    id: "verification",
-    label: "Verification",
-    eyebrow: "Trust",
-    title: "Proof coverage remains a first-class concern.",
-    body: "This placeholder marks where diff-aware verification, freshness, and scoped evidence affordances will live once the shell starts consuming real API data.",
-  },
-  {
-    id: "runs",
-    label: "Runs",
-    eyebrow: "Execution",
-    title: "Executor status, logs, and outcomes migrate after the shell settles.",
-    body: "Run history and live execution panels are intentionally deferred so the shell can land without changing current workflow contracts.",
-  },
+  { id: "overview", label: "Overview" },
+  { id: "tasks", label: "Tasks" },
+  { id: "actions", label: "Actions" },
+  { id: "verification", label: "Verification" },
+  { id: "runs", label: "Runs" },
 ];
 
-const SIDE_CARDS = [
-  {
-    title: "Dev server",
-    copy: "Run `npm run dashboard:dev` on port 5173 while the local API server stays on 4173.",
-  },
-  {
-    title: "Legacy fallback",
-    copy: "Use `agent-workflow dashboard --legacy-dashboard` for the current feature-complete control plane.",
-  },
-  {
-    title: "Build output",
-    copy: "Run `npm run dashboard:build` to generate `dashboard-next/dist/` for server-side static serving.",
-  },
-];
+function VerificationPanel({ hidden }) {
+  const { state } = useDashboardContext();
+  const items = state.overview.data?.verification || [];
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState(TABS[0].id);
-  const activePanel = TABS.find((tab) => tab.id === activeTab) || TABS[0];
+  return (
+    <section className={hidden ? "panel tab-hidden" : "panel"} data-tab="verification">
+      <div className="panel-head">
+        <div>
+          <h2>Verify</h2>
+          <p>What has evidence today, where coverage is partial, and which tasks still need proof.</p>
+        </div>
+      </div>
+      <div className="list">
+        {items.length === 0 ? (
+          <div className="empty">No verification items are available yet.</div>
+        ) : (
+          items.map((item) => (
+            <article className="list-item" key={`${item.taskId}:${item.status}`}>
+              <h3>{item.taskId}</h3>
+              <p>{item.summary || "No verification summary available."}</p>
+              <div className="tag-row">
+                <span className={isVerificationGateWarning(item.status) ? "tag warn" : "tag"}>
+                  {formatVerificationGateLabel(item.status, item.relevantChangeCount || 0)}
+                </span>
+                <span className="tag">{item.coveragePercent || 0}% coverage</span>
+                <span className="tag">{item.scopeHintCount || 0} scope hints</span>
+              </div>
+            </article>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function RunsPanel({ hidden }) {
+  const { state } = useDashboardContext();
+  const runs = state.overview.data?.runs || [];
+
+  return (
+    <section className={hidden ? "panel panel-wide tab-hidden" : "panel panel-wide"} data-tab="runs">
+      <div className="panel-head">
+        <div>
+          <h2>Recent Runs</h2>
+          <p>Execution evidence recorded by the workflow layer, including proof paths, checks, and artifacts.</p>
+        </div>
+      </div>
+      <div className="list">
+        {runs.length === 0 ? (
+          <div className="empty">No runs recorded yet.</div>
+        ) : (
+          runs.map((run) => {
+            const presentation = describeRunPresentation(run);
+
+            return (
+              <article className="list-item" key={run.id}>
+                <h3>
+                  {run.taskId} - {presentation.headline}
+                </h3>
+                <p>{presentation.summary}</p>
+                <div className="tag-row">
+                  <span className={presentation.warn ? "tag warn" : "tag"}>{run.status || "recorded"}</span>
+                  <span className="tag">{run.agent || "manual"}</span>
+                  <span className="tag">{formatTimestampLabel(run.createdAt)}</span>
+                </div>
+                {presentation.detail ? <p className="subtle">{presentation.detail}</p> : null}
+                {Array.isArray(run.scopeProofPaths) && run.scopeProofPaths.length > 0 ? (
+                  <p className="subtle">Files: {run.scopeProofPaths.join(", ")}</p>
+                ) : null}
+              </article>
+            );
+          })
+        )}
+      </div>
+    </section>
+  );
+}
+
+function DashboardShell() {
+  const { requestState, setActiveTab, state } = useDashboardContext();
 
   return (
     <Layout
-      header={<Header />}
-      navigation={<TabBar activeTab={activeTab} onSelect={setActiveTab} tabs={TABS} />}
+      header={
+        <Header
+          actionStatus={state.actionStatus}
+          activeTab={state.activeTab}
+          initialized={Boolean(state.overview.data?.initialized)}
+          pendingCount={requestState.pendingCount}
+          workspaceRoot={state.overview.data?.workspaceRoot || ""}
+        />
+      }
+      navigation={<TabBar activeTab={state.activeTab} onSelect={setActiveTab} tabs={TABS} />}
     >
-      <section className="panel panel-wide hero-panel">
-        <div className="panel-copy">
-          <p className="panel-eyebrow">{activePanel.eyebrow}</p>
-          <h2>{activePanel.title}</h2>
-          <p>{activePanel.body}</p>
-        </div>
-        <div className="status-stack" aria-label="Scaffold status">
-          <div className="status-pill">
-            <span>Current tab</span>
-            <strong>{activePanel.label}</strong>
-          </div>
-          <div className="status-pill">
-            <span>Runtime</span>
-            <strong>Vite + Preact</strong>
-          </div>
-          <div className="status-pill">
-            <span>API target</span>
-            <strong>localhost:4173</strong>
-          </div>
-        </div>
-      </section>
-
-      <section className="card-grid" aria-label={`${activePanel.label} placeholders`}>
-        {SIDE_CARDS.map((card) => (
-          <article className="panel scaffold-card" key={card.title}>
-            <h3>{card.title}</h3>
-            <p>{card.copy}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="panel panel-wide roadmap-panel" aria-label="Migration notes">
-        <div className="panel-copy">
-          <p className="panel-eyebrow">Migration path</p>
-          <h3>Shell first, feature ports second.</h3>
-        </div>
-        <ul className="roadmap-list">
-          <li>Keep the existing `dashboard/` UI intact as the truthful fallback.</li>
-          <li>Use this shell to prove the Vite build, HMR, and component layout contract.</li>
-          <li>Migrate real data panels and mutations in later tasks without breaking the API server.</li>
-        </ul>
-      </section>
+      <Overview hidden={state.activeTab !== "overview"} />
+      <TaskList hidden={state.activeTab !== "tasks"} />
+      <TaskDetail hidden={state.activeTab !== "tasks"} />
+      <Forms hidden={state.activeTab !== "actions"} />
+      <VerificationPanel hidden={state.activeTab !== "verification"} />
+      <RunsPanel hidden={state.activeTab !== "runs"} />
     </Layout>
+  );
+}
+
+export default function App() {
+  return (
+    <DashboardProvider>
+      <DashboardShell />
+    </DashboardProvider>
   );
 }

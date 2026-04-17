@@ -1,14 +1,44 @@
 {
   "id": "T-501",
-  "title": "Component migration — convert all render-helpers to Preact JSX components with hooks state",
+  "title": "Component migration - convert all render-helpers to Preact JSX components with hooks state",
   "recipeId": "feature",
   "priority": "P0",
-  "status": "todo",
+  "status": "done",
   "createdAt": "2026-04-17T09:11:45.382Z",
-  "updatedAt": "2026-04-17T09:11:45.382Z",
-  "goal": "",
-  "scope": [],
-  "nonGoals": [],
-  "requiredDocs": [],
-  "verificationCommands": []
+  "updatedAt": "2026-04-17T15:58:28.207Z",
+  "goal": "Ship the modern dashboard as a real Preact control plane: all five tabs should render live workflow data, task actions should work through controlled components and hooks state, execution and log views should remain functional, and the legacy dashboard should stay untouched as the fallback runtime.",
+  "scope": [
+    "dashboard-next/src/App.jsx",
+    "dashboard-next/src/components/Overview.jsx",
+    "dashboard-next/src/components/TaskList.jsx",
+    "dashboard-next/src/components/TaskDetail.jsx",
+    "dashboard-next/src/components/ExecutionPanel.jsx",
+    "dashboard-next/src/components/Forms.jsx",
+    "dashboard-next/src/components/DocumentEditor.jsx",
+    "dashboard-next/src/components/Header.jsx",
+    "dashboard-next/src/hooks/useApi.js",
+    "dashboard-next/src/hooks/useDashboardState.js",
+    "dashboard-next/src/context/DashboardContext.jsx",
+    "dashboard-next/src/utils/",
+    "dashboard-next/src/main.jsx",
+    "dashboard-next/src/styles/app.css",
+    "dashboard-next/vite.config.js"
+  ],
+  "nonGoals": [
+    "dashboard/",
+    "SSE integration",
+    "dark mode",
+    "multi-task views"
+  ],
+  "requiredDocs": [
+    ".agent-workflow/project-profile.md",
+    ".agent-workflow/memory/product.md",
+    ".agent-workflow/memory/architecture.md"
+  ],
+  "verificationCommands": [
+    "npm run dashboard:build",
+    "npm run lint",
+    "npm test",
+    "npm run smoke"
+  ]
 }

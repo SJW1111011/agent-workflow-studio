@@ -1,0 +1,56 @@
+{
+  "id": "run-1776441508209",
+  "taskId": "T-501",
+  "agent": "codex",
+  "status": "passed",
+  "summary": "Migrated the modern dashboard from scaffold placeholders to reducer-driven Preact components backed by native ESM utilities and preserved legacy workflow contracts.",
+  "createdAt": "2026-04-17T15:58:28.207Z",
+  "scopeProofPaths": [
+    "dashboard-next/src/App.jsx",
+    "dashboard-next/src/components/Overview.jsx",
+    "dashboard-next/src/components/TaskList.jsx",
+    "dashboard-next/src/components/TaskDetail.jsx",
+    "dashboard-next/src/components/ExecutionPanel.jsx",
+    "dashboard-next/src/components/Forms.jsx",
+    "dashboard-next/src/components/DocumentEditor.jsx",
+    "dashboard-next/src/hooks/useApi.js",
+    "dashboard-next/src/hooks/useDashboardState.js",
+    "dashboard-next/src/context/DashboardContext.jsx",
+    "dashboard-next/src/utils/api.js",
+    "dashboard-next/src/utils/document.js",
+    "dashboard-next/src/utils/execution.js",
+    "dashboard-next/src/utils/forms.js",
+    "dashboard-next/src/utils/logs.js",
+    "dashboard-next/src/utils/orchestration.js",
+    "dashboard-next/src/utils/taskBoard.js",
+    "dashboard-next/src/main.jsx",
+    "dashboard-next/src/styles/app.css",
+    "dashboard-next/vite.config.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "passed | npm run dashboard:build",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "passed | npm run lint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "passed | npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "passed | npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    "dashboard-next/dist/index.html",
+    ".agent-workflow/tasks/T-501/runs/runtime-check-20260417.md"
+  ]
+}
