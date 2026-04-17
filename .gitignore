@@ -1,6 +1,7 @@
 node_modules/
 dist/
 dashboard-next/dist/
+.claude/
 coverage/
 .npm-cache-tmp/
 tmp/
