@@ -1,0 +1,25 @@
+{
+  "taskId": "T-502",
+  "generatedAt": "2026-04-17T09:11:45.807Z",
+  "latestRunStatus": "none",
+  "runCount": 0,
+  "risks": [
+    "No execution evidence recorded yet.",
+    "Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths."
+  ],
+  "completed": [
+    "Prompt compiled",
+    "Task context captured"
+  ],
+  "verificationGate": {
+    "status": "ready",
+    "message": "Add repo-relative scope paths to make evidence coverage automatic.",
+    "relevantChangeCount": 0,
+    "coveragePercent": 0,
+    "scopeHintCount": 0,
+    "ambiguousScopeCount": 1,
+    "scopedFileCount": 0,
+    "coveredFileCount": 0,
+    "relevantChangedFiles": []
+  }
+}

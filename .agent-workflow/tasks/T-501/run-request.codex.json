@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-501",
+  "adapterId": "codex",
+  "title": "Component migration — convert all render-helpers to Preact JSX components with hooks state",
+  "generatedAt": "2026-04-17T09:11:45.394Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-501",
+  "promptFile": ".agent-workflow/tasks/T-501/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-501/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

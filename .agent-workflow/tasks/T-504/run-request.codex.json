@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-504",
+  "adapterId": "codex",
+  "title": "Multi-task views — kanban board and timeline view alongside existing list",
+  "generatedAt": "2026-04-17T09:11:46.325Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-504",
+  "promptFile": ".agent-workflow/tasks/T-504/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-504/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

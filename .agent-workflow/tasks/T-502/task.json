@@ -1,0 +1,14 @@
+{
+  "id": "T-502",
+  "title": "SSE real-time updates — replace 900ms polling with EventSource subscriptions",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-17T09:11:45.668Z",
+  "updatedAt": "2026-04-17T09:11:45.668Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

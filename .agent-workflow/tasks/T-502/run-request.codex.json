@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-502",
+  "adapterId": "codex",
+  "title": "SSE real-time updates — replace 900ms polling with EventSource subscriptions",
+  "generatedAt": "2026-04-17T09:11:45.680Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-502",
+  "promptFile": ".agent-workflow/tasks/T-502/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-502/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

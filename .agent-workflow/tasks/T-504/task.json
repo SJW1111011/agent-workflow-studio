@@ -1,0 +1,14 @@
+{
+  "id": "T-504",
+  "title": "Multi-task views — kanban board and timeline view alongside existing list",
+  "recipeId": "feature",
+  "priority": "P2",
+  "status": "todo",
+  "createdAt": "2026-04-17T09:11:46.310Z",
+  "updatedAt": "2026-04-17T09:11:46.310Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

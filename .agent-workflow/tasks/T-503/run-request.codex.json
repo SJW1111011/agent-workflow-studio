@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-503",
+  "adapterId": "codex",
+  "title": "Dark mode + responsive polish — system theme detection, mobile layout, Lighthouse >= 90",
+  "generatedAt": "2026-04-17T09:11:45.984Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-503",
+  "promptFile": ".agent-workflow/tasks/T-503/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-503/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

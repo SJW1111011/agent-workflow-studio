@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-500",
+  "adapterId": "codex",
+  "title": "Vite + Preact scaffold — build pipeline, dev server, component shell replacing vanilla HTML",
+  "generatedAt": "2026-04-17T09:11:45.064Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-500",
+  "promptFile": ".agent-workflow/tasks/T-500/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-500/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

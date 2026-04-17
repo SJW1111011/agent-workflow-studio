@@ -1,0 +1,14 @@
+{
+  "id": "T-500",
+  "title": "Vite + Preact scaffold — build pipeline, dev server, component shell replacing vanilla HTML",
+  "recipeId": "feature",
+  "priority": "P0",
+  "status": "todo",
+  "createdAt": "2026-04-17T09:11:45.052Z",
+  "updatedAt": "2026-04-17T09:11:45.052Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

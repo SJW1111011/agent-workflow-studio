@@ -1,0 +1,14 @@
+{
+  "id": "T-503",
+  "title": "Dark mode + responsive polish — system theme detection, mobile layout, Lighthouse >= 90",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-17T09:11:45.972Z",
+  "updatedAt": "2026-04-17T09:11:45.972Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}
