@@ -1,56 +1,6 @@
 [
   {
     "type": "quick",
-    "taskId": "T-501",
-    "timestamp": "2026-04-17T09:11:45.518Z",
-    "files": [
-      ".agent-workflow/tasks/T-501",
-      ".agent-workflow/tasks/T-501/checkpoint.json",
-      ".agent-workflow/tasks/T-501/checkpoint.md",
-      ".agent-workflow/tasks/T-501/context.md",
-      ".agent-workflow/tasks/T-501/launch.codex.md",
-      ".agent-workflow/tasks/T-501/prompt.codex.md",
-      ".agent-workflow/tasks/T-501/run-request.codex.json",
-      ".agent-workflow/tasks/T-501/runs",
-      ".agent-workflow/tasks/T-501/task.json",
-      ".agent-workflow/tasks/T-501/task.md",
-      ".agent-workflow/tasks/T-501/verification.md"
-    ],
-    "metadata": {
-      "taskRoot": ".agent-workflow/tasks/T-501",
-      "mode": "full",
-      "agent": "codex",
-      "adapterId": "codex",
-      "restore": []
-    }
-  },
-  {
-    "type": "quick",
-    "taskId": "T-502",
-    "timestamp": "2026-04-17T09:11:45.816Z",
-    "files": [
-      ".agent-workflow/tasks/T-502",
-      ".agent-workflow/tasks/T-502/checkpoint.json",
-      ".agent-workflow/tasks/T-502/checkpoint.md",
-      ".agent-workflow/tasks/T-502/context.md",
-      ".agent-workflow/tasks/T-502/launch.codex.md",
-      ".agent-workflow/tasks/T-502/prompt.codex.md",
-      ".agent-workflow/tasks/T-502/run-request.codex.json",
-      ".agent-workflow/tasks/T-502/runs",
-      ".agent-workflow/tasks/T-502/task.json",
-      ".agent-workflow/tasks/T-502/task.md",
-      ".agent-workflow/tasks/T-502/verification.md"
-    ],
-    "metadata": {
-      "taskRoot": ".agent-workflow/tasks/T-502",
-      "mode": "full",
-      "agent": "codex",
-      "adapterId": "codex",
-      "restore": []
-    }
-  },
-  {
-    "type": "quick",
     "taskId": "T-503",
     "timestamp": "2026-04-17T09:11:46.114Z",
     "files": [
@@ -868,6 +818,56 @@
           "content": "# T-504 Checkpoint\n\nGenerated at: 2026-04-19T08:03:28.059Z\n\n## Completed\n\n- Prompt compiled\n- 2 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Multi-task views: kanban board and timeline view alongside existing list\n- Priority: P2\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 2\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (7/7 scoped files)\n- Scope hints: 22\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- dashboard-next/src/components/TaskList.jsx\n- dashboard-next/src/styles/app.css\n- dashboard-next/src/components/TaskKanban.jsx\n- dashboard-next/src/components/TaskTimeline.jsx\n- dashboard-next/src/components/ViewSelector.jsx\n- dashboard-next/src/utils/taskViews.js\n- test/dashboard-next-task-views.test.js\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/ViewSelector.jsx, dashboard-next/src/components/TaskKanban.jsx, dashboard-next/src/components/TaskTimeline.jsx, dashboard-next/src/utils/taskViews.js, dashboard-next/src/styles/app.css, test/dashboard-next-task-views.test.js | checks=automated validation for the shared selector, status-grouped kanban board, and creation-date timeline using existing overview task/run data (result: passed) | artifacts=.agent-workflow/tasks/T-504/runs/npm-lint.log, .agent-workflow/tasks/T-504/runs/dashboard-build.log, .agent-workflow/tasks/T-504/runs/npm-test.log\n- manual:verification.md#proof-2 | paths=dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/ViewSelector.jsx, dashboard-next/src/components/TaskKanban.jsx, dashboard-next/src/components/TaskTimeline.jsx, dashboard-next/src/styles/app.css | checks=manual browser verification for persisted selector behavior, click-through task selection, and the 375px mobile layout (result: not run) | artifacts=none\n- run:run-1776585230582 | paths=dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/ViewSelector.jsx, dashboard-next/src/components/TaskKanban.jsx, dashboard-next/src/components/TaskTimeline.jsx, dashboard-next/src/utils/taskViews.js, dashboard-next/src/styles/app.css, test/dashboard-next-task-views.test.js, .agent-workflow/tasks/T-504/task.md, .agent-workflow/tasks/T-504/task.json, .agent-workflow/tasks/T-504/context.md, .agent-workflow/tasks/T-504/verification.md | checks=[passed] npm run lint passes; [passed] npm run dashboard:build passes; [passed] npm test passes (35 files, 172 tests) | artifacts=.agent-workflow/tasks/T-504/runs/npm-lint.log, .agent-workflow/tasks/T-504/runs/dashboard-build.log, .agent-workflow/tasks/T-504/runs/npm-test.log\n- run:run-1776585807593 | paths=dashboard-next/src/styles/app.css | checks=[passed] npm run dashboard:build passes after the final app.css compatibility tweak | artifacts=.agent-workflow/tasks/T-504/runs/dashboard-build.log\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Revalidated the final kanban styling tweak after replacing color-mix() in app.css.\n- Timestamp: 2026-04-19T08:03:27.591Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
         }
       ]
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-600",
+    "timestamp": "2026-04-19T16:45:18.995Z",
+    "files": [
+      ".agent-workflow/tasks/T-600",
+      ".agent-workflow/tasks/T-600/checkpoint.json",
+      ".agent-workflow/tasks/T-600/checkpoint.md",
+      ".agent-workflow/tasks/T-600/context.md",
+      ".agent-workflow/tasks/T-600/launch.codex.md",
+      ".agent-workflow/tasks/T-600/prompt.codex.md",
+      ".agent-workflow/tasks/T-600/run-request.codex.json",
+      ".agent-workflow/tasks/T-600/runs",
+      ".agent-workflow/tasks/T-600/task.json",
+      ".agent-workflow/tasks/T-600/task.md",
+      ".agent-workflow/tasks/T-600/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-600",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-601",
+    "timestamp": "2026-04-19T16:45:41.774Z",
+    "files": [
+      ".agent-workflow/tasks/T-601",
+      ".agent-workflow/tasks/T-601/checkpoint.json",
+      ".agent-workflow/tasks/T-601/checkpoint.md",
+      ".agent-workflow/tasks/T-601/context.md",
+      ".agent-workflow/tasks/T-601/launch.codex.md",
+      ".agent-workflow/tasks/T-601/prompt.codex.md",
+      ".agent-workflow/tasks/T-601/run-request.codex.json",
+      ".agent-workflow/tasks/T-601/runs",
+      ".agent-workflow/tasks/T-601/task.json",
+      ".agent-workflow/tasks/T-601/task.md",
+      ".agent-workflow/tasks/T-601/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-601",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
     }
   }
 ]

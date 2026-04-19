@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-601",
+  "adapterId": "codex",
+  "title": "MCP Resources and Prompts",
+  "generatedAt": "2026-04-19T16:45:41.617Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-601",
+  "promptFile": ".agent-workflow/tasks/T-601/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-601/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}
