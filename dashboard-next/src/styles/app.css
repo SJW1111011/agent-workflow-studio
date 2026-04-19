@@ -190,6 +190,43 @@ details.collapsible-panel {
   align-items: start;
 }
 
+.task-view-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.task-view-button {
+  min-height: 42px;
+  width: auto;
+  padding: 10px 14px;
+  border: 1px solid var(--field-border);
+  border-radius: 999px;
+  background: var(--field-bg);
+  color: var(--muted);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.task-view-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(239, 108, 51, 0.38);
+  color: var(--ink);
+}
+
+.task-view-button.active {
+  border-color: transparent;
+  background: var(--tab-active-bg);
+  color: var(--tab-active-ink);
+  box-shadow: 0 10px 20px rgba(24, 34, 29, 0.16);
+}
+
 .panel-filter span,
 .form-card span,
 .status-banner-label {
@@ -349,6 +386,15 @@ details.collapsible-panel {
   line-height: 1.55;
 }
 
+.task-card-coverage {
+  display: grid;
+  gap: 8px;
+}
+
+.task-card-coverage-copy {
+  font-size: 12px;
+}
+
 .task-card-meta,
 .task-card-footnote,
 .subtle {
@@ -372,6 +418,170 @@ details.collapsible-panel {
 .tag.warn {
   background: var(--warn-bg);
   color: var(--risk);
+}
+
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.kanban-column {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface-muted);
+}
+
+.kanban-column-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.kanban-column-head p {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.kanban-column-count {
+  min-width: 40px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: var(--tab-active-bg);
+  color: var(--tab-active-ink);
+  font-weight: 700;
+  text-align: center;
+}
+
+.kanban-column-list {
+  display: grid;
+  gap: 12px;
+}
+
+.kanban-card {
+  gap: 12px;
+  min-height: 100%;
+}
+
+.timeline-scroll {
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.timeline-surface {
+  display: grid;
+  gap: 14px;
+  min-width: max(760px, 100%);
+}
+
+.timeline-legend {
+  margin: 0;
+}
+
+.timeline-axis {
+  position: relative;
+  min-height: 58px;
+}
+
+.timeline-axis-track {
+  position: absolute;
+  inset: 18px 0 auto;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--line-strong);
+}
+
+.timeline-axis-marker {
+  position: absolute;
+  top: 0;
+  display: grid;
+  gap: 8px;
+  transform: translateX(-50%);
+  justify-items: center;
+}
+
+.timeline-axis-tick {
+  width: 2px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--line-strong);
+}
+
+.timeline-axis-label {
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.timeline-list {
+  display: grid;
+  gap: 12px;
+}
+
+.timeline-card {
+  gap: 12px;
+}
+
+.timeline-card-head {
+  display: grid;
+  gap: 6px;
+}
+
+.timeline-track-wrap {
+  position: relative;
+  min-height: 32px;
+}
+
+.timeline-track {
+  position: absolute;
+  inset: 50% 0 auto;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--line-strong);
+  transform: translateY(-50%);
+}
+
+.timeline-point {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--surface);
+  border-radius: 999px;
+  background: var(--muted);
+  box-shadow: 0 4px 12px rgba(24, 34, 29, 0.16);
+  transform: translate(-50%, -50%);
+}
+
+.timeline-point-created {
+  width: 18px;
+  height: 18px;
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 4px var(--surface),
+    0 0 0 2px rgba(239, 108, 51, 0.48);
+}
+
+.timeline-marker-ok {
+  background: var(--accent-2);
+}
+
+.timeline-marker-cancelled {
+  background: #c78236;
+}
+
+.timeline-marker-warn {
+  background: var(--risk);
+}
+
+.timeline-marker-neutral {
+  background: var(--muted);
 }
 
 .editor-guidance-card,
@@ -479,6 +689,15 @@ details.collapsible-panel {
     width: 100%;
     justify-items: stretch;
   }
+
+  .task-view-button {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+
+  .timeline-surface {
+    min-width: 680px;
+  }
 }
 
 @media (max-width: 540px) {
@@ -510,6 +729,10 @@ details.collapsible-panel {
   .task-card-title,
   .list-item h3 {
     font-size: 16px;
+  }
+
+  .kanban-board {
+    grid-template-columns: 1fr;
   }
 
   .detail-pre {

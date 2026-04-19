@@ -1,0 +1,43 @@
+{
+  "id": "run-1776585230582",
+  "taskId": "T-504",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Implemented persisted list, kanban, and timeline task views in the modern dashboard.",
+  "createdAt": "2026-04-19T07:53:50.581Z",
+  "scopeProofPaths": [
+    "dashboard-next/src/components/TaskList.jsx",
+    "dashboard-next/src/components/ViewSelector.jsx",
+    "dashboard-next/src/components/TaskKanban.jsx",
+    "dashboard-next/src/components/TaskTimeline.jsx",
+    "dashboard-next/src/utils/taskViews.js",
+    "dashboard-next/src/styles/app.css",
+    "test/dashboard-next-task-views.test.js",
+    ".agent-workflow/tasks/T-504/task.md",
+    ".agent-workflow/tasks/T-504/task.json",
+    ".agent-workflow/tasks/T-504/context.md",
+    ".agent-workflow/tasks/T-504/verification.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm run lint passes",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run dashboard:build passes",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test passes (35 files, 172 tests)",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-504/runs/npm-lint.log",
+    ".agent-workflow/tasks/T-504/runs/dashboard-build.log",
+    ".agent-workflow/tasks/T-504/runs/npm-test.log"
+  ]
+}

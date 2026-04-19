@@ -2,7 +2,7 @@
 
 ## Why now
 
-The current dashboard shows tasks as a flat list. With 20+ tasks (this project already has 24), the list becomes hard to scan. Kanban gives status-at-a-glance, timeline gives temporal context. These are the views that make the dashboard a real project management surface instead of a task dump.
+The current dashboard shows tasks as a flat list. With 20+ tasks already present in this repository, the list becomes hard to scan. Kanban gives status-at-a-glance, timeline gives temporal context, and together they make the dashboard feel like a real project-management surface instead of a task dump.
 
 <!-- agent-workflow:managed:context-recipe-guidance:start -->
 ## Recipe guidance
@@ -13,15 +13,15 @@ The current dashboard shows tasks as a flat list. With 20+ tasks (this project a
 
 ## Facts
 
-- Current task list: flat, filterable by executor outcome, shows coverage bar and verification signal
-- Task statuses: todo, in_progress, done — natural kanban columns
-- task.json has `createdAt` and `updatedAt` timestamps — timeline axis data
-- Run records have timestamps — can be plotted as dots on the timeline
-- This project has 24 tasks across 4 phases — good test data for multi-task views
+- `dashboard-next/src/components/TaskList.jsx` already owns executor outcome filtering and task selection.
+- Overview data already exposes both `tasks` and top-level `runs`, so kanban and timeline can stay client-side.
+- Task metadata includes `createdAt` / `updatedAt`, and run records include timestamps that can render as timeline dots.
+- Theme persistence and responsive tokens already exist in `dashboard-next`, so the new views should reuse that surface instead of inventing parallel styling.
+- This repository already has enough tasks to make list-only scanning noisy, which gives the new views meaningful built-in test data.
 
 ## Open questions
 
-- Should kanban support drag-and-drop to change status? Leaning no for v1 — click to open detail, use form to change status.
+- Should drag-and-drop status mutation be added later? Keep it out of scope for this slice unless product direction changes.
 
 ## Constraints
 
@@ -29,6 +29,7 @@ The current dashboard shows tasks as a flat list. With 20+ tasks (this project a
 - Priority: P2
 - Keep the workflow docs current.
 <!-- agent-workflow:managed:context-constraints-meta:end -->
-- Depends on T-501 (components) and T-503 (dark mode — views must work in both themes)
+- Depends on T-501 (components) and T-503 (dark mode; views must work in both themes)
 - No external dependencies for drag-and-drop
-- Must pass `npm run dashboard:build`
+- No server or API changes for v1
+- Must pass `npm run lint`, `npm run dashboard:build`, and `npm test`

@@ -1,25 +1,24 @@
 {
   "taskId": "T-504",
-  "generatedAt": "2026-04-17T09:11:46.479Z",
-  "latestRunStatus": "none",
-  "runCount": 0,
-  "risks": [
-    "No execution evidence recorded yet.",
-    "Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths."
-  ],
+  "generatedAt": "2026-04-19T08:03:35.643Z",
+  "latestRunStatus": "passed",
+  "runCount": 2,
+  "risks": [],
   "completed": [
     "Prompt compiled",
-    "Task context captured"
+    "2 run(s) recorded",
+    "Task context captured",
+    "Scoped verification evidence looks current"
   ],
   "verificationGate": {
-    "status": "ready",
-    "message": "Add repo-relative scope paths to make evidence coverage automatic.",
+    "status": "covered",
+    "message": "Recorded verification covers the current scoped file set.",
     "relevantChangeCount": 0,
-    "coveragePercent": 0,
-    "scopeHintCount": 0,
-    "ambiguousScopeCount": 1,
-    "scopedFileCount": 0,
-    "coveredFileCount": 0,
+    "coveragePercent": 100,
+    "scopeHintCount": 22,
+    "ambiguousScopeCount": 0,
+    "scopedFileCount": 7,
+    "coveredFileCount": 7,
     "relevantChangedFiles": []
   }
 }

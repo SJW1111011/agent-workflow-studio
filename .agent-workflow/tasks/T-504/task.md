@@ -1,8 +1,8 @@
-# T-504 - Multi-task views — kanban board and timeline view alongside existing list
+# T-504 - Multi-task views: kanban board and timeline view alongside existing list
 
 ## Goal
 
-Add kanban board and timeline views as alternatives to the existing task list. Users can switch between list, kanban, and timeline views via a view selector. Kanban groups tasks by status (todo / in_progress / done) with drag-and-drop. Timeline shows tasks on a horizontal axis ordered by creation date with run markers. This makes the dashboard useful for managing 10+ tasks at a glance.
+Add list, kanban, and timeline task browsing to the modern dashboard so users can manage 10+ tasks without losing the existing detail workflow. The dashboard should let users switch views with one shared selector, keep the executor outcome filter applied across all views, persist the chosen view across reloads, and keep task cards clickable so task detail still opens from any view.
 
 <!-- agent-workflow:managed:task-recipe-meta:start -->
 ## Recipe
@@ -14,29 +14,31 @@ Add kanban board and timeline views as alternatives to the existing task list. U
 ## Scope
 
 - In scope:
-  - repo path: dashboard-next/src/components/TaskKanban.jsx (new — kanban board)
-  - repo path: dashboard-next/src/components/TaskTimeline.jsx (new — timeline view)
-  - repo path: dashboard-next/src/components/ViewSelector.jsx (new — list/kanban/timeline toggle)
-  - repo path: dashboard-next/src/components/TaskList.jsx (integrate with ViewSelector)
-  - repo path: dashboard-next/src/styles/ (kanban and timeline styles)
+  - repo path: dashboard-next/src/components/TaskList.jsx (integrate selector, shared filter, and alternate task views)
+  - repo path: dashboard-next/src/components/ViewSelector.jsx (new persisted list/kanban/timeline toggle)
+  - repo path: dashboard-next/src/components/TaskKanban.jsx (new status-grouped board)
+  - repo path: dashboard-next/src/components/TaskTimeline.jsx (new creation-date and run-activity timeline)
+  - repo path: dashboard-next/src/utils/taskViews.js (shared task-view grouping and timeline helpers)
+  - repo path: dashboard-next/src/styles/app.css (view selector, kanban, and timeline styling)
+  - repo path: test/dashboard-next-task-views.test.js (task-view utility coverage)
 - Out of scope:
-  - repo path: Gantt chart (too complex for v1 — defer to Phase 6)
-  - repo path: Drag-and-drop status change (nice-to-have, not required for v1)
-  - repo path: src/ (no server changes)
+  - repo path: src/ (no server or API changes for v1)
+  - repo path: drag-and-drop status mutation (defer to a follow-up task)
+  - repo path: gantt-style planning or dependency views
 
 ## Deliverables
 
 - ViewSelector component: list | kanban | timeline toggle, persisted in localStorage
 - TaskKanban: 3 columns (todo, in_progress, done), task cards with coverage bar and verification signal
-- TaskTimeline: horizontal timeline with task markers, run dots, date axis
+- TaskTimeline: horizontal timeline with task markers, run dots, and date axis
 - All views respond to the same filter (executor outcome filter)
 - Responsive: kanban stacks vertically on mobile, timeline scrolls horizontally
 
 ## Risks
 
-- Kanban with many tasks per column may need virtual scrolling — defer to follow-up if needed
+- Kanban with many tasks per column may need virtual scrolling in a follow-up
 - Timeline date axis needs careful scaling for projects with tasks spanning weeks vs hours
-- Drag-and-drop adds complexity — explicitly out of scope for v1
+- Browser-only behavior such as persistence and mobile layout still needs manual UI verification
 
 ## Acceptance Criteria
 

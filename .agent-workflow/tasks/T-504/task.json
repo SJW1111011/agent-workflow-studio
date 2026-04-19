@@ -1,14 +1,34 @@
 {
   "id": "T-504",
-  "title": "Multi-task views — kanban board and timeline view alongside existing list",
+  "title": "Multi-task views: kanban board and timeline view alongside existing list",
   "recipeId": "feature",
   "priority": "P2",
-  "status": "todo",
+  "status": "in_progress",
   "createdAt": "2026-04-17T09:11:46.310Z",
-  "updatedAt": "2026-04-17T09:11:46.310Z",
-  "goal": "",
-  "scope": [],
-  "nonGoals": [],
-  "requiredDocs": [],
-  "verificationCommands": []
+  "updatedAt": "2026-04-19T08:03:27.591Z",
+  "goal": "Add persisted list, kanban, and timeline task views to the modern dashboard so users can scan status and time-based task context without losing the existing detail workflow.",
+  "scope": [
+    "dashboard-next/src/components/TaskList.jsx",
+    "dashboard-next/src/components/ViewSelector.jsx",
+    "dashboard-next/src/components/TaskKanban.jsx",
+    "dashboard-next/src/components/TaskTimeline.jsx",
+    "dashboard-next/src/utils/taskViews.js",
+    "dashboard-next/src/styles/app.css",
+    "test/dashboard-next-task-views.test.js"
+  ],
+  "nonGoals": [
+    "src/**",
+    "drag-and-drop status mutation",
+    "gantt-style planning views"
+  ],
+  "requiredDocs": [
+    ".agent-workflow/project-profile.md",
+    ".agent-workflow/memory/product.md",
+    ".agent-workflow/memory/architecture.md"
+  ],
+  "verificationCommands": [
+    "npm run lint",
+    "npm run dashboard:build",
+    "npm test"
+  ]
 }
