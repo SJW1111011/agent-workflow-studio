@@ -1,14 +1,42 @@
 {
   "id": "T-503",
-  "title": "Dark mode + responsive polish — system theme detection, mobile layout, Lighthouse >= 90",
+  "title": "Dark mode + responsive polish - system theme detection, mobile layout, Lighthouse >= 90",
   "recipeId": "feature",
   "priority": "P1",
-  "status": "todo",
+  "status": "done",
   "createdAt": "2026-04-17T09:11:45.972Z",
-  "updatedAt": "2026-04-17T09:11:45.972Z",
-  "goal": "",
-  "scope": [],
-  "nonGoals": [],
-  "requiredDocs": [],
-  "verificationCommands": []
+  "updatedAt": "2026-04-17T19:09:45.564Z",
+  "goal": "Ship a polished modern dashboard that automatically follows the user's system theme, lets them override it with a persistent light/dark/system toggle, stays usable on 375px mobile viewports, and clears Lighthouse 90+ across performance, accessibility, best practices, and SEO.",
+  "scope": [
+    "dashboard-next/index.html",
+    "dashboard-next/src/App.jsx",
+    "dashboard-next/src/main.jsx",
+    "dashboard-next/src/components/Header.jsx",
+    "dashboard-next/src/components/Overview.jsx",
+    "dashboard-next/src/components/TaskList.jsx",
+    "dashboard-next/src/components/ThemeToggle.jsx",
+    "dashboard-next/src/hooks/useDashboardState.js",
+    "dashboard-next/src/hooks/useTheme.js",
+    "dashboard-next/src/styles/app.css",
+    "dashboard-next/src/styles/dark.css",
+    "dashboard-next/src/styles/variables.css",
+    "README.md"
+  ],
+  "nonGoals": [
+    "dashboard/",
+    "src/",
+    "server-side theme persistence"
+  ],
+  "requiredDocs": [
+    ".agent-workflow/project-profile.md",
+    ".agent-workflow/memory/product.md",
+    ".agent-workflow/memory/architecture.md"
+  ],
+  "verificationCommands": [
+    "npm run lint",
+    "npm run dashboard:build",
+    "npm test",
+    "npm run smoke",
+    "npx --yes lighthouse http://127.0.0.1:4273/ --output=json --output-path=.agent-workflow/tasks/T-503/lighthouse-mobile-20260418-rerun.json --chrome-path=\"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe\" --only-categories=performance,accessibility,best-practices,seo"
+  ]
 }

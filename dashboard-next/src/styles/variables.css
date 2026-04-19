@@ -1,12 +1,82 @@
 :root {
-  --bg: #f7f2e8;
-  --panel: rgba(255, 251, 245, 0.84);
-  --ink: #18221d;
-  --muted: #57645d;
-  --line: rgba(24, 34, 29, 0.1);
+  --bg-light: #f7f2e8;
+  --panel-light: rgba(255, 251, 245, 0.84);
+  --surface-light: rgba(255, 255, 255, 0.82);
+  --surface-muted-light: rgba(255, 249, 242, 0.86);
+  --hero-light: linear-gradient(
+    135deg,
+    rgba(255, 248, 240, 0.94),
+    rgba(248, 241, 232, 0.78)
+  );
+  --field-light: rgba(255, 251, 245, 0.92);
+  --field-border-light: rgba(24, 34, 29, 0.14);
+  --ink-light: #18221d;
+  --muted-light: #57645d;
+  --line-light: rgba(24, 34, 29, 0.1);
+  --line-strong-light: rgba(24, 34, 29, 0.16);
+  --ok-light: rgba(15, 108, 92, 0.12);
+  --warn-light: rgba(143, 29, 29, 0.08);
+  --tag-light: rgba(15, 108, 92, 0.1);
+  --tag-ink-light: #0f6c5c;
+  --tab-active-light: linear-gradient(
+    135deg,
+    rgba(24, 34, 29, 0.94),
+    rgba(46, 72, 60, 0.92)
+  );
+  --tab-active-ink-light: #f9f5ef;
+  --page-sheen-light: rgba(255, 255, 255, 0.28);
+  --shadow-light: 0 20px 60px rgba(24, 34, 29, 0.12);
+
+  --bg-dark: #0d1411;
+  --panel-dark: rgba(17, 24, 21, 0.9);
+  --surface-dark: rgba(23, 32, 28, 0.92);
+  --surface-muted-dark: rgba(19, 28, 24, 0.92);
+  --hero-dark: linear-gradient(
+    135deg,
+    rgba(22, 31, 27, 0.96),
+    rgba(13, 20, 17, 0.92)
+  );
+  --field-dark: rgba(12, 18, 16, 0.92);
+  --field-border-dark: rgba(211, 224, 216, 0.16);
+  --ink-dark: #ecf2eb;
+  --muted-dark: #afbeb5;
+  --line-dark: rgba(211, 224, 216, 0.12);
+  --line-strong-dark: rgba(211, 224, 216, 0.2);
+  --ok-dark: rgba(63, 164, 145, 0.18);
+  --warn-dark: rgba(184, 81, 81, 0.18);
+  --tag-dark: rgba(63, 164, 145, 0.16);
+  --tag-ink-dark: #9be3d4;
+  --tab-active-dark: linear-gradient(
+    135deg,
+    rgba(239, 108, 51, 0.92),
+    rgba(15, 108, 92, 0.92)
+  );
+  --tab-active-ink-dark: #fdf7f0;
+  --page-sheen-dark: rgba(255, 255, 255, 0.04);
+  --shadow-dark: 0 24px 80px rgba(0, 0, 0, 0.38);
+
+  --bg: var(--bg-light);
+  --panel: var(--panel-light);
+  --surface: var(--surface-light);
+  --surface-muted: var(--surface-muted-light);
+  --hero-surface: var(--hero-light);
+  --field-bg: var(--field-light);
+  --field-border: var(--field-border-light);
+  --ink: var(--ink-light);
+  --muted: var(--muted-light);
+  --line: var(--line-light);
+  --line-strong: var(--line-strong-light);
   --accent: #ef6c33;
   --accent-2: #0f6c5c;
-  --shadow: 0 20px 60px rgba(24, 34, 29, 0.12);
+  --risk: #8f1d1d;
+  --ok-bg: var(--ok-light);
+  --warn-bg: var(--warn-light);
+  --tag-bg: var(--tag-light);
+  --tag-ink: var(--tag-ink-light);
+  --tab-active-bg: var(--tab-active-light);
+  --tab-active-ink: var(--tab-active-ink-light);
+  --page-sheen: var(--page-sheen-light);
+  --shadow: var(--shadow-light);
   --radius: 24px;
   --font-sans: "Aptos", "Segoe UI", "Helvetica Neue", sans-serif;
   --font-display: "Georgia", "Times New Roman", serif;

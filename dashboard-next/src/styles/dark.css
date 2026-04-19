@@ -1,0 +1,54 @@
+:root[data-resolved-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-resolved-theme="dark"] {
+  color-scheme: dark;
+}
+
+:root[data-theme="dark"],
+:root[data-resolved-theme="dark"] {
+  --bg: var(--bg-dark);
+  --panel: var(--panel-dark);
+  --surface: var(--surface-dark);
+  --surface-muted: var(--surface-muted-dark);
+  --hero-surface: var(--hero-dark);
+  --field-bg: var(--field-dark);
+  --field-border: var(--field-border-dark);
+  --ink: var(--ink-dark);
+  --muted: var(--muted-dark);
+  --line: var(--line-dark);
+  --line-strong: var(--line-strong-dark);
+  --ok-bg: var(--ok-dark);
+  --warn-bg: var(--warn-dark);
+  --tag-bg: var(--tag-dark);
+  --tag-ink: var(--tag-ink-dark);
+  --tab-active-bg: var(--tab-active-dark);
+  --tab-active-ink: var(--tab-active-ink-dark);
+  --shadow: var(--shadow-dark);
+  --page-sheen: var(--page-sheen-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] {
+    --bg: var(--bg-dark);
+    --panel: var(--panel-dark);
+    --surface: var(--surface-dark);
+    --surface-muted: var(--surface-muted-dark);
+    --hero-surface: var(--hero-dark);
+    --field-bg: var(--field-dark);
+    --field-border: var(--field-border-dark);
+    --ink: var(--ink-dark);
+    --muted: var(--muted-dark);
+    --line: var(--line-dark);
+    --line-strong: var(--line-strong-dark);
+    --ok-bg: var(--ok-dark);
+    --warn-bg: var(--warn-dark);
+    --tag-bg: var(--tag-dark);
+    --tag-ink: var(--tag-ink-dark);
+    --tab-active-bg: var(--tab-active-dark);
+    --tab-active-ink: var(--tab-active-ink-dark);
+    --shadow: var(--shadow-dark);
+    --page-sheen: var(--page-sheen-dark);
+  }
+}

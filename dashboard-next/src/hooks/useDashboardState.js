@@ -42,7 +42,7 @@ const initialState = {
   overview: {
     data: null,
     error: null,
-    status: "idle",
+    status: "loading",
   },
   taskDetail: {
     data: null,
@@ -86,7 +86,8 @@ function reducer(state, action) {
         ...state,
         activeTaskId: action.payload,
         logState:
-          state.activeTaskId === action.payload && state.logState.taskId === action.payload
+          state.activeTaskId === action.payload &&
+          state.logState.taskId === action.payload
             ? state.logState
             : createLogState(action.payload),
         taskDetail: {
@@ -177,7 +178,8 @@ function normalizeLogStateShape(logState) {
 }
 
 function compactExecutionSnapshot(executionState) {
-  const state = executionState && typeof executionState === "object" ? executionState : {};
+  const state =
+    executionState && typeof executionState === "object" ? executionState : {};
   return {
     outcome: state.outcome || null,
     runId: state.runId || null,
@@ -251,7 +253,11 @@ export default function useDashboardState() {
     await Promise.all(
       currentLogState.openStreams.map(async (stream) => {
         try {
-          const logSource = resolveExecutionLogSource(taskId, executionState || currentState.executionState, stream);
+          const logSource = resolveExecutionLogSource(
+            taskId,
+            executionState || currentState.executionState,
+            stream,
+          );
           const latestState = stateRef.current;
           const latestLogState = normalizeLogStateShape(latestState.logState);
 
@@ -282,7 +288,9 @@ export default function useDashboardState() {
             loadTaskExecutionLog,
           });
           const refreshedState = stateRef.current;
-          const refreshedLogState = normalizeLogStateShape(refreshedState.logState);
+          const refreshedLogState = normalizeLogStateShape(
+            refreshedState.logState,
+          );
           if (!isExecutionLogStreamOpen(refreshedLogState, taskId, stream)) {
             return;
           }
@@ -303,7 +311,9 @@ export default function useDashboardState() {
           });
         } catch (error) {
           const refreshedState = stateRef.current;
-          const refreshedLogState = normalizeLogStateShape(refreshedState.logState);
+          const refreshedLogState = normalizeLogStateShape(
+            refreshedState.logState,
+          );
           if (!isExecutionLogStreamOpen(refreshedLogState, taskId, stream)) {
             return;
           }
@@ -323,7 +333,7 @@ export default function useDashboardState() {
             },
           });
         }
-      })
+      }),
     );
   }
 
@@ -374,7 +384,7 @@ export default function useDashboardState() {
       const nextActiveTaskId = resolveNextActiveTaskId(
         overview.tasks || [],
         requestedTaskId,
-        currentActiveTaskId
+        currentActiveTaskId,
       );
 
       dispatch({
@@ -438,20 +448,32 @@ export default function useDashboardState() {
       return null;
     }
 
-    const previousExecutionState = options.previousExecutionState || stateRef.current.executionState;
+    const previousExecutionState =
+      options.previousExecutionState || stateRef.current.executionState;
     const requestToken = ++executionRefreshTokenRef.current;
 
     try {
       const nextState = await loadTaskExecution(taskId);
-      if (stateRef.current.activeTaskId !== taskId || executionRefreshTokenRef.current !== requestToken) {
+      if (
+        stateRef.current.activeTaskId !== taskId ||
+        executionRefreshTokenRef.current !== requestToken
+      ) {
         return nextState;
       }
 
       dispatch({ type: "execution/set", payload: nextState });
       await refreshExecutionLogs(taskId, nextState);
 
-      if (options.refreshDashboardOnCompletion && isActiveExecutionState(previousExecutionState) && !isActiveExecutionState(nextState)) {
-        const completionStatus = buildExecutionCompletionStatus(nextState, taskId, describeExecutionState);
+      if (
+        options.refreshDashboardOnCompletion &&
+        isActiveExecutionState(previousExecutionState) &&
+        !isActiveExecutionState(nextState)
+      ) {
+        const completionStatus = buildExecutionCompletionStatus(
+          nextState,
+          taskId,
+          describeExecutionState,
+        );
         await refreshDashboard(taskId);
         if (completionStatus) {
           setActionStatus(completionStatus.message, completionStatus.tone);
@@ -469,7 +491,11 @@ export default function useDashboardState() {
 
   async function toggleExecutionStream(taskId, stream) {
     const currentLogState = normalizeLogStateShape(stateRef.current.logState);
-    const toggled = toggleExecutionLogStreamState(currentLogState, taskId, stream);
+    const toggled = toggleExecutionLogStreamState(
+      currentLogState,
+      taskId,
+      stream,
+    );
     const nextLogState = {
       ...currentLogState,
       executionLogs: { ...currentLogState.executionLogs },
@@ -607,7 +633,11 @@ export default function useDashboardState() {
   useEffect(() => {
     const taskId = state.activeTaskId;
     const executionState = state.executionState;
-    if (!taskId || !isActiveExecutionState(executionState) || executionSse.status === "open") {
+    if (
+      !taskId ||
+      !isActiveExecutionState(executionState) ||
+      executionSse.status === "open"
+    ) {
       return undefined;
     }
 

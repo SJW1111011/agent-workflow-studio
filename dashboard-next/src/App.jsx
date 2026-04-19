@@ -5,8 +5,17 @@ import TabBar from "./components/TabBar.jsx";
 import TaskDetail from "./components/TaskDetail.jsx";
 import TaskList from "./components/TaskList.jsx";
 import Forms from "./components/Forms.jsx";
-import { DashboardProvider, useDashboardContext } from "./context/DashboardContext.jsx";
-import { describeRunPresentation, formatTimestampLabel, formatVerificationGateLabel, isVerificationGateWarning } from "./utils/execution.js";
+import {
+  DashboardProvider,
+  useDashboardContext,
+} from "./context/DashboardContext.jsx";
+import useTheme from "./hooks/useTheme.js";
+import {
+  describeRunPresentation,
+  formatTimestampLabel,
+  formatVerificationGateLabel,
+  isVerificationGateWarning,
+} from "./utils/execution.js";
 
 const TABS = [
   { id: "overview", label: "Overview" },
@@ -21,11 +30,17 @@ function VerificationPanel({ hidden }) {
   const items = state.overview.data?.verification || [];
 
   return (
-    <section className={hidden ? "panel tab-hidden" : "panel"} data-tab="verification">
+    <section
+      className={hidden ? "panel tab-hidden" : "panel"}
+      data-tab="verification"
+    >
       <div className="panel-head">
         <div>
           <h2>Verify</h2>
-          <p>What has evidence today, where coverage is partial, and which tasks still need proof.</p>
+          <p>
+            What has evidence today, where coverage is partial, and which tasks
+            still need proof.
+          </p>
         </div>
       </div>
       <div className="list">
@@ -33,15 +48,29 @@ function VerificationPanel({ hidden }) {
           <div className="empty">No verification items are available yet.</div>
         ) : (
           items.map((item) => (
-            <article className="list-item" key={`${item.taskId}:${item.status}`}>
+            <article
+              className="list-item"
+              key={`${item.taskId}:${item.status}`}
+            >
               <h3>{item.taskId}</h3>
               <p>{item.summary || "No verification summary available."}</p>
               <div className="tag-row">
-                <span className={isVerificationGateWarning(item.status) ? "tag warn" : "tag"}>
-                  {formatVerificationGateLabel(item.status, item.relevantChangeCount || 0)}
+                <span
+                  className={
+                    isVerificationGateWarning(item.status) ? "tag warn" : "tag"
+                  }
+                >
+                  {formatVerificationGateLabel(
+                    item.status,
+                    item.relevantChangeCount || 0,
+                  )}
                 </span>
-                <span className="tag">{item.coveragePercent || 0}% coverage</span>
-                <span className="tag">{item.scopeHintCount || 0} scope hints</span>
+                <span className="tag">
+                  {item.coveragePercent || 0}% coverage
+                </span>
+                <span className="tag">
+                  {item.scopeHintCount || 0} scope hints
+                </span>
               </div>
             </article>
           ))
@@ -56,11 +85,17 @@ function RunsPanel({ hidden }) {
   const runs = state.overview.data?.runs || [];
 
   return (
-    <section className={hidden ? "panel panel-wide tab-hidden" : "panel panel-wide"} data-tab="runs">
+    <section
+      className={hidden ? "panel panel-wide tab-hidden" : "panel panel-wide"}
+      data-tab="runs"
+    >
       <div className="panel-head">
         <div>
           <h2>Recent Runs</h2>
-          <p>Execution evidence recorded by the workflow layer, including proof paths, checks, and artifacts.</p>
+          <p>
+            Execution evidence recorded by the workflow layer, including proof
+            paths, checks, and artifacts.
+          </p>
         </div>
       </div>
       <div className="list">
@@ -77,13 +112,22 @@ function RunsPanel({ hidden }) {
                 </h3>
                 <p>{presentation.summary}</p>
                 <div className="tag-row">
-                  <span className={presentation.warn ? "tag warn" : "tag"}>{run.status || "recorded"}</span>
+                  <span className={presentation.warn ? "tag warn" : "tag"}>
+                    {run.status || "recorded"}
+                  </span>
                   <span className="tag">{run.agent || "manual"}</span>
-                  <span className="tag">{formatTimestampLabel(run.createdAt)}</span>
+                  <span className="tag">
+                    {formatTimestampLabel(run.createdAt)}
+                  </span>
                 </div>
-                {presentation.detail ? <p className="subtle">{presentation.detail}</p> : null}
-                {Array.isArray(run.scopeProofPaths) && run.scopeProofPaths.length > 0 ? (
-                  <p className="subtle">Files: {run.scopeProofPaths.join(", ")}</p>
+                {presentation.detail ? (
+                  <p className="subtle">{presentation.detail}</p>
+                ) : null}
+                {Array.isArray(run.scopeProofPaths) &&
+                run.scopeProofPaths.length > 0 ? (
+                  <p className="subtle">
+                    Files: {run.scopeProofPaths.join(", ")}
+                  </p>
                 ) : null}
               </article>
             );
@@ -96,6 +140,7 @@ function RunsPanel({ hidden }) {
 
 function DashboardShell() {
   const { requestState, setActiveTab, state } = useDashboardContext();
+  const { resolvedTheme, setTheme, theme } = useTheme();
 
   return (
     <Layout
@@ -104,11 +149,20 @@ function DashboardShell() {
           actionStatus={state.actionStatus}
           activeTab={state.activeTab}
           initialized={Boolean(state.overview.data?.initialized)}
+          onThemeChange={setTheme}
           pendingCount={requestState.pendingCount}
+          resolvedTheme={resolvedTheme}
+          theme={theme}
           workspaceRoot={state.overview.data?.workspaceRoot || ""}
         />
       }
-      navigation={<TabBar activeTab={state.activeTab} onSelect={setActiveTab} tabs={TABS} />}
+      navigation={
+        <TabBar
+          activeTab={state.activeTab}
+          onSelect={setActiveTab}
+          tabs={TABS}
+        />
+      }
     >
       <Overview hidden={state.activeTab !== "overview"} />
       <TaskList hidden={state.activeTab !== "tasks"} />

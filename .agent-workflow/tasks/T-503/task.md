@@ -1,4 +1,4 @@
-# T-503 - Dark mode + responsive polish — system theme detection, mobile layout, Lighthouse >= 90
+# T-503 - Dark mode + responsive polish - system theme detection, mobile layout, Lighthouse >= 90
 
 ## Goal
 
@@ -14,20 +14,26 @@ Add dark mode with system theme detection and polish the responsive layout for m
 ## Scope
 
 - In scope:
-  - repo path: dashboard-next/src/styles/variables.css (add dark theme CSS variables)
-  - repo path: dashboard-next/src/styles/dark.css (dark mode overrides)
-  - repo path: dashboard-next/src/components/ThemeToggle.jsx (new — light/dark/system toggle)
-  - repo path: dashboard-next/src/hooks/useTheme.js (new — prefers-color-scheme detection + localStorage persistence)
-  - repo path: dashboard-next/src/components/ (responsive adjustments across all components)
-  - repo path: dashboard-next/index.html (meta viewport, theme-color, lang attribute)
+  - repo path: dashboard-next/index.html
+  - repo path: dashboard-next/src/App.jsx
+  - repo path: dashboard-next/src/main.jsx
+  - repo path: dashboard-next/src/components/Header.jsx
+  - repo path: dashboard-next/src/components/Overview.jsx
+  - repo path: dashboard-next/src/components/TaskList.jsx
+  - repo path: dashboard-next/src/components/ThemeToggle.jsx
+  - repo path: dashboard-next/src/hooks/useDashboardState.js
+  - repo path: dashboard-next/src/hooks/useTheme.js
+  - repo path: dashboard-next/src/styles/variables.css
+  - repo path: dashboard-next/src/styles/dark.css
+  - repo path: dashboard-next/src/styles/app.css
   - repo path: README.md
 - Out of scope:
-  - repo path: dashboard/ (old dashboard — no dark mode)
-  - repo path: src/ (no server changes)
+  - repo path: dashboard/
+  - repo path: src/
 
 ## Deliverables
 
-- Dark theme CSS variables (--bg-dark, --panel-dark, --ink-dark, etc.)
+- Dark theme CSS variables (`--bg-dark`, `--panel-dark`, `--ink-dark`, etc.)
 - `prefers-color-scheme: dark` media query for automatic detection
 - ThemeToggle component with 3 states: light, dark, system
 - Theme preference persisted in localStorage
@@ -37,8 +43,8 @@ Add dark mode with system theme detection and polish the responsive layout for m
 
 ## Risks
 
-- Dark mode color contrast may not meet WCAG AA — test with contrast checker
-- Lighthouse score depends on bundle size — Preact is small but Vite config matters
+- Dark mode color contrast may not meet WCAG AA - test with contrast checker
+- Lighthouse score depends on bundle size - Preact is small but Vite config matters
 - Some CSS variables may need different values for dark mode that aren't obvious from the light palette
 
 ## Acceptance Criteria

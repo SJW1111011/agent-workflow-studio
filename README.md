@@ -87,7 +87,7 @@ Track tasks, runs, risks, executor outcomes, and verification signals from one l
   />
 </p>
 
-The current workflow UI still lives in the legacy dashboard while the new `dashboard-next/` Vite + Preact shell is being scaffolded.
+The current workflow UI still keeps the legacy dashboard available, while `dashboard-next/` now ships a responsive Preact shell with light, dark, and system theme support.
 
 For feature-complete task operations today, keep using:
 
@@ -95,7 +95,7 @@ For feature-complete task operations today, keep using:
 npx agent-workflow dashboard --root . --port 4173 --legacy-dashboard
 ```
 
-For scaffold development in this repository, run the local API server on `4173`, then start the new shell on `5173`:
+For modern-shell development in this repository, run the local API server on `4173`, then start the new shell on `5173`:
 
 ```bash
 npm run dashboard -- --root . --port 4173

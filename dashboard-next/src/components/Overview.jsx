@@ -6,12 +6,36 @@ import {
   normalizeStatCount,
 } from "../utils/taskBoard.js";
 
+const LOADING_CARD_COUNT = 6;
+const LOADING_LIST_COUNT = 4;
+
 function StatCard({ detail, title, value }) {
   return (
     <article className="stat-card">
       <p className="panel-eyebrow">{title}</p>
-      <h3>{value}</h3>
+      <strong>{value}</strong>
       <p>{detail}</p>
+    </article>
+  );
+}
+
+function LoadingStatCard() {
+  return (
+    <article aria-hidden="true" className="stat-card skeleton-card">
+      <span className="skeleton-line skeleton-line-short" />
+      <span className="skeleton-stat-value" />
+      <span className="skeleton-line" />
+      <span className="skeleton-line skeleton-line-medium" />
+    </article>
+  );
+}
+
+function LoadingListItem() {
+  return (
+    <article aria-hidden="true" className="list-item skeleton-list-item">
+      <span className="skeleton-line skeleton-line-medium" />
+      <span className="skeleton-line" />
+      <span className="skeleton-line skeleton-line-short" />
     </article>
   );
 }
@@ -22,27 +46,68 @@ export default function Overview({ hidden }) {
 
   if (!overview && state.overview.status === "loading") {
     return (
-      <section className={hidden ? "panel panel-wide tab-hidden" : "panel panel-wide"} data-tab="overview">
-        <div className="empty">Loading workspace overview...</div>
-      </section>
+      <>
+        <section
+          className={hidden ? "stats tab-hidden" : "stats"}
+          data-tab="overview"
+        >
+          {Array.from({ length: LOADING_CARD_COUNT }).map((_, index) => (
+            <LoadingStatCard key={`loading-stat:${index}`} />
+          ))}
+        </section>
+
+        <section
+          className={
+            hidden ? "panel panel-wide tab-hidden" : "panel panel-wide"
+          }
+          data-tab="overview"
+        >
+          <div className="panel-head">
+            <div>
+              <h2>Workspace Overview</h2>
+              <p>
+                Loading the current workflow summary, adapters, memory
+                freshness, and risk queue.
+              </p>
+            </div>
+          </div>
+          <div className="list">
+            {Array.from({ length: LOADING_LIST_COUNT }).map((_, index) => (
+              <LoadingListItem key={`loading-list:${index}`} />
+            ))}
+          </div>
+        </section>
+      </>
     );
   }
 
   if (!overview) {
     return (
-      <section className={hidden ? "panel panel-wide tab-hidden" : "panel panel-wide"} data-tab="overview">
-        <div className="empty">{state.overview.error || "Overview data is unavailable."}</div>
+      <section
+        className={hidden ? "panel panel-wide tab-hidden" : "panel panel-wide"}
+        data-tab="overview"
+      >
+        <div className="empty">
+          {state.overview.error || "Overview data is unavailable."}
+        </div>
       </section>
     );
   }
 
   const stats = overview.stats || {};
-  const executorEvidenceCount = countTasksWithExecutorOutcome(stats.executorOutcomes || {});
-  const verificationSignalCount = countTasksWithVerificationSignals(stats.verificationSignals || {});
+  const executorEvidenceCount = countTasksWithExecutorOutcome(
+    stats.executorOutcomes || {},
+  );
+  const verificationSignalCount = countTasksWithVerificationSignals(
+    stats.verificationSignals || {},
+  );
 
   return (
     <>
-      <section className={hidden ? "stats tab-hidden" : "stats"} data-tab="overview">
+      <section
+        className={hidden ? "stats tab-hidden" : "stats"}
+        data-tab="overview"
+      >
         <StatCard
           detail={`${normalizeStatCount(stats.memoryDocs)} memory docs currently tracked.`}
           title="Tasks"
@@ -55,7 +120,7 @@ export default function Overview({ hidden }) {
         />
         <StatCard
           detail={`${normalizeStatCount(stats.coveredScopedFiles)} of ${normalizeStatCount(
-            stats.totalScopedFiles
+            stats.totalScopedFiles,
           )} scoped files have proof.`}
           title="Coverage"
           value={`${normalizeStatCount(stats.coveragePercent)}%`}
@@ -81,35 +146,57 @@ export default function Overview({ hidden }) {
         />
       </section>
 
-      <section className={hidden ? "panel panel-wide tab-hidden" : "panel panel-wide"} data-tab="overview">
+      <section
+        className={hidden ? "panel panel-wide tab-hidden" : "panel panel-wide"}
+        data-tab="overview"
+      >
         <div className="panel-head">
           <div>
             <h2>Adapters</h2>
-            <p>The runtime contracts that bridge workflow state into Codex and Claude Code sessions.</p>
+            <p>
+              The runtime contracts that bridge workflow state into Codex and
+              Claude Code sessions.
+            </p>
           </div>
         </div>
         <div className="list">
           {(overview.adapters || []).map((adapter) => (
-            <article className="list-item" key={adapter.normalizedAdapterId || adapter.adapterId}>
+            <article
+              className="list-item"
+              key={adapter.normalizedAdapterId || adapter.adapterId}
+            >
               <h3>{adapter.displayName || adapter.adapterId}</h3>
-              <p>{adapter.config?.notes?.[0] || "Adapter configuration is available for local execution."}</p>
+              <p>
+                {adapter.config?.notes?.[0] ||
+                  "Adapter configuration is available for local execution."}
+              </p>
               <div className="tag-row">
                 <span className={adapter.exists ? "tag" : "tag warn"}>
                   {adapter.status || (adapter.exists ? "ready" : "missing")}
                 </span>
-                <span className="tag">{adapter.config?.stdioMode || "stdio unknown"}</span>
-                <span className="tag">{adapter.config?.commandMode || "command mode unknown"}</span>
+                <span className="tag">
+                  {adapter.config?.stdioMode || "stdio unknown"}
+                </span>
+                <span className="tag">
+                  {adapter.config?.commandMode || "command mode unknown"}
+                </span>
               </div>
             </article>
           ))}
         </div>
       </section>
 
-      <section className={hidden ? "panel tab-hidden" : "panel"} data-tab="overview">
+      <section
+        className={hidden ? "panel tab-hidden" : "panel"}
+        data-tab="overview"
+      >
         <div className="panel-head">
           <div>
             <h2>Recipes</h2>
-            <p>Structured task intents that keep prompts and durable task records aligned.</p>
+            <p>
+              Structured task intents that keep prompts and durable task records
+              aligned.
+            </p>
           </div>
         </div>
         <div className="list">
@@ -119,14 +206,19 @@ export default function Overview({ hidden }) {
               <p>{recipe.summary || recipe.name}</p>
               <div className="tag-row">
                 <span className="tag">{recipe.name}</span>
-                <span className="tag">{(recipe.recommendedFor || []).length} use cases</span>
+                <span className="tag">
+                  {(recipe.recommendedFor || []).length} use cases
+                </span>
               </div>
             </article>
           ))}
         </div>
       </section>
 
-      <section className={hidden ? "panel tab-hidden" : "panel"} data-tab="overview">
+      <section
+        className={hidden ? "panel tab-hidden" : "panel"}
+        data-tab="overview"
+      >
         <div className="panel-head">
           <div>
             <h2>Schema</h2>
@@ -136,9 +228,13 @@ export default function Overview({ hidden }) {
         <div className="list">
           {overview.validation?.issueCount ? (
             overview.validation.issues.map((issue, index) => (
-              <article className="list-item" key={`${issue.code || "issue"}:${index}`}>
+              <article
+                className="list-item"
+                key={`${issue.code || "issue"}:${index}`}
+              >
                 <h3>
-                  {String(issue.level || "info").toUpperCase()} - {issue.code || "validation"}
+                  {String(issue.level || "info").toUpperCase()} -{" "}
+                  {issue.code || "validation"}
                 </h3>
                 <p>{issue.message || "Validation issue reported."}</p>
                 <p className="subtle">{issue.target || "No specific target"}</p>
@@ -147,11 +243,16 @@ export default function Overview({ hidden }) {
           ) : (
             <article className="list-item">
               <h3>Workspace schema is clean</h3>
-              <p>No structural issues are currently reported for the workflow files.</p>
+              <p>
+                No structural issues are currently reported for the workflow
+                files.
+              </p>
               <div className="tag-row">
                 <span className="tag">0 issues</span>
                 <span className="tag">
-                  {overview.validation?.strictVerification ? "strict verification" : "standard verification"}
+                  {overview.validation?.strictVerification
+                    ? "strict verification"
+                    : "standard verification"}
                 </span>
               </div>
             </article>
@@ -159,7 +260,10 @@ export default function Overview({ hidden }) {
         </div>
       </section>
 
-      <section className={hidden ? "panel tab-hidden" : "panel"} data-tab="overview">
+      <section
+        className={hidden ? "panel tab-hidden" : "panel"}
+        data-tab="overview"
+      >
         <div className="panel-head">
           <div>
             <h2>Memory</h2>
@@ -173,21 +277,32 @@ export default function Overview({ hidden }) {
               <p>{item.freshnessReason || "No freshness note available."}</p>
               <p className="subtle">{item.relativePath}</p>
               <div className="tag-row">
-                <span className={item.freshnessStatus === "fresh" ? "tag" : "tag warn"}>
+                <span
+                  className={
+                    item.freshnessStatus === "fresh" ? "tag" : "tag warn"
+                  }
+                >
                   {item.freshnessStatus || "unknown"}
                 </span>
-                <span className="tag">{formatTimestampLabel(item.modifiedAt)}</span>
+                <span className="tag">
+                  {formatTimestampLabel(item.modifiedAt)}
+                </span>
               </div>
             </article>
           ))}
         </div>
       </section>
 
-      <section className={hidden ? "panel panel-wide tab-hidden" : "panel panel-wide"} data-tab="overview">
+      <section
+        className={hidden ? "panel panel-wide tab-hidden" : "panel panel-wide"}
+        data-tab="overview"
+      >
         <div className="panel-head">
           <div>
             <h2>Risk Queue</h2>
-            <p>Things you should not ignore before trusting the current state.</p>
+            <p>
+              Things you should not ignore before trusting the current state.
+            </p>
           </div>
         </div>
         <div className="list">
@@ -195,7 +310,10 @@ export default function Overview({ hidden }) {
             <div className="empty">No current risks detected.</div>
           ) : (
             (overview.risks || []).map((risk, index) => (
-              <article className="list-item" key={`${risk.level || "risk"}:${index}`}>
+              <article
+                className="list-item"
+                key={`${risk.level || "risk"}:${index}`}
+              >
                 <h3>{String(risk.level || "info").toUpperCase()}</h3>
                 <p>{risk.message || "Risk entry recorded."}</p>
               </article>
