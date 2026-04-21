@@ -1,13 +1,19 @@
 # Roadmap - 2026 Long-term Improvement Plan
 
+> **Product vision:** Make AI agent work trustworthy, traceable, and resumable.
+> Not task management — trust infrastructure for autonomous coding agents.
+
 > **Execution model:** Codex executes, Claude Code evaluates, suggests, and audits.
 > Every phase is managed by agent-workflow-studio itself (dogfooding).
 
 ## Guiding Principles
 
-1. **Subtraction, not addition.** Every change must reduce user friction. Never add features at the cost of simplicity.
-2. **Dogfooding is the only proof.** The improvement process itself must be managed by agent-workflow-studio. If the tool cannot manage its own evolution, it is not ready for others.
-3. **Backward compatibility.** The package is already published to npm. Users must not lose data or rewrite workflows on upgrade.
+1. **Trust over features.** Every change must make agent work more trustworthy or more resumable. If it doesn't serve trust, traceability, or resumability, it doesn't belong.
+2. **Agent-first, human-supervised.** Design for agents as primary executors and humans as supervisors. MCP is the agent's interface, dashboard is the human's interface.
+3. **Evidence is automatic.** The ideal state is zero manual evidence collection. Agent work naturally produces evidence; test runners auto-detect; CI results flow back.
+4. **Subtraction, not addition.** Every change must reduce user friction. Never add features at the cost of simplicity.
+5. **Dogfooding is the only proof.** The improvement process itself must be managed by agent-workflow-studio. If the tool cannot manage its own evolution, it is not ready for others.
+6. **Backward compatibility.** The package is already published to npm. Users must not lose data or rewrite workflows on upgrade.
 
 ---
 
@@ -143,16 +149,42 @@
 
 ---
 
-## Phase 6 - Ecosystem
+## Phase 6 - Agent Autonomy
+
+**Goal:** Close the loop — agents pick up tasks, work autonomously, humans supervise through the dashboard.
+
+This is the phase that transforms the product from "a tool humans use to manage agent work" into "a platform where agents work and humans supervise." After Phase 6, the vision described in the product direction becomes real.
+
+| Change | Detail |
+|--------|--------|
+| Task queue + auto-assignment | Agents query for available tasks via MCP, claim and execute them without human trigger |
+| CI/CD evidence pipeline | GitHub Actions (and other CI) report test results, coverage, and deploy status back as evidence |
+| Cross-agent handoff protocol | Structured handoff: Agent A marks "done to here" → Agent B reads checkpoint → continues → evidence chain unbroken |
+| Dashboard approval loop | Approve/reject agent work from the dashboard, leave feedback that becomes the agent's next instruction |
+| Webhook receiver | HTTP endpoint that accepts evidence from external systems (CI, monitoring, deployment) |
+
+**Acceptance criteria:**
+- Agent can discover, claim, and complete a task via MCP without human intervention
+- CI test results from GitHub Actions appear as evidence on the corresponding task
+- Agent B can resume Agent A's work using the handoff protocol with no context loss
+- Human can approve/reject from dashboard; rejection creates a follow-up task for the agent
+- Evidence from external webhooks appears in the task's evidence timeline
+
+**Why this phase matters:**
+The product vision is "developer opens dashboard in the morning, sees what agents completed overnight, approves or rejects, creates new tasks, agents pick up automatically." Phase 5 gives agents the ability to produce evidence automatically. Phase 6 gives them the ability to work autonomously and gives humans the ability to supervise.
+
+---
+
+## Phase 7 - Ecosystem
 
 **Goal:** External users can self-onboard, contribute, and extend.
 
 | Deliverable | Detail |
 |-------------|--------|
-| VitePress doc site | Replace the README-driven docs stack |
+| VitePress doc site | Replace the README-driven docs stack with searchable, versioned documentation |
 | Cookbook | 10+ real-world scenarios (refactor, bugfix, audit, migration, new feature, and more) |
 | Template library | Pre-configured setups for React, Python, Rust, and Go projects |
-| Community | GitHub Discussions or Discord |
+| Community | GitHub Discussions or Discord for user support and feedback |
 
 **Acceptance criteria:**
 - npm weekly downloads trend upward
@@ -161,30 +193,38 @@
 
 ---
 
-## Phase 7 - Advanced Exploration (No Timeline Commitment)
+## Phase 8 - Advanced Exploration (No Timeline Commitment)
 
-- Multi-agent orchestration (planner + executor + reviewer roles)
-- Team mode with an optional cloud backend, cross-member task assignment, and review
-- Remote execution through containers or SSH sandboxes
-- AI-assisted task decomposition from a high-level goal into a sub-task tree
+These are directions that become possible after the core product is solid. No commitment to timeline or order.
+
+| Direction | Detail |
+|-----------|--------|
+| Multi-agent orchestration | Planner + executor + reviewer roles with structured coordination protocol |
+| Team mode | Optional cloud backend for cross-member task assignment, review, and shared dashboards |
+| Remote execution | Containers or SSH sandboxes for isolated agent execution with evidence capture |
+| AI-assisted decomposition | High-level goal → sub-task tree, with dependency inference and parallel execution planning |
+| Trust analytics | Historical trust trends, agent reliability scores, evidence quality over time |
+| Compliance export | Generate audit reports from evidence trails for SOC2, ISO, or internal compliance |
 
 ---
 
 ## Phase Dependency Graph
 
 ```text
-Phase 0 (Infra) ---> Phase 1 (Cut ceremony) ---> Phase 3 (Evidence)
-                  \                            \
-                   \                            ---> Phase 2 (Agent integration) ---> Phase 4 (Dashboard) ---> Phase 5 (Agent-native evidence) ---> Phase 6 (Ecosystem)
-                    \
-                     ---> Phase 7 (Explore)
+Phase 0 (Infra) ──> Phase 1 (Cut ceremony) ──> Phase 3 (Evidence simplification)
+                 \                           \
+                  \                           ──> Phase 2 (Agent integration) ──> Phase 4 (Dashboard) ──> Phase 5 (Agent-native evidence) ──> Phase 6 (Agent autonomy) ──> Phase 7 (Ecosystem)
+                   \
+                    ──> Phase 8 (Explore)
 ```
 
-Phases 1 and 2 can run in parallel because they mostly touch different modules. Phase 3 depends on Phase 1. Phase 5 depends on Phase 4 (dashboard) and Phase 2 (MCP).
+Phase 5 depends on Phase 4 (dashboard) and Phase 2 (MCP). Phase 6 depends on Phase 5 (evidence automation is prerequisite for autonomy). Phase 7 can start in parallel with Phase 6 once the core product is stable.
 
 ---
 
 ## How Users Work with Agent Workflow Studio
+
+### Today (Phase 5)
 
 Most users follow the **fast path**: create a task, do the work, record what happened.
 
@@ -194,7 +234,24 @@ MCP or CLI: quick --lite "title"
         -> MCP or CLI: done "summary" --complete
 ```
 
-MCP tools (`workflow_quick`, `workflow_done`, etc.) are the recommended integration for editor users. The CLI is the fallback for terminal users.
+MCP tools (`workflow_quick`, `workflow_done`, etc.) are the recommended integration for editor users. The CLI is the fallback for terminal users. Evidence collectors auto-detect test runners. MCP resources and prompts provide structured context for agent handoffs.
+
+### Future (after Phase 6)
+
+The human becomes a supervisor, not a driver.
+
+```text
+Developer opens dashboard in the morning
+  -> sees 3 tasks completed overnight by agents
+  -> reviews evidence: what changed, what was tested, trust score
+  -> approves 2 tasks, rejects 1 with feedback
+  -> creates 2 new tasks, sets priority
+  -> agents auto-claim tasks from the queue
+  -> developer writes their own code
+  -> checks dashboard in the afternoon — agents completed 2 more
+```
+
+The key shift: agents work autonomously within the trust framework. Evidence is automatic. Checkpoints survive session breaks. The dashboard is the control plane where humans maintain oversight without micromanaging execution.
 
 ## How We Build This Project
 
@@ -221,9 +278,10 @@ This loop produced 29 tasks across 5 phases (T-100 ~ T-504), each reviewed again
 | Risk | Mitigation |
 |------|------------|
 | Break existing npm users | 0.x -> 1.0 migration guide; Lite Mode stays additive while old behavior is preserved |
-| TypeScript migration cost | Incremental adoption with `.d.ts` bridges; no big-bang rewrite |
 | MCP vendor lock-in | MCP is open; file protocol remains as the fallback |
 | Over-simplification loses power users | Full and Strict modes preserve the stronger workflow paths |
+| Agent autonomy safety | Approval loop is mandatory by default; auto-approve is opt-in for trusted workflows |
+| CI webhook security | Webhook receiver validates signatures; evidence is append-only |
 | Codex execution drift | Clear acceptance criteria per phase plus Claude Code review gates |
 | Phase timelines slip | Each phase should ship independently with measurable user value |
 
@@ -231,4 +289,4 @@ This loop produced 29 tasks across 5 phases (T-100 ~ T-504), each reviewed again
 
 ## Legacy Roadmap (Pre-2026)
 
-The original roadmap phases (Foundation, Stronger prompt compiler, Verification layer, Multi-agent orchestration, External integrations, and Polish) have been completed or absorbed into this plan. The verification layer work is now captured by Phase 3's `--strict` mode. Multi-agent orchestration moves to Phase 6.
+The original roadmap phases (Foundation, Stronger prompt compiler, Verification layer, Multi-agent orchestration, External integrations, and Polish) have been completed or absorbed into this plan. The verification layer work is now captured by Phase 3's `--strict` mode. Multi-agent orchestration moves to Phase 8. The prompt compiler is deprecated in Phase 5 in favor of MCP resources and prompts.
