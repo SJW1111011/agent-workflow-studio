@@ -27,9 +27,29 @@ const tests = [
 
         assert.equal(initialize.protocolVersion, PROTOCOL_VERSION);
         assert.ok(initialize.capabilities);
+        assert.ok(initialize.capabilities.prompts);
+        assert.ok(initialize.capabilities.resources);
         assert.ok(initialize.capabilities.tools);
 
         server.notify("notifications/initialized");
+
+        const listedResources = await server.request("resources/list", {});
+        assert.deepEqual(
+          listedResources.resources.map((resource) => resource.uri).sort(),
+          ["workflow://overview", "workflow://tasks"]
+        );
+
+        const listedResourceTemplates = await server.request("resources/templates/list", {});
+        assert.deepEqual(
+          listedResourceTemplates.resourceTemplates.map((template) => template.uriTemplate).sort(),
+          ["workflow://memory/{docName}", "workflow://tasks/{taskId}"]
+        );
+
+        const listedPrompts = await server.request("prompts/list", {});
+        assert.deepEqual(
+          listedPrompts.prompts.map((prompt) => prompt.name).sort(),
+          ["workflow-handoff", "workflow-resume", "workflow-verify"]
+        );
 
         const listedTools = await server.request("tools/list", {});
         const toolNames = listedTools.tools.map((tool) => tool.name).sort();
@@ -73,6 +93,26 @@ const tests = [
         assert.equal(notePayload.ok, true);
         assert.equal(notePayload.tool, "workflow_append_note");
         assert.equal(notePayload.taskId, "T-002");
+
+        const taskResource = await server.request("resources/read", {
+          uri: "workflow://tasks/T-002",
+        });
+        const taskPayload = parseResourcePayload(taskResource);
+
+        assert.equal(taskPayload.task.id, "T-002");
+        assert.match(taskPayload.contextText, /MCP server note coverage\./);
+
+        const resumePrompt = await server.request("prompts/get", {
+          name: "workflow-resume",
+          arguments: {
+            taskId: "T-002",
+          },
+        });
+
+        assert.equal(resumePrompt.messages[0].content.type, "text");
+        assert.match(resumePrompt.messages[0].content.text, /Resume workflow task T-002/);
+        assert.equal(resumePrompt.messages[1].content.type, "resource");
+        assert.equal(resumePrompt.messages[1].content.resource.uri, "workflow://tasks/T-002");
 
         const taskList = await server.request("tools/call", {
           name: "workflow_task_list",
@@ -211,6 +251,13 @@ function parseToolPayload(result) {
   assert.ok(Array.isArray(result.content));
   assert.equal(result.content[0].type, "text");
   return JSON.parse(result.content[0].text);
+}
+
+function parseResourcePayload(result) {
+  assert.ok(result);
+  assert.ok(Array.isArray(result.contents));
+  assert.equal(result.contents[0].mimeType, "application/json");
+  return JSON.parse(result.contents[0].text);
 }
 
 function waitForExit(child) {

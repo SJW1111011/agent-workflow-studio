@@ -1,175 +1,5 @@
 [
   {
-    "type": "quick",
-    "taskId": "T-503",
-    "timestamp": "2026-04-17T09:11:46.114Z",
-    "files": [
-      ".agent-workflow/tasks/T-503",
-      ".agent-workflow/tasks/T-503/checkpoint.json",
-      ".agent-workflow/tasks/T-503/checkpoint.md",
-      ".agent-workflow/tasks/T-503/context.md",
-      ".agent-workflow/tasks/T-503/launch.codex.md",
-      ".agent-workflow/tasks/T-503/prompt.codex.md",
-      ".agent-workflow/tasks/T-503/run-request.codex.json",
-      ".agent-workflow/tasks/T-503/runs",
-      ".agent-workflow/tasks/T-503/task.json",
-      ".agent-workflow/tasks/T-503/task.md",
-      ".agent-workflow/tasks/T-503/verification.md"
-    ],
-    "metadata": {
-      "taskRoot": ".agent-workflow/tasks/T-503",
-      "mode": "full",
-      "agent": "codex",
-      "adapterId": "codex",
-      "restore": []
-    }
-  },
-  {
-    "type": "quick",
-    "taskId": "T-504",
-    "timestamp": "2026-04-17T09:11:46.488Z",
-    "files": [
-      ".agent-workflow/tasks/T-504",
-      ".agent-workflow/tasks/T-504/checkpoint.json",
-      ".agent-workflow/tasks/T-504/checkpoint.md",
-      ".agent-workflow/tasks/T-504/context.md",
-      ".agent-workflow/tasks/T-504/launch.codex.md",
-      ".agent-workflow/tasks/T-504/prompt.codex.md",
-      ".agent-workflow/tasks/T-504/run-request.codex.json",
-      ".agent-workflow/tasks/T-504/runs",
-      ".agent-workflow/tasks/T-504/task.json",
-      ".agent-workflow/tasks/T-504/task.md",
-      ".agent-workflow/tasks/T-504/verification.md"
-    ],
-    "metadata": {
-      "taskRoot": ".agent-workflow/tasks/T-504",
-      "mode": "full",
-      "agent": "codex",
-      "adapterId": "codex",
-      "restore": []
-    }
-  },
-  {
-    "type": "done",
-    "taskId": "T-500",
-    "timestamp": "2026-04-17T14:01:06.316Z",
-    "files": [
-      ".agent-workflow/tasks/T-500/checkpoint.json",
-      ".agent-workflow/tasks/T-500/checkpoint.md",
-      ".agent-workflow/tasks/T-500/context.md",
-      ".agent-workflow/tasks/T-500/runs",
-      ".agent-workflow/tasks/T-500/runs/run-1776434465894.json",
-      ".agent-workflow/tasks/T-500/task.json",
-      ".agent-workflow/tasks/T-500/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-500/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-500\",\n  \"title\": \"Vite + Preact scaffold — build pipeline, dev server, component shell replacing vanilla HTML\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P0\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-17T09:11:45.052Z\",\n  \"updatedAt\": \"2026-04-17T09:11:45.052Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-500/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-500 Context\n\n## Why now\n\nThe current dashboard is 14 vanilla JS files using global state, string-based rendering, and script-tag modules. That architecture blocks the next UI phase. This scaffold task lands the Vite + Preact build pipeline, keeps the warm-beige design language, and preserves the legacy dashboard as the truthful fallback so later migration tasks can move real features without first reinventing the toolchain.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Current dashboard: 14 files, ~4,472 lines JS + 884 lines CSS, zero build step\n- Tab-based routing already exists across 5 sections: overview, tasks, actions, verification, and runs\n- `dashboard-next/` now contains a minimal Vite + Preact shell with Header, TabBar, layout wrapper, and placeholder content for those 5 tabs\n- `dashboard-next/src/styles/variables.css` carries forward the legacy warm-beige CSS variables, while `app.css` trims the layout down to scaffold-only panels\n- Root scripts now expose `npm run dashboard:dev` and `npm run dashboard:build`, backed by repo-level Vite and Preact dev dependencies plus a nested `dashboard-next/package.json` manifest\n- `src/server.js` now serves `dashboard-next/dist/` when `index.html` exists and falls back to `dashboard/` when it does not or when `--legacy-dashboard` is passed\n- Smoke coverage now forces `--legacy-dashboard` so the feature-complete legacy UI still owns workflow mutation checks while the scaffold remains placeholder-only\n- Added test coverage for the new CLI help surface and the server's modern-vs-legacy asset selection path\n- Verified on 2026-04-17: `npm run dashboard:build`, `npm run lint`, `npm test`, and `npm run smoke` all passed; live checks confirmed the built shell, legacy fallback, Vite dev server on `127.0.0.1:5173`, and `/api/health` proxying back to `127.0.0.1:4173`\n\n## Open questions\n\n- When the real feature migration lands, should the built `dashboard-next/dist/` bundle start shipping in the published package by default, or stay repo-local until the new shell reaches parity?\n- When should the README switch its primary dashboard instructions from the legacy control plane to the new shell workflow?\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Old dashboard must remain functional as fallback\n- Preact and Vite are devDeps only - no runtime deps for CLI users\n- Must not break any existing CLI, API, or test behavior\n- Must pass `npm test`, `npm run lint`, `npm run smoke`\n- Keep the new shell honest: no fake data migration, no hidden API contract changes, and no removal of the legacy dashboard before later tasks port the real features\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-500/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-500 Verification\n\n## Draft checks\n\n- automated: `npm run dashboard:build`\n- automated: `npm run lint`\n- automated: `npm test`\n- automated: `npm run smoke`\n- manual: start `node src/server.js --root . --port 4176` after the build and confirm `/` serves the built shell\n- manual: start `node src/server.js --root . --port 4177 --legacy-dashboard` and confirm the legacy script-tag dashboard still loads\n- manual: start `node src/server.js --root . --port 4173 --legacy-dashboard` plus `npm run dashboard:dev -- --host 127.0.0.1`, then confirm `http://127.0.0.1:5173/` serves the Vite client and `/api/health` proxies through\n\n## Verification records\n\n### Record 1\n\n- Files: .gitignore, README.md, docs/ARCHITECTURE.md, eslint.config.mjs, package.json, package-lock.json, scripts/smoke-test.js, src/cli.js, src/server.js, test/cli.test.js, test/server-static-dashboard.test.js, dashboard-next/index.html, dashboard-next/package.json, dashboard-next/vite.config.js, dashboard-next/src/App.jsx, dashboard-next/src/main.jsx, dashboard-next/src/components/Header.jsx, dashboard-next/src/components/Layout.jsx, dashboard-next/src/components/TabBar.jsx, dashboard-next/src/components/TabButton.jsx, dashboard-next/src/styles/app.css, dashboard-next/src/styles/variables.css\n- Check: `npm run dashboard:build`; `npm run lint`; `npm test`; `npm run smoke`; live server checks for built-shell default, `--legacy-dashboard` fallback, and Vite dev-server proxying\n- Result: passed\n- Artifact: dashboard-next/dist/index.html; .agent-workflow/tasks/T-500/runs/runtime-check-20260417.md\n\n## Blocking gaps\n\n- Feature migration is intentionally still open: the new shell proves the pipeline and layout only, while the legacy dashboard remains the truthful workflow UI.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-500/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-500\",\n  \"generatedAt\": \"2026-04-17T09:11:45.197Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add repo-relative scope paths to make evidence coverage automatic.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-500/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-500 Checkpoint\n\nGenerated at: 2026-04-17T09:11:45.197Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: Vite + Preact scaffold — build pipeline, dev server, component shell replacing vanilla HTML\n- Priority: P0\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add repo-relative scope paths to make evidence coverage automatic.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-500/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-500/runs/run-1776434465894.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-500/runs/run-1776434465894.json",
-      "runId": "run-1776434465894"
-    }
-  },
-  {
-    "type": "run:add",
-    "taskId": "T-501",
-    "timestamp": "2026-04-17T15:58:28.453Z",
-    "files": [
-      ".agent-workflow/tasks/T-501/checkpoint.json",
-      ".agent-workflow/tasks/T-501/checkpoint.md",
-      ".agent-workflow/tasks/T-501/context.md",
-      ".agent-workflow/tasks/T-501/runs",
-      ".agent-workflow/tasks/T-501/runs/run-1776441508209.json",
-      ".agent-workflow/tasks/T-501/task.json",
-      ".agent-workflow/tasks/T-501/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-501/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-501\",\n  \"title\": \"Component migration - convert all render-helpers to Preact JSX components with hooks state\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P0\",\n  \"status\": \"done\",\n  \"createdAt\": \"2026-04-17T09:11:45.382Z\",\n  \"updatedAt\": \"2026-04-17T15:55:26.768Z\",\n  \"goal\": \"Ship the modern dashboard as a real Preact control plane: all five tabs should render live workflow data, task actions should work through controlled components and hooks state, execution and log views should remain functional, and the legacy dashboard should stay untouched as the fallback runtime.\",\n  \"scope\": [\n    \"dashboard-next/src/App.jsx\",\n    \"dashboard-next/src/components/Overview.jsx\",\n    \"dashboard-next/src/components/TaskList.jsx\",\n    \"dashboard-next/src/components/TaskDetail.jsx\",\n    \"dashboard-next/src/components/ExecutionPanel.jsx\",\n    \"dashboard-next/src/components/Forms.jsx\",\n    \"dashboard-next/src/components/DocumentEditor.jsx\",\n    \"dashboard-next/src/components/Header.jsx\",\n    \"dashboard-next/src/hooks/useApi.js\",\n    \"dashboard-next/src/hooks/useDashboardState.js\",\n    \"dashboard-next/src/context/DashboardContext.jsx\",\n    \"dashboard-next/src/utils/\",\n    \"dashboard-next/src/main.jsx\",\n    \"dashboard-next/src/styles/app.css\",\n    \"dashboard-next/vite.config.js\"\n  ],\n  \"nonGoals\": [\n    \"dashboard/\",\n    \"SSE integration\",\n    \"dark mode\",\n    \"multi-task views\"\n  ],\n  \"requiredDocs\": [\n    \".agent-workflow/project-profile.md\",\n    \".agent-workflow/memory/product.md\",\n    \".agent-workflow/memory/architecture.md\"\n  ],\n  \"verificationCommands\": [\n    \"npm run dashboard:build\",\n    \"npm run lint\",\n    \"npm test\",\n    \"npm run smoke\"\n  ]\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-501/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-501 Context\n\n## Why now\n\nT-500 created the Vite + Preact scaffold with placeholder tabs. This task turns that shell into the real dashboard so the modern build can replace the default server response without regressing task actions, verification editing, or execution/log visibility.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- The modern app now uses `DashboardContext` + `useReducer` to manage active tab/task selection, overview/task detail payloads, execution state, action status, and log panel state.\n- Legacy helper logic was ported into native ESM utilities under `dashboard-next/src/utils/` because Vite could not bundle the old UMD helper files directly.\n- The new app reuses `dashboard/styles.css` so the Preact implementation keeps the established layout and interaction affordances without copying the legacy DOM-string render path.\n- Actions are implemented as controlled Preact forms for quick create, task creation, task metadata updates, run recording, execution start/cancel, and markdown document saves.\n- Execution log polling remains timer-based in `useDashboardState`; SSE is still intentionally out of scope for T-502.\n- Verification currently relies on build/lint/test/smoke evidence plus durable workflow artifacts; no browser-level visual regression suite exists yet.\n\n## Open questions\n\n- URL routing remains a follow-up. This task intentionally kept the existing tab-based navigation so the migration stayed within scope and did not introduce new routing/state contracts.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-500 (scaffold must exist)\n- Feature parity with vanilla dashboard - no new features, no removed features\n- Must pass `npm run dashboard:build`\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-501/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-501 Verification\n\n## Draft checks\n\n- automated: npm run dashboard:build\n- automated: npm run lint\n- automated: npm test\n- automated: npm run smoke\n- manual: Verify the built server defaults to the modern Preact dashboard while the legacy dashboard remains available behind `--legacy-dashboard`.\n\n## Verification records\n\n### Record 1\n\n- Files: dashboard-next/src/App.jsx, dashboard-next/src/components/Overview.jsx, dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/TaskDetail.jsx, dashboard-next/src/components/ExecutionPanel.jsx, dashboard-next/src/components/Forms.jsx, dashboard-next/src/components/DocumentEditor.jsx, dashboard-next/src/hooks/useApi.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/context/DashboardContext.jsx, dashboard-next/src/utils/api.js, dashboard-next/src/utils/document.js, dashboard-next/src/utils/execution.js, dashboard-next/src/utils/forms.js, dashboard-next/src/utils/logs.js, dashboard-next/src/utils/orchestration.js, dashboard-next/src/utils/taskBoard.js, dashboard-next/src/main.jsx, dashboard-next/src/styles/app.css, dashboard-next/vite.config.js\n- Check: Replaced the placeholder shell with reducer-backed Preact panels, controlled forms, document editing, execution/log views, and native ESM utility modules compatible with the Vite build.\n- Result: Passed. `npm run dashboard:build`, `npm run lint`, `npm test`, and `npm run smoke` all succeeded after the migration.\n- Artifact: dashboard-next/dist/index.html, .agent-workflow/tasks/T-501/runs/runtime-check-20260417.md, .agent-workflow/tasks/T-501/checkpoint.md\n\n## Blocking gaps\n\n- No browser-side visual regression run was captured; parity confidence comes from preserved CSS/layout contracts, live API wiring, and automated build/test/smoke coverage.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-501/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-501\",\n  \"generatedAt\": \"2026-04-17T09:11:45.509Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add repo-relative scope paths to make evidence coverage automatic.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-501/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-501 Checkpoint\n\nGenerated at: 2026-04-17T09:11:45.509Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: Component migration — convert all render-helpers to Preact JSX components with hooks state\n- Priority: P0\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add repo-relative scope paths to make evidence coverage automatic.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-501/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-501/runs/run-1776441508209.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-501/runs/run-1776441508209.json",
-      "runId": "run-1776441508209"
-    }
-  },
-  {
     "type": "checkpoint",
     "taskId": "T-501",
     "timestamp": "2026-04-17T15:58:39.636Z",
@@ -868,6 +698,204 @@
       "agent": "codex",
       "adapterId": "codex",
       "restore": []
+    }
+  },
+  {
+    "type": "done",
+    "taskId": "T-600",
+    "timestamp": "2026-04-19T17:37:33.596Z",
+    "files": [
+      ".agent-workflow/tasks/T-600/checkpoint.json",
+      ".agent-workflow/tasks/T-600/checkpoint.md",
+      ".agent-workflow/tasks/T-600/context.md",
+      ".agent-workflow/tasks/T-600/runs",
+      ".agent-workflow/tasks/T-600/runs/run-1776620252924.json",
+      ".agent-workflow/tasks/T-600/task.json",
+      ".agent-workflow/tasks/T-600/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-600/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-600\",\n  \"title\": \"Evidence Collector Plugin System\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P0\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-19T16:45:18.823Z\",\n  \"updatedAt\": \"2026-04-19T16:45:18.823Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-600/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-600 Context\n\n## Why now\n\nThe current smart-default flow only understands npm test evidence, which leaves Python, Rust, and Go repositories without the same zero-config verification help. Pulling runner detection into a registry keeps the inference contract stable while making the evidence layer extensible enough for built-in multi-language support and repo-specific collectors.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/smart-defaults.js` currently parses `package.json` and executes `npm test` directly.\n- `src/lib/task-service.js` already consumes `inferTestStatusResult()` and only needs backward-compatible return data.\n- `src/lib/workspace.js` is the existing normalization point for repo-level `project.json` settings.\n- `src/lib/schema-validator.js` already validates `project.json` booleans, so custom collector shape validation belongs there.\n- The task prompt requires workflow docs, verification evidence, and `checkpoint.md` to stay current during implementation.\n\n## Open questions\n\n- Custom collectors currently have no explicit priority field, so the implementation should choose a stable default ordering that does not break existing npm-first behavior.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-600/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-600 Verification\n\n## Draft checks\n\n- automated:\n- manual:\n\n## Verification records\n\n### Record 1\n\n- Files:\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n-\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-600/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-600\",\n  \"generatedAt\": \"2026-04-19T16:45:18.984Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add repo-relative scope paths to make evidence coverage automatic.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-600/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-600 Checkpoint\n\nGenerated at: 2026-04-19T16:45:18.984Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: Evidence Collector Plugin System\n- Priority: P0\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add repo-relative scope paths to make evidence coverage automatic.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-600/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-600/runs/run-1776620252924.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-600/runs/run-1776620252924.json",
+      "runId": "run-1776620252924"
+    }
+  },
+  {
+    "type": "checkpoint",
+    "taskId": "T-600",
+    "timestamp": "2026-04-19T17:38:27.312Z",
+    "files": [
+      ".agent-workflow/tasks/T-600/checkpoint.json",
+      ".agent-workflow/tasks/T-600/checkpoint.md",
+      ".agent-workflow/tasks/T-600/context.md",
+      ".agent-workflow/tasks/T-600/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-600/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-600 Context\n\n## Why now\n\nThe current smart-default flow only understands npm test evidence, which leaves Python, Rust, and Go repositories without the same zero-config verification help. Pulling runner detection into a registry keeps the inference contract stable while making the evidence layer extensible enough for built-in multi-language support and repo-specific collectors.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/smart-defaults.js` currently parses `package.json` and executes `npm test` directly.\n- `src/lib/task-service.js` already consumes `inferTestStatusResult()` and only needs backward-compatible return data.\n- `src/lib/workspace.js` is the existing normalization point for repo-level `project.json` settings.\n- `src/lib/schema-validator.js` already validates `project.json` booleans, so custom collector shape validation belongs there.\n- The shipped implementation keeps custom collectors after the built-in collectors so npm-first behavior stays stable in mixed-language workspaces.\n- The task prompt requires workflow docs, verification evidence, and `checkpoint.md` to stay current during implementation.\n\n## Open questions\n\n- None at handoff; custom collectors currently default after built-ins to preserve existing behavior.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-600/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-600 Verification\n\n## Draft checks\n\n- automated: `npm test`, `npm run lint`, `npm run format:check`, `npm run validate -- --root .`\n- manual: reviewed the registry priority order and confirmed the run recorded only task-owned proof paths instead of unrelated dirty-worktree files\n\n## Verification records\n\n### Record 1\n\n- Files: `src/lib/evidence-collectors.js`, `src/lib/smart-defaults.js`, `src/lib/workspace.js`, `src/lib/schema-validator.js`, `test/evidence-collectors.test.js`, `README.md`, `docs/RECIPES_AND_SCHEMA.md`\n- Check: `npm test`; `npm run lint`; `npm run format:check`; `npm run validate -- --root .`\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-600/runs/run-1776620252924.json`\n\n## Blocking gaps\n\n- none\n\n## Evidence 2026-04-19T17:37:32.922Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/evidence-collectors.js, src/lib/smart-defaults.js, src/lib/workspace.js, src/lib/schema-validator.js, test/evidence-collectors.test.js, README.md, docs/RECIPES_AND_SCHEMA.md, .agent-workflow/tasks/T-600/task.md, .agent-workflow/tasks/T-600/context.md\n- Summary: Implemented evidence collector registry with built-in npm, pytest, cargo, go, and validated custom collectors.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run format:check\n- Verification check: [passed] npm run validate -- --root .\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-600/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-600\",\n  \"generatedAt\": \"2026-04-19T17:37:33.572Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 100,\n    \"scopeHintCount\": 12,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 7,\n    \"coveredFileCount\": 7,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-600/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-600 Checkpoint\n\nGenerated at: 2026-04-19T17:37:33.572Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Evidence Collector Plugin System\n- Priority: P0\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (7/7 scoped files)\n- Scope hints: 12\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- README.md\n- docs/RECIPES_AND_SCHEMA.md\n- src/lib/schema-validator.js\n- src/lib/smart-defaults.js\n- src/lib/workspace.js\n- src/lib/evidence-collectors.js\n- test/evidence-collectors.test.js\n\n### Explicit evidence items\n\n- run:run-1776620252924 | paths=src/lib/evidence-collectors.js, src/lib/smart-defaults.js, src/lib/workspace.js, src/lib/schema-validator.js, test/evidence-collectors.test.js, README.md, docs/RECIPES_AND_SCHEMA.md, .agent-workflow/tasks/T-600/task.md, .agent-workflow/tasks/T-600/context.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run format:check; [passed] npm run validate -- --root . | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Implemented evidence collector registry with built-in npm, pytest, cargo, go, and validated custom collectors.\n- Timestamp: 2026-04-19T17:37:32.922Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
+        }
+      ]
+    }
+  },
+  {
+    "type": "done",
+    "taskId": "T-601",
+    "timestamp": "2026-04-20T01:14:43.737Z",
+    "files": [
+      ".agent-workflow/tasks/T-601/checkpoint.json",
+      ".agent-workflow/tasks/T-601/checkpoint.md",
+      ".agent-workflow/tasks/T-601/context.md",
+      ".agent-workflow/tasks/T-601/runs",
+      ".agent-workflow/tasks/T-601/runs/run-1776647683216.json",
+      ".agent-workflow/tasks/T-601/task.json",
+      ".agent-workflow/tasks/T-601/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-601/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-601\",\n  \"title\": \"MCP Resources and Prompts\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P0\",\n  \"status\": \"in_progress\",\n  \"createdAt\": \"2026-04-19T16:45:41.603Z\",\n  \"updatedAt\": \"2026-04-20T13:13:00.000Z\",\n  \"goal\": \"Expose workflow state as MCP resources and agent-native prompts so MCP clients can resume, verify, and hand off work without relying on truncated compiled prompt files.\",\n  \"scope\": [\n    \"src/lib/mcp-resources.js\",\n    \"src/lib/mcp-prompts.js\",\n    \"src/mcp-server.js\",\n    \"test/mcp-resources.test.js\",\n    \"test/mcp-server.test.js\",\n    \"README.md\",\n    \"docs/MCP_SETUP.md\"\n  ],\n  \"nonGoals\": [\n    \"src/lib/mcp-tools.js\",\n    \"dashboard-next/\"\n  ],\n  \"requiredDocs\": [\n    \".agent-workflow/project-profile.md\",\n    \".agent-workflow/memory/product.md\",\n    \".agent-workflow/memory/architecture.md\",\n    \".agent-workflow/memory/domain-rules.md\"\n  ],\n  \"verificationCommands\": [\n    \"npm test -- mcp-server mcp-resources\"\n  ]\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-601/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-601 Context\n\n## Why now\n\nAgents already have MCP tool access, but they still need prompt-file compilation or manual file reads to recover full task context. Shipping resources and prompts here removes that gap, keeps MCP workflows read-only for resume/handoff, and sets up the later prompt-compile deprecation without breaking current tooling.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/mcp-server.js` currently advertises only `tools` capability and registers only `tools/list` and `tools/call`.\n- `src/lib/task-service.js` already exposes `getTaskDetail(workspaceRoot, taskId)`, which returns task docs, runs, freshness, and verification gate data suitable for MCP resource/prompt reuse.\n- `src/lib/overview.js` already builds the workspace-level payload needed for `workflow://overview` and task-list summaries.\n- MCP SDK `@modelcontextprotocol/sdk@1.3.0` in this repo exports the resource and prompt request schemas needed for `resources/*` and `prompts/*`.\n- Existing MCP coverage lives in `test/mcp-server.test.js` and `test/mcp-tools.test.js`; new resource/prompt coverage can extend that without changing the current tool runtime.\n\n## Open questions\n\n- Whether prompt payloads should embed resource contents directly or render text packages. Current implementation plan is to return text packages with full, untruncated task context and stable resource URIs.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n- Do not change existing MCP tool behavior while adding resources and prompts.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-601/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-601 Verification\n\n## Draft checks\n\n- automated: `npm test -- mcp-server mcp-resources`\n- manual: start the MCP server and confirm `resources/list`, `resources/read`, `prompts/list`, and `prompts/get` expose the new workflow resources and prompt packages.\n\n## Verification records\n\n### Record 1\n\n- Files:\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n- Verification still pending until the new MCP resource/prompt tests pass.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-601/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-601\",\n  \"generatedAt\": \"2026-04-19T16:45:41.763Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add repo-relative scope paths to make evidence coverage automatic.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-601/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-601 Checkpoint\n\nGenerated at: 2026-04-19T16:45:41.763Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: MCP Resources and Prompts\n- Priority: P0\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add repo-relative scope paths to make evidence coverage automatic.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-601/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-601/runs/run-1776647683216.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-601/runs/run-1776647683216.json",
+      "runId": "run-1776647683216"
+    }
+  },
+  {
+    "type": "checkpoint",
+    "taskId": "T-601",
+    "timestamp": "2026-04-20T01:15:47.135Z",
+    "files": [
+      ".agent-workflow/tasks/T-601/checkpoint.json",
+      ".agent-workflow/tasks/T-601/checkpoint.md",
+      ".agent-workflow/tasks/T-601/context.md",
+      ".agent-workflow/tasks/T-601/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-601/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-601 Context\n\n## Why now\n\nAgents already have MCP tool access, but they still need prompt-file compilation or manual file reads to recover full task context. Shipping resources and prompts here removes that gap, keeps MCP workflows read-only for resume/handoff, and sets up the later prompt-compile deprecation without breaking current tooling.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/task-service.js` already exposes `getTaskDetail(workspaceRoot, taskId)`, which returns task docs, runs, freshness, and verification gate data suitable for MCP resource/prompt reuse.\n- `src/lib/overview.js` already builds the workspace-level payload needed for `workflow://overview` and task-list summaries.\n- MCP SDK `@modelcontextprotocol/sdk@1.3.0` in this repo exports the resource and prompt request schemas needed for `resources/*` and `prompts/*`.\n- `src/lib/mcp-resources.js` now exposes stable read-only resources for `workflow://overview`, `workflow://tasks`, `workflow://tasks/{taskId}`, and `workflow://memory/{docName}`.\n- `src/lib/mcp-prompts.js` now exposes `workflow-resume`, `workflow-verify`, and `workflow-handoff`, using a short text briefing plus embedded workflow resources for full, untruncated task context.\n- `src/mcp-server.js` now advertises MCP `resources` and `prompts` capabilities alongside the existing tool surface.\n- `test/mcp-resources.test.js` covers resource listing/reading and prompt generation, while `test/mcp-server.test.js` now checks the stdio server's resources and prompts end to end.\n- `npm test` and `npm run lint` both passed on 2026-04-20 after the MCP resource/prompt changes landed.\n\n## Open questions\n\n- None at handoff.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-601/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-601 Verification\n\n## Draft checks\n\n- automated: `npm test`\n- automated: `npm run lint`\n- manual: confirm the MCP stdio server advertises `resources`, `prompts`, and `tools`, and serves `workflow://tasks/{taskId}` plus `workflow-resume` end to end.\n\n## Verification records\n\n### Record 1\n\n- Files: `src/lib/mcp-resources.js`, `src/lib/mcp-prompts.js`, `src/mcp-server.js`, `test/mcp-resources.test.js`, `test/mcp-server.test.js`\n- Check: `npm test`\n- Result: Passed on 2026-04-20 (`37` test files, `181` tests).\n- Artifact: `.agent-workflow/tasks/T-601/runs/run-1776647683216.json`\n\n### Record 2\n\n- Files: `src/lib/mcp-resources.js`, `src/lib/mcp-prompts.js`, `src/mcp-server.js`, `README.md`, `docs/MCP_SETUP.md`\n- Check: `npm run lint`\n- Result: Passed on 2026-04-20.\n- Artifact: `.agent-workflow/tasks/T-601/runs/run-1776647683216.json`\n\n### Record 3\n\n- Files: `test/mcp-server.test.js`\n- Check: MCP stdio protocol coverage for `resources/list`, `resources/templates/list`, `resources/read`, `prompts/list`, and `prompts/get`\n- Result: Passed via automated coverage in `npm test`.\n- Artifact: `test/mcp-server.test.js`\n\n## Blocking gaps\n\n- None.\n\n## Evidence 2026-04-20T01:14:43.215Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/mcp-resources.js, src/lib/mcp-prompts.js, src/mcp-server.js, test/mcp-resources.test.js, test/mcp-server.test.js, README.md, docs/MCP_SETUP.md\n- Summary: Implemented MCP resources/prompts with server wiring, tests, and docs.\n- Verification check: [passed] npm test (passed)\n- Verification check: [passed] npm run lint (passed)\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-601/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-601\",\n  \"generatedAt\": \"2026-04-20T01:14:43.720Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 100,\n    \"scopeHintCount\": 15,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 7,\n    \"coveredFileCount\": 7,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-601/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-601 Checkpoint\n\nGenerated at: 2026-04-20T01:14:43.720Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: MCP Resources and Prompts\n- Priority: P0\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (7/7 scoped files)\n- Scope hints: 15\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- README.md\n- docs/MCP_SETUP.md\n- src/mcp-server.js\n- test/mcp-server.test.js\n- src/lib/mcp-prompts.js\n- src/lib/mcp-resources.js\n- test/mcp-resources.test.js\n\n### Explicit evidence items\n\n- run:run-1776647683216 | paths=src/lib/mcp-resources.js, src/lib/mcp-prompts.js, src/mcp-server.js, test/mcp-resources.test.js, test/mcp-server.test.js, README.md, docs/MCP_SETUP.md | checks=[passed] npm test (passed); [passed] npm run lint (passed) | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Implemented MCP resources/prompts with server wiring, tests, and docs.\n- Timestamp: 2026-04-20T01:14:43.215Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
+        }
+      ]
     }
   }
 ]

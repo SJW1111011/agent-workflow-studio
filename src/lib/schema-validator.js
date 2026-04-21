@@ -5,7 +5,12 @@ const { fileExists, readJson } = require("./fs-utils");
 const { listAdapters } = require("./adapters");
 const { listRecipes } = require("./recipes");
 const { listTasks } = require("./task-service");
-const { projectConfigPath, resolveStrictVerification, taskRoot } = require("./workspace");
+const {
+  getEvidenceCollectorConfigIssues,
+  projectConfigPath,
+  resolveStrictVerification,
+  taskRoot,
+} = require("./workspace");
 
 const RUN_OUTCOMES = new Set(["passed", "failed", "timed-out", "interrupted", "cancelled"]);
 const RUN_FAILURE_CATEGORIES = new Set(["non-zero-exit", "timeout", "interrupted", "launch-error"]);
@@ -71,6 +76,33 @@ function validateProjectConfig(workspaceRoot, issues) {
         configPath
       )
     );
+  }
+
+  if (config.evidenceCollectors !== undefined) {
+    if (!Array.isArray(config.evidenceCollectors)) {
+      issues.push(
+        issue(
+          "error",
+          "project.evidenceCollectors",
+          "project.json evidenceCollectors must be an array when present",
+          configPath
+        )
+      );
+    } else {
+      config.evidenceCollectors.forEach((collector, index) => {
+        const collectorIssues = getEvidenceCollectorConfigIssues(collector);
+        collectorIssues.forEach((message) => {
+          issues.push(
+            issue(
+              "error",
+              "project.evidenceCollectors.entry",
+              `project.json evidenceCollectors[${index}] ${message}`,
+              configPath
+            )
+          );
+        });
+      });
+    }
   }
 }
 

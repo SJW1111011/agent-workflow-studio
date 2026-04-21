@@ -1,6 +1,6 @@
 # Project Profile
 
-Generated at: 2026-04-17T09:11:46.303Z
+Generated at: 2026-04-19T16:45:41.597Z
 
 ## Repository
 
@@ -12,6 +12,7 @@ Generated at: 2026-04-17T09:11:46.303Z
 - .github
 - .npm-cache-tmp
 - dashboard
+- dashboard-next
 - docs
 - scripts
 - src
@@ -40,7 +41,7 @@ Generated at: 2026-04-17T09:11:46.303Z
 ## Scripts
 
 - `build`: `tsc --project tsconfig.json`
-- `lint`: `eslint "*.js" "*.mjs" "dashboard/**/*.js" "scripts/**/*.js" "src/**/*.js" "test/**/*.js"`
+- `lint`: `eslint "*.js" "*.mjs" "dashboard/**/*.js" "dashboard-next/**/*.js" "dashboard-next/**/*.jsx" "scripts/**/*.js" "src/**/*.js" "test/**/*.js"`
 - `format:check`: `prettier --check ".github/**/*.yml" "README.md" "docs/PUBLISHING.md" "package.json" "eslint.config.mjs" "vitest.config.ts"`
 - `pretest`: `npm run build`
 - `test`: `vitest run`
@@ -67,6 +68,8 @@ Generated at: 2026-04-17T09:11:46.303Z
 - `mcp:serve`: `node src/cli.js mcp:serve`
 - `skills:generate`: `node src/cli.js skills:generate`
 - `dashboard`: `node src/server.js`
+- `dashboard:dev`: `vite --config dashboard-next/vite.config.js`
+- `dashboard:build`: `vite build --config dashboard-next/vite.config.js`
 - `verify:onboarding`: `node scripts/npm-onboarding-check.js`
 - `smoke`: `node scripts/smoke-test.js`
 - `prepublishOnly`: `npm run build`

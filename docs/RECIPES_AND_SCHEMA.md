@@ -48,6 +48,30 @@ Validation currently checks:
 - `task.json`
 - recorded runs
 
+`project.json` can now also declare repo-local custom evidence collectors:
+
+```json
+{
+  "evidenceCollectors": [
+    {
+      "id": "repo-check",
+      "command": "node",
+      "args": ["scripts/check.js"],
+      "detectFile": "scripts/check.js"
+    }
+  ]
+}
+```
+
+Those entries are validated narrowly on purpose:
+
+- `id` must stay a simple identifier
+- `command` must be a direct executable name or relative path, not a shell launcher
+- `args` must be a string array when present
+- `detectFile` must stay repo-relative so the config remains portable
+
+The runtime loads these custom collectors after the built-in npm, pytest, cargo, and go collectors, which keeps existing npm-first behavior stable while still allowing repo-specific runners when no built-in applies.
+
 The local dashboard also uses these structures to power:
 
 - task creation

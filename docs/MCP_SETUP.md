@@ -4,7 +4,22 @@ This guide shows how to run `agent-workflow-studio` as an MCP server over stdio 
 
 ## What the MCP server exposes
 
-The server exposes these MCP tools:
+The server exposes three MCP surfaces:
+
+Resources:
+
+- `workflow://overview`
+- `workflow://tasks`
+- `workflow://tasks/{taskId}`
+- `workflow://memory/{docName}` (`product`, `architecture`, `domain-rules`, `runbook`)
+
+Prompts:
+
+- `workflow-resume`
+- `workflow-verify`
+- `workflow-handoff`
+
+Tools:
 
 - `workflow_quick`
 - `workflow_done`
@@ -17,7 +32,9 @@ The server exposes these MCP tools:
 - `workflow_validate`
 - `workflow_overview`
 
-All tool handlers delegate to the same durable workflow modules used by the CLI, so MCP calls update `.agent-workflow/` the same way terminal commands do.
+Resources and prompts are read-only. They let agents pull full workflow context, task state, and memory docs without relying on `prompt:compile` output files or ad hoc file reads.
+
+Tool handlers still delegate to the same durable workflow modules used by the CLI, so MCP calls update `.agent-workflow/` the same way terminal commands do.
 
 ## Recommended workflow after setup
 
@@ -35,6 +52,8 @@ Once MCP is configured, you don't need to use the terminal. Talk to your agent n
 - "list my workflow tasks"
 - "show me the workspace overview"
 - "validate the workflow"
+- "resume T-001 with full workflow context"
+- "show me what still needs verification for T-001"
 
 **Mid-execution updates:**
 - "update T-001 priority to P0"
@@ -267,8 +286,9 @@ Then, from the MCP client, try:
 1. `list my workflow tasks`
 2. `create a task called "Ship MCP setup docs"`
 3. `show me the workspace overview`
+4. `resume T-001 with full workflow context`
 
-You should see the corresponding `workflow_*` tools being selected by the client, and the target repo should update under `.agent-workflow/`.
+You should see the client discovering `workflow://...` resources, `workflow-*` prompts, and `workflow_*` tools, with only the tool calls mutating `.agent-workflow/`.
 
 ## Notes
 

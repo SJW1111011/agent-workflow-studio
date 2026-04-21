@@ -1,0 +1,29 @@
+{
+  "id": "run-1776647683216",
+  "taskId": "T-601",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Implemented MCP resources/prompts with server wiring, tests, and docs.",
+  "createdAt": "2026-04-20T01:14:43.215Z",
+  "scopeProofPaths": [
+    "src/lib/mcp-resources.js",
+    "src/lib/mcp-prompts.js",
+    "src/mcp-server.js",
+    "test/mcp-resources.test.js",
+    "test/mcp-server.test.js",
+    "README.md",
+    "docs/MCP_SETUP.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test (passed)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run lint (passed)",
+      "status": "passed",
+      "artifacts": []
+    }
+  ]
+}

@@ -3,12 +3,31 @@
   "title": "MCP Resources and Prompts",
   "recipeId": "feature",
   "priority": "P0",
-  "status": "todo",
+  "status": "done",
   "createdAt": "2026-04-19T16:45:41.603Z",
-  "updatedAt": "2026-04-19T16:45:41.603Z",
-  "goal": "",
-  "scope": [],
-  "nonGoals": [],
-  "requiredDocs": [],
-  "verificationCommands": []
+  "updatedAt": "2026-04-20T01:14:43.473Z",
+  "goal": "Expose workflow state as MCP resources and agent-native prompts so MCP clients can resume, verify, and hand off work without relying on truncated compiled prompt files.",
+  "scope": [
+    "src/lib/mcp-resources.js",
+    "src/lib/mcp-prompts.js",
+    "src/mcp-server.js",
+    "test/mcp-resources.test.js",
+    "test/mcp-server.test.js",
+    "README.md",
+    "docs/MCP_SETUP.md"
+  ],
+  "nonGoals": [
+    "src/lib/mcp-tools.js",
+    "dashboard-next/"
+  ],
+  "requiredDocs": [
+    ".agent-workflow/project-profile.md",
+    ".agent-workflow/memory/product.md",
+    ".agent-workflow/memory/architecture.md",
+    ".agent-workflow/memory/domain-rules.md"
+  ],
+  "verificationCommands": [
+    "npm test",
+    "npm run lint"
+  ]
 }

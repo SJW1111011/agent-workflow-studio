@@ -1,0 +1,41 @@
+{
+  "id": "run-1776620252924",
+  "taskId": "T-600",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Implemented evidence collector registry with built-in npm, pytest, cargo, go, and validated custom collectors.",
+  "createdAt": "2026-04-19T17:37:32.922Z",
+  "scopeProofPaths": [
+    "src/lib/evidence-collectors.js",
+    "src/lib/smart-defaults.js",
+    "src/lib/workspace.js",
+    "src/lib/schema-validator.js",
+    "test/evidence-collectors.test.js",
+    "README.md",
+    "docs/RECIPES_AND_SCHEMA.md",
+    ".agent-workflow/tasks/T-600/task.md",
+    ".agent-workflow/tasks/T-600/context.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run lint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run format:check",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run validate -- --root .",
+      "status": "passed",
+      "artifacts": []
+    }
+  ]
+}

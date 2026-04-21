@@ -209,6 +209,24 @@ These files describe local adapter contracts for agent runtimes.
   ),
 };
 
+const EVIDENCE_COLLECTOR_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const DISALLOWED_COLLECTOR_COMMANDS = new Set([
+  "bash",
+  "bash.exe",
+  "cmd",
+  "cmd.exe",
+  "fish",
+  "fish.exe",
+  "powershell",
+  "powershell.exe",
+  "pwsh",
+  "pwsh.exe",
+  "sh",
+  "sh.exe",
+  "zsh",
+  "zsh.exe",
+]);
+
 function resolveWorkspaceRoot(inputRoot) {
   return path.resolve(inputRoot || process.cwd());
 }
@@ -319,11 +337,13 @@ function readProjectConfig(workspaceRoot) {
     repositoryName: path.basename(workspaceRoot),
     autoInferTest: false,
     strictVerification: false,
+    evidenceCollectors: [],
   });
 
   return {
     ...config,
     autoInferTest: normalizeAutoInferTest(config.autoInferTest, false),
+    evidenceCollectors: normalizeEvidenceCollectors(config.evidenceCollectors, []),
     strictVerification: normalizeStrictVerification(config.strictVerification, false),
   };
 }
@@ -370,6 +390,101 @@ function normalizeBooleanSetting(value, fallback = false) {
   return fallback;
 }
 
+function normalizeEvidenceCollectors(value, fallback = []) {
+  if (!Array.isArray(value)) {
+    return Array.isArray(fallback) ? fallback.slice() : [];
+  }
+
+  return value.map((entry) => normalizeEvidenceCollectorConfig(entry)).filter(Boolean);
+}
+
+function normalizeEvidenceCollectorConfig(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  if (getEvidenceCollectorConfigIssues(value).length > 0) {
+    return null;
+  }
+
+  return {
+    id: value.id.trim(),
+    command: value.command.trim(),
+    args: Array.isArray(value.args) ? value.args.map((entry) => entry.trim()) : [],
+    detectFile: normalizePortableRelativePath(value.detectFile),
+  };
+}
+
+function getEvidenceCollectorConfigIssues(value) {
+  const issues = [];
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return ['evidence collector entries must be objects'];
+  }
+
+  if (!isValidEvidenceCollectorId(value.id)) {
+    issues.push("id must be a non-empty string using only letters, numbers, dots, underscores, or dashes");
+  }
+
+  if (!isSafeEvidenceCollectorCommand(value.command)) {
+    issues.push("command must be a non-empty executable name or relative path and cannot be a shell launcher");
+  }
+
+  if (value.args !== undefined && !isStringArray(value.args)) {
+    issues.push("args must be an array of non-empty strings when present");
+  }
+
+  if (!normalizePortableRelativePath(value.detectFile)) {
+    issues.push("detectFile must be a portable repo-relative path");
+  }
+
+  return issues;
+}
+
+function isValidEvidenceCollectorId(value) {
+  return typeof value === "string" && EVIDENCE_COLLECTOR_ID_PATTERN.test(value.trim());
+}
+
+function isSafeEvidenceCollectorCommand(value) {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return false;
+  }
+
+  const trimmed = value.trim();
+  if (path.isAbsolute(trimmed)) {
+    return false;
+  }
+
+  const normalized = trimmed.replace(/\\/g, "/");
+  if (normalized.includes("../") || normalized.startsWith("../") || normalized === "..") {
+    return false;
+  }
+
+  return !DISALLOWED_COLLECTOR_COMMANDS.has(path.basename(trimmed).toLowerCase());
+}
+
+function isStringArray(value) {
+  return Array.isArray(value) && value.every((entry) => typeof entry === "string" && entry.trim().length > 0);
+}
+
+function normalizePortableRelativePath(value) {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return "";
+  }
+
+  const normalized = value.trim().replace(/\\/g, "/");
+  if (normalized.startsWith("/") || path.isAbsolute(normalized)) {
+    return "";
+  }
+
+  const segments = normalized.split("/");
+  if (segments.some((segment) => !segment || segment === "." || segment === "..")) {
+    return "";
+  }
+
+  return normalized;
+}
+
 function readTaskMeta(workspaceRoot, taskId) {
   return readJson(path.join(taskRoot(workspaceRoot, taskId), "task.json"), null);
 }
@@ -405,10 +520,13 @@ module.exports = {
   listTaskIds,
   memoryRoot,
   normalizeAutoInferTest,
+  normalizeEvidenceCollectorConfig,
+  normalizeEvidenceCollectors,
   projectConfigPath,
   projectProfileMarkdownPath,
   projectProfilePath,
   normalizeStrictVerification,
+  getEvidenceCollectorConfigIssues,
   readProjectConfig,
   readTaskDoc,
   readTaskMeta,

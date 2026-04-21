@@ -180,7 +180,22 @@ For a quick terminal check, you can still start the stdio server directly:
 npx agent-workflow mcp:serve --root .
 ```
 
-The server exposes these MCP tools:
+The server exposes read-only MCP resources, MCP prompt packages, and MCP tools.
+
+Resources:
+
+- `workflow://overview`
+- `workflow://tasks`
+- `workflow://tasks/{taskId}`
+- `workflow://memory/{docName}`
+
+Prompts:
+
+- `workflow-resume`
+- `workflow-verify`
+- `workflow-handoff`
+
+Tools:
 
 - `workflow_quick`
 - `workflow_done`
@@ -193,7 +208,7 @@ The server exposes these MCP tools:
 - `workflow_validate`
 - `workflow_overview`
 
-That lets an MCP-connected agent update task status or priority mid-execution and append timestamped progress notes to `context.md`, instead of waiting until the final `done` step to leave durable state behind. For the auto-install flow, Codex TOML examples, and Claude Code or Cursor specifics, see [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
+That lets an MCP-connected agent pull full task, evidence, and memory context without writing compiled prompt files first, then use the existing `workflow_*` tools only for state-changing operations such as status updates, notes, runs, checkpoints, and undo. For the auto-install flow, Codex TOML examples, and Claude Code or Cursor specifics, see [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
 
 ## Architecture at a glance
 
@@ -275,6 +290,25 @@ Two ideas sit at the center of the project:
 
 - **Verification gate**: compare repo-relative task scope against the current repository snapshot (Git-backed when available, filesystem fallback otherwise), report what percentage of scoped files have verified evidence, and still explain which files need attention.
 - **Verification records**: default freshness is timestamp-based, which keeps the common path simpler and faster. When you opt into `--strict` or set `strictVerification: true`, passed run evidence and refreshed manual verification also carry content fingerprints so freshness survives misleading `mtime` churn, branch switches, and agent handoff noise. `draft` evidence still needs checks or artifacts; `verified` evidence includes repo-relative paths plus checks or artifacts.
+
+Automatic test inference now goes through a small evidence collector registry. Built-in collectors detect and run `npm test`, `python -m pytest --tb=no -q`, `cargo test --no-fail-fast`, and `go test ./...`, with npm remaining first for Node workspaces so existing behavior stays stable.
+
+If a repository needs a project-specific runner, add a custom collector to `.agent-workflow/project.json`:
+
+```json
+{
+  "evidenceCollectors": [
+    {
+      "id": "repo-check",
+      "command": "node",
+      "args": ["scripts/check.js"],
+      "detectFile": "scripts/check.js"
+    }
+  ]
+}
+```
+
+Custom collectors use direct `command` plus `args` execution rather than shell strings, and `detectFile` must stay repo-relative so the config remains portable.
 
 ## Upgrading from pre-Phase-3
 

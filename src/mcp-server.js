@@ -3,12 +3,24 @@
 const packageJson = require("../package.json");
 const { Server } = require("@modelcontextprotocol/sdk/server/index.js");
 const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
-const { CallToolRequestSchema, ListToolsRequestSchema } = require("@modelcontextprotocol/sdk/types.js");
+const {
+  CallToolRequestSchema,
+  GetPromptRequestSchema,
+  ListPromptsRequestSchema,
+  ListResourcesRequestSchema,
+  ListResourceTemplatesRequestSchema,
+  ListToolsRequestSchema,
+  ReadResourceRequestSchema,
+} = require("@modelcontextprotocol/sdk/types.js");
+const { createPromptHandlers } = require("./lib/mcp-prompts");
+const { createResourceHandlers } = require("./lib/mcp-resources");
 const { createMcpToolRuntime } = require("./lib/mcp-tools");
 const { resolveWorkspaceRoot } = require("./lib/workspace");
 
 function createMcpServer(workspaceRoot) {
   const runtime = createMcpToolRuntime(workspaceRoot);
+  const resourceHandlers = createResourceHandlers(workspaceRoot);
+  const promptHandlers = createPromptHandlers(workspaceRoot);
   const server = new Server(
     {
       name: "agent-workflow-studio",
@@ -16,14 +28,43 @@ function createMcpServer(workspaceRoot) {
     },
     {
       capabilities: {
+        prompts: {
+          listChanged: false,
+        },
+        resources: {
+          subscribe: false,
+          listChanged: false,
+        },
         tools: {
           listChanged: false,
         },
       },
       instructions:
-        "Use the workflow_* tools to create tasks, update task metadata, append progress notes, record evidence, refresh checkpoints, inspect workspace state, and undo the latest workflow-layer operation.",
+        "Use workflow:// resources and workflow-* prompts for read-only task context, evidence, and memory docs. Use the workflow_* tools to create tasks, update task metadata, append progress notes, record evidence, refresh checkpoints, inspect workspace state, and undo the latest workflow-layer operation.",
     }
   );
+
+  server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+    resources: resourceHandlers.listResources(),
+  }));
+
+  server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({
+    resourceTemplates: resourceHandlers.listResourceTemplates(),
+  }));
+
+  server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    const params = request && request.params ? request.params : {};
+    return resourceHandlers.readResource(params.uri);
+  });
+
+  server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+    prompts: promptHandlers.listPrompts(),
+  }));
+
+  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+    const params = request && request.params ? request.params : {};
+    return promptHandlers.getPrompt(params.name, params.arguments || {});
+  });
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: runtime.listTools(),
@@ -35,6 +76,8 @@ function createMcpServer(workspaceRoot) {
   });
 
   return {
+    promptHandlers,
+    resourceHandlers,
     server,
     runtime,
     workspaceRoot,
