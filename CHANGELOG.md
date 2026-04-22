@@ -37,7 +37,8 @@ See [`docs/RELEASE_NOTES_0.2.0.md`](docs/RELEASE_NOTES_0.2.0.md) for the longer 
 
 ### Deprecations
 
-- deprecated `prompt:compile` and `skills:generate` ahead of their planned `0.3.0` removal while keeping both commands available as transition paths
+- deprecated `prompt:compile` ahead of its planned `0.3.0` removal while keeping the command available as a transition path
+- revived `skills:generate` with MCP-first workflow rules and two-system framing (project tasks vs execution steps) in generated CLAUDE.md/AGENTS.md
 
 ## [0.1.2] - 2026-04-10
 

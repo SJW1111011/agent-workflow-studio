@@ -131,7 +131,7 @@
 | T-602 | Smart defaults v2: multi-collector integration into done/run-add flow |
 | T-603 | Agent activity evidence: structured evidence from MCP tool calls |
 | T-604 | Dashboard trust surface: trust score, freshness heatmap, evidence timeline |
-| T-605 | Deprecate prompt:compile and skills:generate |
+| T-605 | Deprecate prompt:compile; revive skills:generate with MCP-first workflow rules |
 | T-606 | Version bump to 0.2.0 |
 
 **Progress note:** T-606 is complete. Phase 5 now ships multi-collector evidence, MCP resources and prompts, agent activity evidence, dashboard trust signals, and the `prompt:compile` / `skills:generate` deprecation path together in the `0.2.0` package line.
@@ -143,7 +143,7 @@
 | MCP prompts | workflow-resume replaces prompt:compile with no truncation |
 | Agent activity | Agents report what they did as structured evidence through MCP |
 | Trust score | Deterministic 0-100 score from evidence coverage, freshness, collector diversity |
-| Deprecations | prompt:compile and skills:generate deprecated in favor of MCP resources/prompts |
+| Deprecations | prompt:compile deprecated in favor of MCP resources/prompts |
 
 **Acceptance criteria:**
 - Evidence auto-collected from multiple test runners without configuration
