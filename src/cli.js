@@ -23,8 +23,6 @@ const { ensureWorkflowScaffold, resolveWorkspaceRoot } = require("./lib/workspac
 
 const PROMPT_COMPILE_DEPRECATION =
   "Deprecated: use MCP resource workflow://tasks/{taskId} or prompt workflow-resume instead. prompt:compile will be removed in 0.3.0.";
-const SKILLS_GENERATE_DEPRECATION =
-  "Deprecated: MCP tools are self-describing and do not need generated skill files. skills:generate will be removed in 0.3.0.";
 
 function main(argv = process.argv.slice(2)) {
   const { command, positionals, options } = parseCommand(argv);
@@ -98,7 +96,6 @@ function main(argv = process.argv.slice(2)) {
         break;
       }
       case "skills:generate": {
-        warn(SKILLS_GENERATE_DEPRECATION);
         const result = generateSkills(workspaceRoot);
         print(formatSkillsSummary(result));
         break;

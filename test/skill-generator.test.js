@@ -59,7 +59,7 @@ const suite = {
       },
     },
     {
-      name: "CLAUDE.md and AGENTS.md contain the full agent guide content",
+      name: "CLAUDE.md and AGENTS.md contain workflow rules and agent guide content",
       run() {
         const workspaceRoot = createTempDir("skills-content");
         generateSkills(workspaceRoot);
@@ -71,11 +71,17 @@ const suite = {
         if (!guideContent.includes("## Before starting any task")) {
           throw new Error("AGENT_GUIDE.md is missing expected content");
         }
-        if (claudeMd !== guideContent) {
-          throw new Error("CLAUDE.md does not match AGENT_GUIDE.md content");
+        if (!claudeMd.includes("ALWAYS use workflow_* MCP tools")) {
+          throw new Error("CLAUDE.md missing workflow rules");
         }
-        if (agentsMd !== guideContent) {
-          throw new Error("AGENTS.md does not match AGENT_GUIDE.md content");
+        if (!claudeMd.includes("NEVER use built-in TaskCreate")) {
+          throw new Error("CLAUDE.md missing TaskCreate exclusion rule");
+        }
+        if (!claudeMd.includes(guideContent)) {
+          throw new Error("CLAUDE.md does not contain the full AGENT_GUIDE.md content");
+        }
+        if (!agentsMd.includes(guideContent)) {
+          throw new Error("AGENTS.md does not contain the full AGENT_GUIDE.md content");
         }
       },
     },
@@ -86,29 +92,26 @@ const suite = {
         if (!initCmd.includes("npx agent-workflow init")) {
           throw new Error("workflow-init.md missing init command");
         }
-        if (!initCmd.includes("memory-bootstrap.md")) {
-          throw new Error("workflow-init.md missing bootstrap reference");
-        }
 
         const taskCmd = COMMAND_TEMPLATES["workflow-task.md"];
         if (!taskCmd.includes("$ARGUMENTS")) {
           throw new Error("workflow-task.md missing $ARGUMENTS placeholder");
         }
-        if (!taskCmd.includes("repo path:")) {
-          throw new Error("workflow-task.md missing scope format hint");
+        if (!taskCmd.includes("workflow_quick")) {
+          throw new Error("workflow-task.md missing MCP tool reference");
         }
 
         const doneCmd = COMMAND_TEMPLATES["workflow-done.md"];
-        if (!doneCmd.includes("run:add")) {
-          throw new Error("workflow-done.md missing run:add command");
+        if (!doneCmd.includes("workflow_done")) {
+          throw new Error("workflow-done.md missing MCP tool reference");
         }
-        if (!doneCmd.includes("checkpoint")) {
-          throw new Error("workflow-done.md missing checkpoint command");
+        if (!doneCmd.includes("--complete")) {
+          throw new Error("workflow-done.md missing --complete flag");
         }
 
         const statusCmd = COMMAND_TEMPLATES["workflow-status.md"];
-        if (!statusCmd.includes("validate")) {
-          throw new Error("workflow-status.md missing validate command");
+        if (!statusCmd.includes("workflow_overview")) {
+          throw new Error("workflow-status.md missing MCP tool reference");
         }
       },
     },

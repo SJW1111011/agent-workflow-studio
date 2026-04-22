@@ -7,82 +7,101 @@ function loadAgentGuideContent() {
   return readText(AGENT_GUIDE_PATH, "");
 }
 
+function buildClaudeMdContent(guideContent) {
+  const rules = `# Workflow Rules
+
+This project uses agent-workflow-studio for task management, evidence tracking, and trust scoring.
+
+## Required behavior
+
+- ALWAYS use workflow_* MCP tools for task creation, progress tracking, and evidence recording
+- NEVER use built-in TaskCreate, TaskList, or TaskUpdate for project work — those are ephemeral and invisible to the dashboard
+- When the user says "create a task", use workflow_quick
+- When work is done, use workflow_done — it auto-infers changed files and runs test collectors
+- Use workflow_record_activity for progress breadcrumbs during long work
+- Use workflow:// resources to read task context, evidence, and memory
+- Use workflow-resume prompt to get full context when picking up a task
+
+## Quick reference
+
+- Create task: \`workflow_quick({ title: "...", mode: "lite" })\`
+- Finish task: \`workflow_done({ taskId: "T-001", summary: "...", complete: true })\`
+- List tasks: \`workflow_task_list({})\`
+- Project health: \`workflow_overview({})\`
+- Resume context: use \`workflow-resume\` prompt with taskId
+
+`;
+  return rules + guideContent;
+}
+
 const COMMAND_TEMPLATES = {
-  "workflow-init.md": `Initialize agent-workflow-studio in this repository and bootstrap project memory.
+  "workflow-init.md": `Initialize agent-workflow-studio in this repository.
 
 Steps:
 1. Run \`npx agent-workflow init --root .\`
 2. Run \`npx agent-workflow scan --root .\`
 3. Run \`npx agent-workflow memory:bootstrap --root .\`
-4. Read \`.agent-workflow/handoffs/memory-bootstrap.md\` and follow its instructions to fill the memory docs under \`.agent-workflow/memory/\`
-5. After writing each memory doc, review it and remove any guesses not supported by actual code or docs
-6. Run \`npx agent-workflow validate --root .\` to confirm the scaffold is healthy
+4. Read \`.agent-workflow/handoffs/memory-bootstrap.md\` and follow its instructions
+5. Run \`npx agent-workflow validate --root .\`
 
 Show the user a summary when done.
 `,
-  "workflow-task.md": `Create a new structured task for the given work.
+  "workflow-task.md": `Create a new workflow task.
 
-Run:
-\`\`\`bash
-npx agent-workflow quick "$ARGUMENTS" --root .
+If MCP is available, use:
+\`\`\`
+workflow_quick({ title: "$ARGUMENTS", mode: "lite" })
 \`\`\`
 
-After creation, edit the generated task.md:
-- Fill Goal with a one-paragraph user outcome
-- Fill Scope with repo-relative paths (use \`repo path: src/auth/\` format)
-  - In scope: files and directories this task will touch
-  - Out of scope: what should not be changed
-- Fill Deliverables and Risks
+Otherwise fall back to CLI:
+\`\`\`bash
+npx agent-workflow quick "$ARGUMENTS" --lite --root .
+\`\`\`
 
-Then read context.md and verification.md:
-- context.md: fill Why now, Facts, Open questions
-- verification.md: fill Draft checks (automated and manual)
-
-Show the user a summary of the created task when done.
+Show the user the created task ID.
 `,
-  "workflow-done.md": `Record evidence for the current task and refresh the checkpoint.
+  "workflow-done.md": `Record evidence and mark the current task done.
 
-Steps:
-1. Run \`npx agent-workflow task:list --root .\` to find the active task
-2. Identify which files you changed that are within the task scope
-3. For each scoped file you changed, prepare a --proof-path and a --check
-4. Record evidence:
-   \`\`\`bash
-   npx agent-workflow run:add <taskId> "<one-line summary>" \\
-     --status passed \\
-     --proof-path <file1> \\
-     --proof-path <file2> \\
-     --check "<what you verified for file1>" \\
-     --check "<what you verified for file2>" \\
-     --root .
-   \`\`\`
-   Use \`--status draft\` if verification is incomplete.
-5. Run \`npx agent-workflow checkpoint <taskId> --root .\`
-6. Show the user the checkpoint summary from \`.agent-workflow/tasks/<taskId>/checkpoint.md\`
+If MCP is available, use:
+\`\`\`
+workflow_done({ taskId: "<taskId>", summary: "$ARGUMENTS", complete: true })
+\`\`\`
+
+Otherwise fall back to CLI:
+\`\`\`bash
+npx agent-workflow done <taskId> "$ARGUMENTS" --complete --root .
+\`\`\`
+
+Both paths auto-infer changed files from git diff and run matching test collectors.
+Show the user the evidence summary.
 `,
-  "workflow-status.md": `Show the current workflow state and highlight any issues.
+  "workflow-status.md": `Show project workflow health.
 
-Steps:
-1. Run \`npx agent-workflow task:list --root .\`
-2. Run \`npx agent-workflow validate --root .\`
-3. Read and summarize:
-   - Total tasks and their statuses (todo / in_progress / done)
-   - Which tasks have verified evidence, which still need attention
-   - Any validation warnings or errors
-4. If there are risks or stale docs, tell the user what needs attention
-5. Suggest next actions (e.g. "T-002 still needs verified evidence for src/auth.js")
+If MCP is available, use:
+\`\`\`
+workflow_overview({})
+\`\`\`
+
+Otherwise fall back to CLI:
+\`\`\`bash
+npx agent-workflow task:list --root .
+npx agent-workflow validate --root .
+\`\`\`
+
+Summarize: task counts by status, evidence coverage, trust scores, and any issues needing attention.
 `,
 };
 
 function generateSkills(workspaceRoot) {
   const guideContent = loadAgentGuideContent();
+  const claudeMdContent = buildClaudeMdContent(guideContent);
   const results = [];
 
   const claudeMdPath = path.join(workspaceRoot, "CLAUDE.md");
-  results.push(writeSkillFile(claudeMdPath, guideContent, "CLAUDE.md"));
+  results.push(writeSkillFile(claudeMdPath, claudeMdContent, "CLAUDE.md"));
 
   const agentsMdPath = path.join(workspaceRoot, "AGENTS.md");
-  results.push(writeSkillFile(agentsMdPath, guideContent, "AGENTS.md"));
+  results.push(writeSkillFile(agentsMdPath, claudeMdContent, "AGENTS.md"));
 
   const commandsDir = path.join(workspaceRoot, ".claude", "commands");
   ensureDir(commandsDir);
@@ -130,6 +149,7 @@ function formatSkillsSummary(result) {
 
 module.exports = {
   COMMAND_TEMPLATES,
+  buildClaudeMdContent,
   formatSkillsSummary,
   generateSkills,
   loadAgentGuideContent,

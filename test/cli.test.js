@@ -233,7 +233,7 @@ const tests = [
     },
   },
   {
-    name: "skills:generate prints its deprecation warning to stderr while still generating files",
+    name: "skills:generate creates CLAUDE.md with workflow rules and AGENTS.md",
     run() {
       const { workspaceRoot } = createTaskWorkspace("cli-skills-generate");
 
@@ -241,14 +241,14 @@ const tests = [
         main(["skills:generate", "--root", workspaceRoot]);
       });
 
-      assert.match(
-        result.stderr,
-        /Deprecated: MCP tools are self-describing and do not need generated skill files\. skills:generate will be removed in 0\.3\.0\./
-      );
-      assert.doesNotMatch(result.stdout, /Deprecated:/);
+      assert.doesNotMatch(result.stderr, /Deprecated:/);
       assert.match(result.stdout, /Skills generated: \d+ created, \d+ already existed/);
       assert.equal(fs.existsSync(path.join(workspaceRoot, "AGENTS.md")), true);
       assert.equal(fs.existsSync(path.join(workspaceRoot, "CLAUDE.md")), true);
+
+      const claudeMd = fs.readFileSync(path.join(workspaceRoot, "CLAUDE.md"), "utf8");
+      assert.match(claudeMd, /ALWAYS use workflow_\* MCP tools/);
+      assert.match(claudeMd, /NEVER use built-in TaskCreate/);
     },
   },
   {
