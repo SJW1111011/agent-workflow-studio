@@ -15,11 +15,19 @@ Transform the dashboard from a data viewer into a trust surface that answers "ca
 
 - In scope:
   - repo path: dashboard-next/src/components/Overview.jsx (trust score card, freshness heatmap)
-  - repo path: dashboard-next/src/components/TrustScore.jsx (new — trust score display component)
-  - repo path: dashboard-next/src/components/EvidenceTimeline.jsx (new — chronological evidence events)
+  - repo path: dashboard-next/src/components/TrustScore.jsx (new trust score display component)
+  - repo path: dashboard-next/src/components/EvidenceTimeline.jsx (new chronological evidence events)
   - repo path: dashboard-next/src/components/TaskDetail.jsx (evidence timeline, activity log)
-  - repo path: dashboard-next/src/utils/trustScore.js (new — pure trust score calculation)
+  - repo path: dashboard-next/src/hooks/useApi.js (load trust summary endpoint)
+  - repo path: dashboard-next/src/hooks/useDashboardState.js (hydrate trust summary into overview state)
+  - repo path: dashboard-next/src/styles/app.css (trust surface styling in light and dark themes)
+  - repo path: dashboard-next/src/utils/api.js (dashboard trust-summary client helper)
+  - repo path: dashboard-next/src/utils/trustScore.js (new pure trust score calculation)
+  - repo path: dashboard/api-client-helpers.js (legacy helper parity for trust-summary route)
+  - repo path: src/lib/trust-summary.js (server-side trust summary builder)
   - repo path: src/server.js (new API endpoint: GET /api/trust-summary)
+  - repo path: test/dashboard-api-client-helpers.test.js (trust-summary client contract)
+  - repo path: test/server-api.test.js (trust-summary endpoint coverage)
   - repo path: test/trust-score.test.js (new tests)
 - Out of scope:
   - repo path: src/lib/mcp-tools.js (no MCP changes)
@@ -42,7 +50,7 @@ Formula: `trustScore = 0.4 * coverage + 0.25 * signal + 0.2 * freshness + 0.15 *
 - TrustScore: circular progress indicator with score number, color-coded (green >= 80, yellow >= 50, red < 50)
 - Overview: aggregate trust score card alongside existing task count cards
 - EvidenceTimeline: vertical timeline of all evidence events (runs, activity records, verification changes) for a task
-- Freshness heatmap: grid of tasks × time, color = freshness status
+- Freshness heatmap: grid of tasks x time, color = freshness status
 
 ### API
 
@@ -79,5 +87,5 @@ Formula: `trustScore = 0.4 * coverage + 0.25 * signal + 0.2 * freshness + 0.15 *
 
 ## Risks
 
-- Trust score formula may need tuning after real-world usage — keep it simple and adjustable
-- Heatmap may be hard to read with many tasks — consider pagination or filtering
+- Trust score formula may need tuning after real-world usage; keep it simple and adjustable.
+- Heatmap readability may need filtering or paging if task counts grow far past the current dashboard scale.

@@ -14,14 +14,16 @@ Mark `prompt:compile` and `skills:generate` as deprecated, print warnings to std
 ## Scope
 
 - In scope:
-  - repo path: src/cli.js (add deprecation warnings to prompt:compile and skills:generate)
-  - repo path: src/lib/prompt-compiler.js (add deprecation notice at top of output)
-  - repo path: AGENT_GUIDE.md (update MCP path to reference resources/prompts)
-  - repo path: README.md (remove prompt:compile from primary paths, add note about deprecation)
-  - repo path: docs/ROADMAP.md (update Phase 5 progress)
+  - repo path: src/cli.js
+  - repo path: src/lib/prompt-compiler.js
+  - repo path: AGENT_GUIDE.md
+  - repo path: README.md
+  - repo path: docs/ROADMAP.md
+  - repo path: test/cli.test.js
+  - repo path: test/quick-task.test.js
 - Out of scope:
-  - repo path: src/lib/mcp-tools.js (no MCP changes)
-  - repo path: dashboard-next/ (no dashboard changes)
+  - repo path: src/lib/mcp-tools.js
+  - repo path: dashboard-next/
 
 ## Design
 

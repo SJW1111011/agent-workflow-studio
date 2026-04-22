@@ -1,6 +1,6 @@
 # Agent Workflow Studio - Agent Guide
 
-This file teaches any coding agent how to use agent-workflow-studio. When `skills:generate` is run, this guide is copied into `CLAUDE.md` and `AGENTS.md` at the target repository root.
+This file teaches any coding agent how to use agent-workflow-studio. Legacy `skills:generate` still copies it into `CLAUDE.md` and `AGENTS.md`, but the preferred path is MCP resources and prompts.
 
 ## Choose your workflow
 
@@ -41,8 +41,8 @@ npx agent-workflow done T-001 "Implemented JWT login" --complete --root .
 ```bash
 npx agent-workflow quick "Add auth" --full --agent codex --root .
 # Fill in task.md, context.md, verification.md
-npx agent-workflow prompt:compile T-001 --root .
-# Hand prompt to agent, or use run:execute
+# Preferred: in MCP, read workflow://tasks/T-001 or use workflow-resume
+# Legacy fallback: hand the generated prompt.codex.md / prompt.claude.md to the agent, or use run:execute
 npx agent-workflow done T-001 "Implemented JWT login" --status passed \
   --proof-path src/auth.js --check "tests pass" --complete --root .
 ```

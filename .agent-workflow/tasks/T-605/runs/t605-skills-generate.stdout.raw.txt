@@ -1,0 +1,10 @@
+Skills generated: 6 created, 0 already existed
+  + CLAUDE.md
+  + AGENTS.md
+  + .claude/commands/workflow-init.md
+  + .claude/commands/workflow-task.md
+  + .claude/commands/workflow-done.md
+  + .claude/commands/workflow-status.md
+
+Claude Code users: /workflow-init, /workflow-task, /workflow-done, /workflow-status
+Codex users: AGENTS.md is auto-loaded — the agent already knows the workflow

@@ -20,6 +20,9 @@ export function createDashboardApiClient(fetchImpl) {
     loadOverview() {
       return request("/api/overview");
     },
+    loadTrustSummary() {
+      return request("/api/trust-summary");
+    },
     loadTaskDetail(taskId) {
       return request(`/api/tasks/${encodeURIComponent(taskId)}`);
     },

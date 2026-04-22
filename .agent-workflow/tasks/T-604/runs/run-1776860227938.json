@@ -1,0 +1,71 @@
+{
+  "id": "run-1776860227938",
+  "taskId": "T-604",
+  "agent": "codex",
+  "status": "passed",
+  "summary": "Implemented the dashboard trust surface with deterministic scoring, freshness heatmap, and evidence timeline.",
+  "createdAt": "2026-04-22T12:17:07.936Z",
+  "scopeProofPaths": [
+    "dashboard-next/src/components/Overview.jsx",
+    "dashboard-next/src/components/TrustScore.jsx",
+    "dashboard-next/src/components/EvidenceTimeline.jsx",
+    "dashboard-next/src/components/TaskDetail.jsx",
+    "dashboard-next/src/hooks/useApi.js",
+    "dashboard-next/src/hooks/useDashboardState.js",
+    "dashboard-next/src/styles/app.css",
+    "dashboard-next/src/utils/api.js",
+    "dashboard-next/src/utils/trustScore.js",
+    "dashboard/api-client-helpers.js",
+    "src/lib/trust-summary.js",
+    "src/server.js",
+    "test/dashboard-api-client-helpers.test.js",
+    "test/server-api.test.js",
+    "test/trust-score.test.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run dashboard:build",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    "dist/index.html"
+  ],
+  "evidence": {
+    "proofPaths": [
+      "dashboard-next/src/components/Overview.jsx",
+      "dashboard-next/src/components/TrustScore.jsx",
+      "dashboard-next/src/components/EvidenceTimeline.jsx",
+      "dashboard-next/src/components/TaskDetail.jsx",
+      "dashboard-next/src/hooks/useApi.js",
+      "dashboard-next/src/hooks/useDashboardState.js",
+      "dashboard-next/src/styles/app.css",
+      "dashboard-next/src/utils/api.js",
+      "dashboard-next/src/utils/trustScore.js",
+      "dashboard/api-client-helpers.js",
+      "src/lib/trust-summary.js",
+      "src/server.js",
+      "test/dashboard-api-client-helpers.test.js",
+      "test/server-api.test.js",
+      "test/trust-score.test.js"
+    ],
+    "checks": [
+      {
+        "label": "npm test",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "npm run dashboard:build",
+        "status": "passed",
+        "artifacts": []
+      }
+    ]
+  }
+}

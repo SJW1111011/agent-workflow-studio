@@ -1,4 +1,6 @@
 import ExecutionPanel from "./ExecutionPanel.jsx";
+import EvidenceTimeline from "./EvidenceTimeline.jsx";
+import TrustScore from "./TrustScore.jsx";
 import { useDashboardContext } from "../context/DashboardContext.jsx";
 import {
   describeRunPresentation,
@@ -7,6 +9,7 @@ import {
   isVerificationGateWarning,
 } from "../utils/execution.js";
 import { describeVerificationProofSignals } from "../utils/document.js";
+import { buildTaskTrustSnapshot } from "../utils/trustScore.js";
 
 function EvidenceList({ emptyMessage, items, renderItem }) {
   if (!items.length) {
@@ -135,9 +138,45 @@ function ProofItem({ item, variant }) {
   );
 }
 
+function ActivityRecordCard({ record }) {
+  const metadataEntries =
+    record && record.metadata && typeof record.metadata === "object"
+      ? Object.entries(record.metadata).filter(([, value]) => value !== undefined)
+      : [];
+
+  return (
+    <article className="list-item">
+      <h3>{record.activity || "Activity recorded"}</h3>
+      <p className="subtle">
+        {record.createdAt
+          ? formatTimestampLabel(record.createdAt)
+          : "No timestamp recorded."}
+      </p>
+      <div className="tag-row">
+        <span className="tag">activity</span>
+        {Array.isArray(record.filesModified) && record.filesModified.length > 0 ? (
+          <span className="tag">{record.filesModified.length} file(s)</span>
+        ) : null}
+      </div>
+      {Array.isArray(record.filesModified) && record.filesModified.length > 0 ? (
+        <p className="subtle">Files: {record.filesModified.join(", ")}</p>
+      ) : null}
+      {metadataEntries.length > 0 ? (
+        <p className="subtle">
+          {metadataEntries
+            .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : value}`)
+            .join(" | ")}
+        </p>
+      ) : null}
+    </article>
+  );
+}
+
 export default function TaskDetail({ hidden }) {
   const { state } = useDashboardContext();
   const detail = state.taskDetail.data;
+  const trust =
+    detail && detail.meta && detail.meta.id ? buildTaskTrustSnapshot(detail) : null;
 
   return (
     <section className={hidden ? "panel panel-wide tab-hidden" : "panel panel-wide"} data-tab="tasks">
@@ -169,6 +208,18 @@ export default function TaskDetail({ hidden }) {
             <p>{detail.recipe?.summary || "No recipe summary available."}</p>
           </article>
 
+          <TrustScore
+            className="detail-card"
+            collectorCount={trust?.collectorCount || 0}
+            coverage={trust?.coverage || 0}
+            freshness={trust?.freshness || "stale"}
+            lastEvidenceAt={trust?.lastEvidenceAt || null}
+            score={trust?.trustScore || 0}
+            signal={trust?.signal || "none"}
+            subtitle="Deterministic blend of evidence coverage, signal strength, freshness, and collector diversity."
+            title="Task Trust"
+          />
+
           <article className="detail-card">
             <h3>Generated Files</h3>
             <div className="list">
@@ -182,6 +233,19 @@ export default function TaskDetail({ hidden }) {
                       <span className={item.exists ? "tag" : "tag warn"}>{item.exists ? "Generated" : "Missing"}</span>
                     </div>
                   </article>
+                )}
+              />
+            </div>
+          </article>
+
+          <article className="detail-card">
+            <h3>Activity Log</h3>
+            <div className="list">
+              <EvidenceList
+                emptyMessage="No activity records tracked yet."
+                items={detail.activityRecords || []}
+                renderItem={(record) => (
+                  <ActivityRecordCard key={record.id} record={record} />
                 )}
               />
             </div>
@@ -214,6 +278,11 @@ export default function TaskDetail({ hidden }) {
               <pre className="detail-pre">{detail.checkpointText || "No checkpoint.md content."}</pre>
             </div>
           </details>
+
+          <article className="detail-card wide">
+            <h3>Evidence Timeline</h3>
+            <EvidenceTimeline detail={detail} />
+          </article>
 
           <article className="detail-card">
             <h3>Runs</h3>

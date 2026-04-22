@@ -54,6 +54,7 @@ const tests = [
       await client.patchJson("/api/tasks/T-001", { status: "done" });
       await client.putJson("/api/tasks/T-001/documents/task.md", { content: "# updated" });
       await client.loadOverview();
+      await client.loadTrustSummary();
       await client.loadTaskDetail("T 002");
       await client.loadTaskExecution("T 002");
       await client.loadTaskExecutionLog("T 002", "stdout", 2048);
@@ -66,10 +67,11 @@ const tests = [
       assert.equal(calls[2].options.method, "PATCH");
       assert.equal(calls[3].options.method, "PUT");
       assert.equal(calls[4].url, "/api/overview");
-      assert.equal(calls[5].url, "/api/tasks/T%20002");
-      assert.equal(calls[6].url, "/api/tasks/T%20002/execution");
-      assert.equal(calls[7].url, "/api/tasks/T%20002/execution/logs/stdout?maxChars=2048");
-      assert.equal(calls[8].url, "/api/tasks/T%20002/runs/run%207/logs/stderr");
+      assert.equal(calls[5].url, "/api/trust-summary");
+      assert.equal(calls[6].url, "/api/tasks/T%20002");
+      assert.equal(calls[7].url, "/api/tasks/T%20002/execution");
+      assert.equal(calls[8].url, "/api/tasks/T%20002/execution/logs/stdout?maxChars=2048");
+      assert.equal(calls[9].url, "/api/tasks/T%20002/runs/run%207/logs/stderr");
     },
   },
   {

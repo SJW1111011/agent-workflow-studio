@@ -1,0 +1,8 @@
+exitCode=0
+root=C:\Users\lenovo\Desktop\agent-workflow-studio\tmp\t605-skills-generate-33e7930dc25d4201926a0ce100345099
+AGENTS.md=True
+CLAUDE.md=True
+.claude/commands/workflow-init.md=True
+.claude/commands/workflow-task.md=True
+.claude/commands/workflow-done.md=True
+.claude/commands/workflow-status.md=True

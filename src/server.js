@@ -12,6 +12,7 @@ const { quickCreateTask } = require("./lib/quick-task");
 const { listRecipes } = require("./lib/recipes");
 const { validateWorkspace } = require("./lib/schema-validator");
 const { refreshManualProofAnchors, saveTaskDocument } = require("./lib/task-documents");
+const { buildTrustSummary } = require("./lib/trust-summary");
 const {
   appendTaskNote,
   createTask,
@@ -54,6 +55,10 @@ function startDashboardServer(workspaceRoot, options = {}) {
 
         if (requestUrl.pathname === "/api/overview") {
           return sendJson(response, 200, buildOverview(workspaceRoot));
+        }
+
+        if (requestUrl.pathname === "/api/trust-summary") {
+          return sendJson(response, 200, buildTrustSummary(workspaceRoot));
         }
 
         if (requestUrl.pathname === "/api/tasks" && request.method === "GET") {

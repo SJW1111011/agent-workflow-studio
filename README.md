@@ -130,18 +130,25 @@ That keeps backward compatibility for polling clients while giving the dashboard
 - **`mcp:serve`** - expose the core workflow operations as MCP tools over stdio for Claude Code, Cursor, and other MCP clients
 - **`verification gate`** - compare repo-relative task scope against the current repository snapshot and surface evidence coverage as a percentage, while still listing which scoped files need explicit evidence
 - **`verification records`** - use timestamp-based freshness by default, with opt-in strict fingerprint checks for audit-heavy workflows
-- **`skills:generate`** - write `AGENTS.md`, `CLAUDE.md`, and Claude slash commands so the workflow becomes part of the agent's default context
+- **`skills:generate` (deprecated)** - legacy helper that writes `AGENTS.md`, `CLAUDE.md`, and Claude slash commands; prefer MCP resources and prompts instead
 - **`dashboard`** - inspect tasks, evidence, freshness, risks, execution state, and quick-create flows from a local control plane at `localhost:4173`
 
 ## Built for agents too
 
-Teach Codex and Claude Code the workflow automatically:
+Prefer MCP resources and prompts for agent setup:
+
+```bash
+npx agent-workflow mcp:install --client codex --root .
+npx agent-workflow mcp:install --client claude --root .
+```
+
+Then have the agent read `workflow://tasks/{taskId}` or use the `workflow-resume` prompt for a full handoff package.
+
+`skills:generate` is still available as a deprecated fallback when you specifically need repo-root `AGENTS.md` / `CLAUDE.md` files:
 
 ```bash
 npx agent-workflow skills:generate --root .
 ```
-
-This writes `AGENTS.md`, `CLAUDE.md`, and Claude slash commands so the agent can follow the same task/evidence/checkpoint flow without manual setup.
 
 See [AGENT_GUIDE.md](AGENT_GUIDE.md) for the full workflow guide.
 
@@ -180,7 +187,7 @@ For a quick terminal check, you can still start the stdio server directly:
 npx agent-workflow mcp:serve --root .
 ```
 
-The server exposes read-only MCP resources, MCP prompt packages, and MCP tools.
+The server exposes read-only MCP resources, MCP prompt packages, and MCP tools. These MCP surfaces are the recommended replacement for `prompt:compile`.
 
 Resources:
 
@@ -260,8 +267,8 @@ If you've run `mcp:install`, just talk to your agent:
 
 1. Create a task with `quick` or `task:new` (Full mode).
 2. Fill in `task.md` (scope, deliverables, risks), `context.md`, and `verification.md`.
-3. Compile the prompt: `prompt:compile T-001 --root .`
-4. Hand the prompt to Codex or Claude Code, or use `run:execute` with a local adapter.
+3. For agent handoff, prefer MCP resource `workflow://tasks/T-001` or the `workflow-resume` prompt.
+4. Legacy fallback: use the generated prompt file from Full mode, or use `run:execute` with a local adapter.
 5. Record evidence: `done T-001 "summary" --status passed --proof-path src/auth.js --check "tests pass" --complete --root .`
 6. Add `--strict` for fingerprint-backed freshness, or set `strictVerification: true` in `project.json`.
 7. Review `checkpoint.md` and the verification gate.
@@ -280,7 +287,7 @@ npx agent-workflow undo --root .
 
 `quick` now supports two task creation modes:
 
-- `npx agent-workflow quick "My task" --lite --root .` creates only `task.json` and `task.md`, then lets `prompt:compile`, `run:prepare`, `run:add`, `done`, and `checkpoint` materialize the rest on demand.
+- `npx agent-workflow quick "My task" --lite --root .` creates only `task.json` and `task.md`, then lets legacy `prompt:compile`, `run:prepare`, `run:add`, `done`, and `checkpoint` materialize the rest on demand.
 - `npx agent-workflow quick "My task" --full --agent codex --root .` preserves the current full bundle: task docs, prompt, run request, launch pack, and checkpoint.
 - The current default is still Full Mode so existing workflows keep working unchanged.
 
@@ -334,9 +341,9 @@ Coding agents are powerful but forgetful. They lose context between sessions, le
 - **Onboarding:** `init`, `scan`, `memory:bootstrap`, `memory:validate`
 - **Tasking:** `recipe:list`, `quick`, `task:new`, `task:list`
 - **Adapters:** `adapter:list`, `adapter:create`
-- **Execution:** `prompt:compile`, `run:prepare`, `run:execute`, `run:add`, `done`, `checkpoint`, `undo`, `mcp:install`, `mcp:uninstall`, `mcp:serve`
+- **Execution:** `run:prepare`, `run:execute`, `run:add`, `done`, `checkpoint`, `undo`, `mcp:install`, `mcp:uninstall`, `mcp:serve`
 - **Inspection:** `dashboard`, `validate`
-- **Skills:** `skills:generate`
+- **Deprecated:** `prompt:compile`, `skills:generate`
 
 ## Adapter layer
 

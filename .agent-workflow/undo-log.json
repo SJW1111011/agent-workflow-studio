@@ -1,129 +1,5 @@
 [
   {
-    "type": "run:add",
-    "taskId": "T-504",
-    "timestamp": "2026-04-19T08:03:27.839Z",
-    "files": [
-      ".agent-workflow/tasks/T-504/checkpoint.json",
-      ".agent-workflow/tasks/T-504/checkpoint.md",
-      ".agent-workflow/tasks/T-504/context.md",
-      ".agent-workflow/tasks/T-504/runs",
-      ".agent-workflow/tasks/T-504/runs/run-1776585807593.json",
-      ".agent-workflow/tasks/T-504/task.json",
-      ".agent-workflow/tasks/T-504/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-504/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-504\",\n  \"title\": \"Multi-task views: kanban board and timeline view alongside existing list\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P2\",\n  \"status\": \"in_progress\",\n  \"createdAt\": \"2026-04-17T09:11:46.310Z\",\n  \"updatedAt\": \"2026-04-19T07:53:50.581Z\",\n  \"goal\": \"Add persisted list, kanban, and timeline task views to the modern dashboard so users can scan status and time-based task context without losing the existing detail workflow.\",\n  \"scope\": [\n    \"dashboard-next/src/components/TaskList.jsx\",\n    \"dashboard-next/src/components/ViewSelector.jsx\",\n    \"dashboard-next/src/components/TaskKanban.jsx\",\n    \"dashboard-next/src/components/TaskTimeline.jsx\",\n    \"dashboard-next/src/utils/taskViews.js\",\n    \"dashboard-next/src/styles/app.css\",\n    \"test/dashboard-next-task-views.test.js\"\n  ],\n  \"nonGoals\": [\n    \"src/**\",\n    \"drag-and-drop status mutation\",\n    \"gantt-style planning views\"\n  ],\n  \"requiredDocs\": [\n    \".agent-workflow/project-profile.md\",\n    \".agent-workflow/memory/product.md\",\n    \".agent-workflow/memory/architecture.md\"\n  ],\n  \"verificationCommands\": [\n    \"npm run lint\",\n    \"npm run dashboard:build\",\n    \"npm test\"\n  ]\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-504/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-504 Context\n\n## Why now\n\nThe current dashboard shows tasks as a flat list. With 20+ tasks already present in this repository, the list becomes hard to scan. Kanban gives status-at-a-glance, timeline gives temporal context, and together they make the dashboard feel like a real project-management surface instead of a task dump.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `dashboard-next/src/components/TaskList.jsx` already owns executor outcome filtering and task selection.\n- Overview data already exposes both `tasks` and top-level `runs`, so kanban and timeline can stay client-side.\n- Task metadata includes `createdAt` / `updatedAt`, and run records include timestamps that can render as timeline dots.\n- Theme persistence and responsive tokens already exist in `dashboard-next`, so the new views should reuse that surface instead of inventing parallel styling.\n- This repository already has enough tasks to make list-only scanning noisy, which gives the new views meaningful built-in test data.\n\n## Open questions\n\n- Should drag-and-drop status mutation be added later? Keep it out of scope for this slice unless product direction changes.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-501 (components) and T-503 (dark mode; views must work in both themes)\n- No external dependencies for drag-and-drop\n- No server or API changes for v1\n- Must pass `npm run lint`, `npm run dashboard:build`, and `npm test`\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-504/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-504 Verification\n\n## Draft checks\n\n- automated: `npm run lint`\n- automated: `npm run dashboard:build`\n- automated: `npm test`\n- manual: confirm the selector persists, kanban groups by status, timeline orders tasks by creation date, and clicking a task from any view still opens the detail panel\n- manual: inspect the 375px layout so kanban stacks vertically and timeline scrolls horizontally\n\n## Verification records\n\n### Record 1\n\n- Files: `dashboard-next/src/components/TaskList.jsx`, `dashboard-next/src/components/ViewSelector.jsx`, `dashboard-next/src/components/TaskKanban.jsx`, `dashboard-next/src/components/TaskTimeline.jsx`, `dashboard-next/src/utils/taskViews.js`, `dashboard-next/src/styles/app.css`, `test/dashboard-next-task-views.test.js`\n- Check: automated validation for the shared selector, status-grouped kanban board, and creation-date timeline using existing overview task/run data\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-504/runs/npm-lint.log`, `.agent-workflow/tasks/T-504/runs/dashboard-build.log`, `.agent-workflow/tasks/T-504/runs/npm-test.log`\n\n### Record 2\n\n- Files: `dashboard-next/src/components/TaskList.jsx`, `dashboard-next/src/components/ViewSelector.jsx`, `dashboard-next/src/components/TaskKanban.jsx`, `dashboard-next/src/components/TaskTimeline.jsx`, `dashboard-next/src/styles/app.css`\n- Check: manual browser verification for persisted selector behavior, click-through task selection, and the 375px mobile layout\n- Result: not run\n- Artifact:\n\n## Blocking gaps\n\n- Manual browser verification is still pending in this session.\n\n## Evidence 2026-04-19T07:53:50.581Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/ViewSelector.jsx, dashboard-next/src/components/TaskKanban.jsx, dashboard-next/src/components/TaskTimeline.jsx, dashboard-next/src/utils/taskViews.js, dashboard-next/src/styles/app.css, test/dashboard-next-task-views.test.js, .agent-workflow/tasks/T-504/task.md, .agent-workflow/tasks/T-504/task.json, .agent-workflow/tasks/T-504/context.md, .agent-workflow/tasks/T-504/verification.md\n- Verification artifacts: .agent-workflow/tasks/T-504/runs/npm-lint.log, .agent-workflow/tasks/T-504/runs/dashboard-build.log, .agent-workflow/tasks/T-504/runs/npm-test.log\n- Proof artifacts: .agent-workflow/tasks/T-504/runs/npm-lint.log, .agent-workflow/tasks/T-504/runs/dashboard-build.log, .agent-workflow/tasks/T-504/runs/npm-test.log\n- Summary: Implemented persisted list, kanban, and timeline task views in the modern dashboard.\n- Verification check: [passed] npm run lint passes\n- Verification check: [passed] npm run dashboard:build passes\n- Verification check: [passed] npm test passes (35 files, 172 tests)\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-504/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-504\",\n  \"generatedAt\": \"2026-04-19T07:54:46.597Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 100,\n    \"scopeHintCount\": 22,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 7,\n    \"coveredFileCount\": 7,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-504/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-504 Checkpoint\n\nGenerated at: 2026-04-19T07:54:46.597Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Multi-task views: kanban board and timeline view alongside existing list\n- Priority: P2\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (7/7 scoped files)\n- Scope hints: 22\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- dashboard-next/src/components/TaskList.jsx\n- dashboard-next/src/styles/app.css\n- dashboard-next/src/components/TaskKanban.jsx\n- dashboard-next/src/components/TaskTimeline.jsx\n- dashboard-next/src/components/ViewSelector.jsx\n- dashboard-next/src/utils/taskViews.js\n- test/dashboard-next-task-views.test.js\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/ViewSelector.jsx, dashboard-next/src/components/TaskKanban.jsx, dashboard-next/src/components/TaskTimeline.jsx, dashboard-next/src/utils/taskViews.js, dashboard-next/src/styles/app.css, test/dashboard-next-task-views.test.js | checks=automated validation for the shared selector, status-grouped kanban board, and creation-date timeline using existing overview task/run data (result: passed) | artifacts=.agent-workflow/tasks/T-504/runs/npm-lint.log, .agent-workflow/tasks/T-504/runs/dashboard-build.log, .agent-workflow/tasks/T-504/runs/npm-test.log\n- manual:verification.md#proof-2 | paths=dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/ViewSelector.jsx, dashboard-next/src/components/TaskKanban.jsx, dashboard-next/src/components/TaskTimeline.jsx, dashboard-next/src/styles/app.css | checks=manual browser verification for persisted selector behavior, click-through task selection, and the 375px mobile layout (result: not run) | artifacts=none\n- run:run-1776585230582 | paths=dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/ViewSelector.jsx, dashboard-next/src/components/TaskKanban.jsx, dashboard-next/src/components/TaskTimeline.jsx, dashboard-next/src/utils/taskViews.js, dashboard-next/src/styles/app.css, test/dashboard-next-task-views.test.js, .agent-workflow/tasks/T-504/task.md, .agent-workflow/tasks/T-504/task.json, .agent-workflow/tasks/T-504/context.md, .agent-workflow/tasks/T-504/verification.md | checks=[passed] npm run lint passes; [passed] npm run dashboard:build passes; [passed] npm test passes (35 files, 172 tests) | artifacts=.agent-workflow/tasks/T-504/runs/npm-lint.log, .agent-workflow/tasks/T-504/runs/dashboard-build.log, .agent-workflow/tasks/T-504/runs/npm-test.log\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Implemented persisted list, kanban, and timeline task views in the modern dashboard.\n- Timestamp: 2026-04-19T07:53:50.581Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-504/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-504/runs/run-1776585807593.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-504/runs/run-1776585807593.json",
-      "runId": "run-1776585807593"
-    }
-  },
-  {
-    "type": "checkpoint",
-    "taskId": "T-504",
-    "timestamp": "2026-04-19T08:03:35.650Z",
-    "files": [
-      ".agent-workflow/tasks/T-504/checkpoint.json",
-      ".agent-workflow/tasks/T-504/checkpoint.md",
-      ".agent-workflow/tasks/T-504/context.md",
-      ".agent-workflow/tasks/T-504/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-504/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-504 Context\n\n## Why now\n\nThe current dashboard shows tasks as a flat list. With 20+ tasks already present in this repository, the list becomes hard to scan. Kanban gives status-at-a-glance, timeline gives temporal context, and together they make the dashboard feel like a real project-management surface instead of a task dump.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `dashboard-next/src/components/TaskList.jsx` already owns executor outcome filtering and task selection.\n- Overview data already exposes both `tasks` and top-level `runs`, so kanban and timeline can stay client-side.\n- Task metadata includes `createdAt` / `updatedAt`, and run records include timestamps that can render as timeline dots.\n- Theme persistence and responsive tokens already exist in `dashboard-next`, so the new views should reuse that surface instead of inventing parallel styling.\n- This repository already has enough tasks to make list-only scanning noisy, which gives the new views meaningful built-in test data.\n\n## Open questions\n\n- Should drag-and-drop status mutation be added later? Keep it out of scope for this slice unless product direction changes.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-501 (components) and T-503 (dark mode; views must work in both themes)\n- No external dependencies for drag-and-drop\n- No server or API changes for v1\n- Must pass `npm run lint`, `npm run dashboard:build`, and `npm test`\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-504/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-504 Verification\n\n## Draft checks\n\n- automated: `npm run lint`\n- automated: `npm run dashboard:build`\n- automated: `npm test`\n- manual: confirm the selector persists, kanban groups by status, timeline orders tasks by creation date, and clicking a task from any view still opens the detail panel\n- manual: inspect the 375px layout so kanban stacks vertically and timeline scrolls horizontally\n\n## Verification records\n\n### Record 1\n\n- Files: `dashboard-next/src/components/TaskList.jsx`, `dashboard-next/src/components/ViewSelector.jsx`, `dashboard-next/src/components/TaskKanban.jsx`, `dashboard-next/src/components/TaskTimeline.jsx`, `dashboard-next/src/utils/taskViews.js`, `dashboard-next/src/styles/app.css`, `test/dashboard-next-task-views.test.js`\n- Check: automated validation for the shared selector, status-grouped kanban board, and creation-date timeline using existing overview task/run data\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-504/runs/npm-lint.log`, `.agent-workflow/tasks/T-504/runs/dashboard-build.log`, `.agent-workflow/tasks/T-504/runs/npm-test.log`\n\n### Record 2\n\n- Files: `dashboard-next/src/components/TaskList.jsx`, `dashboard-next/src/components/ViewSelector.jsx`, `dashboard-next/src/components/TaskKanban.jsx`, `dashboard-next/src/components/TaskTimeline.jsx`, `dashboard-next/src/styles/app.css`\n- Check: manual browser verification for persisted selector behavior, click-through task selection, and the 375px mobile layout\n- Result: not run\n- Artifact:\n\n## Blocking gaps\n\n- Manual browser verification is still pending in this session.\n\n## Evidence 2026-04-19T07:53:50.581Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/ViewSelector.jsx, dashboard-next/src/components/TaskKanban.jsx, dashboard-next/src/components/TaskTimeline.jsx, dashboard-next/src/utils/taskViews.js, dashboard-next/src/styles/app.css, test/dashboard-next-task-views.test.js, .agent-workflow/tasks/T-504/task.md, .agent-workflow/tasks/T-504/task.json, .agent-workflow/tasks/T-504/context.md, .agent-workflow/tasks/T-504/verification.md\n- Verification artifacts: .agent-workflow/tasks/T-504/runs/npm-lint.log, .agent-workflow/tasks/T-504/runs/dashboard-build.log, .agent-workflow/tasks/T-504/runs/npm-test.log\n- Proof artifacts: .agent-workflow/tasks/T-504/runs/npm-lint.log, .agent-workflow/tasks/T-504/runs/dashboard-build.log, .agent-workflow/tasks/T-504/runs/npm-test.log\n- Summary: Implemented persisted list, kanban, and timeline task views in the modern dashboard.\n- Verification check: [passed] npm run lint passes\n- Verification check: [passed] npm run dashboard:build passes\n- Verification check: [passed] npm test passes (35 files, 172 tests)\n\n## Evidence 2026-04-19T08:03:27.591Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: dashboard-next/src/styles/app.css\n- Verification artifacts: .agent-workflow/tasks/T-504/runs/dashboard-build.log\n- Proof artifacts: .agent-workflow/tasks/T-504/runs/dashboard-build.log\n- Summary: Revalidated the final kanban styling tweak after replacing color-mix() in app.css.\n- Verification check: [passed] npm run dashboard:build passes after the final app.css compatibility tweak\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-504/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-504\",\n  \"generatedAt\": \"2026-04-19T08:03:28.059Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 2,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"2 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 100,\n    \"scopeHintCount\": 22,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 7,\n    \"coveredFileCount\": 7,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-504/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-504 Checkpoint\n\nGenerated at: 2026-04-19T08:03:28.059Z\n\n## Completed\n\n- Prompt compiled\n- 2 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Multi-task views: kanban board and timeline view alongside existing list\n- Priority: P2\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 2\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (7/7 scoped files)\n- Scope hints: 22\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- dashboard-next/src/components/TaskList.jsx\n- dashboard-next/src/styles/app.css\n- dashboard-next/src/components/TaskKanban.jsx\n- dashboard-next/src/components/TaskTimeline.jsx\n- dashboard-next/src/components/ViewSelector.jsx\n- dashboard-next/src/utils/taskViews.js\n- test/dashboard-next-task-views.test.js\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/ViewSelector.jsx, dashboard-next/src/components/TaskKanban.jsx, dashboard-next/src/components/TaskTimeline.jsx, dashboard-next/src/utils/taskViews.js, dashboard-next/src/styles/app.css, test/dashboard-next-task-views.test.js | checks=automated validation for the shared selector, status-grouped kanban board, and creation-date timeline using existing overview task/run data (result: passed) | artifacts=.agent-workflow/tasks/T-504/runs/npm-lint.log, .agent-workflow/tasks/T-504/runs/dashboard-build.log, .agent-workflow/tasks/T-504/runs/npm-test.log\n- manual:verification.md#proof-2 | paths=dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/ViewSelector.jsx, dashboard-next/src/components/TaskKanban.jsx, dashboard-next/src/components/TaskTimeline.jsx, dashboard-next/src/styles/app.css | checks=manual browser verification for persisted selector behavior, click-through task selection, and the 375px mobile layout (result: not run) | artifacts=none\n- run:run-1776585230582 | paths=dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/ViewSelector.jsx, dashboard-next/src/components/TaskKanban.jsx, dashboard-next/src/components/TaskTimeline.jsx, dashboard-next/src/utils/taskViews.js, dashboard-next/src/styles/app.css, test/dashboard-next-task-views.test.js, .agent-workflow/tasks/T-504/task.md, .agent-workflow/tasks/T-504/task.json, .agent-workflow/tasks/T-504/context.md, .agent-workflow/tasks/T-504/verification.md | checks=[passed] npm run lint passes; [passed] npm run dashboard:build passes; [passed] npm test passes (35 files, 172 tests) | artifacts=.agent-workflow/tasks/T-504/runs/npm-lint.log, .agent-workflow/tasks/T-504/runs/dashboard-build.log, .agent-workflow/tasks/T-504/runs/npm-test.log\n- run:run-1776585807593 | paths=dashboard-next/src/styles/app.css | checks=[passed] npm run dashboard:build passes after the final app.css compatibility tweak | artifacts=.agent-workflow/tasks/T-504/runs/dashboard-build.log\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Revalidated the final kanban styling tweak after replacing color-mix() in app.css.\n- Timestamp: 2026-04-19T08:03:27.591Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
-        }
-      ]
-    }
-  },
-  {
-    "type": "quick",
-    "taskId": "T-600",
-    "timestamp": "2026-04-19T16:45:18.995Z",
-    "files": [
-      ".agent-workflow/tasks/T-600",
-      ".agent-workflow/tasks/T-600/checkpoint.json",
-      ".agent-workflow/tasks/T-600/checkpoint.md",
-      ".agent-workflow/tasks/T-600/context.md",
-      ".agent-workflow/tasks/T-600/launch.codex.md",
-      ".agent-workflow/tasks/T-600/prompt.codex.md",
-      ".agent-workflow/tasks/T-600/run-request.codex.json",
-      ".agent-workflow/tasks/T-600/runs",
-      ".agent-workflow/tasks/T-600/task.json",
-      ".agent-workflow/tasks/T-600/task.md",
-      ".agent-workflow/tasks/T-600/verification.md"
-    ],
-    "metadata": {
-      "taskRoot": ".agent-workflow/tasks/T-600",
-      "mode": "full",
-      "agent": "codex",
-      "adapterId": "codex",
-      "restore": []
-    }
-  },
-  {
     "type": "quick",
     "taskId": "T-601",
     "timestamp": "2026-04-19T16:45:41.774Z",
@@ -805,6 +681,165 @@
       ],
       "runFile": ".agent-workflow/tasks/T-603/runs/run-1776841580111.json",
       "runId": "run-1776841580111"
+    }
+  },
+  {
+    "type": "done",
+    "taskId": "T-605",
+    "timestamp": "2026-04-22T07:33:26.577Z",
+    "files": [
+      ".agent-workflow/tasks/T-605/checkpoint.json",
+      ".agent-workflow/tasks/T-605/checkpoint.md",
+      ".agent-workflow/tasks/T-605/context.md",
+      ".agent-workflow/tasks/T-605/runs",
+      ".agent-workflow/tasks/T-605/runs/run-1776843206071.json",
+      ".agent-workflow/tasks/T-605/task.json",
+      ".agent-workflow/tasks/T-605/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-605/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-605\",\n  \"title\": \"Deprecate prompt:compile and skills:generate\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P2\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-21T18:59:20.903Z\",\n  \"updatedAt\": \"2026-04-21T18:59:20.903Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-605/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-605 Context\n\n## Why now\n\nPhase 5 already introduced MCP resources and prompts as the preferred handoff path, so leaving `prompt:compile` and `skills:generate` positioned as first-class guidance keeps steering users toward legacy flows. Deprecating them now preserves backward compatibility for existing scripts while shifting new usage toward MCP before the planned 0.3.0 removal.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- The implementation scope is limited to deprecation warnings in `src/cli.js`, a notice in `src/lib/prompt-compiler.js`, and doc updates in `AGENT_GUIDE.md`, `README.md`, and `docs/ROADMAP.md`.\n- The warning text must go to stderr only so CLI output remains safe for stdio-based MCP transport.\n- Both commands stay functional in 0.2.x; this task is deprecation-only and must not remove the legacy paths yet.\n\n## Open questions\n\n- Secondary docs outside the declared scope still mention the legacy commands and may need a follow-up cleanup task.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-605/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-605 Verification\n\n## Draft checks\n\n- automated:\n  - `npm test`\n  - `npm run smoke`\n- manual:\n  - Capture stdout/stderr from `node src/cli.js prompt:compile T-605 --root .` and verify the deprecation warning is stderr-only while the command still writes the prompt file.\n  - Capture stdout/stderr from `node src/cli.js skills:generate --root <temp-workspace>` and verify the deprecation warning is stderr-only while the command still generates guide files.\n\n## Verification records\n\n### Record 1\n\n- Files:\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n- Verification not yet run.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-605/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-605\",\n  \"generatedAt\": \"2026-04-21T18:59:21.073Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add repo-relative scope paths to make evidence coverage automatic.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-605/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-605 Checkpoint\n\nGenerated at: 2026-04-21T18:59:21.073Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: Deprecate prompt:compile and skills:generate\n- Priority: P2\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add repo-relative scope paths to make evidence coverage automatic.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-605/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-605/runs/run-1776843206071.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-605/runs/run-1776843206071.json",
+      "runId": "run-1776843206071"
+    }
+  },
+  {
+    "type": "checkpoint",
+    "taskId": "T-605",
+    "timestamp": "2026-04-22T12:07:25.449Z",
+    "files": [
+      ".agent-workflow/tasks/T-605/checkpoint.json",
+      ".agent-workflow/tasks/T-605/checkpoint.md",
+      ".agent-workflow/tasks/T-605/context.md",
+      ".agent-workflow/tasks/T-605/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-605/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-605 Context\n\n## Why now\n\nPhase 5 already introduced MCP resources and prompts as the preferred handoff path, so leaving `prompt:compile` and `skills:generate` positioned as first-class guidance keeps steering users toward legacy flows. Deprecating them now preserves backward compatibility for existing scripts while shifting new usage toward MCP before the planned 0.3.0 removal.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- The implementation scope is limited to deprecation warnings in `src/cli.js`, a notice in `src/lib/prompt-compiler.js`, and doc updates in `AGENT_GUIDE.md`, `README.md`, and `docs/ROADMAP.md`.\n- The warning text must go to stderr only so CLI output remains safe for stdio-based MCP transport.\n- Both commands stay functional in 0.2.x; this task is deprecation-only and must not remove the legacy paths yet.\n\n## Open questions\n\n- Secondary docs outside the declared scope still mention the legacy commands and may need a follow-up cleanup task.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-605/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-605 Verification\n\n## Draft checks\n\n- automated:\n  - `npm test`\n  - `npm run smoke`\n- manual:\n  - Capture stdout/stderr from `node src/cli.js prompt:compile T-605 --root .` and verify the deprecation warning is stderr-only while the command still writes the prompt file.\n  - Capture stdout/stderr from `node src/cli.js skills:generate --root <temp-workspace>` and verify the deprecation warning is stderr-only while the command still generates guide files.\n\n## Verification records\n\n### Record 1\n\n- Files: `src/cli.js`, `src/lib/prompt-compiler.js`, `AGENT_GUIDE.md`, `README.md`, `docs/ROADMAP.md`, `test/cli.test.js`, `test/quick-task.test.js`\n- Check: `npm test`; `npm run smoke`; raw stdout/stderr captures confirm both deprecated commands warn on stderr only; `.agent-workflow/tasks/T-605/prompt.codex.md` includes the deprecation notice\n- Result: Passed on 2026-04-22\n- Artifact: `.agent-workflow/tasks/T-605/runs/t605-prompt-compile.stdout.raw.txt`, `.agent-workflow/tasks/T-605/runs/t605-prompt-compile.stderr.raw.txt`, `.agent-workflow/tasks/T-605/runs/t605-prompt-compile.summary.txt`, `.agent-workflow/tasks/T-605/runs/t605-skills-generate.stdout.raw.txt`, `.agent-workflow/tasks/T-605/runs/t605-skills-generate.stderr.raw.txt`, `.agent-workflow/tasks/T-605/runs/t605-skills-generate.summary.txt`\n\n## Blocking gaps\n\n- None.\n\n## Evidence 2026-04-22T07:33:26.070Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/cli.js, src/lib/prompt-compiler.js, AGENT_GUIDE.md, README.md, docs/ROADMAP.md, test/cli.test.js, test/quick-task.test.js, .agent-workflow/tasks/T-605/context.md, .agent-workflow/tasks/T-605/verification.md\n- Verification artifacts: .agent-workflow/tasks/T-605/runs/t605-prompt-compile.stdout.raw.txt, .agent-workflow/tasks/T-605/runs/t605-prompt-compile.stderr.raw.txt, .agent-workflow/tasks/T-605/runs/t605-prompt-compile.summary.txt, .agent-workflow/tasks/T-605/runs/t605-skills-generate.stdout.raw.txt, .agent-workflow/tasks/T-605/runs/t605-skills-generate.stderr.raw.txt, .agent-workflow/tasks/T-605/runs/t605-skills-generate.summary.txt\n- Proof artifacts: .agent-workflow/tasks/T-605/runs/t605-prompt-compile.stdout.raw.txt, .agent-workflow/tasks/T-605/runs/t605-prompt-compile.stderr.raw.txt, .agent-workflow/tasks/T-605/runs/t605-prompt-compile.summary.txt, .agent-workflow/tasks/T-605/runs/t605-skills-generate.stdout.raw.txt, .agent-workflow/tasks/T-605/runs/t605-skills-generate.stderr.raw.txt, .agent-workflow/tasks/T-605/runs/t605-skills-generate.summary.txt\n- Summary: Deprecated prompt:compile and skills:generate in favor of MCP resources and prompts.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] prompt:compile warning captured on stderr only\n- Verification check: [passed] skills:generate warning captured on stderr only\n- Verification check: [passed] prompt.codex.md includes a deprecation notice\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-605/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-605\",\n  \"generatedAt\": \"2026-04-22T07:33:26.561Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 100,\n    \"scopeHintCount\": 8,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 3,\n    \"coveredFileCount\": 3,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-605/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-605 Checkpoint\n\nGenerated at: 2026-04-22T07:33:26.561Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Deprecate prompt:compile and skills:generate\n- Priority: P2\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (3/3 scoped files)\n- Scope hints: 8\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- docs/ROADMAP.md\n- src/cli.js\n- src/lib/prompt-compiler.js\n\n### Explicit evidence items\n\n- run:run-1776843206071 | paths=src/cli.js, src/lib/prompt-compiler.js, AGENT_GUIDE.md, README.md, docs/ROADMAP.md, test/cli.test.js, test/quick-task.test.js, .agent-workflow/tasks/T-605/context.md, .agent-workflow/tasks/T-605/verification.md | checks=[passed] npm test; [passed] npm run smoke; [passed] prompt:compile warning captured on stderr only; [passed] skills:generate warning captured on stderr only; [passed] prompt.codex.md includes a deprecation notice | artifacts=.agent-workflow/tasks/T-605/runs/t605-prompt-compile.stdout.raw.txt, .agent-workflow/tasks/T-605/runs/t605-prompt-compile.stderr.raw.txt, .agent-workflow/tasks/T-605/runs/t605-prompt-compile.summary.txt, .agent-workflow/tasks/T-605/runs/t605-skills-generate.stdout.raw.txt, .agent-workflow/tasks/T-605/runs/t605-skills-generate.stderr.raw.txt, .agent-workflow/tasks/T-605/runs/t605-skills-generate.summary.txt\n\n### Scope entries that need tightening\n\n- repo path: README.md (remove prompt:compile from primary paths, add note about deprecation) (task.md)\n\n## Risks\n\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: Deprecated prompt:compile and skills:generate in favor of MCP resources and prompts.\n- Timestamp: 2026-04-22T07:33:26.070Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        }
+      ]
+    }
+  },
+  {
+    "type": "done",
+    "taskId": "T-604",
+    "timestamp": "2026-04-22T12:17:08.605Z",
+    "files": [
+      ".agent-workflow/tasks/T-604/checkpoint.json",
+      ".agent-workflow/tasks/T-604/checkpoint.md",
+      ".agent-workflow/tasks/T-604/context.md",
+      ".agent-workflow/tasks/T-604/runs",
+      ".agent-workflow/tasks/T-604/runs/run-1776860227938.json",
+      ".agent-workflow/tasks/T-604/task.json",
+      ".agent-workflow/tasks/T-604/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-604/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-604\",\n  \"title\": \"Dashboard Trust Surface\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P1\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-21T18:24:03.977Z\",\n  \"updatedAt\": \"2026-04-21T18:24:03.977Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-604/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-604 Context\n\n## Why now\n\nThe dashboard already exposed workflow state, but it still left a key trust question unanswered: whether the recorded evidence is strong, current, and diverse enough to believe. Shipping a deterministic trust surface now makes the product's verification promises visible in the control plane instead of leaving them buried in task files and raw run records.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- Added a new server-side trust-summary builder and `GET /api/trust-summary` endpoint.\n- Added deterministic trust-score utilities plus overview and task-detail UI for trust score, freshness heatmap, activity log, and evidence timeline.\n- Verified the implementation with `npm test` and `npm run dashboard:build`.\n\n## Open questions\n\n- None at implementation time.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-604/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-604 Verification\n\n## Draft checks\n\n- automated: none pending\n- manual: no live browser walkthrough was performed after the build; UI verification is based on automated tests plus successful production build output.\n\n## Verification records\n\n### Record 1\n\n- Files: dashboard-next/src/components/Overview.jsx, dashboard-next/src/components/TrustScore.jsx, dashboard-next/src/components/EvidenceTimeline.jsx, dashboard-next/src/components/TaskDetail.jsx, dashboard-next/src/hooks/useApi.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/styles/app.css, dashboard-next/src/utils/api.js, dashboard-next/src/utils/trustScore.js, dashboard/api-client-helpers.js, src/lib/trust-summary.js, src/server.js, test/dashboard-api-client-helpers.test.js, test/server-api.test.js, test/trust-score.test.js\n- Check: npm test\n- Result: passed\n- Artifact: test/trust-score.test.js\n\n### Record 2\n\n- Files: dashboard-next/src/components/Overview.jsx, dashboard-next/src/components/TrustScore.jsx, dashboard-next/src/components/EvidenceTimeline.jsx, dashboard-next/src/components/TaskDetail.jsx, dashboard-next/src/styles/app.css\n- Check: npm run dashboard:build\n- Result: passed\n- Artifact: dist/index.html\n\n## Blocking gaps\n\n- Manual browser verification was not performed; confidence comes from automated tests and a successful production build.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-604/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-604\",\n  \"generatedAt\": \"2026-04-21T18:24:04.149Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add repo-relative scope paths to make evidence coverage automatic.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-604/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-604 Checkpoint\n\nGenerated at: 2026-04-21T18:24:04.149Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: Dashboard Trust Surface\n- Priority: P1\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add repo-relative scope paths to make evidence coverage automatic.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-604/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-604/runs/run-1776860227938.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-604/runs/run-1776860227938.json",
+      "runId": "run-1776860227938"
     }
   }
 ]

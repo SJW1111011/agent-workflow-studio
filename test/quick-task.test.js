@@ -76,6 +76,7 @@ const tests = [
       assert.equal(runRequest.adapterId, "claude-code");
       assert.equal(runRequest.taskId, "T-002");
       assert.match(readTextFile(result.prompt.outputPath), /# T-002 Prompt for Claude Code/);
+      assert.match(readTextFile(result.prompt.outputPath), /Deprecated: `prompt:compile` will be removed in 0\.3\.0\./);
       assert.match(readTextFile(result.prepared.launchPackPath), /Launch Pack - T-002/);
 
       const summary = formatQuickTaskSummary(result);

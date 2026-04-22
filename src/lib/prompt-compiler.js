@@ -54,8 +54,12 @@ function renderPrompt({ agent, taskId, recipe, taskText, contextText, verificati
           "- Keep changes narrow and evidence-backed.",
           "- Update workflow docs immediately after each meaningful step.",
         ];
+  const deprecationNotice =
+    "> Deprecated: `prompt:compile` will be removed in 0.3.0. Prefer MCP resource `workflow://tasks/{taskId}` or prompt `workflow-resume` when available.";
 
   return `# ${taskId} Prompt for ${agentName}
+
+${deprecationNotice}
 
 ## Mission
 

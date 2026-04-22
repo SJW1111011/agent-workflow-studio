@@ -132,6 +132,8 @@
 | T-605 | Deprecate prompt:compile and skills:generate |
 | T-606 | Version bump to 0.2.0 |
 
+**Progress note:** T-605 is complete. `prompt:compile` and `skills:generate` now emit stderr-only deprecation warnings, and the recommended handoff path is MCP resources plus MCP prompts ahead of their planned 0.3.0 removal.
+
 | Change | Detail |
 |--------|--------|
 | Evidence collectors | Pluggable registry replaces hardcoded npm-test; auto-detects pytest, cargo, go |

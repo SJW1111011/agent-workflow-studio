@@ -1,12 +1,18 @@
+import { Fragment } from "preact";
 import { useDashboardContext } from "../context/DashboardContext.jsx";
+import TrustScore from "./TrustScore.jsx";
 import { formatTimestampLabel } from "../utils/execution.js";
 import {
   countTasksWithExecutorOutcome,
   countTasksWithVerificationSignals,
   normalizeStatCount,
 } from "../utils/taskBoard.js";
+import {
+  resolveHeatmapBucket,
+  TRUST_HEATMAP_BUCKETS,
+} from "../utils/trustScore.js";
 
-const LOADING_CARD_COUNT = 6;
+const LOADING_CARD_COUNT = 7;
 const LOADING_LIST_COUNT = 4;
 
 function StatCard({ detail, title, value }) {
@@ -37,6 +43,131 @@ function LoadingListItem() {
       <span className="skeleton-line" />
       <span className="skeleton-line skeleton-line-short" />
     </article>
+  );
+}
+
+function buildTrustSubtitle(trustSummary) {
+  if (!trustSummary) {
+    return "Trust summary is loading.";
+  }
+
+  const freshnessDistribution = trustSummary.freshnessDistribution || {};
+  return `${normalizeStatCount(freshnessDistribution.current)} current, ${normalizeStatCount(
+    freshnessDistribution.recorded,
+  )} recorded, ${normalizeStatCount(freshnessDistribution.stale)} stale.`;
+}
+
+function resolveAggregateTrustSignal(trustSummary) {
+  const taskScores = Array.isArray(trustSummary?.taskScores)
+    ? trustSummary.taskScores
+    : [];
+
+  if (taskScores.length === 0) {
+    return "none";
+  }
+
+  if (
+    taskScores.some(
+      (task) =>
+        task.signal === "draft" ||
+        task.freshness === "stale" ||
+        task.signal === "partial",
+    )
+  ) {
+    return "partial";
+  }
+
+  return taskScores.every((task) => task.signal === "verified")
+    ? "verified"
+    : "draft";
+}
+
+function resolveAggregateTrustFreshness(trustSummary) {
+  const freshnessDistribution = trustSummary?.freshnessDistribution || {};
+
+  if (normalizeStatCount(freshnessDistribution.current) > 0) {
+    return "current";
+  }
+  if (normalizeStatCount(freshnessDistribution.recorded) > 0) {
+    return "recorded";
+  }
+  return "stale";
+}
+
+function FreshnessHeatmap({ error, trustSummary }) {
+  if (error) {
+    return <div className="empty">{error}</div>;
+  }
+
+  const taskScores = Array.isArray(trustSummary?.taskScores)
+    ? [...trustSummary.taskScores].sort(
+        (left, right) =>
+          left.trustScore - right.trustScore ||
+          left.taskId.localeCompare(right.taskId),
+      )
+    : [];
+
+  if (taskScores.length === 0) {
+    return <div className="empty">No task trust data is available yet.</div>;
+  }
+
+  return (
+    <div className="freshness-heatmap-shell">
+      <div className="freshness-heatmap-legend">
+        <span className="tag">current</span>
+        <span className="tag">recorded</span>
+        <span className="tag warn">stale</span>
+      </div>
+      <div className="freshness-heatmap" role="table">
+        <div className="freshness-heatmap-header subtle" role="columnheader">
+          Task
+        </div>
+        {TRUST_HEATMAP_BUCKETS.map((bucket) => (
+          <div
+            className="freshness-heatmap-header subtle"
+            key={bucket.id}
+            role="columnheader"
+          >
+            {bucket.label}
+          </div>
+        ))}
+
+        {taskScores.map((task) => {
+          const activeBucket = resolveHeatmapBucket(task.lastEvidenceAt);
+
+          return (
+            <Fragment key={task.taskId}>
+              <div
+                className="freshness-heatmap-task"
+                key={`${task.taskId}:label`}
+                role="rowheader"
+              >
+                <strong>{task.taskId}</strong>
+                <span className="subtle">{task.trustScore} trust</span>
+              </div>
+              {TRUST_HEATMAP_BUCKETS.map((bucket) => {
+                const isActive = activeBucket === bucket.id;
+                const cellClass = isActive
+                  ? `freshness-heatmap-cell freshness-${task.freshness}`
+                  : "freshness-heatmap-cell freshness-empty";
+
+                return (
+                  <div
+                    aria-label={`${task.taskId} ${task.freshness} evidence in ${bucket.label}`}
+                    className={cellClass}
+                    key={`${task.taskId}:${bucket.id}`}
+                    role="cell"
+                    title={`${task.taskId}: ${task.freshness} evidence, trust ${task.trustScore}`}
+                  >
+                    {isActive ? task.trustScore : ""}
+                  </div>
+                );
+              })}
+            </Fragment>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -95,6 +226,7 @@ export default function Overview({ hidden }) {
   }
 
   const stats = overview.stats || {};
+  const trustSummary = overview.trustSummary || null;
   const executorEvidenceCount = countTasksWithExecutorOutcome(
     stats.executorOutcomes || {},
   );
@@ -135,6 +267,30 @@ export default function Overview({ hidden }) {
           title="Verification"
           value={verificationSignalCount}
         />
+        <TrustScore
+          className="stat-card"
+          collectorCount={normalizeStatCount(
+            trustSummary?.taskScores?.reduce(
+              (total, task) => total + normalizeStatCount(task.collectorCount),
+              0,
+            ),
+          )}
+          coverage={normalizeStatCount(
+            trustSummary?.taskScores?.length
+              ? Math.round(
+                  trustSummary.taskScores.reduce(
+                    (total, task) => total + normalizeStatCount(task.coverage),
+                    0,
+                  ) / trustSummary.taskScores.length,
+                )
+              : 0,
+          )}
+          freshness={resolveAggregateTrustFreshness(trustSummary)}
+          score={normalizeStatCount(trustSummary?.aggregateTrustScore)}
+          signal={resolveAggregateTrustSignal(trustSummary)}
+          subtitle={buildTrustSubtitle(trustSummary)}
+          title="Trust Surface"
+        />
         <StatCard
           detail={
             overview.initialized
@@ -148,6 +304,25 @@ export default function Overview({ hidden }) {
 
       <section
         className={hidden ? "panel panel-wide tab-hidden" : "panel panel-wide"}
+        data-tab="overview"
+      >
+        <div className="panel-head">
+          <div>
+            <h2>Evidence Freshness Heatmap</h2>
+            <p>
+              A task-by-time view of how recent the latest evidence is, with
+              color showing freshness status and the cell label showing trust.
+            </p>
+          </div>
+        </div>
+        <FreshnessHeatmap
+          error={overview.trustSummaryError}
+          trustSummary={trustSummary}
+        />
+      </section>
+
+      <section
+        className={hidden ? "panel tab-hidden" : "panel"}
         data-tab="overview"
       >
         <div className="panel-head">

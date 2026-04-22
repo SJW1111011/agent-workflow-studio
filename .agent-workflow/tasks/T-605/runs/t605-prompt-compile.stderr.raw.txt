@@ -1,0 +1,1 @@
+Deprecated: use MCP resource workflow://tasks/{taskId} or prompt workflow-resume instead. prompt:compile will be removed in 0.3.0.

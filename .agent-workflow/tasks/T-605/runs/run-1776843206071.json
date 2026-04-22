@@ -1,0 +1,94 @@
+{
+  "id": "run-1776843206071",
+  "taskId": "T-605",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Deprecated prompt:compile and skills:generate in favor of MCP resources and prompts.",
+  "createdAt": "2026-04-22T07:33:26.070Z",
+  "scopeProofPaths": [
+    "src/cli.js",
+    "src/lib/prompt-compiler.js",
+    "AGENT_GUIDE.md",
+    "README.md",
+    "docs/ROADMAP.md",
+    "test/cli.test.js",
+    "test/quick-task.test.js",
+    ".agent-workflow/tasks/T-605/context.md",
+    ".agent-workflow/tasks/T-605/verification.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "prompt:compile warning captured on stderr only",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "skills:generate warning captured on stderr only",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "prompt.codex.md includes a deprecation notice",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-605/runs/t605-prompt-compile.stdout.raw.txt",
+    ".agent-workflow/tasks/T-605/runs/t605-prompt-compile.stderr.raw.txt",
+    ".agent-workflow/tasks/T-605/runs/t605-prompt-compile.summary.txt",
+    ".agent-workflow/tasks/T-605/runs/t605-skills-generate.stdout.raw.txt",
+    ".agent-workflow/tasks/T-605/runs/t605-skills-generate.stderr.raw.txt",
+    ".agent-workflow/tasks/T-605/runs/t605-skills-generate.summary.txt"
+  ],
+  "evidence": {
+    "proofPaths": [
+      "src/cli.js",
+      "src/lib/prompt-compiler.js",
+      "AGENT_GUIDE.md",
+      "README.md",
+      "docs/ROADMAP.md",
+      "test/cli.test.js",
+      "test/quick-task.test.js",
+      ".agent-workflow/tasks/T-605/context.md",
+      ".agent-workflow/tasks/T-605/verification.md"
+    ],
+    "checks": [
+      {
+        "label": "npm test",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "npm run smoke",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "prompt:compile warning captured on stderr only",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "skills:generate warning captured on stderr only",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "prompt.codex.md includes a deprecation notice",
+        "status": "passed",
+        "artifacts": []
+      }
+    ]
+  }
+}

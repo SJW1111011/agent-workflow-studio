@@ -211,6 +211,7 @@ export default function useDashboardState() {
 
   const {
     loadOverview,
+    loadTrustSummary,
     loadRunLog,
     loadTaskDetail,
     loadTaskExecution,
@@ -379,10 +380,21 @@ export default function useDashboardState() {
     dispatch({ type: "overview/loading" });
 
     try {
-      const overview = await loadOverview();
+      const [overview, trustSummaryResult] = await Promise.all([
+        loadOverview(),
+        loadTrustSummary()
+          .then((value) => ({ error: null, value }))
+          .catch((error) => ({ error: error.message, value: null })),
+      ]);
+
+      const nextOverview = {
+        ...overview,
+        trustSummary: trustSummaryResult.value,
+        trustSummaryError: trustSummaryResult.error,
+      };
       const currentActiveTaskId = stateRef.current.activeTaskId;
       const nextActiveTaskId = resolveNextActiveTaskId(
-        overview.tasks || [],
+        nextOverview.tasks || [],
         requestedTaskId,
         currentActiveTaskId,
       );
@@ -391,19 +403,19 @@ export default function useDashboardState() {
         type: "overview/success",
         payload: {
           activeTaskId: nextActiveTaskId,
-          overview,
+          overview: nextOverview,
         },
       });
 
       if (!nextActiveTaskId) {
         dispatch({ type: "task/select", payload: null });
         dispatch({ type: "execution/set", payload: null });
-        return overview;
+        return nextOverview;
       }
 
       dispatch({ type: "task/select", payload: nextActiveTaskId });
       await loadSelectedTask(nextActiveTaskId, { keepLoadingState: true });
-      return overview;
+      return nextOverview;
     } catch (error) {
       dispatch({
         type: "overview/error",

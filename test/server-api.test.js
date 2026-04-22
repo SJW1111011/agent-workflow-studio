@@ -376,6 +376,57 @@ const tests = [
     },
   },
   {
+    name: "server api exposes trust summary scores and freshness distribution from recorded evidence",
+    async run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("server-api-trust-summary");
+      setProjectStrictVerification(workspaceRoot, true);
+      fs.mkdirSync(path.join(workspaceRoot, "src"), { recursive: true });
+      fs.writeFileSync(path.join(workspaceRoot, "src", "app.js"), "module.exports = 'trust';\n", "utf8");
+      fs.writeFileSync(
+        files.task,
+        [
+          `# ${taskId} - Trust summary`,
+          "",
+          "## Scope",
+          "",
+          "- In scope:",
+          "  - repo path: src/app.js",
+          "",
+        ].join("\n"),
+        "utf8"
+      );
+
+      const server = await startServer(workspaceRoot);
+
+      try {
+        const run = await request(`http://127.0.0.1:${server.port}/api/tasks/${taskId}/runs`, {
+          method: "POST",
+          body: {
+            summary: "Verified src/app.js with automated coverage.",
+            status: "passed",
+            proofPaths: ["src/app.js"],
+            checks: [{ label: "npm test", status: "passed" }],
+            artifacts: ["logs/test.txt"],
+          },
+        });
+        assert.equal(run.statusCode, 201);
+
+        const trust = await request(`http://127.0.0.1:${server.port}/api/trust-summary`);
+        assert.equal(trust.statusCode, 200);
+        assert.equal(trust.json.aggregateTrustScore, trust.json.taskScores[0].trustScore);
+        assert.equal(trust.json.taskScores[0].taskId, taskId);
+        assert.equal(trust.json.taskScores[0].coverage, 100);
+        assert.equal(trust.json.taskScores[0].signal, "verified");
+        assert.equal(trust.json.taskScores[0].freshness, "current");
+        assert.equal(trust.json.freshnessDistribution.current, 1);
+        assert.equal(trust.json.freshnessDistribution.recorded, 0);
+        assert.equal(trust.json.freshnessDistribution.stale, 0);
+      } finally {
+        await server.stop();
+      }
+    },
+  },
+  {
     name: "server api run recording auto-advances status and preserves manual patch overrides",
     async run() {
       const { workspaceRoot, taskId } = createTaskWorkspace("server-api-run-status");

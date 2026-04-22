@@ -21,6 +21,11 @@ const { validateWorkspace } = require("./lib/schema-validator");
 const { createTask, listTasks, recordRun } = require("./lib/task-service");
 const { ensureWorkflowScaffold, resolveWorkspaceRoot } = require("./lib/workspace");
 
+const PROMPT_COMPILE_DEPRECATION =
+  "Deprecated: use MCP resource workflow://tasks/{taskId} or prompt workflow-resume instead. prompt:compile will be removed in 0.3.0.";
+const SKILLS_GENERATE_DEPRECATION =
+  "Deprecated: MCP tools are self-describing and do not need generated skill files. skills:generate will be removed in 0.3.0.";
+
 function main(argv = process.argv.slice(2)) {
   const { command, positionals, options } = parseCommand(argv);
   const workspaceRoot = resolveWorkspaceRoot(options.root);
@@ -93,6 +98,7 @@ function main(argv = process.argv.slice(2)) {
         break;
       }
       case "skills:generate": {
+        warn(SKILLS_GENERATE_DEPRECATION);
         const result = generateSkills(workspaceRoot);
         print(formatSkillsSummary(result));
         break;
@@ -188,6 +194,7 @@ function main(argv = process.argv.slice(2)) {
         const [taskId] = positionals;
         const agent = normalizePromptAgent(options.agent || "codex");
         assert(taskId, "Usage: prompt:compile <taskId> [--agent codex|claude] [--root path]");
+        warn(PROMPT_COMPILE_DEPRECATION);
         const result = compilePrompt(workspaceRoot, taskId, agent);
         print(`Compiled ${agent} prompt at ${result.outputPath}`);
         break;
@@ -407,6 +414,10 @@ function assert(condition, message) {
 
 function print(message) {
   process.stdout.write(`${message}\n`);
+}
+
+function warn(message) {
+  process.stderr.write(`${message}\n`);
 }
 
 function printSmartDefaultMessages(run) {

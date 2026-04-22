@@ -54,6 +54,9 @@ export default function useApi() {
       loadOverview(...args) {
         return track(() => clientRef.current.loadOverview(...args));
       },
+      loadTrustSummary(...args) {
+        return track(() => clientRef.current.loadTrustSummary(...args));
+      },
       loadRunLog(...args) {
         return track(() => clientRef.current.loadRunLog(...args));
       },

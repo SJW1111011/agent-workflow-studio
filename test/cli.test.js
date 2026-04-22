@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const fs = require("fs");
 const http = require("http");
 const net = require("net");
 const path = require("path");
@@ -79,6 +80,41 @@ function captureCliOutput(callback) {
   }
 
   return output;
+}
+
+function captureCliStreams(callback) {
+  let stdout = "";
+  let stderr = "";
+  const originalStdoutWrite = process.stdout.write;
+  const originalStderrWrite = process.stderr.write;
+
+  process.stdout.write = (chunk, encoding, done) => {
+    stdout += String(chunk);
+    if (typeof done === "function") {
+      done();
+    }
+    return true;
+  };
+
+  process.stderr.write = (chunk, encoding, done) => {
+    stderr += String(chunk);
+    if (typeof done === "function") {
+      done();
+    }
+    return true;
+  };
+
+  try {
+    callback();
+  } finally {
+    process.stdout.write = originalStdoutWrite;
+    process.stderr.write = originalStderrWrite;
+  }
+
+  return {
+    stdout,
+    stderr,
+  };
 }
 
 async function startDashboardFromCli(workspaceRoot) {
@@ -173,6 +209,46 @@ const tests = [
       });
 
       assert.match(output, /T-001 \| P1 \| in_progress \| recipe=feature \| runs=1 \| Test task/);
+    },
+  },
+  {
+    name: "prompt:compile prints its deprecation warning to stderr while keeping stdout for command output",
+    run() {
+      const { workspaceRoot, taskId, files } = createTaskWorkspace("cli-prompt-compile");
+
+      const result = captureCliStreams(() => {
+        main(["prompt:compile", taskId, "--root", workspaceRoot]);
+      });
+
+      assert.match(
+        result.stderr,
+        /Deprecated: use MCP resource workflow:\/\/tasks\/\{taskId\} or prompt workflow-resume instead\. prompt:compile will be removed in 0\.3\.0\./
+      );
+      assert.doesNotMatch(result.stdout, /Deprecated:/);
+      assert.match(result.stdout, /Compiled codex prompt at /);
+      assert.match(
+        fs.readFileSync(files.promptCodex, "utf8"),
+        /Deprecated: `prompt:compile` will be removed in 0\.3\.0\./
+      );
+    },
+  },
+  {
+    name: "skills:generate prints its deprecation warning to stderr while still generating files",
+    run() {
+      const { workspaceRoot } = createTaskWorkspace("cli-skills-generate");
+
+      const result = captureCliStreams(() => {
+        main(["skills:generate", "--root", workspaceRoot]);
+      });
+
+      assert.match(
+        result.stderr,
+        /Deprecated: MCP tools are self-describing and do not need generated skill files\. skills:generate will be removed in 0\.3\.0\./
+      );
+      assert.doesNotMatch(result.stdout, /Deprecated:/);
+      assert.match(result.stdout, /Skills generated: \d+ created, \d+ already existed/);
+      assert.equal(fs.existsSync(path.join(workspaceRoot, "AGENTS.md")), true);
+      assert.equal(fs.existsSync(path.join(workspaceRoot, "CLAUDE.md")), true);
     },
   },
   {
