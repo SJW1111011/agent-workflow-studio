@@ -3,12 +3,28 @@
   "title": "Agent Activity Evidence",
   "recipeId": "feature",
   "priority": "P1",
-  "status": "todo",
+  "status": "done",
   "createdAt": "2026-04-21T18:16:15.370Z",
-  "updatedAt": "2026-04-21T18:16:15.370Z",
-  "goal": "",
-  "scope": [],
-  "nonGoals": [],
-  "requiredDocs": [],
-  "verificationCommands": []
+  "updatedAt": "2026-04-22T07:06:20.368Z",
+  "goal": "Let agents record structured activity breadcrumbs and richer completion evidence so task handoffs and verification stay grounded in durable repo artifacts.",
+  "scope": [
+    "src/lib/mcp-tools.js",
+    "src/lib/task-service.js",
+    "src/lib/done.js",
+    "src/lib/schema-validator.js",
+    "src/server.js",
+    "test/agent-activity-evidence.test.js",
+    "test/mcp-server.test.js"
+  ],
+  "nonGoals": [
+    "dashboard-next/"
+  ],
+  "requiredDocs": [
+    ".agent-workflow/project-profile.md",
+    ".agent-workflow/memory/product.md",
+    ".agent-workflow/memory/architecture.md"
+  ],
+  "verificationCommands": [
+    "npm test"
+  ]
 }

@@ -1,0 +1,61 @@
+{
+  "id": "run-1776841107347",
+  "taskId": "T-602",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Refreshed proof coverage for all in-scope smart-default paths.",
+  "createdAt": "2026-04-22T06:58:27.345Z",
+  "scopeProofPaths": [
+    "src/lib/done.js",
+    "src/lib/mcp-tools.js",
+    "src/lib/smart-defaults.js",
+    "src/lib/task-service.js",
+    "test/smart-defaults-v2.test.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-602/checkpoint.md"
+  ],
+  "evidence": {
+    "proofPaths": [
+      "src/lib/done.js",
+      "src/lib/mcp-tools.js",
+      "src/lib/smart-defaults.js",
+      "src/lib/task-service.js",
+      "test/smart-defaults-v2.test.js"
+    ],
+    "checks": [
+      {
+        "label": "npm test",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "npm run smoke",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js",
+        "status": "passed",
+        "artifacts": []
+      }
+    ]
+  }
+}

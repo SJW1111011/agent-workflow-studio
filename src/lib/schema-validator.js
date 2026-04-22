@@ -289,6 +289,9 @@ function validateTasks(workspaceRoot, issues) {
       ) {
         issues.push(issue("warning", "run.verificationChecks", `Task ${task.id} has a run with invalid verificationChecks`, runPath));
       }
+      if (run.evidenceContext !== undefined && !isValidEvidenceContext(run.evidenceContext)) {
+        issues.push(issue("warning", "run.evidenceContext", `Task ${task.id} has a run with invalid evidenceContext`, runPath));
+      }
       if (run.timedOut !== undefined && typeof run.timedOut !== "boolean") {
         issues.push(issue("warning", "run.timedOut", `Task ${task.id} has a run with invalid timedOut flag`, runPath));
       }
@@ -316,7 +319,7 @@ function listRawRuns(currentTaskRoot) {
 
   return fs
     .readdirSync(runsDir, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+    .filter((entry) => entry.isFile() && entry.name.startsWith("run-") && entry.name.endsWith(".json"))
     .map((entry) => {
       const runPath = path.join(runsDir, entry.name);
       return {
@@ -398,6 +401,47 @@ function isValidProofAnchor(value) {
   }
 
   if (anchor.contentFingerprint !== undefined && !isNonEmptyString(anchor.contentFingerprint)) {
+    return false;
+  }
+
+  return true;
+}
+
+function isValidEvidenceContext(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  const allowedKeys = new Set(["commandsRun", "filesModified", "sessionDurationMs", "toolCallCount"]);
+  if (Object.keys(value).some((key) => !allowedKeys.has(key))) {
+    return false;
+  }
+
+  if (
+    value.filesModified !== undefined &&
+    (!Array.isArray(value.filesModified) || !value.filesModified.every((entry) => isNonEmptyString(entry)))
+  ) {
+    return false;
+  }
+
+  if (
+    value.commandsRun !== undefined &&
+    (!Array.isArray(value.commandsRun) || !value.commandsRun.every((entry) => isNonEmptyString(entry)))
+  ) {
+    return false;
+  }
+
+  if (
+    value.toolCallCount !== undefined &&
+    (!Number.isInteger(value.toolCallCount) || value.toolCallCount < 0)
+  ) {
+    return false;
+  }
+
+  if (
+    value.sessionDurationMs !== undefined &&
+    (!Number.isInteger(value.sessionDurationMs) || value.sessionDurationMs < 0)
+  ) {
     return false;
   }
 

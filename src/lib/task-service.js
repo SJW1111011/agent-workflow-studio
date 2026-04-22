@@ -21,7 +21,7 @@ const {
   ensureTaskArtifacts,
   syncManagedTaskDocs,
 } = require("./task-documents");
-const { inferProofPathsResult, inferTestStatusResult } = require("./smart-defaults");
+const { inferAllTestResultsResult, inferProofPathsResult } = require("./smart-defaults");
 const { appendUndoEntry, buildUndoFileList, captureTaskRestoreSnapshots } = require("./undo-log");
 const {
   ensureWorkflowScaffold,
@@ -35,6 +35,15 @@ const {
 const TASK_STATUSES = new Set(["todo", "in_progress", "blocked", "done"]);
 const TASK_PRIORITIES = new Set(["P0", "P1", "P2", "P3"]);
 const TASK_SCAFFOLD_MODES = new Set(["full", "lite"]);
+const RUN_RECORD_FILE_PREFIX = "run-";
+const ACTIVITY_RECORD_FILE_PREFIX = "activity-";
+const RECORD_FILE_EXTENSION = ".json";
+const EVIDENCE_CONTEXT_KEYS = new Set([
+  "commandsRun",
+  "filesModified",
+  "sessionDurationMs",
+  "toolCallCount",
+]);
 
 function createTask(workspaceRoot, taskId, title, options = {}) {
   ensureWorkflowScaffold(workspaceRoot);
@@ -104,17 +113,15 @@ function listTasks(workspaceRoot) {
 }
 
 function listRuns(workspaceRoot, taskId) {
-  const targetRoot = runsRoot(workspaceRoot, taskId);
-  if (!fs.existsSync(targetRoot)) {
-    return [];
-  }
+  return listTaskRecords(workspaceRoot, taskId, RUN_RECORD_FILE_PREFIX, (value) =>
+    normalizeRunRecordForRead(value)
+  );
+}
 
-  return fs
-    .readdirSync(targetRoot, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
-    .map((entry) => normalizeRunRecordForRead(readJson(path.join(targetRoot, entry.name), null)))
-    .filter(Boolean)
-    .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+function listActivityRecords(workspaceRoot, taskId) {
+  return listTaskRecords(workspaceRoot, taskId, ACTIVITY_RECORD_FILE_PREFIX, (value, fileName) =>
+    normalizeActivityRecordForRead(value, fileName)
+  );
 }
 
 function getTaskDetail(workspaceRoot, taskId) {
@@ -126,6 +133,7 @@ function getTaskDetail(workspaceRoot, taskId) {
   const meta = readJson(files.meta, {});
   const recipe = getRecipe(workspaceRoot, meta.recipeId);
   const runs = listRuns(workspaceRoot, taskId);
+  const activityRecords = listActivityRecords(workspaceRoot, taskId);
   const taskText = safeRead(files.task);
   const strictVerification = resolveStrictVerification(workspaceRoot);
   const repositorySnapshot = loadRepositorySnapshot(workspaceRoot, {
@@ -146,6 +154,7 @@ function getTaskDetail(workspaceRoot, taskId) {
     verificationText: safeRead(files.verification),
     checkpointText: safeRead(files.checkpoint),
     runs,
+    activityRecords,
     freshness: buildTaskFreshness(workspaceRoot, meta, runs),
     verificationGate: buildTaskVerificationGate(workspaceRoot, meta, runs, repositorySnapshot, taskText, {
       strict: strictVerification,
@@ -239,7 +248,7 @@ function recordRun(workspaceRoot, taskId, summary, status, agent = "manual", fie
   const undoType = isNonEmptyString(options.undoType) ? options.undoType.trim() : "";
   const restoreSnapshots = undoType ? captureTaskRestoreSnapshots(workspaceRoot, taskId) : null;
   const strictVerification = resolveStrictVerification(workspaceRoot, options.strict);
-  const resolvedDefaults = resolveRunSmartDefaults(workspaceRoot, status, fields);
+  const resolvedDefaults = resolveRunSmartDefaults(workspaceRoot, status, normalizeRunFields(fields));
   const run = createRunRecord(taskId, {
     agent,
     status: resolvedDefaults.status,
@@ -278,16 +287,32 @@ function recordRun(workspaceRoot, taskId, summary, status, agent = "manual", fie
   return persistedRun;
 }
 
+function recordActivity(workspaceRoot, taskId, activity, fields = {}) {
+  const record = createActivityRecord(taskId, {
+    activity,
+    createdAt: fields && fields.createdAt,
+    filesModified: fields && fields.filesModified,
+    id: fields && fields.id,
+    metadata: fields && fields.metadata,
+  });
+
+  return persistActivityRecord(workspaceRoot, taskId, record);
+}
+
 module.exports = {
   appendTaskNote,
   createRunRecord,
+  createActivityRecord,
   createTask,
   getRunLog,
   getTaskDetail,
+  listActivityRecords,
   listRuns,
   listTasks,
   normalizeTaskScaffoldMode,
+  persistActivityRecord,
   persistRunRecord,
+  recordActivity,
   recordRun,
   updateTaskMeta,
 };
@@ -296,12 +321,54 @@ function safeRead(filePath) {
   return fileExists(filePath) ? fs.readFileSync(filePath, "utf8") : "";
 }
 
+function listTaskRecords(workspaceRoot, taskId, filePrefix, normalizer) {
+  const targetRoot = runsRoot(workspaceRoot, taskId);
+  if (!fs.existsSync(targetRoot)) {
+    return [];
+  }
+
+  return fs
+    .readdirSync(targetRoot, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isFile() &&
+        entry.name.startsWith(filePrefix) &&
+        entry.name.endsWith(RECORD_FILE_EXTENSION)
+    )
+    .map((entry) => normalizer(readJson(path.join(targetRoot, entry.name), null), entry.name))
+    .filter(Boolean)
+    .sort((left, right) => String(left.createdAt || "").localeCompare(String(right.createdAt || "")));
+}
+
+function normalizeRunFields(fields = {}) {
+  const input = fields && typeof fields === "object" ? fields : {};
+  const nextFields = { ...input };
+  const evidenceContext = normalizeEvidenceContext(input.evidenceContext);
+
+  if (
+    evidenceContext &&
+    nextFields.scopeProofPaths === undefined &&
+    Array.isArray(evidenceContext.filesModified) &&
+    evidenceContext.filesModified.length > 0
+  ) {
+    nextFields.scopeProofPaths = evidenceContext.filesModified.slice();
+  }
+
+  if (evidenceContext !== undefined) {
+    nextFields.evidenceContext = evidenceContext;
+  } else {
+    delete nextFields.evidenceContext;
+  }
+
+  return nextFields;
+}
+
 function resolveRunSmartDefaults(workspaceRoot, status, fields = {}) {
   const input = fields && typeof fields === "object" ? fields : {};
   const inferenceOptions = input.smartDefaultOptions || {};
   const nextFields = omitUndefined(
     input,
-    new Set(["inferScopeProofPaths", "inferTestStatus", "skipInferTest", "smartDefaultOptions"])
+    new Set(["collectorResults", "inferScopeProofPaths", "inferTestStatus", "skipInferTest", "smartDefaultOptions"])
   );
   const messages = [];
   const explicitStatus = isNonEmptyString(status) ? status.trim() : "";
@@ -316,17 +383,16 @@ function resolveRunSmartDefaults(workspaceRoot, status, fields = {}) {
   }
 
   if (input.skipInferTest !== true && resolveAutoInferTest(workspaceRoot, input.inferTestStatus)) {
-    const inferredTestStatus = inferTestStatusResult(workspaceRoot, inferenceOptions);
-    messages.push(...inferredTestStatus.messages);
-    if (inferredTestStatus.result) {
-      inferredStatus = inferredTestStatus.result.status;
+    const inferredCollectors = inferAllTestResultsResult(workspaceRoot, inferenceOptions);
+    messages.push(...inferredCollectors.messages);
+    if (inferredCollectors.results.length > 0) {
+      nextFields.collectorResults = inferredCollectors.results;
+      inferredStatus = inferRunStatusFromCollectors(inferredCollectors.results);
       if (!explicitVerificationChecks) {
-        nextFields.verificationChecks = [
-          {
-            label: inferredTestStatus.result.check,
-            status: inferredTestStatus.result.status,
-          },
-        ];
+        nextFields.verificationChecks = inferredCollectors.results.map((result) => ({
+          label: result.check,
+          status: result.status,
+        }));
       }
     }
   }
@@ -398,6 +464,27 @@ function createRunRecord(taskId, fields = {}) {
   };
 }
 
+function createActivityRecord(taskId, fields = {}) {
+  const activity = isNonEmptyString(fields.activity) ? fields.activity.trim() : "";
+  if (!activity) {
+    throw badRequest('Activity record requires a non-empty "activity" string.', "activity_required");
+  }
+
+  const createdAt = isNonEmptyString(fields.createdAt) ? fields.createdAt.trim() : new Date().toISOString();
+  const filesModified = normalizeProofPathList(fields.filesModified, "filesModified");
+  const metadata = normalizeActivityMetadata(fields.metadata);
+
+  return omitUndefined({
+    id: isNonEmptyString(fields.id) ? fields.id.trim() : `activity-${Date.now()}`,
+    type: "activity",
+    taskId,
+    activity,
+    createdAt,
+    filesModified: filesModified.length > 0 ? filesModified : undefined,
+    metadata,
+  });
+}
+
 function persistRunRecord(workspaceRoot, taskId, run, options = {}) {
   const { files, taskMeta: meta } = ensureTaskArtifacts(workspaceRoot, taskId, {
     task: true,
@@ -432,6 +519,7 @@ function persistRunRecord(workspaceRoot, taskId, run, options = {}) {
     defaultCheckStatusForRunStatus(run.status)
   );
   const verificationArtifacts = normalizeArtifactRefs(run.verificationArtifacts);
+  const collectorResults = normalizeCollectorResults(run.collectorResults);
   const scopeProofAnchors =
     strictVerification && run.status === "passed" && scopeProofPaths.length > 0
       ? normalizeProofAnchors(
@@ -445,14 +533,18 @@ function persistRunRecord(workspaceRoot, taskId, run, options = {}) {
           }
         )
       : [];
+  const persistableRun = { ...run };
+  delete persistableRun.collectorResults;
+  const evidence = buildRunEvidence(scopeProofPaths, verificationChecks, collectorResults);
 
   const persistedRun = {
-    ...run,
+    ...persistableRun,
     taskId,
     scopeProofPaths: scopeProofPaths.length > 0 ? scopeProofPaths : undefined,
     scopeProofAnchors: scopeProofAnchors.length > 0 ? scopeProofAnchors : undefined,
     verificationChecks: verificationChecks.length > 0 ? verificationChecks : undefined,
     verificationArtifacts: verificationArtifacts.length > 0 ? verificationArtifacts : undefined,
+    evidence,
   };
 
   fs.mkdirSync(files.runs, { recursive: true });
@@ -479,8 +571,79 @@ function persistRunRecord(workspaceRoot, taskId, run, options = {}) {
   return persistedRun;
 }
 
+function persistActivityRecord(workspaceRoot, taskId, activityRecord) {
+  const { files, taskMeta } = ensureTaskArtifacts(workspaceRoot, taskId, {
+    runs: true,
+  });
+  const persistedRecord = createActivityRecord(taskId, activityRecord);
+
+  fs.mkdirSync(files.runs, { recursive: true });
+  writeJson(path.join(files.runs, `${persistedRecord.id}.json`), persistedRecord);
+
+  const updatedAt = persistedRecord.createdAt || new Date().toISOString();
+  writeJson(files.meta, {
+    ...taskMeta,
+    updatedAt,
+  });
+
+  return persistedRecord;
+}
+
 function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function inferRunStatusFromCollectors(results) {
+  const normalized = normalizeCollectorResults(results);
+  if (normalized.some((result) => result.status === "failed")) {
+    return "failed";
+  }
+
+  return normalized.some((result) => result.status === "passed") ? "passed" : "";
+}
+
+function normalizeCollectorResults(values) {
+  return (Array.isArray(values) ? values : [values]).map(normalizeCollectorResult).filter(Boolean);
+}
+
+function normalizeCollectorResult(value) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const collectorId = isNonEmptyString(value.collectorId) ? value.collectorId.trim() : "";
+  const status = value.status === "passed" || value.status === "failed" ? value.status : "";
+  const check = isNonEmptyString(value.check) ? value.check.trim() : "";
+  const durationMs = Number.isInteger(value.durationMs) && value.durationMs >= 0 ? value.durationMs : 0;
+
+  if (!collectorId || !status || !check) {
+    return null;
+  }
+
+  return {
+    collectorId,
+    status,
+    check,
+    durationMs,
+  };
+}
+
+function buildRunEvidence(scopeProofPaths, verificationChecks, collectorResults) {
+  const evidence = {};
+
+  if (scopeProofPaths.length > 0) {
+    evidence.proofPaths = scopeProofPaths;
+  }
+
+  if (verificationChecks.length > 0) {
+    evidence.checks = verificationChecks;
+  }
+
+  if (collectorResults.length > 0) {
+    evidence.collectors = collectorResults;
+  }
+
+  return Object.keys(evidence).length > 0 ? evidence : undefined;
 }
 
 function normalizeTaskScaffoldMode(value) {
@@ -501,15 +664,17 @@ function assertStatusTransitionAllowed(currentStatus, nextStatus, taskId) {
 }
 
 function omitUndefined(value, excludedKeys) {
+  const blockedKeys = excludedKeys instanceof Set ? excludedKeys : new Set();
   return Object.fromEntries(
     Object.entries(value || {}).filter(
-      ([key, entryValue]) => !excludedKeys.has(key) && entryValue !== undefined
+      ([key, entryValue]) => !blockedKeys.has(key) && entryValue !== undefined
     )
   );
 }
 
 function renderVerificationEvidence(run) {
   const timestamp = run.completedAt || run.createdAt || new Date().toISOString();
+  const evidenceContext = normalizeEvidenceContext(run.evidenceContext);
   const verificationChecks = normalizeVerificationChecks(
     run.verificationChecks,
     defaultCheckStatusForRunStatus(run.status)
@@ -535,6 +700,28 @@ function renderVerificationEvidence(run) {
     ["Stdout log", run.stdoutFile],
     ["Stderr log", run.stderrFile],
     ["Scoped files covered", Array.isArray(run.scopeProofPaths) ? run.scopeProofPaths.join(", ") : undefined],
+    [
+      "Evidence context files modified",
+      evidenceContext && Array.isArray(evidenceContext.filesModified) && evidenceContext.filesModified.length > 0
+        ? evidenceContext.filesModified.join(", ")
+        : undefined,
+    ],
+    [
+      "Evidence context commands run",
+      evidenceContext && Array.isArray(evidenceContext.commandsRun) && evidenceContext.commandsRun.length > 0
+        ? evidenceContext.commandsRun.join(" | ")
+        : undefined,
+    ],
+    [
+      "Evidence context tool call count",
+      evidenceContext && evidenceContext.toolCallCount !== undefined ? evidenceContext.toolCallCount : undefined,
+    ],
+    [
+      "Evidence context session duration ms",
+      evidenceContext && evidenceContext.sessionDurationMs !== undefined
+        ? evidenceContext.sessionDurationMs
+        : undefined,
+    ],
     ["Verification artifacts", verificationArtifacts.length > 0 ? verificationArtifacts.join(", ") : undefined],
     ["Proof artifacts", proofArtifacts.length > 0 ? proofArtifacts.join(", ") : undefined],
     ["Failure category", run.failureCategory],
@@ -559,6 +746,198 @@ function collectRunArtifactRefs(run) {
         .filter((value) => isNonEmptyString(value))
     )
   );
+}
+
+function normalizeActivityRecordForRead(value, fileName = "") {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  try {
+    const activity = isNonEmptyString(value.activity) ? value.activity.trim() : "";
+    const taskId = isNonEmptyString(value.taskId) ? value.taskId.trim() : "";
+    const createdAt = isNonEmptyString(value.createdAt) ? value.createdAt.trim() : "";
+    const normalizedId =
+      isNonEmptyString(value.id) ? value.id.trim() : String(fileName || "").replace(/\.json$/i, "");
+
+    if (!activity || !taskId || !createdAt || !normalizedId) {
+      return null;
+    }
+
+    const filesModified = normalizeProofPathList(value.filesModified, "filesModified");
+    const metadata = normalizeActivityMetadata(value.metadata);
+
+    return omitUndefined({
+      id: normalizedId,
+      type: "activity",
+      taskId,
+      activity,
+      createdAt,
+      filesModified: filesModified.length > 0 ? filesModified : undefined,
+      metadata,
+    });
+  } catch (error) {
+    return null;
+  }
+}
+
+function normalizeEvidenceContext(value) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw badRequest('"evidenceContext" must be an object.', "evidence_context_invalid");
+  }
+
+  const unknownKeys = Object.keys(value).filter((key) => !EVIDENCE_CONTEXT_KEYS.has(key));
+  if (unknownKeys.length > 0) {
+    throw badRequest(
+      `evidenceContext contains unsupported field(s): ${unknownKeys.join(", ")}.`,
+      "evidence_context_invalid"
+    );
+  }
+
+  const filesModified = normalizeProofPathList(value.filesModified, "evidenceContext.filesModified");
+  const commandsRun = normalizeStringList(value.commandsRun, "evidenceContext.commandsRun");
+  const toolCallCount = normalizeNonNegativeInteger(value.toolCallCount, "evidenceContext.toolCallCount");
+  const sessionDurationMs = normalizeNonNegativeInteger(
+    value.sessionDurationMs,
+    "evidenceContext.sessionDurationMs"
+  );
+
+  const normalized = omitUndefined({
+    filesModified: filesModified.length > 0 ? filesModified : undefined,
+    commandsRun: commandsRun.length > 0 ? commandsRun : undefined,
+    toolCallCount,
+    sessionDurationMs,
+  });
+
+  return Object.keys(normalized).length > 0 ? normalized : undefined;
+}
+
+function normalizeActivityMetadata(value) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw badRequest('"metadata" must be an object.', "activity_metadata_invalid");
+  }
+
+  const normalized = Object.fromEntries(
+    Object.entries(value).map(([key, entryValue]) => [
+      key,
+      normalizeActivityMetadataValue(entryValue, `metadata.${key}`),
+    ])
+  );
+
+  return Object.keys(normalized).length > 0 ? normalized : undefined;
+}
+
+function normalizeActivityMetadataValue(value, fieldPath) {
+  if (value === null) {
+    return null;
+  }
+
+  if (typeof value === "string") {
+    return value.trim();
+  }
+
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item, index) => normalizeActivityMetadataScalar(item, `${fieldPath}[${index}]`));
+  }
+
+  throw badRequest(
+    `${fieldPath} must be a string, boolean, number, null, or array of those values.`,
+    "activity_metadata_invalid"
+  );
+}
+
+function normalizeActivityMetadataScalar(value, fieldPath) {
+  if (value === null) {
+    return null;
+  }
+
+  if (typeof value === "string") {
+    return value.trim();
+  }
+
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  throw badRequest(
+    `${fieldPath} must be a string, boolean, number, or null.`,
+    "activity_metadata_invalid"
+  );
+}
+
+function normalizeProofPathList(value, fieldPath) {
+  if (value === undefined) {
+    return [];
+  }
+
+  const entries = Array.isArray(value) ? value : [value];
+  return Array.from(
+    new Set(
+      entries.map((entry) => {
+        if (!isNonEmptyString(entry)) {
+          throw badRequest(`${fieldPath} must contain non-empty strings.`, "task_record_invalid");
+        }
+
+        const normalized = normalizeProofPaths([entry]);
+        if (normalized.length !== 1) {
+          throw badRequest(`${fieldPath} must contain repo-relative paths.`, "task_record_invalid");
+        }
+
+        return normalized[0];
+      })
+    )
+  );
+}
+
+function normalizeStringList(value, fieldPath) {
+  if (value === undefined) {
+    return [];
+  }
+
+  const entries = Array.isArray(value) ? value : [value];
+  return Array.from(
+    new Set(
+      entries.map((entry) => {
+        if (!isNonEmptyString(entry)) {
+          throw badRequest(`${fieldPath} must contain non-empty strings.`, "task_record_invalid");
+        }
+
+        return entry.trim();
+      })
+    )
+  );
+}
+
+function normalizeNonNegativeInteger(value, fieldPath) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!Number.isInteger(value) || value < 0) {
+    throw badRequest(`${fieldPath} must be a non-negative integer.`, "task_record_invalid");
+  }
+
+  return value;
 }
 
 function getRunLog(workspaceRoot, taskId, runId, streamName, maxChars = 12000) {

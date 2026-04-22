@@ -59,6 +59,7 @@ const tests = [
           "workflow_done",
           "workflow_overview",
           "workflow_quick",
+          "workflow_record_activity",
           "workflow_run_add",
           "workflow_task_list",
           "workflow_undo",

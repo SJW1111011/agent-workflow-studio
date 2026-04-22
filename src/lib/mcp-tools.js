@@ -6,7 +6,14 @@ const { badRequest } = require("./http-errors");
 const { buildOverview } = require("./overview");
 const { formatQuickTaskSummary, quickCreateTask } = require("./quick-task");
 const { validateWorkspace } = require("./schema-validator");
-const { appendTaskNote, listRuns, listTasks, recordRun, updateTaskMeta } = require("./task-service");
+const {
+  appendTaskNote,
+  listRuns,
+  listTasks,
+  recordActivity,
+  recordRun,
+  updateTaskMeta,
+} = require("./task-service");
 const { formatUndoSummary, undoLastOperation } = require("./undo");
 
 const RUN_STATUSES = new Set(["passed", "failed", "draft"]);
@@ -59,10 +66,17 @@ const TOOL_DEFINITIONS = Object.freeze([
   {
     name: "workflow_done",
     description:
-      "Record run evidence and refresh the checkpoint in one step, inferring proof paths from git diff by default and using the workspace test-inference setting unless you override it.",
+      "Record run evidence and refresh the checkpoint in one step, inferring proof paths from git diff by default and running matching test collectors unless you override that behavior.",
     inputSchema: buildManualRunInputSchema({
       includeComplete: true,
+      includeEvidenceContext: true,
     }),
+  },
+  {
+    name: "workflow_record_activity",
+    description:
+      "Record a timestamped activity breadcrumb for a task without refreshing its checkpoint or changing status.",
+    inputSchema: buildActivityInputSchema(),
   },
   {
     name: "workflow_update_task",
@@ -120,7 +134,7 @@ const TOOL_DEFINITIONS = Object.freeze([
   {
     name: "workflow_run_add",
     description:
-      "Record a manual run with optional proof paths, checks, and artifacts, inferring proof paths from git diff by default and using the workspace test-inference setting unless you override it.",
+      "Record a manual run with optional proof paths, checks, and artifacts, inferring proof paths from git diff by default and running matching test collectors unless you override that behavior.",
     inputSchema: buildManualRunInputSchema(),
   },
   {
@@ -186,6 +200,8 @@ function createMcpToolRuntime(workspaceRoot) {
           return runQuickTool(workspaceRoot, args);
         case "workflow_done":
           return runDoneTool(workspaceRoot, args);
+        case "workflow_record_activity":
+          return runRecordActivityTool(workspaceRoot, args);
         case "workflow_update_task":
           return runUpdateTaskTool(workspaceRoot, args);
         case "workflow_append_note":
@@ -296,10 +312,12 @@ function runDoneTool(workspaceRoot, args) {
       "artifacts",
       "checks",
       "complete",
+      "evidenceContext",
       "inferScopeProofPaths",
       "inferTestStatus",
       "proofPaths",
       "scopeProofPaths",
+      "skipTest",
       "skipInferTest",
       "status",
       "strict",
@@ -318,6 +336,7 @@ function runDoneTool(workspaceRoot, args) {
     agent: normalizeAdapterId(optionalTrimmedString(args.agent) || "manual"),
     complete: optionalBoolean(args.complete, "complete"),
     strict: optionalBoolean(args.strict, "strict"),
+    evidenceContext: args.evidenceContext,
     ...buildManualRunOptions(args, "workflow_done"),
   });
 
@@ -331,6 +350,26 @@ function runDoneTool(workspaceRoot, args) {
     checkpoint: result.checkpoint,
     checkpointPath: `.agent-workflow/tasks/${taskId}/checkpoint.md`,
     task: result.task || null,
+  };
+}
+
+function runRecordActivityTool(workspaceRoot, args) {
+  assertKnownKeys(args, ["activity", "filesModified", "metadata", "taskId"], "workflow_record_activity");
+
+  const taskId = requireNonEmptyString(args, "taskId", "workflow_record_activity");
+  const activity = requireNonEmptyString(args, "activity", "workflow_record_activity");
+  const activityRecord = recordActivity(workspaceRoot, taskId, activity, {
+    filesModified: args.filesModified,
+    metadata: args.metadata,
+  });
+
+  return {
+    ok: true,
+    tool: "workflow_record_activity",
+    workspaceRoot,
+    taskId,
+    activityRecord,
+    activityPath: `.agent-workflow/tasks/${taskId}/runs/${activityRecord.id}.json`,
   };
 }
 
@@ -417,6 +456,7 @@ function runRunAddTool(workspaceRoot, args) {
       "inferTestStatus",
       "proofPaths",
       "scopeProofPaths",
+      "skipTest",
       "skipInferTest",
       "status",
       "strict",
@@ -530,6 +570,7 @@ function buildManualRunOptions(args, toolName) {
     "string",
     toolName
   );
+  const skipInferTest = resolveAliasedBoolean(args, ["skipTest", "skipInferTest"], toolName);
 
   return {
     scopeProofPaths: proofPaths.provided ? proofPaths.value : undefined,
@@ -541,12 +582,13 @@ function buildManualRunOptions(args, toolName) {
       proofPaths.provided ? false : true
     ),
     inferTestStatus: optionalBoolean(args.inferTestStatus, "inferTestStatus"),
-    skipInferTest: optionalBoolean(args.skipInferTest, "skipInferTest"),
+    skipInferTest,
   };
 }
 
 function buildManualRunInputSchema(options = {}) {
   const includeComplete = options.includeComplete === true;
+  const includeEvidenceContext = options.includeEvidenceContext === true;
   const properties = {
     taskId: {
       type: "string",
@@ -614,12 +656,17 @@ function buildManualRunInputSchema(options = {}) {
     inferTestStatus: {
       type: "boolean",
       description:
-        "Optional per-call override for npm test inference. True forces inference for this call; false disables it even if project.json autoInferTest is true.",
+        "Optional per-call override for inferred test-collector execution. True forces it for this call; false disables it even if project.json autoInferTest is true.",
+    },
+    skipTest: {
+      type: "boolean",
+      description:
+        "Preferred alias for skipInferTest. Skip inferred test collectors even if project.json autoInferTest or inferTestStatus would otherwise run.",
     },
     skipInferTest: {
       type: "boolean",
       description:
-        "Skip npm test inference even if project.json autoInferTest or inferTestStatus would otherwise run.",
+        "Legacy alias for skipTest. Skip inferred test collectors even if project.json autoInferTest or inferTestStatus would otherwise run.",
     },
   };
 
@@ -630,11 +677,101 @@ function buildManualRunInputSchema(options = {}) {
     };
   }
 
+  if (includeEvidenceContext) {
+    properties.evidenceContext = buildEvidenceContextInputSchema();
+  }
+
   return {
     type: "object",
     additionalProperties: false,
     properties,
     required: ["taskId", "summary"],
+  };
+}
+
+function buildActivityInputSchema() {
+  return {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      taskId: {
+        type: "string",
+        description: "Task id such as T-001.",
+      },
+      activity: {
+        type: "string",
+        description: "Short activity summary such as inspected code, updated tests, or verified behavior.",
+      },
+      filesModified: {
+        type: "array",
+        description: "Optional repo-relative files touched during this activity breadcrumb.",
+        items: {
+          type: "string",
+        },
+      },
+      metadata: buildActivityMetadataSchema(),
+    },
+    required: ["taskId", "activity"],
+  };
+}
+
+function buildEvidenceContextInputSchema() {
+  return {
+    type: "object",
+    additionalProperties: false,
+    description:
+      "Optional structured execution context that captures files changed, commands run, tool usage, and session duration.",
+    properties: {
+      filesModified: {
+        type: "array",
+        description: "Repo-relative files the agent changed during the session.",
+        items: {
+          type: "string",
+        },
+      },
+      commandsRun: {
+        type: "array",
+        description: "Commands the agent executed during the session.",
+        items: {
+          type: "string",
+        },
+      },
+      toolCallCount: {
+        type: "integer",
+        minimum: 0,
+        description: "How many tool calls the agent made.",
+      },
+      sessionDurationMs: {
+        type: "integer",
+        minimum: 0,
+        description: "How long the session lasted in milliseconds.",
+      },
+    },
+  };
+}
+
+function buildActivityMetadataSchema() {
+  const primitiveValueSchema = {
+    anyOf: [
+      { type: "string" },
+      { type: "number" },
+      { type: "boolean" },
+      { type: "null" },
+    ],
+  };
+
+  return {
+    type: "object",
+    description: "Optional flat metadata for the activity breadcrumb.",
+    additionalProperties: {
+      anyOf: [
+        primitiveValueSchema,
+        {
+          type: "array",
+          items: primitiveValueSchema,
+        },
+      ],
+    },
   };
 }
 
@@ -692,6 +829,25 @@ function optionalBoolean(value, key) {
   }
 
   return value;
+}
+
+function resolveAliasedBoolean(args, keys, toolName) {
+  const presentKeys = keys.filter((key) => Object.prototype.hasOwnProperty.call(args, key));
+  if (presentKeys.length === 0) {
+    return undefined;
+  }
+
+  const values = presentKeys.map((key) => optionalBoolean(args[key], key));
+  const firstValue = values[0];
+
+  if (values.some((value) => value !== firstValue)) {
+    throw badRequest(
+      `${toolName} received conflicting values for ${presentKeys.join(", ")}.`,
+      "mcp_argument_invalid"
+    );
+  }
+
+  return firstValue;
 }
 
 function inferBooleanArgument(args, key, fallback) {

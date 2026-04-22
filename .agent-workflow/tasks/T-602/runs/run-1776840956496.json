@@ -1,0 +1,59 @@
+{
+  "id": "run-1776840956496",
+  "taskId": "T-602",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Implemented multi-collector smart defaults integration.",
+  "createdAt": "2026-04-22T06:55:56.494Z",
+  "scopeProofPaths": [
+    "src/lib/smart-defaults.js",
+    "src/lib/task-service.js",
+    "src/lib/mcp-tools.js",
+    "test/smart-defaults-v2.test.js"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-602/checkpoint.md"
+  ],
+  "evidence": {
+    "proofPaths": [
+      "src/lib/smart-defaults.js",
+      "src/lib/task-service.js",
+      "src/lib/mcp-tools.js",
+      "test/smart-defaults-v2.test.js"
+    ],
+    "checks": [
+      {
+        "label": "npm test",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "npm run smoke",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js",
+        "status": "passed",
+        "artifacts": []
+      }
+    ]
+  }
+}

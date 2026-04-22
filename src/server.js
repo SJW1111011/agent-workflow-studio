@@ -559,6 +559,7 @@ function normalizePositiveInteger(value) {
 
 function buildManualRunFieldsFromBody(body = {}) {
   return {
+    evidenceContext: body.evidenceContext,
     scopeProofPaths: body.scopeProofPaths || body.proofPaths,
     verificationChecks: body.verificationChecks || body.checks,
     verificationArtifacts: body.verificationArtifacts || body.artifacts,

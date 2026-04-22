@@ -1,0 +1,61 @@
+{
+  "id": "run-1776841580111",
+  "taskId": "T-603",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Added MCP activity breadcrumbs plus evidenceContext-backed run evidence, exposed activity records in task detail, and covered the flow with regression tests.",
+  "createdAt": "2026-04-22T07:06:20.109Z",
+  "scopeProofPaths": [
+    "src/lib/mcp-tools.js",
+    "src/lib/task-service.js",
+    "src/lib/done.js",
+    "src/lib/schema-validator.js",
+    "src/server.js",
+    "test/agent-activity-evidence.test.js",
+    "test/mcp-server.test.js",
+    ".agent-workflow/tasks/T-603/task.json",
+    ".agent-workflow/tasks/T-603/context.md",
+    ".agent-workflow/tasks/T-603/verification.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test -- test/agent-activity-evidence.test.js test/mcp-server.test.js",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm test",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-603/runs/npm-test-20260422.log"
+  ],
+  "evidence": {
+    "proofPaths": [
+      "src/lib/mcp-tools.js",
+      "src/lib/task-service.js",
+      "src/lib/done.js",
+      "src/lib/schema-validator.js",
+      "src/server.js",
+      "test/agent-activity-evidence.test.js",
+      "test/mcp-server.test.js",
+      ".agent-workflow/tasks/T-603/task.json",
+      ".agent-workflow/tasks/T-603/context.md",
+      ".agent-workflow/tasks/T-603/verification.md"
+    ],
+    "checks": [
+      {
+        "label": "npm test -- test/agent-activity-evidence.test.js test/mcp-server.test.js",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "npm test",
+        "status": "passed",
+        "artifacts": []
+      }
+    ]
+  }
+}
