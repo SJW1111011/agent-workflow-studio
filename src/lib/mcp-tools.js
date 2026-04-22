@@ -24,7 +24,7 @@ const TASK_STATUSES = Object.freeze(["todo", "in_progress", "blocked", "done"]);
 const TOOL_DEFINITIONS = Object.freeze([
   {
     name: "workflow_quick",
-    description: "Create a persistent workflow task that survives across sessions, agents, and context resets. Writes to .agent-workflow/tasks/ on disk. Use this instead of ephemeral task tools when the work needs evidence tracking, checkpoints, or cross-agent handoff.",
+    description: "Create a task in the project workflow. This is the primary way to track work — all tasks created here appear in the dashboard with evidence tracking, trust scores, and cross-session checkpoints. Use lite mode for most work, full mode for auditable workflows.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -66,7 +66,7 @@ const TOOL_DEFINITIONS = Object.freeze([
   {
     name: "workflow_done",
     description:
-      "Record evidence for a persistent workflow task: auto-infers changed files from git diff, runs matching test collectors (npm/pytest/cargo/go), and refreshes the checkpoint. Use when finishing work on a task created by workflow_quick.",
+      "Mark a task done and record evidence. Auto-infers changed files from git diff and runs matching test collectors (npm/pytest/cargo/go). This is how work becomes visible and trustworthy in the dashboard.",
     inputSchema: buildManualRunInputSchema({
       includeComplete: true,
       includeEvidenceContext: true,
@@ -75,12 +75,12 @@ const TOOL_DEFINITIONS = Object.freeze([
   {
     name: "workflow_record_activity",
     description:
-      "Record a timestamped activity breadcrumb for a persistent workflow task without refreshing its checkpoint or changing status. Use for incremental progress notes during long-running work.",
+      "Log a progress breadcrumb during long-running work. Lightweight — does not change task status or refresh checkpoint. Builds up the evidence timeline visible in the dashboard.",
     inputSchema: buildActivityInputSchema(),
   },
   {
     name: "workflow_update_task",
-    description: "Update a persistent workflow task's title, priority, or status and refresh its checkpoint.",
+    description: "Update a task's title, priority, or status. Changes are reflected in the dashboard immediately.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -109,7 +109,7 @@ const TOOL_DEFINITIONS = Object.freeze([
   },
   {
     name: "workflow_append_note",
-    description: "Append a timestamped progress note to a persistent workflow task's context and refresh its checkpoint. Notes survive session boundaries.",
+    description: "Append a timestamped progress note to a task. Notes are durable and visible in the dashboard's evidence timeline.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -128,18 +128,18 @@ const TOOL_DEFINITIONS = Object.freeze([
   },
   {
     name: "workflow_task_list",
-    description: "List all persistent workflow tasks with status, priority, run counts, and latest evidence. These are durable tasks stored in .agent-workflow/tasks/, not ephemeral session tasks.",
+    description: "List all project tasks with status, priority, evidence coverage, and trust scores. This is the task list shown in the dashboard.",
     inputSchema: emptyInputSchema(),
   },
   {
     name: "workflow_run_add",
     description:
-      "Record a manual run with evidence for a persistent workflow task. Auto-infers proof paths from git diff and runs matching test collectors (npm/pytest/cargo/go) unless overridden.",
+      "Record a run with evidence for a task. Auto-infers proof paths from git diff and runs matching test collectors (npm/pytest/cargo/go). Use workflow_done instead for the common case of recording evidence and completing a task in one step.",
     inputSchema: buildManualRunInputSchema(),
   },
   {
     name: "workflow_checkpoint",
-    description: "Refresh a persistent workflow task's checkpoint from current durable state. Checkpoints enable cross-session and cross-agent resume.",
+    description: "Refresh a task's checkpoint so another agent or future session can resume from this point.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -158,12 +158,12 @@ const TOOL_DEFINITIONS = Object.freeze([
   },
   {
     name: "workflow_undo",
-    description: "Undo the most recent persistent workflow operation (task creation, run recording, or checkpoint). Only affects .agent-workflow/ state, never source files or git history.",
+    description: "Undo the most recent workflow operation (task creation, evidence recording, or checkpoint). Safe — only affects workflow state, never source files or git.",
     inputSchema: emptyInputSchema(),
   },
   {
     name: "workflow_validate",
-    description: "Validate the persistent workflow scaffold: project config, adapters, tasks, and run records. Reports missing fields, stale evidence, and schema issues.",
+    description: "Check the project workflow for issues: missing fields, stale evidence, schema problems. Reports what needs attention.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -177,7 +177,7 @@ const TOOL_DEFINITIONS = Object.freeze([
   },
   {
     name: "workflow_overview",
-    description: "Return the full persistent workspace overview: all tasks, evidence coverage, trust scores, risks, memory freshness, and validation state. Use this to understand the project's workflow health at a glance.",
+    description: "Get the full project health snapshot: all tasks, evidence coverage, trust scores, risks, and memory freshness. This is the data behind the dashboard overview.",
     inputSchema: emptyInputSchema(),
   },
 ]);
