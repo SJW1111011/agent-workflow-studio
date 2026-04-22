@@ -1,27 +1,29 @@
 # T-606 Checkpoint
 
-Generated at: 2026-04-22T05:52:13.544Z
+Generated at: 2026-04-22T12:44:35.108Z
 
 ## Completed
 
 - Prompt compiled
+- 1 run(s) recorded
 - Task context captured
+- Scoped verification evidence looks current
 
 ## Confirmed facts
 
 - Title: Version Bump to 0.2.0
 - Priority: P2
-- Status: todo
-- Latest run status: none
-- Total runs: 0
+- Status: done
+- Latest run status: passed
+- Total runs: 1
 
 ## Verification gate
 
-- Status: ready
-- Summary: Add repo-relative scope paths to make evidence coverage automatic.
-- Evidence coverage: no scope defined
-- Scope hints: 0
-- Ambiguous scope entries: 1
+- Status: covered
+- Summary: Recorded verification covers the current scoped file set.
+- Evidence coverage: 100% (5/5 scoped files)
+- Scope hints: 10
+- Ambiguous scope entries: 0
 - Scoped files awaiting proof: 0
 
 ### Scoped files awaiting proof
@@ -30,29 +32,33 @@ Generated at: 2026-04-22T05:52:13.544Z
 
 ### Scoped files already linked to proof
 
-- None
+- CHANGELOG.md
+- docs/ROADMAP.md
+- package-lock.json
+- package.json
+- docs/RELEASE_NOTES_0.2.0.md
 
 ### Explicit evidence items
 
-- None
+- manual:verification.md#proof-1 | paths=package.json, package-lock.json, CHANGELOG.md, docs/RELEASE_NOTES_0.2.0.md, docs/ROADMAP.md | checks=`npm test` (40 files, 194 tests passed, including migration-compatibility coverage for legacy aliases and `manualProofAnchors`); `npm run smoke`; `npm run lint`; `npm run validate -- --root .`; `npm pack --json --cache ./.npm-cache-tmp --pack-destination .agent-workflow/tasks/T-606/runs`; manual review confirmed the release notes and changelog cover Phase 4 and Phase 5 without claiming npm publication (result: Passed on 2026-04-22) | artifacts=.agent-workflow/tasks/T-606/runs/t606-npm-test.log, .agent-workflow/tasks/T-606/runs/t606-npm-smoke.log, .agent-workflow/tasks/T-606/runs/t606-npm-lint.log, .agent-workflow/tasks/T-606/runs/t606-validate-root.log, .agent-workflow/tasks/T-606/runs/t606-npm-pack.json, .agent-workflow/tasks/T-606/runs/agent-workflow-studio-0.2.0.tgz
+- run:run-1776861816597 | paths=package.json, package-lock.json, CHANGELOG.md, docs/RELEASE_NOTES_0.2.0.md, docs/ROADMAP.md | checks=[passed] npm test (40 files, 194 tests passed; includes migration-compatibility coverage for legacy aliases and manualProofAnchors); [passed] npm run smoke; [passed] npm run lint; [passed] npm run validate -- --root .; [passed] npm pack --json produced agent-workflow-studio-0.2.0.tgz; [passed] Manual doc review confirmed the 0.2.0 notes cover Phase 4 and Phase 5 without claiming npm publication | artifacts=.agent-workflow/tasks/T-606/runs/t606-npm-test.log, .agent-workflow/tasks/T-606/runs/t606-npm-smoke.log, .agent-workflow/tasks/T-606/runs/t606-npm-lint.log, .agent-workflow/tasks/T-606/runs/t606-validate-root.log, .agent-workflow/tasks/T-606/runs/t606-npm-pack.json, .agent-workflow/tasks/T-606/runs/agent-workflow-studio-0.2.0.tgz
 
 ### Scope entries that need tightening
 
-- repo path: (task.md)
+- None
 
 ## Risks
 
-- No execution evidence recorded yet.
-- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.
+- No immediate risks detected
 
 ## Latest evidence
 
-- Summary: No runs recorded
-- Timestamp: N/A
+- Summary: Prepared the 0.2.0 release package and verified backward compatibility.
+- Timestamp: 2026-04-22T12:43:36.595Z
 
 ## Resume instructions
 
 1. Read task.md, context.md, and verification.md.
 2. Review the latest prompt and decide whether it still reflects scope.
-3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.
+3. Refresh verification.md and checkpoint.md again if scoped files change.
 4. Continue only after acknowledging the risks above.

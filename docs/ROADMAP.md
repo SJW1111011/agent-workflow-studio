@@ -118,7 +118,9 @@
 
 ---
 
-## Phase 5 - Agent-Native Evidence - IN PROGRESS
+## Phase 5 - Agent-Native Evidence - COMPLETE
+
+**Completed 2026-04-22.** Tasks T-600 ~ T-606.
 
 **Goal:** Make evidence automatic, make agents first-class MCP citizens, make trust quantifiable.
 
@@ -132,7 +134,7 @@
 | T-605 | Deprecate prompt:compile and skills:generate |
 | T-606 | Version bump to 0.2.0 |
 
-**Progress note:** T-605 is complete. `prompt:compile` and `skills:generate` now emit stderr-only deprecation warnings, and the recommended handoff path is MCP resources plus MCP prompts ahead of their planned 0.3.0 removal.
+**Progress note:** T-606 is complete. Phase 5 now ships multi-collector evidence, MCP resources and prompts, agent activity evidence, dashboard trust signals, and the `prompt:compile` / `skills:generate` deprecation path together in the `0.2.0` package line.
 
 | Change | Detail |
 |--------|--------|
@@ -271,7 +273,7 @@ Claude Code creates task (task.md / context.md / verification.md)
         -> Fail -> create correction task for Codex
 ```
 
-This loop produced 29 tasks across 5 phases (T-100 ~ T-504), each reviewed against `.agent-workflow/review-checklist.md`. The MCP integration (Phase 2) now makes it possible to run parts of this loop from inside Claude Code without switching to a terminal.
+This loop has now produced task-by-task dogfooding from T-100 through T-606, with each scoped change reviewed against `.agent-workflow/review-checklist.md`. The MCP integration (Phase 2) now makes it possible to run parts of this loop from inside Claude Code without switching to a terminal.
 
 ---
 

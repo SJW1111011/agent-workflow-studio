@@ -1,0 +1,96 @@
+{
+  "id": "run-1776861816597",
+  "taskId": "T-606",
+  "agent": "manual",
+  "status": "passed",
+  "summary": "Prepared the 0.2.0 release package and verified backward compatibility.",
+  "createdAt": "2026-04-22T12:43:36.595Z",
+  "scopeProofPaths": [
+    "package.json",
+    "package-lock.json",
+    "CHANGELOG.md",
+    "docs/RELEASE_NOTES_0.2.0.md",
+    "docs/ROADMAP.md"
+  ],
+  "verificationChecks": [
+    {
+      "label": "npm test (40 files, 194 tests passed; includes migration-compatibility coverage for legacy aliases and manualProofAnchors)",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run smoke",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run lint",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm run validate -- --root .",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "npm pack --json produced agent-workflow-studio-0.2.0.tgz",
+      "status": "passed",
+      "artifacts": []
+    },
+    {
+      "label": "Manual doc review confirmed the 0.2.0 notes cover Phase 4 and Phase 5 without claiming npm publication",
+      "status": "passed",
+      "artifacts": []
+    }
+  ],
+  "verificationArtifacts": [
+    ".agent-workflow/tasks/T-606/runs/t606-npm-test.log",
+    ".agent-workflow/tasks/T-606/runs/t606-npm-smoke.log",
+    ".agent-workflow/tasks/T-606/runs/t606-npm-lint.log",
+    ".agent-workflow/tasks/T-606/runs/t606-validate-root.log",
+    ".agent-workflow/tasks/T-606/runs/t606-npm-pack.json",
+    ".agent-workflow/tasks/T-606/runs/agent-workflow-studio-0.2.0.tgz"
+  ],
+  "evidence": {
+    "proofPaths": [
+      "package.json",
+      "package-lock.json",
+      "CHANGELOG.md",
+      "docs/RELEASE_NOTES_0.2.0.md",
+      "docs/ROADMAP.md"
+    ],
+    "checks": [
+      {
+        "label": "npm test (40 files, 194 tests passed; includes migration-compatibility coverage for legacy aliases and manualProofAnchors)",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "npm run smoke",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "npm run lint",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "npm run validate -- --root .",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "npm pack --json produced agent-workflow-studio-0.2.0.tgz",
+        "status": "passed",
+        "artifacts": []
+      },
+      {
+        "label": "Manual doc review confirmed the 0.2.0 notes cover Phase 4 and Phase 5 without claiming npm publication",
+        "status": "passed",
+        "artifacts": []
+      }
+    ]
+  }
+}

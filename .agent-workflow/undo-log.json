@@ -1,90 +1,5 @@
 [
   {
-    "type": "quick",
-    "taskId": "T-601",
-    "timestamp": "2026-04-19T16:45:41.774Z",
-    "files": [
-      ".agent-workflow/tasks/T-601",
-      ".agent-workflow/tasks/T-601/checkpoint.json",
-      ".agent-workflow/tasks/T-601/checkpoint.md",
-      ".agent-workflow/tasks/T-601/context.md",
-      ".agent-workflow/tasks/T-601/launch.codex.md",
-      ".agent-workflow/tasks/T-601/prompt.codex.md",
-      ".agent-workflow/tasks/T-601/run-request.codex.json",
-      ".agent-workflow/tasks/T-601/runs",
-      ".agent-workflow/tasks/T-601/task.json",
-      ".agent-workflow/tasks/T-601/task.md",
-      ".agent-workflow/tasks/T-601/verification.md"
-    ],
-    "metadata": {
-      "taskRoot": ".agent-workflow/tasks/T-601",
-      "mode": "full",
-      "agent": "codex",
-      "adapterId": "codex",
-      "restore": []
-    }
-  },
-  {
-    "type": "done",
-    "taskId": "T-600",
-    "timestamp": "2026-04-19T17:37:33.596Z",
-    "files": [
-      ".agent-workflow/tasks/T-600/checkpoint.json",
-      ".agent-workflow/tasks/T-600/checkpoint.md",
-      ".agent-workflow/tasks/T-600/context.md",
-      ".agent-workflow/tasks/T-600/runs",
-      ".agent-workflow/tasks/T-600/runs/run-1776620252924.json",
-      ".agent-workflow/tasks/T-600/task.json",
-      ".agent-workflow/tasks/T-600/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-600/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-600\",\n  \"title\": \"Evidence Collector Plugin System\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P0\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-19T16:45:18.823Z\",\n  \"updatedAt\": \"2026-04-19T16:45:18.823Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-600/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-600 Context\n\n## Why now\n\nThe current smart-default flow only understands npm test evidence, which leaves Python, Rust, and Go repositories without the same zero-config verification help. Pulling runner detection into a registry keeps the inference contract stable while making the evidence layer extensible enough for built-in multi-language support and repo-specific collectors.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/smart-defaults.js` currently parses `package.json` and executes `npm test` directly.\n- `src/lib/task-service.js` already consumes `inferTestStatusResult()` and only needs backward-compatible return data.\n- `src/lib/workspace.js` is the existing normalization point for repo-level `project.json` settings.\n- `src/lib/schema-validator.js` already validates `project.json` booleans, so custom collector shape validation belongs there.\n- The task prompt requires workflow docs, verification evidence, and `checkpoint.md` to stay current during implementation.\n\n## Open questions\n\n- Custom collectors currently have no explicit priority field, so the implementation should choose a stable default ordering that does not break existing npm-first behavior.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-600/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-600 Verification\n\n## Draft checks\n\n- automated:\n- manual:\n\n## Verification records\n\n### Record 1\n\n- Files:\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n-\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-600/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-600\",\n  \"generatedAt\": \"2026-04-19T16:45:18.984Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add repo-relative scope paths to make evidence coverage automatic.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-600/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-600 Checkpoint\n\nGenerated at: 2026-04-19T16:45:18.984Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: Evidence Collector Plugin System\n- Priority: P0\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add repo-relative scope paths to make evidence coverage automatic.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-600/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-600/runs/run-1776620252924.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-600/runs/run-1776620252924.json",
-      "runId": "run-1776620252924"
-    }
-  },
-  {
     "type": "checkpoint",
     "taskId": "T-600",
     "timestamp": "2026-04-19T17:38:27.312Z",
@@ -840,6 +755,105 @@
       ],
       "runFile": ".agent-workflow/tasks/T-604/runs/run-1776860227938.json",
       "runId": "run-1776860227938"
+    }
+  },
+  {
+    "type": "done",
+    "taskId": "T-606",
+    "timestamp": "2026-04-22T12:43:37.301Z",
+    "files": [
+      ".agent-workflow/tasks/T-606/checkpoint.json",
+      ".agent-workflow/tasks/T-606/checkpoint.md",
+      ".agent-workflow/tasks/T-606/context.md",
+      ".agent-workflow/tasks/T-606/runs",
+      ".agent-workflow/tasks/T-606/runs/run-1776861816597.json",
+      ".agent-workflow/tasks/T-606/task.json",
+      ".agent-workflow/tasks/T-606/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-606/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-606\",\n  \"title\": \"Version Bump to 0.2.0\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P2\",\n  \"status\": \"in_progress\",\n  \"createdAt\": \"2026-04-22T05:52:13.299Z\",\n  \"updatedAt\": \"2026-04-22T05:52:13.299Z\",\n  \"goal\": \"Prepare the 0.2.0 release package by bumping package metadata, writing the user-facing release summary, marking Phase 5 complete, and verifying backward compatibility with existing 0.1.2 workflow data.\",\n  \"scope\": [\n    \"package.json\",\n    \"package-lock.json\",\n    \"CHANGELOG.md\",\n    \"docs/RELEASE_NOTES_0.2.0.md\",\n    \"docs/ROADMAP.md\"\n  ],\n  \"nonGoals\": [\n    \"src/**\",\n    \"dashboard-next/**\",\n    \"npm publish\"\n  ],\n  \"requiredDocs\": [\n    \".agent-workflow/project-profile.md\",\n    \".agent-workflow/memory/product.md\",\n    \".agent-workflow/memory/architecture.md\"\n  ],\n  \"verificationCommands\": [\n    \"npm test\",\n    \"npm run smoke\",\n    \"npm run lint\",\n    \"npm run validate -- --root .\",\n    \"npm pack --json --cache ./.npm-cache-tmp --pack-destination .agent-workflow/tasks/T-606/runs\"\n  ]\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-606/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-606 Context\n\n## Why now\n\nPhase 4 and Phase 5 work is already implemented, but the package metadata and user-facing release docs still describe `0.1.2`. The repository needs a truthful `0.2.0` release package, compatibility proof, and roadmap update so users can understand what shipped without reconstructing it from task history.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `package.json` and `package-lock.json` still advertise `0.1.2`, even though Phase 4 and Phase 5 features are already present in the repository.\n- `README.md` already documents the `0.1.2` compatibility guarantees: legacy run evidence aliases normalize on read, legacy `manualProofAnchors` blocks still parse, and `validate --root .` accepts the older verification vocabulary.\n- `docs/ROADMAP.md` still marks Phase 5 as in progress even though T-600 through T-605 are already complete.\n- npm publish is explicitly out of scope for this task; the goal is to prepare the release truthfully, not claim it is already live.\n\n## Open questions\n\n- None. The remaining work is documentation, package metadata, and local verification only.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-606/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-606 Verification\n\n## Draft checks\n\n- automated:\n  - `npm test`\n  - `npm run smoke`\n  - `npm run lint`\n  - `npm run validate -- --root .`\n  - `npm pack --json --cache ./.npm-cache-tmp --pack-destination .agent-workflow/tasks/T-606/runs`\n- manual:\n  - Review `CHANGELOG.md`, `docs/RELEASE_NOTES_0.2.0.md`, and `docs/ROADMAP.md` to confirm the 0.2.0 summary covers the shipped Phase 4 and Phase 5 work.\n  - Confirm the release notes and changelog do not claim npm publication, because publish approval is explicitly out of scope.\n\n## Verification records\n\n### Record 1\n\n- Files: `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/RELEASE_NOTES_0.2.0.md`, `docs/ROADMAP.md`\n- Check: Pending implementation and verification\n- Result: Not run yet\n- Artifact: Pending\n\n## Blocking gaps\n\n- Pending implementation and local verification.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-606/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-606\",\n  \"generatedAt\": \"2026-04-22T05:52:13.544Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add repo-relative scope paths to make evidence coverage automatic.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-606/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-606 Checkpoint\n\nGenerated at: 2026-04-22T05:52:13.544Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: Version Bump to 0.2.0\n- Priority: P2\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add repo-relative scope paths to make evidence coverage automatic.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-606/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-606/runs/run-1776861816597.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-606/runs/run-1776861816597.json",
+      "runId": "run-1776861816597"
+    }
+  },
+  {
+    "type": "checkpoint",
+    "taskId": "T-606",
+    "timestamp": "2026-04-22T12:44:35.126Z",
+    "files": [
+      ".agent-workflow/tasks/T-606/checkpoint.json",
+      ".agent-workflow/tasks/T-606/checkpoint.md",
+      ".agent-workflow/tasks/T-606/context.md",
+      ".agent-workflow/tasks/T-606/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-606/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-606 Context\n\n## Why now\n\nPhase 4 and Phase 5 work is already implemented, but the package metadata and user-facing release docs still describe `0.1.2`. The repository needs a truthful `0.2.0` release package, compatibility proof, and roadmap update so users can understand what shipped without reconstructing it from task history.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `package.json` and `package-lock.json` still advertise `0.1.2`, even though Phase 4 and Phase 5 features are already present in the repository.\n- `README.md` already documents the `0.1.2` compatibility guarantees: legacy run evidence aliases normalize on read, legacy `manualProofAnchors` blocks still parse, and `validate --root .` accepts the older verification vocabulary.\n- `docs/ROADMAP.md` still marks Phase 5 as in progress even though T-600 through T-605 are already complete.\n- npm publish is explicitly out of scope for this task; the goal is to prepare the release truthfully, not claim it is already live.\n\n## Open questions\n\n- None. The remaining work is documentation, package metadata, and local verification only.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P2\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-606/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-606 Verification\n\n## Draft checks\n\n- automated:\n  - `npm test`\n  - `npm run smoke`\n  - `npm run lint`\n  - `npm run validate -- --root .`\n  - `npm pack --json --cache ./.npm-cache-tmp --pack-destination .agent-workflow/tasks/T-606/runs`\n- manual:\n  - Review `CHANGELOG.md`, `docs/RELEASE_NOTES_0.2.0.md`, and `docs/ROADMAP.md` to confirm the 0.2.0 summary covers the shipped Phase 4 and Phase 5 work.\n  - Confirm the release notes and changelog do not claim npm publication, because publish approval is explicitly out of scope.\n\n## Verification records\n\n### Record 1\n\n- Files: `package.json`, `package-lock.json`, `CHANGELOG.md`, `docs/RELEASE_NOTES_0.2.0.md`, `docs/ROADMAP.md`\n- Check: `npm test` (40 files, 194 tests passed, including migration-compatibility coverage for legacy aliases and `manualProofAnchors`); `npm run smoke`; `npm run lint`; `npm run validate -- --root .`; `npm pack --json --cache ./.npm-cache-tmp --pack-destination .agent-workflow/tasks/T-606/runs`; manual review confirmed the release notes and changelog cover Phase 4 and Phase 5 without claiming npm publication\n- Result: Passed on 2026-04-22\n- Artifact: `.agent-workflow/tasks/T-606/runs/t606-npm-test.log`, `.agent-workflow/tasks/T-606/runs/t606-npm-smoke.log`, `.agent-workflow/tasks/T-606/runs/t606-npm-lint.log`, `.agent-workflow/tasks/T-606/runs/t606-validate-root.log`, `.agent-workflow/tasks/T-606/runs/t606-npm-pack.json`, `.agent-workflow/tasks/T-606/runs/agent-workflow-studio-0.2.0.tgz`\n\n## Blocking gaps\n\n- None.\n\n## Evidence 2026-04-22T12:43:36.595Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: package.json, package-lock.json, CHANGELOG.md, docs/RELEASE_NOTES_0.2.0.md, docs/ROADMAP.md\n- Verification artifacts: .agent-workflow/tasks/T-606/runs/t606-npm-test.log, .agent-workflow/tasks/T-606/runs/t606-npm-smoke.log, .agent-workflow/tasks/T-606/runs/t606-npm-lint.log, .agent-workflow/tasks/T-606/runs/t606-validate-root.log, .agent-workflow/tasks/T-606/runs/t606-npm-pack.json, .agent-workflow/tasks/T-606/runs/agent-workflow-studio-0.2.0.tgz\n- Proof artifacts: .agent-workflow/tasks/T-606/runs/t606-npm-test.log, .agent-workflow/tasks/T-606/runs/t606-npm-smoke.log, .agent-workflow/tasks/T-606/runs/t606-npm-lint.log, .agent-workflow/tasks/T-606/runs/t606-validate-root.log, .agent-workflow/tasks/T-606/runs/t606-npm-pack.json, .agent-workflow/tasks/T-606/runs/agent-workflow-studio-0.2.0.tgz\n- Summary: Prepared the 0.2.0 release package and verified backward compatibility.\n- Verification check: [passed] npm test (40 files, 194 tests passed; includes migration-compatibility coverage for legacy aliases and manualProofAnchors)\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run validate -- --root .\n- Verification check: [passed] npm pack --json produced agent-workflow-studio-0.2.0.tgz\n- Verification check: [passed] Manual doc review confirmed the 0.2.0 notes cover Phase 4 and Phase 5 without claiming npm publication\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-606/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-606\",\n  \"generatedAt\": \"2026-04-22T12:43:37.267Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 100,\n    \"scopeHintCount\": 9,\n    \"ambiguousScopeCount\": 3,\n    \"scopedFileCount\": 5,\n    \"coveredFileCount\": 5,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-606/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-606 Checkpoint\n\nGenerated at: 2026-04-22T12:43:37.267Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Version Bump to 0.2.0\n- Priority: P2\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (5/5 scoped files)\n- Scope hints: 9\n- Ambiguous scope entries: 3\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- CHANGELOG.md\n- docs/ROADMAP.md\n- package-lock.json\n- package.json\n- docs/RELEASE_NOTES_0.2.0.md\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=package.json, package-lock.json, CHANGELOG.md, docs/RELEASE_NOTES_0.2.0.md, docs/ROADMAP.md | checks=Pending implementation and verification (result: Not run yet) | artifacts=Pending\n- run:run-1776861816597 | paths=package.json, package-lock.json, CHANGELOG.md, docs/RELEASE_NOTES_0.2.0.md, docs/ROADMAP.md | checks=[passed] npm test (40 files, 194 tests passed; includes migration-compatibility coverage for legacy aliases and manualProofAnchors); [passed] npm run smoke; [passed] npm run lint; [passed] npm run validate -- --root .; [passed] npm pack --json produced agent-workflow-studio-0.2.0.tgz; [passed] Manual doc review confirmed the 0.2.0 notes cover Phase 4 and Phase 5 without claiming npm publication | artifacts=.agent-workflow/tasks/T-606/runs/t606-npm-test.log, .agent-workflow/tasks/T-606/runs/t606-npm-smoke.log, .agent-workflow/tasks/T-606/runs/t606-npm-lint.log, .agent-workflow/tasks/T-606/runs/t606-validate-root.log, .agent-workflow/tasks/T-606/runs/t606-npm-pack.json, .agent-workflow/tasks/T-606/runs/agent-workflow-studio-0.2.0.tgz\n\n### Scope entries that need tightening\n\n- repo path: package.json (version bump to 0.2.0) (task.md)\n- repo path: package-lock.json (sync root package metadata with 0.2.0) (task.md)\n- repo path: CHANGELOG.md (add 0.2.0 section) (task.md)\n\n## Risks\n\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: Prepared the 0.2.0 release package and verified backward compatibility.\n- Timestamp: 2026-04-22T12:43:36.595Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        }
+      ]
     }
   }
 ]

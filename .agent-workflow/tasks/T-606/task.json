@@ -3,12 +3,32 @@
   "title": "Version Bump to 0.2.0",
   "recipeId": "feature",
   "priority": "P2",
-  "status": "todo",
+  "status": "done",
   "createdAt": "2026-04-22T05:52:13.299Z",
-  "updatedAt": "2026-04-22T05:52:13.299Z",
-  "goal": "",
-  "scope": [],
-  "nonGoals": [],
-  "requiredDocs": [],
-  "verificationCommands": []
+  "updatedAt": "2026-04-22T12:44:07.394Z",
+  "goal": "Prepare the 0.2.0 release package by bumping package metadata, writing the user-facing release summary, marking Phase 5 complete, and verifying backward compatibility with existing 0.1.2 workflow data.",
+  "scope": [
+    "package.json",
+    "package-lock.json",
+    "CHANGELOG.md",
+    "docs/RELEASE_NOTES_0.2.0.md",
+    "docs/ROADMAP.md"
+  ],
+  "nonGoals": [
+    "src/**",
+    "dashboard-next/**",
+    "npm publish"
+  ],
+  "requiredDocs": [
+    ".agent-workflow/project-profile.md",
+    ".agent-workflow/memory/product.md",
+    ".agent-workflow/memory/architecture.md"
+  ],
+  "verificationCommands": [
+    "npm test",
+    "npm run smoke",
+    "npm run lint",
+    "npm run validate -- --root .",
+    "npm pack --json --cache ./.npm-cache-tmp --pack-destination .agent-workflow/tasks/T-606/runs"
+  ]
 }
