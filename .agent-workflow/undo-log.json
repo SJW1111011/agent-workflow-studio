@@ -1,243 +1,6 @@
 [
   {
     "type": "checkpoint",
-    "taskId": "T-501",
-    "timestamp": "2026-04-17T15:58:39.636Z",
-    "files": [
-      ".agent-workflow/tasks/T-501/checkpoint.json",
-      ".agent-workflow/tasks/T-501/checkpoint.md",
-      ".agent-workflow/tasks/T-501/context.md",
-      ".agent-workflow/tasks/T-501/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-501/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-501 Context\n\n## Why now\n\nT-500 created the Vite + Preact scaffold with placeholder tabs. This task turns that shell into the real dashboard so the modern build can replace the default server response without regressing task actions, verification editing, or execution/log visibility.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- The modern app now uses `DashboardContext` + `useReducer` to manage active tab/task selection, overview/task detail payloads, execution state, action status, and log panel state.\n- Legacy helper logic was ported into native ESM utilities under `dashboard-next/src/utils/` because Vite could not bundle the old UMD helper files directly.\n- The new app reuses `dashboard/styles.css` so the Preact implementation keeps the established layout and interaction affordances without copying the legacy DOM-string render path.\n- Actions are implemented as controlled Preact forms for quick create, task creation, task metadata updates, run recording, execution start/cancel, and markdown document saves.\n- Execution log polling remains timer-based in `useDashboardState`; SSE is still intentionally out of scope for T-502.\n- Verification currently relies on build/lint/test/smoke evidence plus durable workflow artifacts; no browser-level visual regression suite exists yet.\n\n## Open questions\n\n- URL routing remains a follow-up. This task intentionally kept the existing tab-based navigation so the migration stayed within scope and did not introduce new routing/state contracts.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-500 (scaffold must exist)\n- Feature parity with vanilla dashboard - no new features, no removed features\n- Must pass `npm run dashboard:build`\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-501/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-501 Verification\n\n## Draft checks\n\n- automated: npm run dashboard:build\n- automated: npm run lint\n- automated: npm test\n- automated: npm run smoke\n- manual: Verify the built server defaults to the modern Preact dashboard while the legacy dashboard remains available behind `--legacy-dashboard`.\n\n## Verification records\n\n### Record 1\n\n- Files: dashboard-next/src/App.jsx, dashboard-next/src/components/Overview.jsx, dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/TaskDetail.jsx, dashboard-next/src/components/ExecutionPanel.jsx, dashboard-next/src/components/Forms.jsx, dashboard-next/src/components/DocumentEditor.jsx, dashboard-next/src/hooks/useApi.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/context/DashboardContext.jsx, dashboard-next/src/utils/api.js, dashboard-next/src/utils/document.js, dashboard-next/src/utils/execution.js, dashboard-next/src/utils/forms.js, dashboard-next/src/utils/logs.js, dashboard-next/src/utils/orchestration.js, dashboard-next/src/utils/taskBoard.js, dashboard-next/src/main.jsx, dashboard-next/src/styles/app.css, dashboard-next/vite.config.js\n- Check: Replaced the placeholder shell with reducer-backed Preact panels, controlled forms, document editing, execution/log views, and native ESM utility modules compatible with the Vite build.\n- Result: Passed. `npm run dashboard:build`, `npm run lint`, `npm test`, and `npm run smoke` all succeeded after the migration.\n- Artifact: dashboard-next/dist/index.html, .agent-workflow/tasks/T-501/runs/runtime-check-20260417.md, .agent-workflow/tasks/T-501/checkpoint.md\n\n## Blocking gaps\n\n- No browser-side visual regression run was captured; parity confidence comes from preserved CSS/layout contracts, live API wiring, and automated build/test/smoke coverage.\n\n## Evidence 2026-04-17T15:58:28.207Z\n\n- Agent: codex\n- Status: passed\n- Scoped files covered: dashboard-next/src/App.jsx, dashboard-next/src/components/Overview.jsx, dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/TaskDetail.jsx, dashboard-next/src/components/ExecutionPanel.jsx, dashboard-next/src/components/Forms.jsx, dashboard-next/src/components/DocumentEditor.jsx, dashboard-next/src/hooks/useApi.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/context/DashboardContext.jsx, dashboard-next/src/utils/api.js, dashboard-next/src/utils/document.js, dashboard-next/src/utils/execution.js, dashboard-next/src/utils/forms.js, dashboard-next/src/utils/logs.js, dashboard-next/src/utils/orchestration.js, dashboard-next/src/utils/taskBoard.js, dashboard-next/src/main.jsx, dashboard-next/src/styles/app.css, dashboard-next/vite.config.js\n- Verification artifacts: dashboard-next/dist/index.html, .agent-workflow/tasks/T-501/runs/runtime-check-20260417.md\n- Proof artifacts: dashboard-next/dist/index.html, .agent-workflow/tasks/T-501/runs/runtime-check-20260417.md\n- Summary: Migrated the modern dashboard from scaffold placeholders to reducer-driven Preact components backed by native ESM utilities and preserved legacy workflow contracts.\n- Verification check: [passed] passed | npm run dashboard:build\n- Verification check: [passed] passed | npm run lint\n- Verification check: [passed] passed | npm test\n- Verification check: [passed] passed | npm run smoke\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-501/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-501\",\n  \"generatedAt\": \"2026-04-17T15:58:28.657Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [\n    \"Some scoped files still need verified evidence: dashboard-next/src/components/Header.jsx\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Some scoped files are already linked to verified evidence\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"incomplete\",\n    \"message\": \"Some scoped files already have verified evidence, but newer scoped changes still need attention.\",\n    \"relevantChangeCount\": 1,\n    \"coveragePercent\": 95,\n    \"scopeHintCount\": 29,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 21,\n    \"coveredFileCount\": 20,\n    \"relevantChangedFiles\": [\n      {\n        \"path\": \"dashboard-next/src/components/Header.jsx\",\n        \"modifiedAt\": \"2026-04-17T15:37:19.648Z\",\n        \"changeType\": \"modified\",\n        \"gitState\": \"M\",\n        \"previousPath\": null,\n        \"matchedBy\": [\n          {\n            \"pattern\": \"dashboard-next/src/components/Header.jsx\",\n            \"source\": \"task.json\"\n          }\n        ],\n        \"proofUpdatedAt\": null,\n        \"proofFreshnessSource\": null,\n        \"proofItems\": []\n      }\n    ]\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-501/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-501 Checkpoint\n\nGenerated at: 2026-04-17T15:58:28.657Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Some scoped files are already linked to verified evidence\n\n## Confirmed facts\n\n- Title: Component migration - convert all render-helpers to Preact JSX components with hooks state\n- Priority: P0\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: incomplete\n- Summary: Some scoped files already have verified evidence, but newer scoped changes still need attention.\n- Evidence coverage: 95% (20/21 scoped files)\n- Scope hints: 29\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 1\n\n### Scoped files awaiting proof\n\n- dashboard-next/src/components/Header.jsx\n\n### Scoped files already linked to proof\n\n- dashboard-next/src/App.jsx\n- dashboard-next/src/main.jsx\n- dashboard-next/src/styles/app.css\n- dashboard-next/vite.config.js\n- dashboard-next/src/components/DocumentEditor.jsx\n- dashboard-next/src/components/ExecutionPanel.jsx\n- dashboard-next/src/components/Forms.jsx\n- dashboard-next/src/components/Overview.jsx\n- dashboard-next/src/components/TaskDetail.jsx\n- dashboard-next/src/components/TaskList.jsx\n- dashboard-next/src/context/DashboardContext.jsx\n- dashboard-next/src/hooks/useApi.js\n- dashboard-next/src/hooks/useDashboardState.js\n- dashboard-next/src/utils/api.js\n- dashboard-next/src/utils/document.js\n- dashboard-next/src/utils/execution.js\n- dashboard-next/src/utils/forms.js\n- dashboard-next/src/utils/logs.js\n- dashboard-next/src/utils/orchestration.js\n- dashboard-next/src/utils/taskBoard.js\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=dashboard-next/src/App.jsx, dashboard-next/src/components/Overview.jsx, dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/TaskDetail.jsx, dashboard-next/src/components/ExecutionPanel.jsx, dashboard-next/src/components/Forms.jsx, dashboard-next/src/components/DocumentEditor.jsx, dashboard-next/src/hooks/useApi.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/context/DashboardContext.jsx, dashboard-next/src/utils/api.js, dashboard-next/src/utils/document.js, dashboard-next/src/utils/execution.js, dashboard-next/src/utils/forms.js, dashboard-next/src/utils/logs.js, dashboard-next/src/utils/orchestration.js, dashboard-next/src/utils/taskBoard.js, dashboard-next/src/main.jsx, dashboard-next/src/styles/app.css, dashboard-next/vite.config.js | checks=Replaced the placeholder shell with reducer-backed Preact panels, controlled forms, document editing, execution/log views, and native ESM utility modules compatible with the Vite build. (result: Passed. `npm run dashboard:build`, `npm run lint`, `npm test`, and `npm run smoke` all succeeded after the migration.) | artifacts=dashboard-next/dist/index.html, .agent-workflow/tasks/T-501/runs/runtime-check-20260417.md, .agent-workflow/tasks/T-501/checkpoint.md\n- run:run-1776441508209 | paths=dashboard-next/src/App.jsx, dashboard-next/src/components/Overview.jsx, dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/TaskDetail.jsx, dashboard-next/src/components/ExecutionPanel.jsx, dashboard-next/src/components/Forms.jsx, dashboard-next/src/components/DocumentEditor.jsx, dashboard-next/src/hooks/useApi.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/context/DashboardContext.jsx, dashboard-next/src/utils/api.js, dashboard-next/src/utils/document.js, dashboard-next/src/utils/execution.js, dashboard-next/src/utils/forms.js, dashboard-next/src/utils/logs.js, dashboard-next/src/utils/orchestration.js, dashboard-next/src/utils/taskBoard.js, dashboard-next/src/main.jsx, dashboard-next/src/styles/app.css, dashboard-next/vite.config.js | checks=[passed] passed | npm run dashboard:build; [passed] passed | npm run lint; [passed] passed | npm test; [passed] passed | npm run smoke | artifacts=dashboard-next/dist/index.html, .agent-workflow/tasks/T-501/runs/runtime-check-20260417.md\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- Some scoped files still need verified evidence: dashboard-next/src/components/Header.jsx\n\n## Latest evidence\n\n- Summary: Migrated the modern dashboard from scaffold placeholders to reducer-driven Preact components backed by native ESM utilities and preserved legacy workflow contracts.\n- Timestamp: 2026-04-17T15:58:28.207Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Keep the existing proof, then add explicit coverage for dashboard-next/src/components/Header.jsx before handoff.\n4. Continue only after acknowledging the risks above.\n"
-        }
-      ]
-    }
-  },
-  {
-    "type": "checkpoint",
-    "taskId": "T-501",
-    "timestamp": "2026-04-17T15:59:25.324Z",
-    "files": [
-      ".agent-workflow/tasks/T-501/checkpoint.json",
-      ".agent-workflow/tasks/T-501/checkpoint.md",
-      ".agent-workflow/tasks/T-501/context.md",
-      ".agent-workflow/tasks/T-501/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-501/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-501 Context\n\n## Why now\n\nT-500 created the Vite + Preact scaffold with placeholder tabs. This task turns that shell into the real dashboard so the modern build can replace the default server response without regressing task actions, verification editing, or execution/log visibility.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- The modern app now uses `DashboardContext` + `useReducer` to manage active tab/task selection, overview/task detail payloads, execution state, action status, and log panel state.\n- Legacy helper logic was ported into native ESM utilities under `dashboard-next/src/utils/` because Vite could not bundle the old UMD helper files directly.\n- The new app reuses `dashboard/styles.css` so the Preact implementation keeps the established layout and interaction affordances without copying the legacy DOM-string render path.\n- Actions are implemented as controlled Preact forms for quick create, task creation, task metadata updates, run recording, execution start/cancel, and markdown document saves.\n- Execution log polling remains timer-based in `useDashboardState`; SSE is still intentionally out of scope for T-502.\n- Verification currently relies on build/lint/test/smoke evidence plus durable workflow artifacts; no browser-level visual regression suite exists yet.\n\n## Open questions\n\n- URL routing remains a follow-up. This task intentionally kept the existing tab-based navigation so the migration stayed within scope and did not introduce new routing/state contracts.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-500 (scaffold must exist)\n- Feature parity with vanilla dashboard - no new features, no removed features\n- Must pass `npm run dashboard:build`\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-501/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-501 Verification\n\n## Draft checks\n\n- automated: npm run dashboard:build\n- automated: npm run lint\n- automated: npm test\n- automated: npm run smoke\n- manual: Verify the built server defaults to the modern Preact dashboard while the legacy dashboard remains available behind `--legacy-dashboard`.\n\n## Verification records\n\n### Record 1\n\n- Files: dashboard-next/src/App.jsx, dashboard-next/src/components/Header.jsx, dashboard-next/src/components/Overview.jsx, dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/TaskDetail.jsx, dashboard-next/src/components/ExecutionPanel.jsx, dashboard-next/src/components/Forms.jsx, dashboard-next/src/components/DocumentEditor.jsx, dashboard-next/src/hooks/useApi.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/context/DashboardContext.jsx, dashboard-next/src/utils/api.js, dashboard-next/src/utils/document.js, dashboard-next/src/utils/execution.js, dashboard-next/src/utils/forms.js, dashboard-next/src/utils/logs.js, dashboard-next/src/utils/orchestration.js, dashboard-next/src/utils/taskBoard.js, dashboard-next/src/main.jsx, dashboard-next/src/styles/app.css, dashboard-next/vite.config.js\n- Check: Replaced the placeholder shell with reducer-backed Preact panels, controlled forms, document editing, execution/log views, and native ESM utility modules compatible with the Vite build.\n- Result: Passed. `npm run dashboard:build`, `npm run lint`, `npm test`, and `npm run smoke` all succeeded after the migration.\n- Artifact: dashboard-next/dist/index.html, .agent-workflow/tasks/T-501/runs/runtime-check-20260417.md, .agent-workflow/tasks/T-501/checkpoint.md\n\n## Blocking gaps\n\n- No browser-side visual regression run was captured; parity confidence comes from preserved CSS/layout contracts, live API wiring, and automated build/test/smoke coverage.\n\n## Evidence 2026-04-17T15:58:28.207Z\n\n- Agent: codex\n- Status: passed\n- Scoped files covered: dashboard-next/src/App.jsx, dashboard-next/src/components/Overview.jsx, dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/TaskDetail.jsx, dashboard-next/src/components/ExecutionPanel.jsx, dashboard-next/src/components/Forms.jsx, dashboard-next/src/components/DocumentEditor.jsx, dashboard-next/src/hooks/useApi.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/context/DashboardContext.jsx, dashboard-next/src/utils/api.js, dashboard-next/src/utils/document.js, dashboard-next/src/utils/execution.js, dashboard-next/src/utils/forms.js, dashboard-next/src/utils/logs.js, dashboard-next/src/utils/orchestration.js, dashboard-next/src/utils/taskBoard.js, dashboard-next/src/main.jsx, dashboard-next/src/styles/app.css, dashboard-next/vite.config.js\n- Verification artifacts: dashboard-next/dist/index.html, .agent-workflow/tasks/T-501/runs/runtime-check-20260417.md\n- Proof artifacts: dashboard-next/dist/index.html, .agent-workflow/tasks/T-501/runs/runtime-check-20260417.md\n- Summary: Migrated the modern dashboard from scaffold placeholders to reducer-driven Preact components backed by native ESM utilities and preserved legacy workflow contracts.\n- Verification check: [passed] passed | npm run dashboard:build\n- Verification check: [passed] passed | npm run lint\n- Verification check: [passed] passed | npm test\n- Verification check: [passed] passed | npm run smoke\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-501/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-501\",\n  \"generatedAt\": \"2026-04-17T15:58:39.620Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [\n    \"Some scoped files still need verified evidence: dashboard-next/src/components/Header.jsx\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Some scoped files are already linked to verified evidence\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"incomplete\",\n    \"message\": \"Some scoped files already have verified evidence, but newer scoped changes still need attention.\",\n    \"relevantChangeCount\": 1,\n    \"coveragePercent\": 95,\n    \"scopeHintCount\": 29,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 21,\n    \"coveredFileCount\": 20,\n    \"relevantChangedFiles\": [\n      {\n        \"path\": \"dashboard-next/src/components/Header.jsx\",\n        \"modifiedAt\": \"2026-04-17T15:37:19.648Z\",\n        \"changeType\": \"modified\",\n        \"gitState\": \"M\",\n        \"previousPath\": null,\n        \"matchedBy\": [\n          {\n            \"pattern\": \"dashboard-next/src/components/Header.jsx\",\n            \"source\": \"task.json\"\n          }\n        ],\n        \"proofUpdatedAt\": null,\n        \"proofFreshnessSource\": null,\n        \"proofItems\": []\n      }\n    ]\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-501/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-501 Checkpoint\n\nGenerated at: 2026-04-17T15:58:39.620Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Some scoped files are already linked to verified evidence\n\n## Confirmed facts\n\n- Title: Component migration - convert all render-helpers to Preact JSX components with hooks state\n- Priority: P0\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: incomplete\n- Summary: Some scoped files already have verified evidence, but newer scoped changes still need attention.\n- Evidence coverage: 95% (20/21 scoped files)\n- Scope hints: 29\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 1\n\n### Scoped files awaiting proof\n\n- dashboard-next/src/components/Header.jsx\n\n### Scoped files already linked to proof\n\n- dashboard-next/src/App.jsx\n- dashboard-next/src/main.jsx\n- dashboard-next/src/styles/app.css\n- dashboard-next/vite.config.js\n- dashboard-next/src/components/DocumentEditor.jsx\n- dashboard-next/src/components/ExecutionPanel.jsx\n- dashboard-next/src/components/Forms.jsx\n- dashboard-next/src/components/Overview.jsx\n- dashboard-next/src/components/TaskDetail.jsx\n- dashboard-next/src/components/TaskList.jsx\n- dashboard-next/src/context/DashboardContext.jsx\n- dashboard-next/src/hooks/useApi.js\n- dashboard-next/src/hooks/useDashboardState.js\n- dashboard-next/src/utils/api.js\n- dashboard-next/src/utils/document.js\n- dashboard-next/src/utils/execution.js\n- dashboard-next/src/utils/forms.js\n- dashboard-next/src/utils/logs.js\n- dashboard-next/src/utils/orchestration.js\n- dashboard-next/src/utils/taskBoard.js\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=dashboard-next/src/App.jsx, dashboard-next/src/components/Overview.jsx, dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/TaskDetail.jsx, dashboard-next/src/components/ExecutionPanel.jsx, dashboard-next/src/components/Forms.jsx, dashboard-next/src/components/DocumentEditor.jsx, dashboard-next/src/hooks/useApi.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/context/DashboardContext.jsx, dashboard-next/src/utils/api.js, dashboard-next/src/utils/document.js, dashboard-next/src/utils/execution.js, dashboard-next/src/utils/forms.js, dashboard-next/src/utils/logs.js, dashboard-next/src/utils/orchestration.js, dashboard-next/src/utils/taskBoard.js, dashboard-next/src/main.jsx, dashboard-next/src/styles/app.css, dashboard-next/vite.config.js | checks=Replaced the placeholder shell with reducer-backed Preact panels, controlled forms, document editing, execution/log views, and native ESM utility modules compatible with the Vite build. (result: Passed. `npm run dashboard:build`, `npm run lint`, `npm test`, and `npm run smoke` all succeeded after the migration.) | artifacts=dashboard-next/dist/index.html, .agent-workflow/tasks/T-501/runs/runtime-check-20260417.md, .agent-workflow/tasks/T-501/checkpoint.md\n- run:run-1776441508209 | paths=dashboard-next/src/App.jsx, dashboard-next/src/components/Overview.jsx, dashboard-next/src/components/TaskList.jsx, dashboard-next/src/components/TaskDetail.jsx, dashboard-next/src/components/ExecutionPanel.jsx, dashboard-next/src/components/Forms.jsx, dashboard-next/src/components/DocumentEditor.jsx, dashboard-next/src/hooks/useApi.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/context/DashboardContext.jsx, dashboard-next/src/utils/api.js, dashboard-next/src/utils/document.js, dashboard-next/src/utils/execution.js, dashboard-next/src/utils/forms.js, dashboard-next/src/utils/logs.js, dashboard-next/src/utils/orchestration.js, dashboard-next/src/utils/taskBoard.js, dashboard-next/src/main.jsx, dashboard-next/src/styles/app.css, dashboard-next/vite.config.js | checks=[passed] passed | npm run dashboard:build; [passed] passed | npm run lint; [passed] passed | npm test; [passed] passed | npm run smoke | artifacts=dashboard-next/dist/index.html, .agent-workflow/tasks/T-501/runs/runtime-check-20260417.md\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- Some scoped files still need verified evidence: dashboard-next/src/components/Header.jsx\n\n## Latest evidence\n\n- Summary: Migrated the modern dashboard from scaffold placeholders to reducer-driven Preact components backed by native ESM utilities and preserved legacy workflow contracts.\n- Timestamp: 2026-04-17T15:58:28.207Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Keep the existing proof, then add explicit coverage for dashboard-next/src/components/Header.jsx before handoff.\n4. Continue only after acknowledging the risks above.\n"
-        }
-      ]
-    }
-  },
-  {
-    "type": "run:add",
-    "taskId": "T-502",
-    "timestamp": "2026-04-17T16:36:54.641Z",
-    "files": [
-      ".agent-workflow/tasks/T-502/checkpoint.json",
-      ".agent-workflow/tasks/T-502/checkpoint.md",
-      ".agent-workflow/tasks/T-502/context.md",
-      ".agent-workflow/tasks/T-502/runs",
-      ".agent-workflow/tasks/T-502/runs/run-1776443814383.json",
-      ".agent-workflow/tasks/T-502/task.json",
-      ".agent-workflow/tasks/T-502/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-502/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-502\",\n  \"title\": \"SSE real-time updates — replace 900ms polling with EventSource subscriptions\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P1\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-17T09:11:45.668Z\",\n  \"updatedAt\": \"2026-04-17T09:11:45.668Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-502 Context\n\n## Why now\n\nT-301 built the SSE server endpoints. T-501 built the Preact components. This task connects them. The current 900ms polling is the biggest UX gap - users see stale execution state for up to a second after each change. SSE makes the dashboard feel live.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- SSE endpoints from T-301: `GET /api/tasks/{taskId}/execution/events` and `GET /api/tasks/{taskId}/execution/logs/{stream}/stream`\n- Browser `EventSource` API handles reconnection automatically\n- Preact `useEffect` cleanup function is the right place to close EventSource\n- Current polling uses a 900ms `setTimeout` loop that reloads `/api/tasks/{taskId}/execution`\n- Server `state` SSE events are compact (`taskId`, `status`, `runId`, `outcome`, `updatedAt`) rather than the full execution snapshot\n- Rich execution fields such as `activity`, `summary`, advisories, and log file paths still come from `/api/tasks/{taskId}/execution`\n- Live `log` SSE events emit one line at a time with `{ taskId, stream, runId, line, receivedAt }`\n\n## Open questions\n\n- Should SSE hooks buffer events or apply them immediately? Answer: apply immediately, but treat execution-state SSE as a refresh trigger for the richer `/execution` snapshot.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-500 (scaffold) and T-501 (components)\n- Must not break server-side SSE endpoints\n- Must handle disconnection gracefully\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-502 Verification\n\n## Draft checks\n\n- automated: `npm run lint`\n- automated: `npm run dashboard:build`\n- manual: Start a local execution in the modern dashboard and confirm execution state updates without the 900ms polling delay.\n- manual: Open stdout/stderr while an execution is active and confirm new log lines append live.\n- manual: Switch tasks while an SSE stream is open and confirm the old task stream stops updating.\n\n## Verification records\n\n### Record 1\n\n- Files: dashboard-next/src/hooks/useExecutionSSE.js, dashboard-next/src/hooks/useLogSSE.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/components/ExecutionPanel.jsx\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n- Manual browser validation still pending until the dashboard is exercised end to end.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-502\",\n  \"generatedAt\": \"2026-04-17T09:11:45.807Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add repo-relative scope paths to make evidence coverage automatic.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-502 Checkpoint\n\nGenerated at: 2026-04-17T09:11:45.807Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: SSE real-time updates — replace 900ms polling with EventSource subscriptions\n- Priority: P1\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add repo-relative scope paths to make evidence coverage automatic.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/runs/run-1776443814383.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-502/runs/run-1776443814383.json",
-      "runId": "run-1776443814383"
-    }
-  },
-  {
-    "type": "checkpoint",
-    "taskId": "T-502",
-    "timestamp": "2026-04-17T16:37:34.987Z",
-    "files": [
-      ".agent-workflow/tasks/T-502/checkpoint.json",
-      ".agent-workflow/tasks/T-502/checkpoint.md",
-      ".agent-workflow/tasks/T-502/context.md",
-      ".agent-workflow/tasks/T-502/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-502/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-502 Context\n\n## Why now\n\nT-301 built the SSE server endpoints. T-501 built the Preact components. This task connects them. The current 900ms polling is the biggest UX gap - users see stale execution state for up to a second after each change. SSE makes the dashboard feel live.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- SSE endpoints from T-301: `GET /api/tasks/{taskId}/execution/events` and `GET /api/tasks/{taskId}/execution/logs/{stream}/stream`\n- Browser `EventSource` API handles reconnection automatically\n- Preact `useEffect` cleanup function is the right place to close EventSource\n- Current polling uses a 900ms `setTimeout` loop that reloads `/api/tasks/{taskId}/execution`\n- Server `state` SSE events are compact (`taskId`, `status`, `runId`, `outcome`, `updatedAt`) rather than the full execution snapshot\n- Rich execution fields such as `activity`, `summary`, advisories, and log file paths still come from `/api/tasks/{taskId}/execution`\n- Live `log` SSE events emit one line at a time with `{ taskId, stream, runId, line, receivedAt }`\n\n## Open questions\n\n- Should SSE hooks buffer events or apply them immediately? Answer: apply immediately, but treat execution-state SSE as a refresh trigger for the richer `/execution` snapshot.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-500 (scaffold) and T-501 (components)\n- Must not break server-side SSE endpoints\n- Must handle disconnection gracefully\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-502 Verification\n\n## Draft checks\n\n- automated: `npm run lint`\n- automated: `npm run dashboard:build`\n- manual: Start a local execution in the modern dashboard and confirm execution state updates without the 900ms polling delay.\n- manual: Open stdout/stderr while an execution is active and confirm new log lines append live.\n- manual: Switch tasks while an SSE stream is open and confirm the old task stream stops updating.\n\n## Verification records\n\n### Record 1\n\n- Files: dashboard-next/src/hooks/useExecutionSSE.js, dashboard-next/src/hooks/useLogSSE.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/components/ExecutionPanel.jsx\n- Check: `npm run lint`; `npm run dashboard:build`; `npm test`\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-502/runs/verification-20260418.md`, `dashboard-next/dist/index.html`\n\n## Blocking gaps\n\n- Manual browser validation is still pending for live task switching, real-time log tailing in the browser, and DevTools leak checks.\n\n## Evidence 2026-04-17T16:36:54.382Z\n\n- Agent: codex\n- Status: passed\n- Scoped files covered: dashboard-next/src/hooks/useExecutionSSE.js, dashboard-next/src/hooks/useLogSSE.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/components/ExecutionPanel.jsx, .agent-workflow/tasks/T-502/task.md, .agent-workflow/tasks/T-502/context.md, .agent-workflow/tasks/T-502/verification.md\n- Verification artifacts: .agent-workflow/tasks/T-502/runs/verification-20260418.md, dashboard-next/dist/index.html\n- Proof artifacts: .agent-workflow/tasks/T-502/runs/verification-20260418.md, dashboard-next/dist/index.html\n- Summary: Replaced the modern dashboard's execution polling with SSE-driven execution refresh and live log streaming, while keeping snapshot polling as the fallback path. Automated checks passed; manual browser validation is still pending.\n- Verification check: [passed] passed | npm run lint\n- Verification check: [passed] passed | npm run dashboard:build\n- Verification check: [passed] passed | npm test\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-502\",\n  \"generatedAt\": \"2026-04-17T16:36:54.871Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [\n    \"Some evidence is still draft. Add explicit files plus checks or artifacts.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 100,\n    \"scopeHintCount\": 10,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 4,\n    \"coveredFileCount\": 4,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-502 Checkpoint\n\nGenerated at: 2026-04-17T16:36:54.871Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: SSE real-time updates — replace 900ms polling with EventSource subscriptions\n- Priority: P1\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (4/4 scoped files)\n- Scope hints: 10\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- dashboard-next/src/components/ExecutionPanel.jsx\n- dashboard-next/src/hooks/useDashboardState.js\n- dashboard-next/src/hooks/useExecutionSSE.js\n- dashboard-next/src/hooks/useLogSSE.js\n\n### Explicit evidence items\n\n- run:run-1776443814383 | paths=dashboard-next/src/hooks/useExecutionSSE.js, dashboard-next/src/hooks/useLogSSE.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/components/ExecutionPanel.jsx, .agent-workflow/tasks/T-502/task.md, .agent-workflow/tasks/T-502/context.md, .agent-workflow/tasks/T-502/verification.md | checks=[passed] passed | npm run lint; [passed] passed | npm run dashboard:build; [passed] passed | npm test | artifacts=.agent-workflow/tasks/T-502/runs/verification-20260418.md, dashboard-next/dist/index.html\n- manual:verification.md#proof-1 | paths=dashboard-next/src/hooks/useExecutionSSE.js, dashboard-next/src/hooks/useLogSSE.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/components/ExecutionPanel.jsx | checks=none | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- Some evidence is still draft. Add explicit files plus checks or artifacts.\n\n## Latest evidence\n\n- Summary: Replaced the modern dashboard's execution polling with SSE-driven execution refresh and live log streaming, while keeping snapshot polling as the fallback path. Automated checks passed; manual browser validation is still pending.\n- Timestamp: 2026-04-17T16:36:54.382Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
-        }
-      ]
-    }
-  },
-  {
-    "type": "run:add",
-    "taskId": "T-502",
-    "timestamp": "2026-04-17T16:41:37.823Z",
-    "files": [
-      ".agent-workflow/tasks/T-502/checkpoint.json",
-      ".agent-workflow/tasks/T-502/checkpoint.md",
-      ".agent-workflow/tasks/T-502/context.md",
-      ".agent-workflow/tasks/T-502/runs",
-      ".agent-workflow/tasks/T-502/runs/run-1776444097607.json",
-      ".agent-workflow/tasks/T-502/task.json",
-      ".agent-workflow/tasks/T-502/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-502/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-502\",\n  \"title\": \"SSE real-time updates — replace 900ms polling with EventSource subscriptions\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P1\",\n  \"status\": \"in_progress\",\n  \"createdAt\": \"2026-04-17T09:11:45.668Z\",\n  \"updatedAt\": \"2026-04-17T16:36:54.382Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-502 Context\n\n## Why now\n\nT-301 built the SSE server endpoints. T-501 built the Preact components. This task connects them. The current 900ms polling is the biggest UX gap - users see stale execution state for up to a second after each change. SSE makes the dashboard feel live.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- SSE endpoints from T-301: `GET /api/tasks/{taskId}/execution/events` and `GET /api/tasks/{taskId}/execution/logs/{stream}/stream`\n- Browser `EventSource` API handles reconnection automatically\n- Preact `useEffect` cleanup function is the right place to close EventSource\n- Current polling uses a 900ms `setTimeout` loop that reloads `/api/tasks/{taskId}/execution`\n- Server `state` SSE events are compact (`taskId`, `status`, `runId`, `outcome`, `updatedAt`) rather than the full execution snapshot\n- Rich execution fields such as `activity`, `summary`, advisories, and log file paths still come from `/api/tasks/{taskId}/execution`\n- Live `log` SSE events emit one line at a time with `{ taskId, stream, runId, line, receivedAt }`\n\n## Open questions\n\n- Should SSE hooks buffer events or apply them immediately? Answer: apply immediately, but treat execution-state SSE as a refresh trigger for the richer `/execution` snapshot.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n- Depends on T-500 (scaffold) and T-501 (components)\n- Must not break server-side SSE endpoints\n- Must handle disconnection gracefully\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-502 Verification\n\n## Draft checks\n\n- automated: `npm run lint`\n- automated: `npm run dashboard:build`\n- manual: Start a local execution in the modern dashboard and confirm execution state updates without the 900ms polling delay.\n- manual: Open stdout/stderr while an execution is active and confirm new log lines append live.\n- manual: Switch tasks while an SSE stream is open and confirm the old task stream stops updating.\n\n## Verification records\n\n### Record 1\n\n- Files: dashboard-next/src/hooks/useExecutionSSE.js, dashboard-next/src/hooks/useLogSSE.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/components/ExecutionPanel.jsx\n- Check: `npm run lint`; `npm run dashboard:build`; `npm test`\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-502/runs/verification-20260418.md`, `dashboard-next/dist/index.html`\n\n## Blocking gaps\n\n- Manual browser validation is still pending for live task switching, real-time log tailing in the browser, and DevTools leak checks.\n\n## Evidence 2026-04-17T16:36:54.382Z\n\n- Agent: codex\n- Status: passed\n- Scoped files covered: dashboard-next/src/hooks/useExecutionSSE.js, dashboard-next/src/hooks/useLogSSE.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/components/ExecutionPanel.jsx, .agent-workflow/tasks/T-502/task.md, .agent-workflow/tasks/T-502/context.md, .agent-workflow/tasks/T-502/verification.md\n- Verification artifacts: .agent-workflow/tasks/T-502/runs/verification-20260418.md, dashboard-next/dist/index.html\n- Proof artifacts: .agent-workflow/tasks/T-502/runs/verification-20260418.md, dashboard-next/dist/index.html\n- Summary: Replaced the modern dashboard's execution polling with SSE-driven execution refresh and live log streaming, while keeping snapshot polling as the fallback path. Automated checks passed; manual browser validation is still pending.\n- Verification check: [passed] passed | npm run lint\n- Verification check: [passed] passed | npm run dashboard:build\n- Verification check: [passed] passed | npm test\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-502\",\n  \"generatedAt\": \"2026-04-17T16:37:34.971Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 100,\n    \"scopeHintCount\": 10,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 4,\n    \"coveredFileCount\": 4,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-502 Checkpoint\n\nGenerated at: 2026-04-17T16:37:34.971Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: SSE real-time updates — replace 900ms polling with EventSource subscriptions\n- Priority: P1\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (4/4 scoped files)\n- Scope hints: 10\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- dashboard-next/src/components/ExecutionPanel.jsx\n- dashboard-next/src/hooks/useDashboardState.js\n- dashboard-next/src/hooks/useExecutionSSE.js\n- dashboard-next/src/hooks/useLogSSE.js\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=dashboard-next/src/hooks/useExecutionSSE.js, dashboard-next/src/hooks/useLogSSE.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/components/ExecutionPanel.jsx | checks=`npm run lint`; `npm run dashboard:build`; `npm test` (result: passed) | artifacts=.agent-workflow/tasks/T-502/runs/verification-20260418.md, dashboard-next/dist/index.html\n- run:run-1776443814383 | paths=dashboard-next/src/hooks/useExecutionSSE.js, dashboard-next/src/hooks/useLogSSE.js, dashboard-next/src/hooks/useDashboardState.js, dashboard-next/src/components/ExecutionPanel.jsx, .agent-workflow/tasks/T-502/task.md, .agent-workflow/tasks/T-502/context.md, .agent-workflow/tasks/T-502/verification.md | checks=[passed] passed | npm run lint; [passed] passed | npm run dashboard:build; [passed] passed | npm test | artifacts=.agent-workflow/tasks/T-502/runs/verification-20260418.md, dashboard-next/dist/index.html\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Replaced the modern dashboard's execution polling with SSE-driven execution refresh and live log streaming, while keeping snapshot polling as the fallback path. Automated checks passed; manual browser validation is still pending.\n- Timestamp: 2026-04-17T16:36:54.382Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-502/runs/run-1776444097607.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-502/runs/run-1776444097607.json",
-      "runId": "run-1776444097607"
-    }
-  },
-  {
-    "type": "checkpoint",
     "taskId": "T-502",
     "timestamp": "2026-04-17T16:41:44.973Z",
     "files": [
@@ -896,6 +659,131 @@
           "content": "# T-601 Checkpoint\n\nGenerated at: 2026-04-20T01:14:43.720Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: MCP Resources and Prompts\n- Priority: P0\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (7/7 scoped files)\n- Scope hints: 15\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- README.md\n- docs/MCP_SETUP.md\n- src/mcp-server.js\n- test/mcp-server.test.js\n- src/lib/mcp-prompts.js\n- src/lib/mcp-resources.js\n- test/mcp-resources.test.js\n\n### Explicit evidence items\n\n- run:run-1776647683216 | paths=src/lib/mcp-resources.js, src/lib/mcp-prompts.js, src/mcp-server.js, test/mcp-resources.test.js, test/mcp-server.test.js, README.md, docs/MCP_SETUP.md | checks=[passed] npm test (passed); [passed] npm run lint (passed) | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Implemented MCP resources/prompts with server wiring, tests, and docs.\n- Timestamp: 2026-04-20T01:14:43.215Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
         }
       ]
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-602",
+    "timestamp": "2026-04-21T17:56:30.866Z",
+    "files": [
+      ".agent-workflow/tasks/T-602",
+      ".agent-workflow/tasks/T-602/checkpoint.json",
+      ".agent-workflow/tasks/T-602/checkpoint.md",
+      ".agent-workflow/tasks/T-602/context.md",
+      ".agent-workflow/tasks/T-602/launch.codex.md",
+      ".agent-workflow/tasks/T-602/prompt.codex.md",
+      ".agent-workflow/tasks/T-602/run-request.codex.json",
+      ".agent-workflow/tasks/T-602/runs",
+      ".agent-workflow/tasks/T-602/task.json",
+      ".agent-workflow/tasks/T-602/task.md",
+      ".agent-workflow/tasks/T-602/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-602",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-603",
+    "timestamp": "2026-04-21T18:16:15.558Z",
+    "files": [
+      ".agent-workflow/tasks/T-603",
+      ".agent-workflow/tasks/T-603/checkpoint.json",
+      ".agent-workflow/tasks/T-603/checkpoint.md",
+      ".agent-workflow/tasks/T-603/context.md",
+      ".agent-workflow/tasks/T-603/launch.codex.md",
+      ".agent-workflow/tasks/T-603/prompt.codex.md",
+      ".agent-workflow/tasks/T-603/run-request.codex.json",
+      ".agent-workflow/tasks/T-603/runs",
+      ".agent-workflow/tasks/T-603/task.json",
+      ".agent-workflow/tasks/T-603/task.md",
+      ".agent-workflow/tasks/T-603/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-603",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-604",
+    "timestamp": "2026-04-21T18:24:04.160Z",
+    "files": [
+      ".agent-workflow/tasks/T-604",
+      ".agent-workflow/tasks/T-604/checkpoint.json",
+      ".agent-workflow/tasks/T-604/checkpoint.md",
+      ".agent-workflow/tasks/T-604/context.md",
+      ".agent-workflow/tasks/T-604/launch.codex.md",
+      ".agent-workflow/tasks/T-604/prompt.codex.md",
+      ".agent-workflow/tasks/T-604/run-request.codex.json",
+      ".agent-workflow/tasks/T-604/runs",
+      ".agent-workflow/tasks/T-604/task.json",
+      ".agent-workflow/tasks/T-604/task.md",
+      ".agent-workflow/tasks/T-604/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-604",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-605",
+    "timestamp": "2026-04-21T18:59:21.084Z",
+    "files": [
+      ".agent-workflow/tasks/T-605",
+      ".agent-workflow/tasks/T-605/checkpoint.json",
+      ".agent-workflow/tasks/T-605/checkpoint.md",
+      ".agent-workflow/tasks/T-605/context.md",
+      ".agent-workflow/tasks/T-605/launch.codex.md",
+      ".agent-workflow/tasks/T-605/prompt.codex.md",
+      ".agent-workflow/tasks/T-605/run-request.codex.json",
+      ".agent-workflow/tasks/T-605/runs",
+      ".agent-workflow/tasks/T-605/task.json",
+      ".agent-workflow/tasks/T-605/task.md",
+      ".agent-workflow/tasks/T-605/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-605",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-606",
+    "timestamp": "2026-04-22T05:52:13.556Z",
+    "files": [
+      ".agent-workflow/tasks/T-606",
+      ".agent-workflow/tasks/T-606/checkpoint.json",
+      ".agent-workflow/tasks/T-606/checkpoint.md",
+      ".agent-workflow/tasks/T-606/context.md",
+      ".agent-workflow/tasks/T-606/launch.codex.md",
+      ".agent-workflow/tasks/T-606/prompt.codex.md",
+      ".agent-workflow/tasks/T-606/run-request.codex.json",
+      ".agent-workflow/tasks/T-606/runs",
+      ".agent-workflow/tasks/T-606/task.json",
+      ".agent-workflow/tasks/T-606/task.md",
+      ".agent-workflow/tasks/T-606/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-606",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
     }
   }
 ]

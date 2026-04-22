@@ -1,0 +1,14 @@
+{
+  "id": "T-602",
+  "title": "Smart Defaults v2: Multi-Collector Integration",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-21T17:56:30.618Z",
+  "updatedAt": "2026-04-21T17:56:30.618Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

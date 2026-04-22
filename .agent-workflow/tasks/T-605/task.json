@@ -1,0 +1,14 @@
+{
+  "id": "T-605",
+  "title": "Deprecate prompt:compile and skills:generate",
+  "recipeId": "feature",
+  "priority": "P2",
+  "status": "todo",
+  "createdAt": "2026-04-21T18:59:20.903Z",
+  "updatedAt": "2026-04-21T18:59:20.903Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-603",
+  "adapterId": "codex",
+  "title": "Agent Activity Evidence",
+  "generatedAt": "2026-04-21T18:16:15.384Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-603",
+  "promptFile": ".agent-workflow/tasks/T-603/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-603/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

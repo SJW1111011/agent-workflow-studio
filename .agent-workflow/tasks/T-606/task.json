@@ -1,0 +1,14 @@
+{
+  "id": "T-606",
+  "title": "Version Bump to 0.2.0",
+  "recipeId": "feature",
+  "priority": "P2",
+  "status": "todo",
+  "createdAt": "2026-04-22T05:52:13.299Z",
+  "updatedAt": "2026-04-22T05:52:13.299Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

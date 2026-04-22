@@ -1,0 +1,14 @@
+{
+  "id": "T-603",
+  "title": "Agent Activity Evidence",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-21T18:16:15.370Z",
+  "updatedAt": "2026-04-21T18:16:15.370Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

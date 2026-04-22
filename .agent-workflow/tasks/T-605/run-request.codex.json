@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-605",
+  "adapterId": "codex",
+  "title": "Deprecate prompt:compile and skills:generate",
+  "generatedAt": "2026-04-21T18:59:20.917Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-605",
+  "promptFile": ".agent-workflow/tasks/T-605/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-605/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}
