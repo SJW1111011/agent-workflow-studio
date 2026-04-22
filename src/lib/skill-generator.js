@@ -10,23 +10,28 @@ function loadAgentGuideContent() {
 function buildClaudeMdContent(guideContent) {
   const rules = `# Workflow Rules
 
-This project uses agent-workflow-studio for task management, evidence tracking, and trust scoring.
+This project uses agent-workflow-studio for project-level task management, evidence tracking, and trust scoring.
 
-## Required behavior
+## Two task systems, two purposes
 
-- ALWAYS use workflow_* MCP tools for task creation, progress tracking, and evidence recording
-- NEVER use built-in TaskCreate, TaskList, or TaskUpdate for project work — those are ephemeral and invisible to the dashboard
-- When the user says "create a task", use workflow_quick
-- When work is done, use workflow_done — it auto-infers changed files and runs test collectors
-- Use workflow_record_activity for progress breadcrumbs during long work
-- Use workflow:// resources to read task context, evidence, and memory
-- Use workflow-resume prompt to get full context when picking up a task
+- **Project tasks** (workflow_quick / workflow_done) — define what to build, track evidence, compute trust scores, survive across sessions. These are written to disk at .agent-workflow/tasks/ and visible in the dashboard.
+- **Execution steps** (built-in TaskCreate / TaskList) — break down the current session's work into steps, track progress within a single conversation. These are ephemeral and disappear when the session ends.
+
+Both systems work together. Use workflow_* tools for the project-level picture, use built-in task tools for session-level execution planning.
+
+## When to use which
+
+- "Create a task for adding authentication" → workflow_quick (project task, needs evidence tracking)
+- "Break this into steps" → built-in TaskCreate (execution planning for current session)
+- "I'm done with T-001" → workflow_done (records evidence, refreshes checkpoint, updates dashboard)
+- "List project tasks" → workflow_task_list (shows all tasks with trust scores)
+- "What's left to do right now" → built-in TaskList (shows current session steps)
 
 ## Quick reference
 
-- Create task: \`workflow_quick({ title: "...", mode: "lite" })\`
-- Finish task: \`workflow_done({ taskId: "T-001", summary: "...", complete: true })\`
-- List tasks: \`workflow_task_list({})\`
+- Create project task: \`workflow_quick({ title: "...", mode: "lite" })\`
+- Finish project task: \`workflow_done({ taskId: "T-001", summary: "...", complete: true })\`
+- List project tasks: \`workflow_task_list({})\`
 - Project health: \`workflow_overview({})\`
 - Resume context: use \`workflow-resume\` prompt with taskId
 

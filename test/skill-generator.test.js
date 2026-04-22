@@ -71,11 +71,11 @@ const suite = {
         if (!guideContent.includes("## Before starting any task")) {
           throw new Error("AGENT_GUIDE.md is missing expected content");
         }
-        if (!claudeMd.includes("ALWAYS use workflow_* MCP tools")) {
-          throw new Error("CLAUDE.md missing workflow rules");
+        if (!claudeMd.includes("Two task systems, two purposes")) {
+          throw new Error("CLAUDE.md missing dual task system explanation");
         }
-        if (!claudeMd.includes("NEVER use built-in TaskCreate")) {
-          throw new Error("CLAUDE.md missing TaskCreate exclusion rule");
+        if (!claudeMd.includes("workflow_quick")) {
+          throw new Error("CLAUDE.md missing workflow_quick reference");
         }
         if (!claudeMd.includes(guideContent)) {
           throw new Error("CLAUDE.md does not contain the full AGENT_GUIDE.md content");

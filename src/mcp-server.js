@@ -40,7 +40,7 @@ function createMcpServer(workspaceRoot) {
         },
       },
       instructions:
-        "Agent Workflow Studio is the project's workflow system. ALL task creation, progress tracking, and evidence recording MUST go through the workflow_* tools so work is visible in the dashboard and survives across sessions. When the user mentions creating tasks, tracking work, recording progress, or marking things done, ALWAYS use workflow_quick and workflow_done — never use ephemeral alternatives. Use workflow:// resources to read task context, evidence, and memory. Use workflow-* prompts (workflow-resume, workflow-verify, workflow-handoff) for structured context packages when resuming or handing off work.",
+        "Agent Workflow Studio manages project-level tasks with evidence tracking, trust scores, and cross-session checkpoints. Use workflow_* tools for project tasks (what to build, evidence of completion, trust scoring). Built-in task tools (TaskCreate, TaskList) are fine for session-level execution steps — the two systems complement each other. Use workflow:// resources to read task context, evidence, and memory. Use workflow-* prompts (workflow-resume, workflow-verify, workflow-handoff) for structured context when resuming or handing off work.",
     }
   );
 

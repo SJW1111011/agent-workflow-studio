@@ -247,8 +247,8 @@ const tests = [
       assert.equal(fs.existsSync(path.join(workspaceRoot, "CLAUDE.md")), true);
 
       const claudeMd = fs.readFileSync(path.join(workspaceRoot, "CLAUDE.md"), "utf8");
-      assert.match(claudeMd, /ALWAYS use workflow_\* MCP tools/);
-      assert.match(claudeMd, /NEVER use built-in TaskCreate/);
+      assert.match(claudeMd, /Two task systems, two purposes/);
+      assert.match(claudeMd, /workflow_quick/);
     },
   },
   {
