@@ -40,7 +40,7 @@ function createMcpServer(workspaceRoot) {
         },
       },
       instructions:
-        "Use workflow:// resources and workflow-* prompts for read-only task context, evidence, and memory docs. Use the workflow_* tools to create tasks, update task metadata, append progress notes, record evidence, refresh checkpoints, inspect workspace state, and undo the latest workflow-layer operation.",
+        "Agent Workflow Studio provides persistent, cross-session workflow state stored in .agent-workflow/ on disk. These are NOT ephemeral session tasks — they survive context resets, session boundaries, and agent handoffs. Use workflow:// resources to read task context, evidence, and memory docs. Use workflow-* prompts (workflow-resume, workflow-verify, workflow-handoff) for structured context packages. Use workflow_* tools to create tasks, record evidence, and manage workflow state. When the user asks to 'create a task' for durable tracking with evidence, use workflow_quick. For temporary planning steps within a single session, use your built-in task tools instead.",
     }
   );
 
