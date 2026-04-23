@@ -1,44 +1,5 @@
 [
   {
-    "type": "checkpoint",
-    "taskId": "T-600",
-    "timestamp": "2026-04-19T17:38:27.312Z",
-    "files": [
-      ".agent-workflow/tasks/T-600/checkpoint.json",
-      ".agent-workflow/tasks/T-600/checkpoint.md",
-      ".agent-workflow/tasks/T-600/context.md",
-      ".agent-workflow/tasks/T-600/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-600/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-600 Context\n\n## Why now\n\nThe current smart-default flow only understands npm test evidence, which leaves Python, Rust, and Go repositories without the same zero-config verification help. Pulling runner detection into a registry keeps the inference contract stable while making the evidence layer extensible enough for built-in multi-language support and repo-specific collectors.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/smart-defaults.js` currently parses `package.json` and executes `npm test` directly.\n- `src/lib/task-service.js` already consumes `inferTestStatusResult()` and only needs backward-compatible return data.\n- `src/lib/workspace.js` is the existing normalization point for repo-level `project.json` settings.\n- `src/lib/schema-validator.js` already validates `project.json` booleans, so custom collector shape validation belongs there.\n- The shipped implementation keeps custom collectors after the built-in collectors so npm-first behavior stays stable in mixed-language workspaces.\n- The task prompt requires workflow docs, verification evidence, and `checkpoint.md` to stay current during implementation.\n\n## Open questions\n\n- None at handoff; custom collectors currently default after built-ins to preserve existing behavior.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-600/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-600 Verification\n\n## Draft checks\n\n- automated: `npm test`, `npm run lint`, `npm run format:check`, `npm run validate -- --root .`\n- manual: reviewed the registry priority order and confirmed the run recorded only task-owned proof paths instead of unrelated dirty-worktree files\n\n## Verification records\n\n### Record 1\n\n- Files: `src/lib/evidence-collectors.js`, `src/lib/smart-defaults.js`, `src/lib/workspace.js`, `src/lib/schema-validator.js`, `test/evidence-collectors.test.js`, `README.md`, `docs/RECIPES_AND_SCHEMA.md`\n- Check: `npm test`; `npm run lint`; `npm run format:check`; `npm run validate -- --root .`\n- Result: passed\n- Artifact: `.agent-workflow/tasks/T-600/runs/run-1776620252924.json`\n\n## Blocking gaps\n\n- none\n\n## Evidence 2026-04-19T17:37:32.922Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/evidence-collectors.js, src/lib/smart-defaults.js, src/lib/workspace.js, src/lib/schema-validator.js, test/evidence-collectors.test.js, README.md, docs/RECIPES_AND_SCHEMA.md, .agent-workflow/tasks/T-600/task.md, .agent-workflow/tasks/T-600/context.md\n- Summary: Implemented evidence collector registry with built-in npm, pytest, cargo, go, and validated custom collectors.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run lint\n- Verification check: [passed] npm run format:check\n- Verification check: [passed] npm run validate -- --root .\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-600/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-600\",\n  \"generatedAt\": \"2026-04-19T17:37:33.572Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 100,\n    \"scopeHintCount\": 12,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 7,\n    \"coveredFileCount\": 7,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-600/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-600 Checkpoint\n\nGenerated at: 2026-04-19T17:37:33.572Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Evidence Collector Plugin System\n- Priority: P0\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (7/7 scoped files)\n- Scope hints: 12\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- README.md\n- docs/RECIPES_AND_SCHEMA.md\n- src/lib/schema-validator.js\n- src/lib/smart-defaults.js\n- src/lib/workspace.js\n- src/lib/evidence-collectors.js\n- test/evidence-collectors.test.js\n\n### Explicit evidence items\n\n- run:run-1776620252924 | paths=src/lib/evidence-collectors.js, src/lib/smart-defaults.js, src/lib/workspace.js, src/lib/schema-validator.js, test/evidence-collectors.test.js, README.md, docs/RECIPES_AND_SCHEMA.md, .agent-workflow/tasks/T-600/task.md, .agent-workflow/tasks/T-600/context.md | checks=[passed] npm test; [passed] npm run lint; [passed] npm run format:check; [passed] npm run validate -- --root . | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Implemented evidence collector registry with built-in npm, pytest, cargo, go, and validated custom collectors.\n- Timestamp: 2026-04-19T17:37:32.922Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
-        }
-      ]
-    }
-  },
-  {
     "type": "done",
     "taskId": "T-601",
     "timestamp": "2026-04-20T01:14:43.737Z",
@@ -854,6 +815,31 @@
           "content": "# T-606 Checkpoint\n\nGenerated at: 2026-04-22T12:43:37.267Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Version Bump to 0.2.0\n- Priority: P2\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (5/5 scoped files)\n- Scope hints: 9\n- Ambiguous scope entries: 3\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- CHANGELOG.md\n- docs/ROADMAP.md\n- package-lock.json\n- package.json\n- docs/RELEASE_NOTES_0.2.0.md\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=package.json, package-lock.json, CHANGELOG.md, docs/RELEASE_NOTES_0.2.0.md, docs/ROADMAP.md | checks=Pending implementation and verification (result: Not run yet) | artifacts=Pending\n- run:run-1776861816597 | paths=package.json, package-lock.json, CHANGELOG.md, docs/RELEASE_NOTES_0.2.0.md, docs/ROADMAP.md | checks=[passed] npm test (40 files, 194 tests passed; includes migration-compatibility coverage for legacy aliases and manualProofAnchors); [passed] npm run smoke; [passed] npm run lint; [passed] npm run validate -- --root .; [passed] npm pack --json produced agent-workflow-studio-0.2.0.tgz; [passed] Manual doc review confirmed the 0.2.0 notes cover Phase 4 and Phase 5 without claiming npm publication | artifacts=.agent-workflow/tasks/T-606/runs/t606-npm-test.log, .agent-workflow/tasks/T-606/runs/t606-npm-smoke.log, .agent-workflow/tasks/T-606/runs/t606-npm-lint.log, .agent-workflow/tasks/T-606/runs/t606-validate-root.log, .agent-workflow/tasks/T-606/runs/t606-npm-pack.json, .agent-workflow/tasks/T-606/runs/agent-workflow-studio-0.2.0.tgz\n\n### Scope entries that need tightening\n\n- repo path: package.json (version bump to 0.2.0) (task.md)\n- repo path: package-lock.json (sync root package metadata with 0.2.0) (task.md)\n- repo path: CHANGELOG.md (add 0.2.0 section) (task.md)\n\n## Risks\n\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: Prepared the 0.2.0 release package and verified backward compatibility.\n- Timestamp: 2026-04-22T12:43:36.595Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
         }
       ]
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-700",
+    "timestamp": "2026-04-23T10:36:27.411Z",
+    "files": [
+      ".agent-workflow/tasks/T-700",
+      ".agent-workflow/tasks/T-700/checkpoint.json",
+      ".agent-workflow/tasks/T-700/checkpoint.md",
+      ".agent-workflow/tasks/T-700/context.md",
+      ".agent-workflow/tasks/T-700/launch.codex.md",
+      ".agent-workflow/tasks/T-700/prompt.codex.md",
+      ".agent-workflow/tasks/T-700/run-request.codex.json",
+      ".agent-workflow/tasks/T-700/runs",
+      ".agent-workflow/tasks/T-700/task.json",
+      ".agent-workflow/tasks/T-700/task.md",
+      ".agent-workflow/tasks/T-700/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-700",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
     }
   }
 ]

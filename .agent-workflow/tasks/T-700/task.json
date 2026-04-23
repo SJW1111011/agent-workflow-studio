@@ -1,0 +1,14 @@
+{
+  "id": "T-700",
+  "title": "Dashboard Approval Loop",
+  "recipeId": "feature",
+  "priority": "P0",
+  "status": "todo",
+  "createdAt": "2026-04-23T10:36:27.255Z",
+  "updatedAt": "2026-04-23T10:36:27.255Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}
