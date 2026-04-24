@@ -153,29 +153,39 @@
 
 ---
 
-## Phase 6 - Agent Autonomy
+## Phase 6 - Agent Autonomy - IN PROGRESS
 
 **Goal:** Close the loop — agents pick up tasks, work autonomously, humans supervise through the dashboard.
 
 This is the phase that transforms the product from "a tool humans use to manage agent work" into "a platform where agents work and humans supervise." After Phase 6, the vision described in the product direction becomes real.
 
+| Task | Description |
+|------|-------------|
+| T-700 | Dashboard approval loop: approve/reject buttons, feedback, correction task creation |
+| T-701 | Cross-agent handoff protocol: workflow_handoff + workflow_pickup MCP tools |
+| T-702 | Task queue + claim: workflow_claim_task, workflow_release_task, workflow://queue resource |
+| T-703 | Orchestrator: `npx agent-workflow orchestrate` daemon that spawns agent sessions from the queue |
+| T-704 | CI evidence pipeline: webhook endpoint for GitHub Actions and external evidence sources |
+
 | Change | Detail |
 |--------|--------|
-| Task queue + auto-assignment | Agents query for available tasks via MCP, claim and execute them without human trigger |
-| CI/CD evidence pipeline | GitHub Actions (and other CI) report test results, coverage, and deploy status back as evidence |
-| Cross-agent handoff protocol | Structured handoff: Agent A marks "done to here" → Agent B reads checkpoint → continues → evidence chain unbroken |
-| Dashboard approval loop | Approve/reject agent work from the dashboard, leave feedback that becomes the agent's next instruction |
-| Webhook receiver | HTTP endpoint that accepts evidence from external systems (CI, monitoring, deployment) |
+| Dashboard approval | Approve/reject agent work, leave feedback that becomes the agent's next instruction |
+| Cross-agent handoff | Structured handoff tools: Agent A marks "done to here" → Agent B picks up → evidence chain unbroken |
+| Task queue + claim | Agents discover and claim tasks via MCP; claim locks prevent double-assignment |
+| Orchestrator | Persistent process that watches the queue and spawns agent sessions (claude/codex) automatically |
+| CI evidence pipeline | Webhook receiver for GitHub Actions test results, coverage, and deploy status |
 
 **Acceptance criteria:**
-- Agent can discover, claim, and complete a task via MCP without human intervention
-- CI test results from GitHub Actions appear as evidence on the corresponding task
-- Agent B can resume Agent A's work using the handoff protocol with no context loss
 - Human can approve/reject from dashboard; rejection creates a follow-up task for the agent
-- Evidence from external webhooks appears in the task's evidence timeline
+- Agent B can resume Agent A's work using the handoff protocol with no context loss
+- Agent can discover, claim, and complete a task via MCP without human intervention
+- `npx agent-workflow orchestrate` runs as a daemon, spawning agent sessions when tasks are available
+- CI test results from GitHub Actions appear as evidence on the corresponding task
 
 **Why this phase matters:**
-The product vision is "developer opens dashboard in the morning, sees what agents completed overnight, approves or rejects, creates new tasks, agents pick up automatically." Phase 5 gives agents the ability to produce evidence automatically. Phase 6 gives them the ability to work autonomously and gives humans the ability to supervise.
+The product vision is "developer opens dashboard in the morning, sees what agents completed overnight." Phase 5 gives agents the ability to produce evidence automatically. Phase 6 gives them the ability to work autonomously — the orchestrator spawns agent sessions from the queue, agents claim and complete tasks, humans supervise through the dashboard's approval loop.
+
+**Release: 0.3.0** after Phase 6 completes. Remove deprecated prompt:compile.
 
 ---
 
