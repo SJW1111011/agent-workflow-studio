@@ -15,10 +15,12 @@ const { refreshManualProofAnchors, saveTaskDocument } = require("./lib/task-docu
 const { buildTrustSummary } = require("./lib/trust-summary");
 const {
   appendTaskNote,
+  approveTask,
   createTask,
   getRunLog,
   getTaskDetail,
   recordRun,
+  rejectTask,
   updateTaskMeta,
 } = require("./lib/task-service");
 const { resolveWorkspaceRoot } = require("./lib/workspace");
@@ -148,6 +150,17 @@ function startDashboardServer(workspaceRoot, options = {}) {
             checkpoint: result.checkpoint,
             task: buildTaskResponse(workspaceRoot, taskDoneRoute.taskId, executionBridge),
           });
+        }
+
+        const taskReviewRoute = parseTaskReviewRoute(requestUrl.pathname);
+        if (taskReviewRoute && request.method === "POST") {
+          const body = await readJsonBody(request);
+
+          if (taskReviewRoute.action === "approve") {
+            return sendJson(response, 200, approveTask(workspaceRoot, taskReviewRoute.taskId));
+          }
+
+          return sendJson(response, 200, rejectTask(workspaceRoot, taskReviewRoute.taskId, body.feedback));
         }
 
         if (requestUrl.pathname.startsWith("/api/tasks/") && request.method === "PATCH") {
@@ -642,6 +655,18 @@ function parseTaskDoneRoute(pathname) {
 
   return {
     taskId: decodeURIComponent(matched[1]),
+  };
+}
+
+function parseTaskReviewRoute(pathname) {
+  const matched = pathname.match(/^\/api\/tasks\/([^/]+)\/(approve|reject)$/);
+  if (!matched) {
+    return null;
+  }
+
+  return {
+    taskId: decodeURIComponent(matched[1]),
+    action: matched[2],
   };
 }
 

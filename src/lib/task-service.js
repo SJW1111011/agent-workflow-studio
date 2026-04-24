@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { appendText, fileExists, readJson, writeJson } = require("./fs-utils");
+const { appendText, fileExists, readJson, writeFile, writeJson } = require("./fs-utils");
 const { listAdapters } = require("./adapters");
 const { buildTaskFreshness } = require("./freshness");
 const { badRequest, conflict, notFound } = require("./http-errors");
@@ -35,6 +35,7 @@ const {
 const TASK_STATUSES = new Set(["todo", "in_progress", "blocked", "done"]);
 const TASK_PRIORITIES = new Set(["P0", "P1", "P2", "P3"]);
 const TASK_SCAFFOLD_MODES = new Set(["full", "lite"]);
+const REVIEW_STATUSES = new Set(["approved", "rejected"]);
 const RUN_RECORD_FILE_PREFIX = "run-";
 const ACTIVITY_RECORD_FILE_PREFIX = "activity-";
 const RECORD_FILE_EXTENSION = ".json";
@@ -212,6 +213,85 @@ function updateTaskMeta(workspaceRoot, taskId, changes = {}) {
   return nextMeta;
 }
 
+function approveTask(workspaceRoot, taskId, options = {}) {
+  const files = taskFiles(workspaceRoot, taskId);
+  if (!fileExists(files.meta)) {
+    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
+  }
+
+  const meta = readJson(files.meta, {});
+  const reviewStatus = normalizeReviewStatus(meta.reviewStatus);
+
+  if (reviewStatus === "approved") {
+    return meta;
+  }
+
+  if (reviewStatus === "rejected") {
+    throw conflict(`Task ${taskId} has already been rejected.`, "task_already_reviewed");
+  }
+
+  assertTaskCanBeReviewed(meta, taskId);
+
+  const reviewedAt = isNonEmptyString(options.reviewedAt)
+    ? options.reviewedAt.trim()
+    : new Date().toISOString();
+  const nextMeta = omitUndefined({
+    ...meta,
+    reviewStatus: "approved",
+    reviewedAt,
+    reviewedBy: isNonEmptyString(options.reviewedBy) ? options.reviewedBy.trim() : undefined,
+    updatedAt: reviewedAt,
+  });
+
+  writeJson(files.meta, nextMeta);
+  return nextMeta;
+}
+
+function rejectTask(workspaceRoot, taskId, feedback, options = {}) {
+  const files = taskFiles(workspaceRoot, taskId);
+  if (!fileExists(files.meta)) {
+    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
+  }
+
+  const meta = readJson(files.meta, {});
+  const reviewStatus = normalizeReviewStatus(meta.reviewStatus);
+
+  if (reviewStatus === "approved") {
+    throw conflict(`Task ${taskId} has already been approved.`, "task_already_reviewed");
+  }
+
+  if (reviewStatus === "rejected") {
+    return {
+      task: meta,
+      correctionTask: loadCorrectionTaskMeta(workspaceRoot, meta.correctionTaskId),
+    };
+  }
+
+  assertTaskCanBeReviewed(meta, taskId);
+
+  const rejectionFeedback = normalizeRejectionFeedback(feedback);
+  const reviewedAt = isNonEmptyString(options.reviewedAt)
+    ? options.reviewedAt.trim()
+    : new Date().toISOString();
+  const correctionTask = createCorrectionTask(workspaceRoot, meta, rejectionFeedback, reviewedAt);
+  const nextMeta = omitUndefined({
+    ...meta,
+    reviewStatus: "rejected",
+    rejectionFeedback,
+    correctionTaskId: correctionTask.id,
+    reviewedAt,
+    reviewedBy: isNonEmptyString(options.reviewedBy) ? options.reviewedBy.trim() : undefined,
+    updatedAt: reviewedAt,
+  });
+
+  writeJson(files.meta, nextMeta);
+
+  return {
+    task: nextMeta,
+    correctionTask,
+  };
+}
+
 function appendTaskNote(workspaceRoot, taskId, note, options = {}) {
   const files = taskFiles(workspaceRoot, taskId);
   if (!fileExists(files.meta)) {
@@ -301,6 +381,7 @@ function recordActivity(workspaceRoot, taskId, activity, fields = {}) {
 
 module.exports = {
   appendTaskNote,
+  approveTask,
   createRunRecord,
   createActivityRecord,
   createTask,
@@ -314,6 +395,7 @@ module.exports = {
   persistRunRecord,
   recordActivity,
   recordRun,
+  rejectTask,
   updateTaskMeta,
 };
 
@@ -654,6 +736,12 @@ function normalizeTaskScaffoldMode(value) {
   return mode;
 }
 
+function assertTaskCanBeReviewed(meta, taskId) {
+  if (!meta || meta.status !== "done") {
+    throw conflict(`Task ${taskId} must be done before human review.`, "task_not_done");
+  }
+}
+
 function assertStatusTransitionAllowed(currentStatus, nextStatus, taskId) {
   if (currentStatus === "done" && nextStatus !== "done") {
     throw conflict(
@@ -661,6 +749,103 @@ function assertStatusTransitionAllowed(currentStatus, nextStatus, taskId) {
       "task_status_regression"
     );
   }
+}
+
+function normalizeReviewStatus(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  return REVIEW_STATUSES.has(normalized) ? normalized : null;
+}
+
+function normalizeRejectionFeedback(value) {
+  if (!isNonEmptyString(value)) {
+    throw badRequest('Rejecting a task requires non-empty "feedback".', "rejection_feedback_required");
+  }
+
+  const normalized = value.trim().split(String.fromCharCode(0)).join("").trim();
+  if (!normalized) {
+    throw badRequest('Rejecting a task requires non-empty "feedback".', "rejection_feedback_required");
+  }
+
+  return normalized;
+}
+
+function createCorrectionTask(workspaceRoot, parentMeta, feedback, reviewedAt) {
+  const correctionTaskId = buildNextTaskId(workspaceRoot);
+  const correctionTitle = `Correction: ${parentMeta.title || parentMeta.id}`;
+  const correctionMeta = createTask(workspaceRoot, correctionTaskId, correctionTitle, {
+    priority: parentMeta.priority || "P2",
+    recipe: parentMeta.recipeId || "feature",
+  });
+  const correctionFiles = taskFiles(workspaceRoot, correctionTaskId);
+  const nextCorrectionMeta = omitUndefined({
+    ...correctionMeta,
+    parentTaskId: parentMeta.id,
+    goal: parentMeta.goal || `Correct rejected work from ${parentMeta.id}.`,
+    scope: Array.isArray(parentMeta.scope) ? parentMeta.scope.slice() : [],
+    nonGoals: Array.isArray(parentMeta.nonGoals) ? parentMeta.nonGoals.slice() : [],
+    requiredDocs: Array.isArray(parentMeta.requiredDocs) ? parentMeta.requiredDocs.slice() : [],
+    verificationCommands: Array.isArray(parentMeta.verificationCommands)
+      ? parentMeta.verificationCommands.slice()
+      : [],
+    rejectionFeedback: feedback,
+    createdAt: correctionMeta.createdAt,
+    updatedAt: reviewedAt,
+  });
+
+  writeJson(correctionFiles.meta, nextCorrectionMeta);
+  syncManagedTaskDocs(correctionFiles, nextCorrectionMeta, getRecipe(workspaceRoot, nextCorrectionMeta.recipeId));
+  appendCorrectionSourceSection(correctionFiles.task, parentMeta, feedback, reviewedAt);
+  appendTaskContextNote(
+    correctionFiles,
+    `Human rejected ${parentMeta.id} and requested correction.\n\nFeedback:\n${feedback}`,
+    reviewedAt
+  );
+
+  return nextCorrectionMeta;
+}
+
+function buildNextTaskId(workspaceRoot) {
+  const taskIds = listTasks(workspaceRoot).map((task) => String((task && task.id) || "").trim());
+  const numericIds = taskIds
+    .map((taskId) => {
+      const match = taskId.match(/^T-(\d+)$/i);
+      return match ? Number(match[1]) : null;
+    })
+    .filter((value) => Number.isInteger(value));
+  const nextValue = (numericIds.length > 0 ? Math.max(...numericIds) : 0) + 1;
+  const width = Math.max(3, String(nextValue).length);
+
+  return `T-${String(nextValue).padStart(width, "0")}`;
+}
+
+function loadCorrectionTaskMeta(workspaceRoot, correctionTaskId) {
+  if (!isNonEmptyString(correctionTaskId)) {
+    return null;
+  }
+
+  const files = taskFiles(workspaceRoot, correctionTaskId.trim());
+  return fileExists(files.meta) ? readJson(files.meta, null) : null;
+}
+
+function appendCorrectionSourceSection(taskPath, parentMeta, feedback, reviewedAt) {
+  const existingContent = safeRead(taskPath);
+  const quotedFeedback = feedback
+    .split(/\r?\n/)
+    .map((line) => `> ${line}`)
+    .join("\n");
+  const section = [
+    "## Correction Source",
+    "",
+    `- Parent task: ${parentMeta.id}`,
+    `- Rejected at: ${reviewedAt}`,
+    "",
+    "Human feedback:",
+    "",
+    quotedFeedback,
+    "",
+  ].join("\n");
+
+  writeFile(taskPath, `${existingContent.replace(/\s+$/, "")}\n\n${section}`);
 }
 
 function omitUndefined(value, excludedKeys) {

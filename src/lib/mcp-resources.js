@@ -90,6 +90,9 @@ function buildTaskListPayload(workspaceRoot) {
       priority: task.priority,
       status: task.status,
       recipeId: task.recipeId || "feature",
+      reviewStatus: task.reviewStatus || null,
+      reviewedAt: task.reviewedAt || null,
+      correctionTaskId: task.correctionTaskId || null,
       runCount: task.runCount,
       latestRunStatus: task.latestRunStatus,
       latestRunSummary: task.latestRunSummary,
@@ -142,6 +145,10 @@ function buildTaskResourcePayload(workspaceRoot, taskId) {
       (verificationGate && verificationGate.summary ? verificationGate.summary.status : null),
     verificationSignalStatus: overviewTask ? overviewTask.verificationSignalStatus : null,
     verificationSignalSummary: overviewTask ? overviewTask.verificationSignalSummary : null,
+    reviewStatus: detail.meta.reviewStatus || null,
+    reviewedAt: detail.meta.reviewedAt || null,
+    rejectionFeedback: detail.meta.rejectionFeedback || null,
+    correctionTaskId: detail.meta.correctionTaskId || null,
     generatedFiles: detail.generatedFiles,
   };
 }

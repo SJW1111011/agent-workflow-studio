@@ -67,6 +67,7 @@ function buildTaskTrustSummary(detail) {
     collectorCount: collectorIds.length,
     coverage,
     freshness,
+    reviewStatus: detail.meta.reviewStatus,
     signal,
   });
 
@@ -76,6 +77,7 @@ function buildTaskTrustSummary(detail) {
     trustScore,
     coverage,
     signal,
+    reviewStatus: normalizeReviewStatus(detail.meta.reviewStatus),
     freshness,
     collectorCount: collectorIds.length,
     lastEvidenceAt:
@@ -92,17 +94,19 @@ function buildTaskTrustSummary(detail) {
   };
 }
 
-function calculateTrustScore({ collectorCount, coverage, freshness, signal }) {
+function calculateTrustScore({ collectorCount, coverage, freshness, reviewStatus, signal }) {
   const normalizedCoverage = normalizePercent(coverage);
   const normalizedSignal = normalizeTrustSignal(signal);
   const normalizedFreshness = normalizeTrustFreshness(freshness);
   const diversity = calculateCollectorDiversityScore(collectorCount);
+  const reviewAdjustment = calculateHumanReviewAdjustment(reviewStatus);
 
-  return Math.round(
+  return clampTrustScore(
     normalizedCoverage * 0.4 +
       SIGNAL_SCORES[normalizedSignal] * 0.25 +
       FRESHNESS_SCORES[normalizedFreshness] * 0.2 +
-      diversity * 0.15
+      diversity * 0.15 +
+      reviewAdjustment
   );
 }
 
@@ -279,6 +283,33 @@ function normalizeTrustFreshness(value) {
     : "stale";
 }
 
+function normalizeReviewStatus(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  return normalized === "approved" || normalized === "rejected" ? normalized : null;
+}
+
+function calculateHumanReviewAdjustment(reviewStatus) {
+  const normalized = normalizeReviewStatus(reviewStatus);
+  if (normalized === "approved") {
+    return 10;
+  }
+
+  if (normalized === "rejected") {
+    return -20;
+  }
+
+  return 0;
+}
+
+function clampTrustScore(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.min(100, Math.round(numeric)));
+}
+
 function escapeRegex(value) {
   return String(value || "").replace(/[|\\{}()[\]^$+?.]/g, "\\$&");
 }
@@ -287,6 +318,7 @@ module.exports = {
   buildTaskTrustSummary,
   buildTrustSummary,
   calculateCollectorDiversityScore,
+  calculateHumanReviewAdjustment,
   calculateTrustScore,
   deriveTrustFreshness,
   deriveTrustSignal,

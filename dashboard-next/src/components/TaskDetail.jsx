@@ -1,3 +1,4 @@
+import ApprovalPanel from "./ApprovalPanel.jsx";
 import ExecutionPanel from "./ExecutionPanel.jsx";
 import EvidenceTimeline from "./EvidenceTimeline.jsx";
 import TrustScore from "./TrustScore.jsx";
@@ -204,6 +205,12 @@ export default function TaskDetail({ hidden }) {
               <span className="tag">{detail.recipe?.id || detail.meta.recipeId || "feature"}</span>
               <span className="tag">{detail.recipe?.name || "Unknown recipe"}</span>
               <span className="tag">{formatTimestampLabel(detail.meta.updatedAt)}</span>
+              {detail.meta.reviewStatus === "approved" ? (
+                <span className="tag">human verified</span>
+              ) : null}
+              {detail.meta.reviewStatus === "rejected" ? (
+                <span className="tag warn">human rejected</span>
+              ) : null}
             </div>
             <p>{detail.recipe?.summary || "No recipe summary available."}</p>
           </article>
@@ -219,6 +226,8 @@ export default function TaskDetail({ hidden }) {
             subtitle="Deterministic blend of evidence coverage, signal strength, freshness, and collector diversity."
             title="Task Trust"
           />
+
+          <ApprovalPanel task={detail} />
 
           <article className="detail-card">
             <h3>Generated Files</h3>

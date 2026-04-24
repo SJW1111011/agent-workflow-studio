@@ -1,6 +1,6 @@
 # Project Profile
 
-Generated at: 2026-04-22T05:52:13.288Z
+Generated at: 2026-04-23T10:36:27.249Z
 
 ## Repository
 
@@ -33,6 +33,7 @@ Generated at: 2026-04-22T05:52:13.288Z
 - docs/README.md
 - docs/RECIPES_AND_SCHEMA.md
 - docs/RELEASE_NOTES_0.1.2.md
+- docs/RELEASE_NOTES_0.2.0.md
 - docs/RELOCATABLE_DESIGN.md
 - docs/ROADMAP.md
 - docs/RUN_EXECUTE_DESIGN.md

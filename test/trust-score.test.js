@@ -1,6 +1,9 @@
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
+const {
+  calculateTrustScore: calculateServerTrustScore,
+} = require("../src/lib/trust-summary");
 
 let trustScoreModulePromise;
 
@@ -47,6 +50,56 @@ const tests = [
         }),
         100,
       );
+      assert.equal(
+        calculateTrustScore({
+          collectorCount: 2,
+          coverage: 75,
+          freshness: "recorded",
+          reviewStatus: "approved",
+          signal: "partial",
+        }),
+        72,
+      );
+      assert.equal(
+        calculateTrustScore({
+          collectorCount: 2,
+          coverage: 75,
+          freshness: "recorded",
+          reviewStatus: "rejected",
+          signal: "partial",
+        }),
+        42,
+      );
+      assert.equal(
+        calculateTrustScore({
+          collectorCount: 4,
+          coverage: 100,
+          freshness: "current",
+          reviewStatus: "approved",
+          signal: "verified",
+        }),
+        100,
+      );
+      assert.equal(
+        calculateTrustScore({
+          collectorCount: 0,
+          coverage: 0,
+          freshness: "stale",
+          reviewStatus: "rejected",
+          signal: "none",
+        }),
+        0,
+      );
+      assert.equal(
+        calculateServerTrustScore({
+          collectorCount: 2,
+          coverage: 75,
+          freshness: "recorded",
+          reviewStatus: "approved",
+          signal: "partial",
+        }),
+        72,
+      );
     },
   },
   {
@@ -56,6 +109,9 @@ const tests = [
 
       const snapshot = buildTaskTrustSnapshot({
         activityRecords: [{ createdAt: "2026-04-22T01:02:00.000Z" }],
+        meta: {
+          reviewStatus: "approved",
+        },
         runs: [
           {
             collectorResults: [{ collectorId: "npm-test" }],
@@ -98,8 +154,9 @@ const tests = [
       assert.equal(snapshot.coverage, 80);
       assert.equal(snapshot.signal, "partial");
       assert.equal(snapshot.freshness, "current");
+      assert.equal(snapshot.reviewStatus, "approved");
       assert.equal(snapshot.collectorCount, 4);
-      assert.equal(snapshot.trustScore, 80);
+      assert.equal(snapshot.trustScore, 90);
       assert.equal(snapshot.lastEvidenceAt, "2026-04-22T01:05:00.000Z");
     },
   },

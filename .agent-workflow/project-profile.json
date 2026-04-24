@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-22T05:52:13.288Z",
+  "generatedAt": "2026-04-23T10:36:27.249Z",
   "repositoryName": "agent-workflow-studio",
   "topLevelDirectories": [
     ".claude",
@@ -26,6 +26,7 @@
     "docs/README.md",
     "docs/RECIPES_AND_SCHEMA.md",
     "docs/RELEASE_NOTES_0.1.2.md",
+    "docs/RELEASE_NOTES_0.2.0.md",
     "docs/RELOCATABLE_DESIGN.md",
     "docs/ROADMAP.md",
     "docs/RUN_EXECUTE_DESIGN.md",

@@ -26,18 +26,21 @@ export function calculateTrustScore({
   collectorCount = 0,
   coverage = 0,
   freshness = "stale",
+  reviewStatus = null,
   signal = "none",
 } = {}) {
   const normalizedCoverage = normalizeTrustPercent(coverage);
   const normalizedSignal = normalizeTrustSignal(signal);
   const normalizedFreshness = normalizeTrustFreshness(freshness);
   const diversity = calculateCollectorDiversityScore(collectorCount);
+  const reviewAdjustment = calculateHumanReviewAdjustment(reviewStatus);
 
-  return Math.round(
+  return normalizeTrustPercent(
     normalizedCoverage * 0.4 +
       TRUST_SIGNAL_SCORES[normalizedSignal] * 0.25 +
       TRUST_FRESHNESS_SCORES[normalizedFreshness] * 0.2 +
-      diversity * 0.15,
+      diversity * 0.15 +
+      reviewAdjustment,
   );
 }
 
@@ -62,6 +65,24 @@ export function normalizeTrustFreshness(value) {
   return Object.prototype.hasOwnProperty.call(TRUST_FRESHNESS_SCORES, normalized)
     ? normalized
     : "stale";
+}
+
+export function normalizeReviewStatus(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  return normalized === "approved" || normalized === "rejected"
+    ? normalized
+    : null;
+}
+
+export function calculateHumanReviewAdjustment(reviewStatus) {
+  const normalized = normalizeReviewStatus(reviewStatus);
+  if (normalized === "approved") {
+    return 10;
+  }
+  if (normalized === "rejected") {
+    return -20;
+  }
+  return 0;
 }
 
 export function normalizeTrustPercent(value) {
@@ -195,6 +216,7 @@ export function buildTaskTrustSnapshot(detail = {}) {
     collectorCount: collectorIds.length,
     coverage,
     freshness,
+    reviewStatus: detail.meta && detail.meta.reviewStatus,
     signal,
   });
 
@@ -202,6 +224,7 @@ export function buildTaskTrustSnapshot(detail = {}) {
     trustScore,
     coverage,
     signal,
+    reviewStatus: normalizeReviewStatus(detail.meta && detail.meta.reviewStatus),
     freshness,
     collectorCount: collectorIds.length,
     collectorIds,

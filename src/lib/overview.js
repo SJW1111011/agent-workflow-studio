@@ -91,6 +91,7 @@ function emptyStats() {
     coveredScopedFiles: 0,
     totalScopedFiles: 0,
     executorOutcomes: emptyExecutorOutcomes(),
+    humanReviews: emptyHumanReviews(),
     verificationSignals: emptyVerificationSignals(),
   };
 }
@@ -106,6 +107,7 @@ function buildOverviewStats(tasks, runs, risks, memory) {
     coveredScopedFiles: coverage.coveredScopedFiles,
     totalScopedFiles: coverage.totalScopedFiles,
     executorOutcomes: countLatestExecutorOutcomes(tasks),
+    humanReviews: countHumanReviews(tasks),
     verificationSignals: countTaskVerificationSignals(tasks),
   };
 }
@@ -165,6 +167,36 @@ function emptyVerificationSignals() {
     mixed: 0,
     planned: 0,
   };
+}
+
+function emptyHumanReviews() {
+  return {
+    approved: 0,
+    rejected: 0,
+    pending: 0,
+  };
+}
+
+function countHumanReviews(tasks) {
+  return (Array.isArray(tasks) ? tasks : []).reduce((counts, task) => {
+    const reviewStatus = String((task && task.reviewStatus) || "").trim().toLowerCase();
+
+    if (reviewStatus === "approved") {
+      counts.approved += 1;
+      return counts;
+    }
+
+    if (reviewStatus === "rejected") {
+      counts.rejected += 1;
+      return counts;
+    }
+
+    if (task && task.status === "done") {
+      counts.pending += 1;
+    }
+
+    return counts;
+  }, emptyHumanReviews());
 }
 
 function countTaskVerificationSignals(tasks) {

@@ -1,6 +1,7 @@
 import { describeExecutorOutcome, formatTimestampLabel } from "../utils/execution.js";
 import {
   describeTaskVerificationSignal,
+  describeTaskReviewStatus,
   formatTaskVerificationFreshnessSummary,
   getTaskCardToneClass,
 } from "../utils/taskBoard.js";
@@ -36,6 +37,7 @@ function KanbanCard({ activeTaskId, onSelectTask, task }) {
     task.latestExecutorOutcome,
     task.latestExecutorSummary,
   );
+  const reviewStatus = describeTaskReviewStatus(task);
   const freshnessSummary = formatTaskVerificationFreshnessSummary(task);
   const toneClass = getTaskCardToneClass(task);
   const activeClass = task.id === activeTaskId ? " active" : "";
@@ -75,6 +77,11 @@ function KanbanCard({ activeTaskId, onSelectTask, task }) {
           </span>
         ) : null}
         {freshnessSummary ? <span className="tag">{freshnessSummary}</span> : null}
+        {reviewStatus ? (
+          <span className={reviewStatus.warn ? "tag warn" : "tag"}>
+            {reviewStatus.label}
+          </span>
+        ) : null}
       </span>
       <span className="task-card-footnote subtle">
         {task.relevantChangeCount || 0} relevant change(s) | {formatTimestampLabel(task.updatedAt)}

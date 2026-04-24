@@ -4,7 +4,9 @@ import TrustScore from "./TrustScore.jsx";
 import { formatTimestampLabel } from "../utils/execution.js";
 import {
   countTasksWithExecutorOutcome,
+  countTasksWithHumanReview,
   countTasksWithVerificationSignals,
+  normalizeHumanReviewStats,
   normalizeStatCount,
 } from "../utils/taskBoard.js";
 import {
@@ -12,7 +14,7 @@ import {
   TRUST_HEATMAP_BUCKETS,
 } from "../utils/trustScore.js";
 
-const LOADING_CARD_COUNT = 7;
+const LOADING_CARD_COUNT = 8;
 const LOADING_LIST_COUNT = 4;
 
 function StatCard({ detail, title, value }) {
@@ -233,6 +235,8 @@ export default function Overview({ hidden }) {
   const verificationSignalCount = countTasksWithVerificationSignals(
     stats.verificationSignals || {},
   );
+  const humanReviews = normalizeHumanReviewStats(stats.humanReviews || {});
+  const humanReviewCount = countTasksWithHumanReview(humanReviews);
 
   return (
     <>
@@ -266,6 +270,11 @@ export default function Overview({ hidden }) {
           detail={`${verificationSignalCount} task(s) have recorded verification signals.`}
           title="Verification"
           value={verificationSignalCount}
+        />
+        <StatCard
+          detail={`${humanReviews.approved} approved, ${humanReviews.rejected} rejected, ${humanReviews.pending} done task(s) waiting.`}
+          title="Human Review"
+          value={humanReviewCount}
         />
         <TrustScore
           className="stat-card"

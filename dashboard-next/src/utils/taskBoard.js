@@ -71,6 +71,20 @@ export function normalizeVerificationSignalStats(value) {
   };
 }
 
+export function normalizeHumanReviewStats(value) {
+  const source = value && typeof value === "object" ? value : {};
+  return {
+    approved: normalizeStatCount(source.approved),
+    rejected: normalizeStatCount(source.rejected),
+    pending: normalizeStatCount(source.pending),
+  };
+}
+
+export function countTasksWithHumanReview(reviewStats) {
+  const normalized = normalizeHumanReviewStats(reviewStats);
+  return normalized.approved + normalized.rejected;
+}
+
 export function countTasksWithExecutorOutcome(executorStats) {
   const normalized = normalizeExecutorOutcomeStats(executorStats);
   return normalized.passed + normalized.failed + normalized.timedOut + normalized.interrupted + normalized.cancelled;
@@ -79,6 +93,33 @@ export function countTasksWithExecutorOutcome(executorStats) {
 export function countTasksWithVerificationSignals(verificationStats) {
   const normalized = normalizeVerificationSignalStats(verificationStats);
   return normalized.verified + normalized.partial + normalized.draft;
+}
+
+export function describeTaskReviewStatus(task) {
+  const reviewStatus = String((task && task.reviewStatus) || "").trim().toLowerCase();
+
+  if (reviewStatus === "approved") {
+    return {
+      label: "human verified",
+      warn: false,
+    };
+  }
+
+  if (reviewStatus === "rejected") {
+    return {
+      label: "human rejected",
+      warn: true,
+    };
+  }
+
+  if (task && task.status === "done") {
+    return {
+      label: "awaiting review",
+      warn: true,
+    };
+  }
+
+  return null;
 }
 
 export function describeVerificationFreshnessLabel(currentVerifiedEvidenceCount, recordedVerifiedEvidenceCount) {
