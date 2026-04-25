@@ -1,0 +1,15 @@
+{
+  "id": "T-702",
+  "title": "Task Queue and Claim Mechanism",
+  "recipeId": "feature",
+  "priority": "P0",
+  "status": "todo",
+  "createdAt": "2026-04-25T07:57:33.605Z",
+  "updatedAt": "2026-04-25T07:57:33.605Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": [],
+  "claimedBy": null
+}

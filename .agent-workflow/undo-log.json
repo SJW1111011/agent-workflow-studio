@@ -1,44 +1,5 @@
 [
   {
-    "type": "checkpoint",
-    "taskId": "T-601",
-    "timestamp": "2026-04-20T01:15:47.135Z",
-    "files": [
-      ".agent-workflow/tasks/T-601/checkpoint.json",
-      ".agent-workflow/tasks/T-601/checkpoint.md",
-      ".agent-workflow/tasks/T-601/context.md",
-      ".agent-workflow/tasks/T-601/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-601/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-601 Context\n\n## Why now\n\nAgents already have MCP tool access, but they still need prompt-file compilation or manual file reads to recover full task context. Shipping resources and prompts here removes that gap, keeps MCP workflows read-only for resume/handoff, and sets up the later prompt-compile deprecation without breaking current tooling.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/task-service.js` already exposes `getTaskDetail(workspaceRoot, taskId)`, which returns task docs, runs, freshness, and verification gate data suitable for MCP resource/prompt reuse.\n- `src/lib/overview.js` already builds the workspace-level payload needed for `workflow://overview` and task-list summaries.\n- MCP SDK `@modelcontextprotocol/sdk@1.3.0` in this repo exports the resource and prompt request schemas needed for `resources/*` and `prompts/*`.\n- `src/lib/mcp-resources.js` now exposes stable read-only resources for `workflow://overview`, `workflow://tasks`, `workflow://tasks/{taskId}`, and `workflow://memory/{docName}`.\n- `src/lib/mcp-prompts.js` now exposes `workflow-resume`, `workflow-verify`, and `workflow-handoff`, using a short text briefing plus embedded workflow resources for full, untruncated task context.\n- `src/mcp-server.js` now advertises MCP `resources` and `prompts` capabilities alongside the existing tool surface.\n- `test/mcp-resources.test.js` covers resource listing/reading and prompt generation, while `test/mcp-server.test.js` now checks the stdio server's resources and prompts end to end.\n- `npm test` and `npm run lint` both passed on 2026-04-20 after the MCP resource/prompt changes landed.\n\n## Open questions\n\n- None at handoff.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-601/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-601 Verification\n\n## Draft checks\n\n- automated: `npm test`\n- automated: `npm run lint`\n- manual: confirm the MCP stdio server advertises `resources`, `prompts`, and `tools`, and serves `workflow://tasks/{taskId}` plus `workflow-resume` end to end.\n\n## Verification records\n\n### Record 1\n\n- Files: `src/lib/mcp-resources.js`, `src/lib/mcp-prompts.js`, `src/mcp-server.js`, `test/mcp-resources.test.js`, `test/mcp-server.test.js`\n- Check: `npm test`\n- Result: Passed on 2026-04-20 (`37` test files, `181` tests).\n- Artifact: `.agent-workflow/tasks/T-601/runs/run-1776647683216.json`\n\n### Record 2\n\n- Files: `src/lib/mcp-resources.js`, `src/lib/mcp-prompts.js`, `src/mcp-server.js`, `README.md`, `docs/MCP_SETUP.md`\n- Check: `npm run lint`\n- Result: Passed on 2026-04-20.\n- Artifact: `.agent-workflow/tasks/T-601/runs/run-1776647683216.json`\n\n### Record 3\n\n- Files: `test/mcp-server.test.js`\n- Check: MCP stdio protocol coverage for `resources/list`, `resources/templates/list`, `resources/read`, `prompts/list`, and `prompts/get`\n- Result: Passed via automated coverage in `npm test`.\n- Artifact: `test/mcp-server.test.js`\n\n## Blocking gaps\n\n- None.\n\n## Evidence 2026-04-20T01:14:43.215Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/mcp-resources.js, src/lib/mcp-prompts.js, src/mcp-server.js, test/mcp-resources.test.js, test/mcp-server.test.js, README.md, docs/MCP_SETUP.md\n- Summary: Implemented MCP resources/prompts with server wiring, tests, and docs.\n- Verification check: [passed] npm test (passed)\n- Verification check: [passed] npm run lint (passed)\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-601/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-601\",\n  \"generatedAt\": \"2026-04-20T01:14:43.720Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 100,\n    \"scopeHintCount\": 15,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 7,\n    \"coveredFileCount\": 7,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-601/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-601 Checkpoint\n\nGenerated at: 2026-04-20T01:14:43.720Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: MCP Resources and Prompts\n- Priority: P0\n- Status: done\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (7/7 scoped files)\n- Scope hints: 15\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- README.md\n- docs/MCP_SETUP.md\n- src/mcp-server.js\n- test/mcp-server.test.js\n- src/lib/mcp-prompts.js\n- src/lib/mcp-resources.js\n- test/mcp-resources.test.js\n\n### Explicit evidence items\n\n- run:run-1776647683216 | paths=src/lib/mcp-resources.js, src/lib/mcp-prompts.js, src/mcp-server.js, test/mcp-resources.test.js, test/mcp-server.test.js, README.md, docs/MCP_SETUP.md | checks=[passed] npm test (passed); [passed] npm run lint (passed) | artifacts=none\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Implemented MCP resources/prompts with server wiring, tests, and docs.\n- Timestamp: 2026-04-20T01:14:43.215Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
-        }
-      ]
-    }
-  },
-  {
     "type": "quick",
     "taskId": "T-602",
     "timestamp": "2026-04-21T17:56:30.866Z",
@@ -801,6 +762,31 @@
     ],
     "metadata": {
       "taskRoot": ".agent-workflow/tasks/T-701",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-702",
+    "timestamp": "2026-04-25T07:57:34.006Z",
+    "files": [
+      ".agent-workflow/tasks/T-702",
+      ".agent-workflow/tasks/T-702/checkpoint.json",
+      ".agent-workflow/tasks/T-702/checkpoint.md",
+      ".agent-workflow/tasks/T-702/context.md",
+      ".agent-workflow/tasks/T-702/launch.codex.md",
+      ".agent-workflow/tasks/T-702/prompt.codex.md",
+      ".agent-workflow/tasks/T-702/run-request.codex.json",
+      ".agent-workflow/tasks/T-702/runs",
+      ".agent-workflow/tasks/T-702/task.json",
+      ".agent-workflow/tasks/T-702/task.md",
+      ".agent-workflow/tasks/T-702/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-702",
       "mode": "full",
       "agent": "codex",
       "adapterId": "codex",
