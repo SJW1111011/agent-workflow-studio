@@ -153,19 +153,19 @@
 
 ---
 
-## Phase 6 - Agent Autonomy - IN PROGRESS
+## Phase 6 - Agent Autonomy - COMPLETE ✅
 
 **Goal:** Close the loop — agents pick up tasks, work autonomously, humans supervise through the dashboard.
 
 This is the phase that transforms the product from "a tool humans use to manage agent work" into "a platform where agents work and humans supervise." After Phase 6, the vision described in the product direction becomes real.
 
-| Task | Description |
-|------|-------------|
-| T-700 | Dashboard approval loop: approve/reject buttons, feedback, correction task creation |
-| T-701 | Cross-agent handoff protocol: workflow_handoff + workflow_pickup MCP tools |
-| T-702 | Task queue + claim: workflow_claim_task, workflow_release_task, workflow://queue resource |
-| T-703 | Orchestrator: `npx agent-workflow orchestrate` daemon that spawns agent sessions from the queue |
-| T-704 | CI evidence pipeline: webhook endpoint for GitHub Actions and external evidence sources |
+| Task | Status | Description |
+|------|--------|-------------|
+| T-700 | ✅ | Dashboard approval loop: approve/reject buttons, feedback, correction task creation |
+| T-701 | ✅ | Cross-agent handoff protocol: workflow_handoff + workflow_pickup MCP tools |
+| T-702 | ✅ | Task queue + claim: workflow_claim_task, workflow_release_task, workflow://queue resource |
+| T-703 | ✅ | Orchestrator: `npx agent-workflow orchestrate` daemon that spawns agent sessions from the queue |
+| T-704 | ✅ | CI evidence pipeline: webhook endpoint for GitHub Actions and external evidence sources |
 
 | Change | Detail |
 |--------|--------|
@@ -175,7 +175,7 @@ This is the phase that transforms the product from "a tool humans use to manage 
 | Orchestrator | Persistent process that watches the queue and spawns agent sessions (claude/codex) automatically |
 | CI evidence pipeline | Webhook receiver for GitHub Actions test results, coverage, and deploy status |
 
-**Acceptance criteria:**
+**Acceptance criteria:** ✅ All met
 - Human can approve/reject from dashboard; rejection creates a follow-up task for the agent
 - Agent B can resume Agent A's work using the handoff protocol with no context loss
 - Agent can discover, claim, and complete a task via MCP without human intervention
