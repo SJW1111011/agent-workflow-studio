@@ -124,6 +124,7 @@ That keeps backward compatibility for polling clients while giving the dashboard
 - **`quick`** - create either a minimal Lite task scaffold or the full prompt/run/checkpoint bundle, depending on how much ceremony you want up front
 - **`memory:bootstrap`** - generate a local-only handoff prompt that helps Codex or Claude Code fill grounded project memory
 - **`run:execute`** - launch a local adapter when you explicitly opt into `commandMode: exec`, with shared preflight, logs, and evidence capture
+- **`orchestrate`** - run a local daemon that watches `workflow://queue` and spawns Claude Code, Codex, or a custom command when work is available
 - **`done`** - record evidence and refresh the checkpoint in one step, with an optional `--complete` flag to mark the task done
 - **`undo`** - roll back the latest workflow-layer operation (`quick`, `run:add`, `done`, or explicit `checkpoint`) without touching source files or git history
 - **`mcp:install` / `mcp:uninstall`** - register or remove the MCP server in Codex, Claude Code, and Cursor without manual JSON or TOML editing
@@ -143,6 +144,14 @@ npx agent-workflow mcp:install --client claude --root .
 ```
 
 Then have the agent read `workflow://queue` to find available work, claim it with `workflow_claim_task`, or read `workflow://tasks/{taskId}` / use the `workflow-resume` prompt for a full handoff package.
+
+To let agents pick up queued work automatically, run the orchestrator in a terminal or tmux session:
+
+```bash
+npx agent-workflow orchestrate --root . --agent claude --interval 300
+```
+
+Use `--agent codex`, `--max-concurrent <n>`, or `--stop-when-empty` depending on how much background work you want to allow. See [docs/ORCHESTRATOR.md](docs/ORCHESTRATOR.md) for setup and operating notes.
 
 `skills:generate` is still available as a deprecated fallback when you specifically need repo-root `AGENTS.md` / `CLAUDE.md` files:
 
@@ -347,7 +356,7 @@ Coding agents are powerful but forgetful. They lose context between sessions, le
 - **Onboarding:** `init`, `scan`, `memory:bootstrap`, `memory:validate`
 - **Tasking:** `recipe:list`, `quick`, `task:new`, `task:list`
 - **Adapters:** `adapter:list`, `adapter:create`
-- **Execution:** `run:prepare`, `run:execute`, `run:add`, `done`, `checkpoint`, `undo`, `mcp:install`, `mcp:uninstall`, `mcp:serve`
+- **Execution:** `orchestrate`, `run:prepare`, `run:execute`, `run:add`, `done`, `checkpoint`, `undo`, `mcp:install`, `mcp:uninstall`, `mcp:serve`
 - **Inspection:** `dashboard`, `validate`
 - **Deprecated:** `prompt:compile`, `skills:generate`
 
@@ -418,6 +427,7 @@ npm run dashboard:dev
 npm run dashboard:build
 npm run dashboard -- --root ../some-repo --port 4173 --legacy-dashboard
 npm run mcp:serve -- --root ../some-repo
+npx agent-workflow orchestrate --root ../some-repo --agent codex --stop-when-empty
 npm run run:execute -- T-001 --agent codex --root ../some-repo
 npx agent-workflow done T-001 "Scanner pass completed." --root ../some-repo
 npx agent-workflow done T-001 "Docs-only follow-up." --proof-path README.md --status draft --root ../some-repo
@@ -436,6 +446,7 @@ npm test
 - [Architecture](docs/ARCHITECTURE.md) - how the scaffold, dashboard, adapters, and evidence model fit together
 - [Verification Design](docs/VERIFICATION_FRESHNESS_DESIGN.md) - verification gates, verification records, and freshness rules
 - [Executor Design](docs/RUN_EXECUTE_DESIGN.md) - local executor planning, preflight, and evidence capture
+- [Orchestrator](docs/ORCHESTRATOR.md) - daemon setup for queue-driven Claude Code, Codex, and custom agent sessions
 - [Adapters](docs/ADAPTERS.md) - built-in adapters and custom adapter scaffolding
 - [Changelog](CHANGELOG.md) - released changes plus current unreleased docs polish
 - [Roadmap](docs/ROADMAP.md) - the likely next build steps

@@ -8,6 +8,7 @@ const { formatMcpConfigSummary, installMcpServer, uninstallMcpServer } = require
 const { formatMemoryBootstrapSummary, generateMemoryBootstrapPrompt } = require("./lib/memory-bootstrap");
 const { formatMemoryValidationSummary, validateMemoryDocs } = require("./lib/memory-validator");
 const { buildOverview } = require("./lib/overview");
+const { runOrchestrator } = require("./lib/orchestrator");
 const { compilePrompt } = require("./lib/prompt-compiler");
 const { formatQuickTaskSummary, quickCreateTask } = require("./lib/quick-task");
 const { formatSkillsSummary, generateSkills } = require("./lib/skill-generator");
@@ -69,6 +70,20 @@ function main(argv = process.argv.slice(2)) {
       case "mcp:serve": {
         const { startMcpServer } = require("./mcp-server");
         startMcpServer(workspaceRoot)
+          .catch((error) => {
+            console.error(error.message);
+            process.exitCode = 1;
+          });
+        return;
+      }
+      case "orchestrate": {
+        runOrchestrator(workspaceRoot, {
+          agent: options.agent,
+          agentCommand: options["agent-command"],
+          interval: options.interval,
+          maxConcurrent: options["max-concurrent"],
+          stopWhenEmpty: options["stop-when-empty"],
+        })
           .catch((error) => {
             console.error(error.message);
             process.exitCode = 1;
@@ -437,6 +452,7 @@ Commands:
   memory:validate [--root path]
   dashboard [--root path] [--port 4173] [--legacy-dashboard]
   mcp:serve [--root path]
+  orchestrate [--agent claude|codex|custom] [--agent-command "custom-agent {prompt}"] [--interval 300] [--max-concurrent 1] [--stop-when-empty] [--root path]
   mcp:install [--client claude|cursor|codex] [--root path]
   mcp:uninstall [--client claude|cursor|codex] [--root path]
   skills:generate [--root path]

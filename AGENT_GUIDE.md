@@ -28,6 +28,18 @@ npx agent-workflow mcp:install --client claude --root .
 npx agent-workflow mcp:install --client cursor --root .
 ```
 
+### Orchestrator path (background queue work)
+
+When MCP is configured for the child agent, a human can run the local orchestrator to keep pulling from the queue:
+
+```bash
+npx agent-workflow orchestrate --root . --agent claude --interval 300
+# or
+npx agent-workflow orchestrate --root . --agent codex --interval 300
+```
+
+Each spawned session should read `workflow://queue`, call `workflow_claim_task`, complete one or more tasks, and call `workflow_done` with evidence. Use `workflow_handoff` before ending early so the next session can resume cleanly. Keep `--max-concurrent 1` unless the repository and task scopes are ready for parallel edits.
+
 ### CLI path (when MCP is not available)
 
 ```bash

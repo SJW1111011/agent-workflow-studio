@@ -19,6 +19,7 @@ Use this directory in layers instead of reading every file front to back.
 
 - [`MCP_SETUP.md`](MCP_SETUP.md) - stdio MCP setup for Claude Code, Cursor, and other MCP clients
 - [`ADAPTERS.md`](ADAPTERS.md) - built-in adapters, custom adapter scaffolding, and adapter contract notes
+- [`ORCHESTRATOR.md`](ORCHESTRATOR.md) - queue-watching daemon setup for background Claude Code, Codex, and custom agent sessions
 - [`PUBLISHING.md`](PUBLISHING.md) - release checklist, npm publishing notes, and post-publish verification
 - [`RELEASE_NOTES_0.1.2.md`](RELEASE_NOTES_0.1.2.md) - the published summary of the current npm release
 - [`../CHANGELOG.md`](../CHANGELOG.md) - released changes plus the current unreleased docs track
@@ -34,4 +35,5 @@ Use this directory in layers instead of reading every file front to back.
 - New user: `GETTING_STARTED.md` -> `ARCHITECTURE.md`
 - Evaluating the verification model: `VERIFICATION_FRESHNESS_DESIGN.md` -> `RUN_EXECUTE_DESIGN.md`
 - Extending adapters: `ADAPTERS.md` -> `RUN_EXECUTE_DESIGN.md`
+- Running agents in the background: `MCP_SETUP.md` -> `ORCHESTRATOR.md`
 - Contributing a change: root `README.md` -> `ARCHITECTURE.md` -> `NEXT_AGENT_HANDOFF.md`
