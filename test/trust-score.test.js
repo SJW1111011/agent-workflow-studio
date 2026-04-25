@@ -34,12 +34,23 @@ const tests = [
 
       assert.equal(
         calculateTrustScore({
+          ciStatus: "passed",
           collectorCount: 2,
           coverage: 75,
           freshness: "recorded",
           signal: "partial",
         }),
-        62,
+        67,
+      );
+      assert.equal(
+        calculateTrustScore({
+          ciStatus: "failed",
+          collectorCount: 2,
+          coverage: 75,
+          freshness: "recorded",
+          signal: "partial",
+        }),
+        52,
       );
       assert.equal(
         calculateTrustScore({
@@ -92,13 +103,14 @@ const tests = [
       );
       assert.equal(
         calculateServerTrustScore({
+          ciStatus: "passed",
           collectorCount: 2,
           coverage: 75,
           freshness: "recorded",
           reviewStatus: "approved",
           signal: "partial",
         }),
-        72,
+        77,
       );
     },
   },
@@ -109,6 +121,12 @@ const tests = [
 
       const snapshot = buildTaskTrustSnapshot({
         activityRecords: [{ createdAt: "2026-04-22T01:02:00.000Z" }],
+        ciEvidenceRecords: [
+          {
+            createdAt: "2026-04-22T01:06:00.000Z",
+            status: "passed",
+          },
+        ],
         meta: {
           reviewStatus: "approved",
         },
@@ -156,8 +174,11 @@ const tests = [
       assert.equal(snapshot.freshness, "current");
       assert.equal(snapshot.reviewStatus, "approved");
       assert.equal(snapshot.collectorCount, 4);
-      assert.equal(snapshot.trustScore, 90);
-      assert.equal(snapshot.lastEvidenceAt, "2026-04-22T01:05:00.000Z");
+      assert.equal(snapshot.ciAdjustment, 5);
+      assert.equal(snapshot.ciEvidenceCount, 1);
+      assert.equal(snapshot.ciStatus, "passed");
+      assert.equal(snapshot.trustScore, 95);
+      assert.equal(snapshot.lastEvidenceAt, "2026-04-22T01:06:00.000Z");
     },
   },
 ];

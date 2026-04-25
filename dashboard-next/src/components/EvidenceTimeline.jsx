@@ -52,6 +52,30 @@ function buildHandoffEvents(detail) {
   );
 }
 
+function buildCiEvidenceEvents(detail) {
+  return (Array.isArray(detail.ciEvidenceRecords) ? detail.ciEvidenceRecords : []).map(
+    (record) => {
+      const status = normalizeCiStatus(record.status);
+
+      return {
+        id: `ci:${record.id}`,
+        timestamp: record.createdAt,
+        title: `CI evidence ${status}`,
+        summary: `${record.source || "CI"} reported ${status} verification.`,
+        tone: `ci-${status}`,
+        markerLabel: "CI",
+        tags: ["ci", record.source, status].filter(Boolean),
+        files: [],
+        artifacts: [],
+        checks: Array.isArray(record.checks) ? record.checks : [],
+        metadata: record.metadata && typeof record.metadata === "object"
+          ? record.metadata
+          : {},
+      };
+    },
+  );
+}
+
 function buildManualEvidenceEvents(detail) {
   const proofCoverage =
     detail.verificationGate && detail.verificationGate.proofCoverage
@@ -103,6 +127,7 @@ function buildEvidenceEvents(detail) {
     .concat(buildRunEvents(detail))
     .concat(buildActivityEvents(detail))
     .concat(buildHandoffEvents(detail))
+    .concat(buildCiEvidenceEvents(detail))
     .concat(buildManualEvidenceEvents(detail))
     .concat(buildVerificationUpdateEvent(detail))
     .filter((event) => Number.isFinite(new Date(event.timestamp).getTime()))
@@ -110,6 +135,25 @@ function buildEvidenceEvents(detail) {
       (left, right) =>
         new Date(left.timestamp).getTime() - new Date(right.timestamp).getTime(),
     );
+}
+
+function normalizeCiStatus(value) {
+  const status = String(value || "").trim().toLowerCase();
+  return status === "passed" || status === "failed" || status === "pending"
+    ? status
+    : "pending";
+}
+
+function formatMetadataValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => formatMetadataValue(item)).join(", ");
+  }
+
+  if (value && typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  return String(value);
 }
 
 export default function EvidenceTimeline({ detail }) {
@@ -127,7 +171,9 @@ export default function EvidenceTimeline({ detail }) {
           key={event.id}
           role="listitem"
         >
-          <div className="evidence-timeline-marker" aria-hidden="true" />
+          <div className="evidence-timeline-marker" aria-hidden="true">
+            {event.markerLabel ? <span>{event.markerLabel}</span> : null}
+          </div>
           <div className="evidence-timeline-body">
             <p className="subtle">{formatTimestampLabel(event.timestamp)}</p>
             <h3>{event.title}</h3>
@@ -144,6 +190,28 @@ export default function EvidenceTimeline({ detail }) {
             ) : null}
             {event.artifacts.length > 0 ? (
               <p className="subtle">Artifacts: {event.artifacts.join(", ")}</p>
+            ) : null}
+            {(event.checks?.length || Object.keys(event.metadata || {}).length) ? (
+              <details className="evidence-timeline-details">
+                <summary>CI details</summary>
+                {event.checks?.length ? (
+                  <ul className="editor-guidance-list">
+                    {event.checks.map((check, index) => (
+                      <li key={`${event.id}:check:${index}`}>{check}</li>
+                    ))}
+                  </ul>
+                ) : null}
+                {Object.keys(event.metadata || {}).length ? (
+                  <dl className="evidence-metadata-list">
+                    {Object.entries(event.metadata).map(([key, value]) => (
+                      <div key={`${event.id}:metadata:${key}`}>
+                        <dt>{key}</dt>
+                        <dd>{formatMetadataValue(value)}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : null}
+              </details>
             ) : null}
           </div>
         </article>

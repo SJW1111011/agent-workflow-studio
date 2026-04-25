@@ -940,6 +940,8 @@ details.collapsible-panel {
 .evidence-timeline-marker {
   position: relative;
   z-index: 1;
+  display: grid;
+  place-items: center;
   width: 14px;
   height: 14px;
   margin-top: 10px;
@@ -947,6 +949,13 @@ details.collapsible-panel {
   border-radius: 999px;
   background: var(--muted);
   box-shadow: 0 0 0 4px var(--surface);
+}
+
+.evidence-timeline-marker span {
+  color: #fffaf3;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .evidence-timeline-body {
@@ -961,6 +970,27 @@ details.collapsible-panel {
 .evidence-timeline-running .evidence-timeline-marker,
 .evidence-timeline-verified .evidence-timeline-marker {
   background: var(--accent-2);
+}
+
+.evidence-timeline-ci-passed .evidence-timeline-marker,
+.evidence-timeline-ci-failed .evidence-timeline-marker,
+.evidence-timeline-ci-pending .evidence-timeline-marker {
+  width: 24px;
+  height: 24px;
+  margin-left: -5px;
+  border-radius: 8px;
+}
+
+.evidence-timeline-ci-passed .evidence-timeline-marker {
+  background: var(--accent-2);
+}
+
+.evidence-timeline-ci-failed .evidence-timeline-marker {
+  background: var(--risk);
+}
+
+.evidence-timeline-ci-pending .evidence-timeline-marker {
+  background: #c78236;
 }
 
 .evidence-timeline-passed .evidence-timeline-marker,
@@ -981,6 +1011,41 @@ details.collapsible-panel {
 .evidence-timeline-timed-out .evidence-timeline-marker,
 .evidence-timeline-interrupted .evidence-timeline-marker {
   background: var(--risk);
+}
+
+.evidence-timeline-details {
+  display: grid;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.evidence-timeline-details summary {
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.evidence-metadata-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.evidence-metadata-list div {
+  display: grid;
+  grid-template-columns: minmax(84px, 0.35fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.evidence-metadata-list dt {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.evidence-metadata-list dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .handoff-history-card {

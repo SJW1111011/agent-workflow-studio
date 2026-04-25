@@ -16,6 +16,7 @@ const {
 } = require("./evidence-utils");
 const { buildScopeProofAnchors, loadRepositorySnapshot } = require("./repository-snapshot");
 const { buildTaskVerificationGate } = require("./verification-gates");
+const { listCiEvidenceRecords } = require("./webhook-evidence");
 const {
   appendTaskContextNote,
   ensureTaskArtifacts,
@@ -158,6 +159,7 @@ function getTaskDetail(workspaceRoot, taskId) {
   const runs = listRuns(workspaceRoot, taskId);
   const activityRecords = listActivityRecords(workspaceRoot, taskId);
   const handoffRecords = listHandoffRecords(workspaceRoot, taskId);
+  const ciEvidenceRecords = listCiEvidenceRecords(workspaceRoot, taskId);
   const taskText = safeRead(files.task);
   const strictVerification = resolveStrictVerification(workspaceRoot);
   const repositorySnapshot = loadRepositorySnapshot(workspaceRoot, {
@@ -180,6 +182,7 @@ function getTaskDetail(workspaceRoot, taskId) {
     runs,
     activityRecords,
     handoffRecords,
+    ciEvidenceRecords,
     freshness: buildTaskFreshness(workspaceRoot, meta, runs),
     verificationGate: buildTaskVerificationGate(workspaceRoot, meta, runs, repositorySnapshot, taskText, {
       strict: strictVerification,

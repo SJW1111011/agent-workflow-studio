@@ -13,6 +13,7 @@ const { listRecipes } = require("./lib/recipes");
 const { validateWorkspace } = require("./lib/schema-validator");
 const { refreshManualProofAnchors, saveTaskDocument } = require("./lib/task-documents");
 const { buildTrustSummary } = require("./lib/trust-summary");
+const { recordWebhookEvidence } = require("./lib/webhook-evidence");
 const {
   appendTaskNote,
   approveTask,
@@ -61,6 +62,21 @@ function startDashboardServer(workspaceRoot, options = {}) {
 
         if (requestUrl.pathname === "/api/trust-summary") {
           return sendJson(response, 200, buildTrustSummary(workspaceRoot));
+        }
+
+        if (requestUrl.pathname === "/api/webhook/evidence" && request.method === "POST") {
+          const rawBody = await readRequestBody(request);
+          const body = parseJsonBody(rawBody);
+          const result = recordWebhookEvidence(workspaceRoot, body, {
+            rawBody,
+            signatureHeader: request.headers["x-workflow-signature"],
+          });
+
+          return sendJson(response, 201, {
+            ok: true,
+            evidenceId: result.evidence.id,
+            taskId: result.evidence.taskId,
+          });
         }
 
         if (requestUrl.pathname === "/api/tasks" && request.method === "GET") {
@@ -503,6 +519,10 @@ function buildErrorPayload(error) {
 }
 
 function readJsonBody(request) {
+  return readRequestBody(request).then((body) => parseJsonBody(body));
+}
+
+function readRequestBody(request) {
   return new Promise((resolve, reject) => {
     let body = "";
 
@@ -514,20 +534,23 @@ function readJsonBody(request) {
     });
 
     request.on("end", () => {
-      if (!body.trim()) {
-        resolve({});
-        return;
-      }
-
-      try {
-        resolve(JSON.parse(body));
-      } catch (error) {
-        reject(badRequest("Invalid JSON body.", "invalid_json_body"));
-      }
+      resolve(body);
     });
 
     request.on("error", reject);
   });
+}
+
+function parseJsonBody(body) {
+  if (!String(body || "").trim()) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(body);
+  } catch (error) {
+    throw badRequest("Invalid JSON body.", "invalid_json_body");
+  }
 }
 
 function serveStatic(dashboardRoot, pathname, response) {

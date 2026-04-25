@@ -1,6 +1,6 @@
 # Project Profile
 
-Generated at: 2026-04-25T09:23:41.570Z
+Generated at: 2026-04-25T10:01:55.295Z
 
 ## Repository
 
@@ -28,6 +28,7 @@ Generated at: 2026-04-25T09:23:41.570Z
 - docs/ISSUE_BACKLOG.md
 - docs/MCP_SETUP.md
 - docs/NEXT_AGENT_HANDOFF.md
+- docs/ORCHESTRATOR.md
 - docs/PRD.md
 - docs/PUBLISHING.md
 - docs/README.md

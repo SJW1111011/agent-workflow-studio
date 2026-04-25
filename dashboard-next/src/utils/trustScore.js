@@ -23,6 +23,7 @@ export const TRUST_HEATMAP_BUCKETS = Object.freeze([
 const MAX_DIVERSITY_COLLECTORS = 4;
 
 export function calculateTrustScore({
+  ciStatus = null,
   collectorCount = 0,
   coverage = 0,
   freshness = "stale",
@@ -34,13 +35,15 @@ export function calculateTrustScore({
   const normalizedFreshness = normalizeTrustFreshness(freshness);
   const diversity = calculateCollectorDiversityScore(collectorCount);
   const reviewAdjustment = calculateHumanReviewAdjustment(reviewStatus);
+  const ciAdjustment = calculateCiEvidenceAdjustment(ciStatus);
 
   return normalizeTrustPercent(
     normalizedCoverage * 0.4 +
       TRUST_SIGNAL_SCORES[normalizedSignal] * 0.25 +
       TRUST_FRESHNESS_SCORES[normalizedFreshness] * 0.2 +
       diversity * 0.15 +
-      reviewAdjustment,
+      reviewAdjustment +
+      ciAdjustment,
   );
 }
 
@@ -81,6 +84,24 @@ export function calculateHumanReviewAdjustment(reviewStatus) {
   }
   if (normalized === "rejected") {
     return -20;
+  }
+  return 0;
+}
+
+export function normalizeCiEvidenceStatus(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  return normalized === "passed" || normalized === "failed" || normalized === "pending"
+    ? normalized
+    : null;
+}
+
+export function calculateCiEvidenceAdjustment(status) {
+  const normalized = normalizeCiEvidenceStatus(status);
+  if (normalized === "passed") {
+    return 5;
+  }
+  if (normalized === "failed") {
+    return -10;
   }
   return 0;
 }
@@ -205,6 +226,20 @@ export function collectTrustCollectors(detail = {}) {
   return Array.from(collectorIds.values()).sort();
 }
 
+export function deriveCiEvidenceStatus(detail = {}) {
+  const records = Array.isArray(detail.ciEvidenceRecords)
+    ? detail.ciEvidenceRecords
+    : [];
+  const latestRecord = records
+    .filter((record) => record && normalizeCiEvidenceStatus(record.status))
+    .sort((left, right) =>
+      String(left.createdAt || "").localeCompare(String(right.createdAt || "")),
+    )
+    .pop();
+
+  return latestRecord ? normalizeCiEvidenceStatus(latestRecord.status) : null;
+}
+
 export function buildTaskTrustSnapshot(detail = {}) {
   const coverage = normalizeTrustPercent(
     detail.verificationGate && detail.verificationGate.coveragePercent,
@@ -212,7 +247,9 @@ export function buildTaskTrustSnapshot(detail = {}) {
   const signal = deriveTrustSignal(detail);
   const freshness = deriveTrustFreshness(detail);
   const collectorIds = collectTrustCollectors(detail);
+  const ciStatus = deriveCiEvidenceStatus(detail);
   const trustScore = calculateTrustScore({
+    ciStatus,
     collectorCount: collectorIds.length,
     coverage,
     freshness,
@@ -223,18 +260,26 @@ export function buildTaskTrustSnapshot(detail = {}) {
   return {
     trustScore,
     coverage,
+    ciAdjustment: calculateCiEvidenceAdjustment(ciStatus),
+    ciEvidenceCount: Array.isArray(detail.ciEvidenceRecords)
+      ? detail.ciEvidenceRecords.length
+      : 0,
+    ciStatus,
     signal,
     reviewStatus: normalizeReviewStatus(detail.meta && detail.meta.reviewStatus),
     freshness,
     collectorCount: collectorIds.length,
     collectorIds,
     lastEvidenceAt:
-      (detail.verificationGate &&
-        detail.verificationGate.evidence &&
-        detail.verificationGate.evidence.latestEvidenceAt) ||
       latestTimestamp(
         []
+          .concat(
+            detail.verificationGate &&
+              detail.verificationGate.evidence &&
+              detail.verificationGate.evidence.latestEvidenceAt,
+          )
           .concat((detail.runs || []).map((run) => run.completedAt || run.createdAt))
+          .concat((detail.ciEvidenceRecords || []).map((record) => record.createdAt))
           .concat(
             (detail.activityRecords || []).map((record) => record.createdAt),
           ),

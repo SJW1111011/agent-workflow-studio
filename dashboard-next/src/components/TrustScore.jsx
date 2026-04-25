@@ -32,7 +32,20 @@ function describeFreshness(freshness) {
   return "stale evidence";
 }
 
+function describeCiStatus(ciStatus, ciAdjustment) {
+  const normalized = String(ciStatus || "").trim().toLowerCase();
+  if (!normalized) {
+    return "";
+  }
+
+  const adjustment = Number(ciAdjustment) || 0;
+  const suffix = adjustment === 0 ? "" : ` ${adjustment > 0 ? "+" : ""}${adjustment}`;
+  return `CI ${normalized}${suffix}`;
+}
+
 export default function TrustScore({
+  ciAdjustment = 0,
+  ciStatus = null,
   className = "",
   collectorCount = 0,
   coverage = 0,
@@ -47,6 +60,7 @@ export default function TrustScore({
   const normalizedCoverage = normalizeTrustPercent(coverage);
   const tone = resolveTrustTone(normalizedScore);
   const diversity = calculateCollectorDiversityScore(collectorCount);
+  const ciLabel = describeCiStatus(ciStatus, ciAdjustment);
   const classes = [className, "trust-score-card", `trust-tone-${tone}`]
     .filter(Boolean)
     .join(" ");
@@ -85,6 +99,11 @@ export default function TrustScore({
       <div className="tag-row">
         <span className="tag">{describeFreshness(freshness)}</span>
         <span className="tag">{collectorCount} collector(s)</span>
+        {ciLabel ? (
+          <span className={ciStatus === "failed" ? "tag warn" : "tag"}>
+            {ciLabel}
+          </span>
+        ) : null}
         {lastEvidenceAt ? (
           <span className="tag">{formatTimestampLabel(lastEvidenceAt)}</span>
         ) : null}

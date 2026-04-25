@@ -1,0 +1,91 @@
+name: Post Evidence to Workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run tests
+        id: tests
+        run: npm test
+
+      - name: Post CI evidence
+        if: always()
+        shell: bash
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SECRET: ${{ secrets.WORKFLOW_WEBHOOK_SECRET }}
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+          WEBHOOK_URL: ${{ secrets.WORKFLOW_WEBHOOK_URL || 'http://localhost:4173/api/webhook/evidence' }}
+          WORKFLOW_TASK_ID: ${{ vars.WORKFLOW_TASK_ID }}
+        run: |
+          TASK_ID="$WORKFLOW_TASK_ID"
+          if [ -z "$TASK_ID" ]; then
+            TASK_ID="$(printf '%s' "$COMMIT_MESSAGE" | grep -oE 'T-[0-9]+' | head -n 1 || true)"
+          fi
+
+          if [ -z "$TASK_ID" ]; then
+            echo "No workflow task id found; set vars.WORKFLOW_TASK_ID or include T-### in the commit message."
+            exit 0
+          fi
+
+          case "$TEST_OUTCOME" in
+            success)
+              STATUS="passed"
+              ;;
+            failure|cancelled)
+              STATUS="failed"
+              ;;
+            *)
+              STATUS="pending"
+              ;;
+          esac
+
+          BODY="$(jq -n \
+            --arg taskId "$TASK_ID" \
+            --arg source "github-actions" \
+            --arg status "$STATUS" \
+            --arg testOutcome "$TEST_OUTCOME" \
+            --arg runId "${{ github.run_id }}" \
+            --arg runUrl "$RUN_URL" \
+            --arg sha "${{ github.sha }}" \
+            --arg branch "${{ github.ref_name }}" \
+            '{
+              taskId: $taskId,
+              source: $source,
+              status: $status,
+              checks: ["npm test: " + $testOutcome],
+              metadata: {
+                runId: $runId,
+                runUrl: $runUrl,
+                sha: $sha,
+                branch: $branch
+              }
+            }')"
+
+          SIGNATURE_HEADER=()
+          if [ -n "$SECRET" ]; then
+            SIGNATURE="$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | awk '{print "sha256="$2}')"
+            SIGNATURE_HEADER=(-H "X-Workflow-Signature: $SIGNATURE")
+          fi
+
+          curl -fsS -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            "${SIGNATURE_HEADER[@]}" \
+            -d "$BODY"

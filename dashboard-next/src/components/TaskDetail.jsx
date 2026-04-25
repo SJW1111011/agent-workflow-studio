@@ -294,6 +294,8 @@ export default function TaskDetail({ hidden }) {
 
           <TrustScore
             className="detail-card"
+            ciAdjustment={trust?.ciAdjustment || 0}
+            ciStatus={trust?.ciStatus || null}
             collectorCount={trust?.collectorCount || 0}
             coverage={trust?.coverage || 0}
             freshness={trust?.freshness || "stale"}

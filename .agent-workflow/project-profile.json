@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-25T09:23:41.570Z",
+  "generatedAt": "2026-04-25T10:01:55.295Z",
   "repositoryName": "agent-workflow-studio",
   "topLevelDirectories": [
     ".claude",
@@ -21,6 +21,7 @@
     "docs/ISSUE_BACKLOG.md",
     "docs/MCP_SETUP.md",
     "docs/NEXT_AGENT_HANDOFF.md",
+    "docs/ORCHESTRATOR.md",
     "docs/PRD.md",
     "docs/PUBLISHING.md",
     "docs/README.md",

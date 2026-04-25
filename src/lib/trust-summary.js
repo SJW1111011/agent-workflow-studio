@@ -60,10 +60,12 @@ function buildTaskTrustSummary(detail) {
   const signal = deriveTrustSignal(detail);
   const freshness = deriveTrustFreshness(detail, proofCoverage);
   const collectorIds = collectCollectorIds(detail, proofCoverage);
+  const ciStatus = deriveCiEvidenceStatus(detail);
   const coverage = normalizePercent(
     detail.verificationGate && detail.verificationGate.coveragePercent
   );
   const trustScore = calculateTrustScore({
+    ciStatus,
     collectorCount: collectorIds.length,
     coverage,
     freshness,
@@ -76,17 +78,23 @@ function buildTaskTrustSummary(detail) {
     title: detail.meta.title || detail.meta.id,
     trustScore,
     coverage,
+    ciAdjustment: calculateCiEvidenceAdjustment(ciStatus),
+    ciEvidenceCount: Array.isArray(detail.ciEvidenceRecords) ? detail.ciEvidenceRecords.length : 0,
+    ciStatus,
     signal,
     reviewStatus: normalizeReviewStatus(detail.meta.reviewStatus),
     freshness,
     collectorCount: collectorIds.length,
     lastEvidenceAt:
-      (detail.verificationGate &&
-        detail.verificationGate.evidence &&
-        detail.verificationGate.evidence.latestEvidenceAt) ||
       latestTimestamp(
         []
+          .concat(
+            detail.verificationGate &&
+              detail.verificationGate.evidence &&
+              detail.verificationGate.evidence.latestEvidenceAt
+          )
           .concat((detail.runs || []).map((run) => run.completedAt || run.createdAt))
+          .concat((detail.ciEvidenceRecords || []).map((record) => record.createdAt))
           .concat(
             (detail.activityRecords || []).map((record) => record.createdAt)
           )
@@ -94,19 +102,21 @@ function buildTaskTrustSummary(detail) {
   };
 }
 
-function calculateTrustScore({ collectorCount, coverage, freshness, reviewStatus, signal }) {
+function calculateTrustScore({ ciStatus, collectorCount, coverage, freshness, reviewStatus, signal }) {
   const normalizedCoverage = normalizePercent(coverage);
   const normalizedSignal = normalizeTrustSignal(signal);
   const normalizedFreshness = normalizeTrustFreshness(freshness);
   const diversity = calculateCollectorDiversityScore(collectorCount);
   const reviewAdjustment = calculateHumanReviewAdjustment(reviewStatus);
+  const ciAdjustment = calculateCiEvidenceAdjustment(ciStatus);
 
   return clampTrustScore(
     normalizedCoverage * 0.4 +
       SIGNAL_SCORES[normalizedSignal] * 0.25 +
       FRESHNESS_SCORES[normalizedFreshness] * 0.2 +
       diversity * 0.15 +
-      reviewAdjustment
+      reviewAdjustment +
+      ciAdjustment
   );
 }
 
@@ -220,6 +230,29 @@ function collectCollectorIds(detail, proofCoverage = {}) {
   return Array.from(collectorIds.values()).sort();
 }
 
+function deriveCiEvidenceStatus(detail) {
+  const records = Array.isArray(detail && detail.ciEvidenceRecords) ? detail.ciEvidenceRecords : [];
+  const latestRecord = records
+    .filter((record) => record && normalizeCiEvidenceStatus(record.status))
+    .sort((left, right) => String(left.createdAt || "").localeCompare(String(right.createdAt || "")))
+    .pop();
+
+  return latestRecord ? normalizeCiEvidenceStatus(latestRecord.status) : null;
+}
+
+function calculateCiEvidenceAdjustment(status) {
+  const normalized = normalizeCiEvidenceStatus(status);
+  if (normalized === "passed") {
+    return 5;
+  }
+
+  if (normalized === "failed") {
+    return -10;
+  }
+
+  return 0;
+}
+
 function extractDraftChecks(verificationText) {
   const draftSection =
     getMarkdownSection(verificationText, "Draft checks") ||
@@ -288,6 +321,11 @@ function normalizeReviewStatus(value) {
   return normalized === "approved" || normalized === "rejected" ? normalized : null;
 }
 
+function normalizeCiEvidenceStatus(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  return normalized === "passed" || normalized === "failed" || normalized === "pending" ? normalized : null;
+}
+
 function calculateHumanReviewAdjustment(reviewStatus) {
   const normalized = normalizeReviewStatus(reviewStatus);
   if (normalized === "approved") {
@@ -317,9 +355,11 @@ function escapeRegex(value) {
 module.exports = {
   buildTaskTrustSummary,
   buildTrustSummary,
+  calculateCiEvidenceAdjustment,
   calculateCollectorDiversityScore,
   calculateHumanReviewAdjustment,
   calculateTrustScore,
+  deriveCiEvidenceStatus,
   deriveTrustFreshness,
   deriveTrustSignal,
 };
