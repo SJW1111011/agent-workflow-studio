@@ -213,27 +213,6 @@ const tests = [
     },
   },
   {
-    name: "prompt:compile prints its deprecation warning to stderr while keeping stdout for command output",
-    run() {
-      const { workspaceRoot, taskId, files } = createTaskWorkspace("cli-prompt-compile");
-
-      const result = captureCliStreams(() => {
-        main(["prompt:compile", taskId, "--root", workspaceRoot]);
-      });
-
-      assert.match(
-        result.stderr,
-        /Deprecated: use MCP resource workflow:\/\/tasks\/\{taskId\} or prompt workflow-resume instead\. prompt:compile will be removed in 0\.3\.0\./
-      );
-      assert.doesNotMatch(result.stdout, /Deprecated:/);
-      assert.match(result.stdout, /Compiled codex prompt at /);
-      assert.match(
-        fs.readFileSync(files.promptCodex, "utf8"),
-        /Deprecated: `prompt:compile` will be removed in 0\.3\.0\./
-      );
-    },
-  },
-  {
     name: "skills:generate creates CLAUDE.md with workflow rules and AGENTS.md",
     run() {
       const { workspaceRoot } = createTaskWorkspace("cli-skills-generate");

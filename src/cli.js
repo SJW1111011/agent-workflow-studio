@@ -9,7 +9,6 @@ const { formatMemoryBootstrapSummary, generateMemoryBootstrapPrompt } = require(
 const { formatMemoryValidationSummary, validateMemoryDocs } = require("./lib/memory-validator");
 const { buildOverview } = require("./lib/overview");
 const { runOrchestrator } = require("./lib/orchestrator");
-const { compilePrompt } = require("./lib/prompt-compiler");
 const { formatQuickTaskSummary, quickCreateTask } = require("./lib/quick-task");
 const { formatSkillsSummary, generateSkills } = require("./lib/skill-generator");
 const { listRecipes } = require("./lib/recipes");
@@ -21,9 +20,6 @@ const { startDashboardServer } = require("./server");
 const { validateWorkspace } = require("./lib/schema-validator");
 const { createTask, listTasks, recordRun } = require("./lib/task-service");
 const { ensureWorkflowScaffold, resolveWorkspaceRoot } = require("./lib/workspace");
-
-const PROMPT_COMPILE_DEPRECATION =
-  "Deprecated: use MCP resource workflow://tasks/{taskId} or prompt workflow-resume instead. prompt:compile will be removed in 0.3.0.";
 
 function main(argv = process.argv.slice(2)) {
   const { command, positionals, options } = parseCommand(argv);
@@ -200,15 +196,6 @@ function main(argv = process.argv.slice(2)) {
         if (tasks.length === 0) {
           print("No tasks found.");
         }
-        break;
-      }
-      case "prompt:compile": {
-        const [taskId] = positionals;
-        const agent = normalizePromptAgent(options.agent || "codex");
-        assert(taskId, "Usage: prompt:compile <taskId> [--agent codex|claude] [--root path]");
-        warn(PROMPT_COMPILE_DEPRECATION);
-        const result = compilePrompt(workspaceRoot, taskId, agent);
-        print(`Compiled ${agent} prompt at ${result.outputPath}`);
         break;
       }
       case "run:prepare": {
@@ -403,10 +390,6 @@ function getOptionalOptionList(options, key) {
   return options[key] === undefined ? undefined : getOptionList(options, key);
 }
 
-function normalizePromptAgent(agent) {
-  return normalizeAdapterId(agent) === "claude-code" ? "claude" : "codex";
-}
-
 function normalizeQuickModeOption(options = {}) {
   const lite = options.lite === true;
   const full = options.full === true;
@@ -462,7 +445,6 @@ Commands:
   quick <title> [--task-id T-001] [--priority P1] [--recipe feature] [--agent codex|claude] [--lite] [--full] [--root path]
   task:new <taskId> <title> [--priority P1] [--recipe feature] [--root path]
   task:list [--root path]
-  prompt:compile <taskId> [--agent codex|claude] [--root path]
   run:prepare <taskId> [--adapter <adapterId>] [--agent <adapterId>] [--root path]
   run:execute <taskId> [--adapter <adapterId>] [--agent <adapterId>] [--timeout-ms 300000] [--root path]
   run:add <taskId> <summary> [--status passed|failed|draft] [--proof-path path] [--check text] [--artifact path] [--skip-test] [--strict] [--root path]

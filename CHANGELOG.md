@@ -1,59 +1,153 @@
 # Changelog
 
-This project keeps a lightweight changelog focused on user-visible changes and release-level milestones.
+## [0.3.0] - 2024-12-XX - Agent Autonomy
 
-## [Unreleased]
+**Major product repositioning**: Agent Workflow Studio is now a **workbench for human-agent collaboration on projects**, not just an AI code trust system.
 
-### Docs
+### Product Vision
 
-- added the workflow hero diagram to `README.md` so new visitors can understand the task -> run -> evidence -> checkpoint loop before reading the command surface
-- added a real dashboard overview screenshot to `README.md` so the control plane is visible alongside the product explanation
-- rewrote `docs/ARCHITECTURE.md` as a reader-facing system tour instead of a long implementation inventory
+This release completes Phase 6 (Agent Autonomy) and repositions the product:
 
-## [0.2.0] - 2026-04-22
+- **Not**: A coding assistant or code review tool
+- **But**: A project management system where humans and agents work together
+- **Goal**: Enable human-agent collaboration at project scale
+- **Scope**: Software projects today, any project tomorrow
 
-See [`docs/RELEASE_NOTES_0.2.0.md`](docs/RELEASE_NOTES_0.2.0.md) for the longer release summary.
+See [PRODUCT_VISION.md](docs/PRODUCT_VISION.md) for the full vision.
 
-### Dashboard
+### New Features
 
-- rebuilt the modern dashboard with the Vite + Preact shell, SSE execution updates, responsive light/dark/system theming, and kanban plus timeline task views
-- added trust score, freshness heatmap, and evidence timeline surfaces so verification quality is visible in the control plane instead of buried in task files
+**Human-Agent Collaboration Loop (T-700)**
+- Dashboard approval/rejection buttons with feedback
+- Rejected tasks automatically create correction tasks
+- Approval adds +10 to trust score, rejection adds -20
+- Feedback becomes the agent's next instruction
 
-### Evidence
+**Cross-Agent Handoff Protocol (T-701)**
+- `workflow_handoff` MCP tool: Agent A marks work complete, passes to Agent B
+- `workflow_pickup` MCP tool: Agent B claims task with full context
+- Handoff records stored in evidence chain
+- Dashboard shows handoff history and agent chain
 
-- added pluggable evidence collectors with built-in npm, pytest, cargo, and go runners
-- wired multi-collector inference into `done`, `run:add`, and the MCP completion flow so matching test runners can contribute structured evidence automatically
-- added agent activity evidence so MCP sessions can record files touched, commands run, and tool-call context alongside normal run proofs
+**Task Queue and Claim Mechanism (T-702)**
+- `workflow_claim_task` MCP tool: Claim tasks with expiry-backed locks
+- `workflow_release_task` MCP tool: Release claimed tasks
+- `workflow://queue` MCP resource: Discover claimable tasks
+- Claim expiry (default 1 hour) prevents stuck tasks
+- Dashboard shows claim status badges
 
-### MCP
+**Orchestrator Daemon (T-703)**
+- `npx agent-workflow orchestrate`: Run agents autonomously
+- Watches task queue, spawns agent sessions (Claude Code, Codex)
+- Supports concurrency control (`--max-concurrent`)
+- Graceful shutdown (SIGINT/SIGTERM)
+- Cross-platform (Windows, macOS, Linux)
+- See [ORCHESTRATOR.md](docs/ORCHESTRATOR.md) for setup
 
-- added read-only MCP resources for workflow overview, task detail, and memory documents
-- added MCP prompt packages such as `workflow-resume`, `workflow-verify`, and `workflow-handoff` for agent-native handoff without prompt-file truncation
-- repositioned MCP resources and prompts as the preferred replacement for `prompt:compile`
+**CI Evidence Pipeline (T-704)**
+- `POST /api/webhook/evidence`: Receive CI verification results
+- HMAC-SHA256 signature validation (constant-time)
+- CI evidence adjusts trust score (passed +5, failed -10)
+- GitHub Actions integration example
+- See [CI_INTEGRATION.md](docs/CI_INTEGRATION.md) for setup
 
-### Compatibility
+### Breaking Changes
 
-- kept `0.1.2` workflow data compatible by normalizing legacy run evidence aliases on read, preserving `manualProofAnchors` verification blocks when strict mode is off, and keeping `validate --root .` backward compatible
+- **Removed**: `prompt:compile` command (deprecated in 0.2.0)
+  - Use MCP resource `workflow://tasks/{taskId}` instead
+  - Or use MCP prompt `workflow-resume`
 
-### Deprecations
+### Documentation
 
-- deprecated `prompt:compile` ahead of its planned `0.3.0` removal while keeping the command available as a transition path
-- revived `skills:generate` with MCP-first workflow rules and two-system framing (project tasks vs execution steps) in generated CLAUDE.md/AGENTS.md
+- **NEW**: [PRODUCT_VISION.md](docs/PRODUCT_VISION.md) - Why this exists
+- **NEW**: [ORCHESTRATOR.md](docs/ORCHESTRATOR.md) - Run agents autonomously
+- **NEW**: [CI_INTEGRATION.md](docs/CI_INTEGRATION.md) - Connect GitHub Actions
+- **UPDATED**: [README.md](README.md) - Repositioned as collaboration workbench
+- **UPDATED**: [AGENT_GUIDE.md](AGENT_GUIDE.md) - How agents use the workbench
+- **UPDATED**: [ROADMAP.md](docs/ROADMAP.md) - Phase 6 complete
 
-## [0.1.2] - 2026-04-10
+### MCP Tools (15 total)
 
-See [`docs/RELEASE_NOTES_0.1.2.md`](docs/RELEASE_NOTES_0.1.2.md) for the longer release summary.
+New in 0.3.0:
+- `workflow_handoff`: Record cross-agent handoff
+- `workflow_pickup`: Claim task and get full context
+- `workflow_claim_task`: Claim task with expiry lock
+- `workflow_release_task`: Release claimed task
 
-### Dashboard
+Existing:
+- `workflow_quick`: Create task
+- `workflow_done`: Mark done and record evidence
+- `workflow_task_list`: List all tasks
+- `workflow_overview`: Project health snapshot
+- `workflow_validate`: Check for issues
+- `workflow_record_activity`: Log progress breadcrumb
+- `workflow_undo`: Undo last operation
+- `workflow_checkpoint`: Refresh checkpoint
+- `workflow_append_note`: Add timestamped note
+- `workflow_run_add`: Record run with evidence
+- `workflow_update_task`: Update task metadata
 
-- added tab navigation and collapsible panels to the local dashboard so the control plane is easier to scan during day-to-day use
+### MCP Resources (5 total)
 
-### README
+New in 0.3.0:
+- `workflow://queue`: Claimable tasks sorted by priority
 
-- raised `skills:generate` higher in the homepage narrative so agent-native onboarding is visible earlier
-- clarified that generated `AGENTS.md`, `CLAUDE.md`, and Claude slash commands let the workflow become part of the agent's default context
+Existing:
+- `workflow://overview`: Project health
+- `workflow://tasks`: All tasks
+- `workflow://tasks/{taskId}`: Task detail
+- `workflow://memory/{docName}`: Memory docs
 
-### Release
+### Status: Experimental
 
-- published `agent-workflow-studio@0.1.2`
-- re-confirmed the npm-first install surface with `npm test`, `npm run validate -- --root .`, `npm run smoke`, and `npm run verify:onboarding`
+This is a new product category. We're learning with early users.
+
+**What works:**
+- Task management and tracking
+- Evidence collection and display
+- Multi-agent handoff
+- Human review and approval
+- Autonomous orchestration
+- CI integration
+
+**What's experimental:**
+- Agent reliability in autonomous mode
+- Trust score calibration
+- Orchestrator stability over long runs
+- Non-coding use cases
+
+**We need your feedback.** Try it, break it, tell us what works and what doesn't.
+
+### Technical
+
+- 45 test files, 215 tests passing
+- Node.js 18+ required
+- MCP SDK 1.0.3
+- Zero runtime dependencies (except MCP SDK)
+
+---
+
+## [0.2.1] - 2024-11-XX
+
+### Fixed
+
+- skills:generate docs inconsistency
+- MCP improvements
+
+---
+
+## [0.2.0] - 2024-11-XX - Evidence & MCP
+
+### Added
+
+- Multi-collector evidence system
+- MCP resources and prompts
+- Agent activity evidence
+- Dashboard trust signals
+- Deprecated prompt:compile in favor of MCP
+
+---
+
+## [0.1.2] - 2024-10-XX - Foundation
+
+Initial release with task management, evidence tracking, and trust scoring.
