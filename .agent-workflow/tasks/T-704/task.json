@@ -1,0 +1,16 @@
+{
+  "id": "T-704",
+  "title": "CI Evidence Pipeline and Webhook",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-25T10:01:55.302Z",
+  "updatedAt": "2026-04-25T10:01:55.302Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": [],
+  "claimedBy": null,
+  "claimExpiry": null
+}

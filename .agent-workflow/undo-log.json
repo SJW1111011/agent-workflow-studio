@@ -1,31 +1,6 @@
 [
   {
     "type": "quick",
-    "taskId": "T-603",
-    "timestamp": "2026-04-21T18:16:15.558Z",
-    "files": [
-      ".agent-workflow/tasks/T-603",
-      ".agent-workflow/tasks/T-603/checkpoint.json",
-      ".agent-workflow/tasks/T-603/checkpoint.md",
-      ".agent-workflow/tasks/T-603/context.md",
-      ".agent-workflow/tasks/T-603/launch.codex.md",
-      ".agent-workflow/tasks/T-603/prompt.codex.md",
-      ".agent-workflow/tasks/T-603/run-request.codex.json",
-      ".agent-workflow/tasks/T-603/runs",
-      ".agent-workflow/tasks/T-603/task.json",
-      ".agent-workflow/tasks/T-603/task.md",
-      ".agent-workflow/tasks/T-603/verification.md"
-    ],
-    "metadata": {
-      "taskRoot": ".agent-workflow/tasks/T-603",
-      "mode": "full",
-      "agent": "codex",
-      "adapterId": "codex",
-      "restore": []
-    }
-  },
-  {
-    "type": "quick",
     "taskId": "T-604",
     "timestamp": "2026-04-21T18:24:04.160Z",
     "files": [
@@ -787,6 +762,31 @@
     ],
     "metadata": {
       "taskRoot": ".agent-workflow/tasks/T-703",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-704",
+    "timestamp": "2026-04-25T10:01:55.534Z",
+    "files": [
+      ".agent-workflow/tasks/T-704",
+      ".agent-workflow/tasks/T-704/checkpoint.json",
+      ".agent-workflow/tasks/T-704/checkpoint.md",
+      ".agent-workflow/tasks/T-704/context.md",
+      ".agent-workflow/tasks/T-704/launch.codex.md",
+      ".agent-workflow/tasks/T-704/prompt.codex.md",
+      ".agent-workflow/tasks/T-704/run-request.codex.json",
+      ".agent-workflow/tasks/T-704/runs",
+      ".agent-workflow/tasks/T-704/task.json",
+      ".agent-workflow/tasks/T-704/task.md",
+      ".agent-workflow/tasks/T-704/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-704",
       "mode": "full",
       "agent": "codex",
       "adapterId": "codex",

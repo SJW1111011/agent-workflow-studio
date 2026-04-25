@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-704",
+  "adapterId": "codex",
+  "title": "CI Evidence Pipeline and Webhook",
+  "generatedAt": "2026-04-25T10:01:55.346Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-704",
+  "promptFile": ".agent-workflow/tasks/T-704/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-704/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}
