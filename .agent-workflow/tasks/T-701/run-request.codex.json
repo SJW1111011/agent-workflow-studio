@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-701",
+  "adapterId": "codex",
+  "title": "Cross-Agent Handoff Protocol",
+  "generatedAt": "2026-04-24T14:31:39.532Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-701",
+  "promptFile": ".agent-workflow/tasks/T-701/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-701/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

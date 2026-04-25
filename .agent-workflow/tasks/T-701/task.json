@@ -1,0 +1,14 @@
+{
+  "id": "T-701",
+  "title": "Cross-Agent Handoff Protocol",
+  "recipeId": "feature",
+  "priority": "P0",
+  "status": "todo",
+  "createdAt": "2026-04-24T14:31:39.452Z",
+  "updatedAt": "2026-04-24T14:31:39.452Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": []
+}

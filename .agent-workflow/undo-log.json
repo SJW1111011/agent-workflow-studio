@@ -1,65 +1,5 @@
 [
   {
-    "type": "done",
-    "taskId": "T-601",
-    "timestamp": "2026-04-20T01:14:43.737Z",
-    "files": [
-      ".agent-workflow/tasks/T-601/checkpoint.json",
-      ".agent-workflow/tasks/T-601/checkpoint.md",
-      ".agent-workflow/tasks/T-601/context.md",
-      ".agent-workflow/tasks/T-601/runs",
-      ".agent-workflow/tasks/T-601/runs/run-1776647683216.json",
-      ".agent-workflow/tasks/T-601/task.json",
-      ".agent-workflow/tasks/T-601/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-601/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-601\",\n  \"title\": \"MCP Resources and Prompts\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P0\",\n  \"status\": \"in_progress\",\n  \"createdAt\": \"2026-04-19T16:45:41.603Z\",\n  \"updatedAt\": \"2026-04-20T13:13:00.000Z\",\n  \"goal\": \"Expose workflow state as MCP resources and agent-native prompts so MCP clients can resume, verify, and hand off work without relying on truncated compiled prompt files.\",\n  \"scope\": [\n    \"src/lib/mcp-resources.js\",\n    \"src/lib/mcp-prompts.js\",\n    \"src/mcp-server.js\",\n    \"test/mcp-resources.test.js\",\n    \"test/mcp-server.test.js\",\n    \"README.md\",\n    \"docs/MCP_SETUP.md\"\n  ],\n  \"nonGoals\": [\n    \"src/lib/mcp-tools.js\",\n    \"dashboard-next/\"\n  ],\n  \"requiredDocs\": [\n    \".agent-workflow/project-profile.md\",\n    \".agent-workflow/memory/product.md\",\n    \".agent-workflow/memory/architecture.md\",\n    \".agent-workflow/memory/domain-rules.md\"\n  ],\n  \"verificationCommands\": [\n    \"npm test -- mcp-server mcp-resources\"\n  ]\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-601/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-601 Context\n\n## Why now\n\nAgents already have MCP tool access, but they still need prompt-file compilation or manual file reads to recover full task context. Shipping resources and prompts here removes that gap, keeps MCP workflows read-only for resume/handoff, and sets up the later prompt-compile deprecation without breaking current tooling.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/mcp-server.js` currently advertises only `tools` capability and registers only `tools/list` and `tools/call`.\n- `src/lib/task-service.js` already exposes `getTaskDetail(workspaceRoot, taskId)`, which returns task docs, runs, freshness, and verification gate data suitable for MCP resource/prompt reuse.\n- `src/lib/overview.js` already builds the workspace-level payload needed for `workflow://overview` and task-list summaries.\n- MCP SDK `@modelcontextprotocol/sdk@1.3.0` in this repo exports the resource and prompt request schemas needed for `resources/*` and `prompts/*`.\n- Existing MCP coverage lives in `test/mcp-server.test.js` and `test/mcp-tools.test.js`; new resource/prompt coverage can extend that without changing the current tool runtime.\n\n## Open questions\n\n- Whether prompt payloads should embed resource contents directly or render text packages. Current implementation plan is to return text packages with full, untruncated task context and stable resource URIs.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n- Do not change existing MCP tool behavior while adding resources and prompts.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-601/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-601 Verification\n\n## Draft checks\n\n- automated: `npm test -- mcp-server mcp-resources`\n- manual: start the MCP server and confirm `resources/list`, `resources/read`, `prompts/list`, and `prompts/get` expose the new workflow resources and prompt packages.\n\n## Verification records\n\n### Record 1\n\n- Files:\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n- Verification still pending until the new MCP resource/prompt tests pass.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-601/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-601\",\n  \"generatedAt\": \"2026-04-19T16:45:41.763Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add repo-relative scope paths to make evidence coverage automatic.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-601/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-601 Checkpoint\n\nGenerated at: 2026-04-19T16:45:41.763Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: MCP Resources and Prompts\n- Priority: P0\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add repo-relative scope paths to make evidence coverage automatic.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-601/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-601/runs/run-1776647683216.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-601/runs/run-1776647683216.json",
-      "runId": "run-1776647683216"
-    }
-  },
-  {
     "type": "checkpoint",
     "taskId": "T-601",
     "timestamp": "2026-04-20T01:15:47.135Z",
@@ -836,6 +776,31 @@
     ],
     "metadata": {
       "taskRoot": ".agent-workflow/tasks/T-700",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-701",
+    "timestamp": "2026-04-24T14:31:39.734Z",
+    "files": [
+      ".agent-workflow/tasks/T-701",
+      ".agent-workflow/tasks/T-701/checkpoint.json",
+      ".agent-workflow/tasks/T-701/checkpoint.md",
+      ".agent-workflow/tasks/T-701/context.md",
+      ".agent-workflow/tasks/T-701/launch.codex.md",
+      ".agent-workflow/tasks/T-701/prompt.codex.md",
+      ".agent-workflow/tasks/T-701/run-request.codex.json",
+      ".agent-workflow/tasks/T-701/runs",
+      ".agent-workflow/tasks/T-701/task.json",
+      ".agent-workflow/tasks/T-701/task.md",
+      ".agent-workflow/tasks/T-701/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-701",
       "mode": "full",
       "agent": "codex",
       "adapterId": "codex",
