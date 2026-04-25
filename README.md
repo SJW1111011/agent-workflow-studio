@@ -6,466 +6,277 @@
   <a href="https://codecov.io/gh/SJW1111011/agent-workflow-studio"><img src="https://codecov.io/gh/SJW1111011/agent-workflow-studio/graph/badge.svg" alt="Coverage"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="MIT license"></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=for-the-badge" alt="Node 18+"></a>
-  <img src="https://img.shields.io/badge/runtime%20deps-1-blue?style=for-the-badge" alt="One runtime dependency for MCP support">
+  <img src="https://img.shields.io/badge/status-experimental-orange?style=for-the-badge" alt="Experimental">
 </p>
 
-Track what your coding agents do. Record evidence. Resume where you left off.
+**A workbench for human-agent collaboration on projects.**
 
-Local-first · Git-native · npm-installable · MCP-ready
+Not an AI coding assistant. A project management system where humans and agents work together to ship products.
 
-## Who is this for?
+---
 
-| You are...                                      | Recommended path                                              | Time to first task         |
-| ----------------------------------------------- | ------------------------------------------------------------- | -------------------------- |
-| A developer using Claude Code, Codex, or Cursor | **MCP tools** — say "create a task" in your editor            | 2 minutes (one-time setup) |
-| A developer who prefers the terminal            | **CLI** — `quick --lite` + `done`                             | 30 seconds                 |
-| A team running auditable agent workflows        | **Full mode** — task docs, prompt compilation, evidence gates | 5 minutes per task         |
+## What is this?
 
-## How it works
+Agent Workflow Studio is a **collaboration workbench** that lets humans and AI agents work together on projects — not just code, but any project with tasks, deliverables, and quality requirements.
 
-A local-first workflow loop: create a task, do the work, record what happened.
+**Think of it as:**
+- Jira for human-agent teams
+- GitHub Actions for agent orchestration
+- A shared workspace where work is visible, traceable, and handoff-ready
 
-<p align="center">
-  <img
-    src="https://raw.githubusercontent.com/SJW1111011/agent-workflow-studio/main/docs/assets/agent-workflow-hero.png"
-    alt="Agent Workflow Studio workflow diagram showing quick creation, execution and verification, checkpoints, and the local dashboard"
-    width="1100"
-  />
-</p>
+**Not:**
+- A better autocomplete
+- A chat interface for code
+- A code review tool
 
-## Try it in 1 minute
+## Why does this exist?
 
-### Path 1: MCP (recommended for editor users)
+Current AI tools (Cursor, Claude Code, Codex) are **code assistants** — they help you write code in the moment. But when you want to:
 
-```bash
-npm install agent-workflow-studio
-npx agent-workflow init --root .
-npx agent-workflow mcp:install --root .
-```
+- **Manage a project** with multiple tasks
+- **Collaborate with multiple agents** over days or weeks
+- **Hand off work** between agents or sessions
+- **Track progress** and quality across the project
+- **Run agents autonomously** overnight
 
-Then in Claude Code, Codex, or Cursor:
+...you need a **workbench**, not an assistant.
 
-```
-"create a task called 'Add authentication'"
-"list my tasks"
-"mark T-001 done with 'implemented JWT login'"
-```
-
-### Path 2: CLI (quick and light)
-
-```bash
-npm install agent-workflow-studio
-npx agent-workflow init --root .
-npx agent-workflow quick "Add authentication" --lite --root .
-# ... do the work ...
-npx agent-workflow done T-001 "Implemented JWT login" --complete --root .
-```
-
-### Path 3: Full workflow (auditable)
-
-```bash
-npm install agent-workflow-studio
-npx agent-workflow init --root .
-npx agent-workflow quick "Add authentication" --task-id T-001 --agent codex --root .
-# Fill in task.md, context.md, verification.md
-# Hand prompt.codex.md to Codex
-npx agent-workflow done T-001 "Implemented JWT login" --status passed --complete --root .
-npx agent-workflow dashboard --root . --port 4173
-```
-
-For the helper-directory install flow, see [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md).
-
-## See the dashboard
-
-Track tasks, runs, risks, executor outcomes, and verification signals from one local control plane.
-
-<p align="center">
-  <img
-    src="https://raw.githubusercontent.com/SJW1111011/agent-workflow-studio/main/docs/assets/dashboard.png"
-    alt="Agent Workflow Studio dashboard overview showing task counts, runs, risks, executor outcomes, and verification signals"
-    width="1100"
-  />
-</p>
-
-The current workflow UI still keeps the legacy dashboard available, while `dashboard-next/` now ships a responsive Preact shell with light, dark, and system theme support.
-
-For feature-complete task operations today, keep using:
-
-```bash
-npx agent-workflow dashboard --root . --port 4173 --legacy-dashboard
-```
-
-For modern-shell development in this repository, run the local API server on `4173`, then start the new shell on `5173`:
-
-```bash
-npm run dashboard -- --root . --port 4173
-npm run dashboard:dev
-```
-
-When you want the repo-local server to serve the built Preact shell instead of the legacy HTML bundle, generate `dashboard-next/dist/` first:
-
-```bash
-npm run dashboard:build
-```
-
-## Real-time execution streams
-
-Dashboard execution still keeps the existing snapshot routes, but it now also exposes SSE endpoints for live subscribers:
-
-- `GET /api/tasks/:taskId/execution` returns the current execution snapshot as JSON
-- `GET /api/tasks/:taskId/execution/events` streams execution state updates as `text/event-stream`
-- `GET /api/tasks/:taskId/execution/logs/:stream` returns the current stdout/stderr tail as JSON
-- `GET /api/tasks/:taskId/execution/logs/:stream/stream` streams live stdout/stderr lines as `text/event-stream`
-
-That keeps backward compatibility for polling clients while giving the dashboard and future MCP subscriptions a push-based path.
+Agent Workflow Studio is that workbench.
 
 ## Core capabilities
 
-- **`quick`** - create either a minimal Lite task scaffold or the full prompt/run/checkpoint bundle, depending on how much ceremony you want up front
-- **`memory:bootstrap`** - generate a local-only handoff prompt that helps Codex or Claude Code fill grounded project memory
-- **`run:execute`** - launch a local adapter when you explicitly opt into `commandMode: exec`, with shared preflight, logs, and evidence capture
-- **`orchestrate`** - run a local daemon that watches `workflow://queue` and spawns Claude Code, Codex, or a custom command when work is available
-- **`done`** - record evidence and refresh the checkpoint in one step, with an optional `--complete` flag to mark the task done
-- **`undo`** - roll back the latest workflow-layer operation (`quick`, `run:add`, `done`, or explicit `checkpoint`) without touching source files or git history
-- **`mcp:install` / `mcp:uninstall`** - register or remove the MCP server in Codex, Claude Code, and Cursor without manual JSON or TOML editing
-- **`mcp:serve`** - expose the core workflow operations as MCP tools over stdio for Claude Code, Cursor, and other MCP clients
-- **`verification gate`** - compare repo-relative task scope against the current repository snapshot and surface evidence coverage as a percentage, while still listing which scoped files need explicit evidence
-- **`verification records`** - use timestamp-based freshness by default, with opt-in strict fingerprint checks for audit-heavy workflows
-- **`skills:generate` (deprecated)** - legacy helper that writes `AGENTS.md`, `CLAUDE.md`, and Claude slash commands; prefer MCP resources and prompts instead
-- **`dashboard`** - inspect tasks, evidence, freshness, risks, execution state, and quick-create flows from a local control plane at `localhost:4173`
+### 1. Project-level management
 
-## Built for agents too
-
-Prefer MCP resources and prompts for agent setup:
+Tasks, not files. Deliverables, not functions. Progress tracking, not just code completion.
 
 ```bash
-npx agent-workflow mcp:install --client codex --root .
+# Create a task
+npx agent-workflow quick "Add user authentication" --root .
+
+# Agent works on it, records evidence
+# (via MCP tools or CLI)
+
+# View progress in dashboard
+npx agent-workflow dashboard --root .
+```
+
+### 2. Work leaves a trail
+
+Every agent action creates evidence: what changed, what was tested, what was verified. This evidence serves two purposes:
+
+- **For humans**: Trust, auditability, decision-making
+- **For agents**: Context, handoff documents, knowledge base
+
+### 3. Multi-agent collaboration
+
+Agents can hand off work to each other with full context. No information loss.
+
+```javascript
+// Agent A finishes part of the work
+workflow_handoff({
+  taskId: "T-001",
+  summary: "Completed database schema",
+  remaining: "Need to update ORM models"
+})
+
+// Agent B picks up where A left off
+workflow_pickup({
+  taskId: "T-001",
+  agent: "codex"
+})
+// Returns: full context, checkpoint, evidence so far
+```
+
+### 4. Human-agent collaboration loop
+
+Humans review agent work, approve or reject with feedback. Rejections create correction tasks automatically.
+
+Dashboard → Review task → Approve (trust +10) or Reject with feedback → Agent continues
+
+### 5. Autonomous execution
+
+Run agents overnight. The orchestrator watches the task queue and spawns agent sessions automatically.
+
+```bash
+# Start the orchestrator
+npx agent-workflow orchestrate --agent claude --root .
+
+# Go to sleep
+# Wake up, open dashboard, see what agents completed
+```
+
+## Quick start
+
+### Install
+
+```bash
+npm install agent-workflow-studio
+cd your-project
+npx agent-workflow init --root .
+npx agent-workflow scan --root .
+```
+
+### Option 1: Use with MCP (Claude Code, Codex, Cursor)
+
+```bash
 npx agent-workflow mcp:install --client claude --root .
 ```
 
-Then have the agent read `workflow://queue` to find available work, claim it with `workflow_claim_task`, or read `workflow://tasks/{taskId}` / use the `workflow-resume` prompt for a full handoff package.
+Then in your editor:
 
-To let agents pick up queued work automatically, run the orchestrator in a terminal or tmux session:
+```
+"Create a task called 'Add authentication'"
+"Work on T-001 and record evidence when done"
+```
+
+### Option 2: Use from CLI
 
 ```bash
-npx agent-workflow orchestrate --root . --agent claude --interval 300
+# Create task
+npx agent-workflow quick "Add authentication" --lite --root .
+
+# Work on it (manually or with agent)
+# ...
+
+# Record evidence
+npx agent-workflow done T-001 "Completed auth flow" --complete --root .
 ```
 
-Use `--agent codex`, `--max-concurrent <n>`, or `--stop-when-empty` depending on how much background work you want to allow. See [docs/ORCHESTRATOR.md](docs/ORCHESTRATOR.md) for setup and operating notes.
-
-`skills:generate` is still available as a deprecated fallback when you specifically need repo-root `AGENTS.md` / `CLAUDE.md` files:
+### Option 3: Run autonomously
 
 ```bash
-npx agent-workflow skills:generate --root .
+# Create tasks
+npx agent-workflow quick "Task 1" --root .
+npx agent-workflow quick "Task 2" --root .
+
+# Start orchestrator (spawns agents to work on tasks)
+npx agent-workflow orchestrate --agent claude --root .
+
+# Open dashboard to monitor
+npx agent-workflow dashboard --root .
 ```
 
-See [AGENT_GUIDE.md](AGENT_GUIDE.md) for the full workflow guide.
-
-## Use it through MCP
-
-Install the MCP server into your editor config first:
-
-```bash
-npx agent-workflow mcp:install --client codex --root .
-npx agent-workflow mcp:install --client claude --root .
-npx agent-workflow mcp:install --client cursor --root .
-```
-
-If the standard config file already exists, you can also omit `--client` and let the CLI auto-detect supported targets:
-
-```bash
-npx agent-workflow mcp:install --root .
-```
-
-The installer writes the correct launch entry for the way you are running the package:
-
-- contributor checkout: `node /absolute/path/to/agent-workflow-studio/src/mcp-server.js --root ...`
-- local npm install: `npx agent-workflow-mcp --root ...` plus the right `cwd`
-- Codex is written to `~/.codex/config.toml`; Claude Code and Cursor keep using their existing JSON config files
-
-Remove the MCP entry later with:
-
-```bash
-npx agent-workflow mcp:uninstall --client codex --root .
-npx agent-workflow mcp:uninstall --client claude --root .
-```
-
-For a quick terminal check, you can still start the stdio server directly:
-
-```bash
-npx agent-workflow mcp:serve --root .
-```
-
-The server exposes read-only MCP resources, MCP prompt packages, and MCP tools. These MCP surfaces are the recommended replacement for `prompt:compile`.
-
-Resources:
-
-- `workflow://overview`
-- `workflow://tasks`
-- `workflow://queue`
-- `workflow://tasks/{taskId}`
-- `workflow://memory/{docName}`
-
-Prompts:
-
-- `workflow-resume`
-- `workflow-verify`
-- `workflow-handoff`
-
-Tools:
-
-- `workflow_quick`
-- `workflow_done`
-- `workflow_update_task`
-- `workflow_append_note`
-- `workflow_record_activity`
-- `workflow_task_list`
-- `workflow_run_add`
-- `workflow_checkpoint`
-- `workflow_undo`
-- `workflow_validate`
-- `workflow_overview`
-- `workflow_handoff`
-- `workflow_pickup`
-- `workflow_claim_task`
-- `workflow_release_task`
-
-That lets an MCP-connected agent pull full task, queue, evidence, and memory context without writing compiled prompt files first, then use the existing `workflow_*` tools only for state-changing operations such as status updates, notes, runs, checkpoints, handoffs, queue claims, releases, and undo. For the auto-install flow, Codex TOML examples, and Claude Code or Cursor specifics, see [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
-
-## Architecture at a glance
-
-```text
-Task creation          Agent execution           Evidence + resume
-     |                       |                         |
-     v                       v                         v
-+-------------------------------------------------------------------+
-|                        .agent-workflow/                           |
-|                                                                   |
-|  memory/            tasks/T-001/                 adapters/         |
-|  - product.md       - task.md                    - codex.json      |
-|  - architecture.md  - context.md                 - claude-code.json|
-|  - rules.md         - verification.md            - custom *.json   |
-|                      - prompt.codex.md                              |
-|                      - run-request.codex.json                       |
-|                      - launch.codex.md                              |
-|                      - checkpoint.md                                |
-|                      - runs/ evidence + verification records        |
-+-------------------------------------------------------------------+
-         |                                         |
-         v                                         v
-   Git-trackable repo                        Dashboard / CLI
-```
-
-## Daily workflow
-
-### The fast path (most users)
-
-```bash
-npx agent-workflow quick "Fix the login bug" --lite --root .
-# ... fix the bug ...
-npx agent-workflow done T-001 "Fixed race condition in session handler" --complete --root .
-```
-
-That's it. `done` auto-infers changed files from `git diff`, records evidence, refreshes the checkpoint, and marks the task complete. Zero flags needed for the common case.
-
-### The MCP path (editor users)
-
-If you've run `mcp:install`, just talk to your agent:
+## Architecture
 
 ```
-"create a lite task for fixing the login bug"
-"I'm done — fixed race condition in session handler, mark it complete"
-"undo that"
+┌─────────────────────────────────────────────────────────┐
+│                     Dashboard (Web UI)                   │
+│              Review · Approve · Monitor Progress         │
+└─────────────────────────────────────────────────────────┘
+                            ▲
+                            │
+┌─────────────────────────────────────────────────────────┐
+│                  Orchestrator (Daemon)                   │
+│         Watches queue · Spawns agents · Manages work     │
+└─────────────────────────────────────────────────────────┘
+                            ▲
+                            │
+┌─────────────────────────────────────────────────────────┐
+│                    Task Queue (MCP)                      │
+│           Claimable tasks · Priority sorting             │
+└─────────────────────────────────────────────────────────┘
+                            ▲
+                            │
+┌─────────────────────────────────────────────────────────┐
+│              Agents (Claude Code, Codex, etc)            │
+│      Claim tasks · Do work · Record evidence · Handoff   │
+└─────────────────────────────────────────────────────────┘
+                            ▲
+                            │
+┌─────────────────────────────────────────────────────────┐
+│                  Evidence Chain (Local)                  │
+│        Git diffs · Test results · CI status · Proofs     │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### The full path (audit / compliance)
+## Key concepts
 
-1. Create a task with `quick` or `task:new` (Full mode).
-2. Fill in `task.md` (scope, deliverables, risks), `context.md`, and `verification.md`.
-3. For agent handoff, prefer MCP resource `workflow://tasks/T-001` or the `workflow-resume` prompt.
-4. Legacy fallback: use the generated prompt file from Full mode, or use `run:execute` with a local adapter.
-5. Record evidence: `done T-001 "summary" --status passed --proof-path src/auth.js --check "tests pass" --complete --root .`
-6. Add `--strict` for fingerprint-backed freshness, or set `strictVerification: true` in `project.json`.
-7. Review `checkpoint.md` and the verification gate.
+### Tasks
 
-## Undo the latest workflow action
+The unit of work. Has a goal, scope, verification criteria, and evidence.
 
-Use `undo` when the most recent workflow-layer step created the wrong task or evidence record:
+### Evidence
 
-```bash
-npx agent-workflow undo --root .
-```
+What happened during the work. Git diffs, test results, manual proofs, CI status. Stored locally, append-only.
 
-`undo` currently reverses the latest `quick`, `run:add`, `done`, or explicit `checkpoint` operation. The log is capped to the latest 20 entries, and rollback stays inside `.agent-workflow/` so source files and git history are left alone.
+### Trust score
 
-## Lite vs Full
+Quality signal derived from evidence coverage, verification status, human review, and CI results. Helps humans decide what to approve.
 
-`quick` now supports two task creation modes:
+### Checkpoint
 
-- `npx agent-workflow quick "My task" --lite --root .` creates only `task.json` and `task.md`, then lets legacy `prompt:compile`, `run:prepare`, `run:add`, `done`, and `checkpoint` materialize the rest on demand.
-- `npx agent-workflow quick "My task" --full --agent codex --root .` preserves the current full bundle: task docs, prompt, run request, launch pack, and checkpoint.
-- The current default is still Full Mode so existing workflows keep working unchanged.
+Snapshot of task state for resuming work. Includes context, progress, and next steps.
 
-## Verification model
+### Handoff
 
-Two ideas sit at the center of the project:
+Structured way for agents to pass work to each other. Includes summary, remaining work, and full context.
 
-- **Verification gate**: compare repo-relative task scope against the current repository snapshot (Git-backed when available, filesystem fallback otherwise), report what percentage of scoped files have verified evidence, and still explain which files need attention.
-- **Verification records**: default freshness is timestamp-based, which keeps the common path simpler and faster. When you opt into `--strict` or set `strictVerification: true`, passed run evidence and refreshed manual verification also carry content fingerprints so freshness survives misleading `mtime` churn, branch switches, and agent handoff noise. `draft` evidence still needs checks or artifacts; `verified` evidence includes repo-relative paths plus checks or artifacts.
+### Orchestrator
 
-Automatic test inference now goes through a small evidence collector registry. Built-in collectors detect and run `npm test`, `python -m pytest --tb=no -q`, `cargo test --no-fail-fast`, and `go test ./...`, with npm remaining first for Node workspaces so existing behavior stays stable.
+Daemon that watches the task queue and spawns agent sessions automatically. Enables overnight autonomous work.
 
-If a repository needs a project-specific runner, add a custom collector to `.agent-workflow/project.json`:
+## Use cases
 
-```json
-{
-  "evidenceCollectors": [
-    {
-      "id": "repo-check",
-      "command": "node",
-      "args": ["scripts/check.js"],
-      "detectFile": "scripts/check.js"
-    }
-  ]
-}
-```
+### Today: Software projects
 
-Custom collectors use direct `command` plus `args` execution rather than shell strings, and `detectFile` must stay repo-relative so the config remains portable.
+- Multi-task feature development
+- Refactoring with verification
+- Bug fixes with evidence
+- Overnight agent work
 
-## Upgrading from pre-Phase-3
+### Tomorrow: Beyond code
 
-No manual migration step is required for existing `.agent-workflow/` data.
+The workbench model works for any project:
 
-- Older run records that still use legacy evidence aliases are normalized on read, so CLI, MCP, and dashboard task detail can keep loading them.
-- Older `verification.md` managed anchor blocks that still use the `manualProofAnchors` payload are still parsed, and they stay preserved when strict verification is off.
-- Older `checkpoint.md` and `checkpoint.json` files can stay on disk as-is; if you regenerate a checkpoint, the new file will use the current `action-required` / `incomplete` / `unconfigured` wording.
-- `validate --root .` accepts both the old and new verification check vocabulary, so a repo upgrade does not require hand-editing historical run JSON first.
-- If you want managed proof-anchor refresh again, enable strict verification in `.agent-workflow/project.json` with `"strictVerification": true`.
+- **Content creation**: Tasks = articles, agents = writers/editors
+- **Data analysis**: Tasks = analyses, agents = data scientists
+- **Business operations**: Tasks = processes, agents = operators
 
-## Why this exists
+The architecture is project-agnostic. Code is just the first domain.
 
-Coding agents are powerful but forgetful. They lose context between sessions, leave no audit trail, and can't resume interrupted work. Agent Workflow Studio is the missing layer:
+## Status: Experimental
 
-- **Task memory** — structured context that survives session boundaries
-- **Evidence trail** — what changed, what was verified, what's still open
-- **Resumable checkpoints** — pick up where you (or the agent) left off
-- **Shared control plane** — one dashboard across Codex, Claude Code, and Cursor
+This is a new product category. We're figuring it out with early users.
 
-## Commands
+**What works:**
+- Task management and tracking
+- Evidence collection and display
+- Multi-agent handoff
+- Human review and approval
+- Autonomous orchestration
+- CI integration
 
-- **Onboarding:** `init`, `scan`, `memory:bootstrap`, `memory:validate`
-- **Tasking:** `recipe:list`, `quick`, `task:new`, `task:list`
-- **Adapters:** `adapter:list`, `adapter:create`
-- **Execution:** `orchestrate`, `run:prepare`, `run:execute`, `run:add`, `done`, `checkpoint`, `undo`, `mcp:install`, `mcp:uninstall`, `mcp:serve`
-- **Inspection:** `dashboard`, `validate`
-- **Deprecated:** `prompt:compile`, `skills:generate`
+**What's experimental:**
+- Agent reliability in autonomous mode
+- Trust score calibration
+- Orchestrator stability over long runs
+- Non-coding use cases
 
-## Adapter layer
+**We need your feedback.** Try it, break it, tell us what works and what doesn't.
 
-Adapters bridge the workflow layer and real agent CLIs.
+## Documentation
 
-- Built-in Codex and Claude Code adapters ship as `manual` by default
-- Switch to `commandMode: exec` when you are ready to automate local runs
-- `adapter:create` scaffolds a custom adapter for any CLI agent
-- `stdinMode: promptFile` lets non-interactive CLIs receive prompts over stdin
-- Execution captures stdout/stderr, timeout, interruption, and cancellation metadata
-- Shared preflight checks verify runner availability, env vars, and stdio compatibility before spawn
+- [Product Vision](docs/PRODUCT_VISION.md) - Why this exists
+- [MCP Setup](docs/MCP_SETUP.md) - Connect your agents
+- [Orchestrator Guide](docs/ORCHESTRATOR.md) - Run agents autonomously
+- [CI Integration](docs/CI_INTEGRATION.md) - Connect GitHub Actions
+- [Agent Guide](AGENT_GUIDE.md) - How agents use the workbench
+- [Roadmap](docs/ROADMAP.md) - What's next
 
-Both Codex and Claude Code have been dogfooded on this repository with real local runs. See [docs/ADAPTERS.md](docs/ADAPTERS.md) for the full adapter contract and [docs/RUN_EXECUTE_DESIGN.md](docs/RUN_EXECUTE_DESIGN.md) for the executor design.
+## Requirements
 
-## Recipes and schema validation
-
-- Recipes (`audit`, `feature`, `review`) are indexed in `.agent-workflow/recipes/index.json` and attached to tasks via `recipeId`
-- `validate` checks project config, adapters, tasks, and run records for missing or malformed fields
-- The dashboard surfaces schema issues, memory freshness, and evidence coverage in one view
-
-See [docs/RECIPES_AND_SCHEMA.md](docs/RECIPES_AND_SCHEMA.md).
-
-## Relocatable by design
-
-No absolute paths are written into workflow files. The CLI and dashboard resolve the target repository from `--root` or the current working directory. See [docs/RELOCATABLE_DESIGN.md](docs/RELOCATABLE_DESIGN.md).
-
-## Layout
-
-```text
-agent-workflow-studio/
-  src/           CLI + core modules
-  dashboard/     legacy static dashboard fallback
-  dashboard-next/ Vite + Preact shell source
-  docs/          design docs and guides
-  scripts/       smoke test + unit test runner
-  test/          unit tests
-```
-
-Initialized target repository:
-
-```text
-.agent-workflow/
-  project.json
-  project-profile.json / .md
-  memory/        product, architecture, domain-rules, runbook
-  recipes/       audit, feature, review + index.json
-  adapters/      codex.json, claude-code.json, custom *.json
-  tasks/         T-001/, T-002/, ...
-  handoffs/      memory-bootstrap.md
-  decisions/
-```
-
-## Contributor workflow
-
-From this project root:
-
-```bash
-npm install
-npm run build
-npm run init -- --root ../some-repo
-npm run scan -- --root ../some-repo
-npm run memory:bootstrap -- --root ../some-repo
-npm run quick -- "Build the scanner" --task-id T-001 --priority P1 --agent codex --root ../some-repo
-npm run dashboard -- --root ../some-repo --port 4173
-npm run dashboard:dev
-npm run dashboard:build
-npm run dashboard -- --root ../some-repo --port 4173 --legacy-dashboard
-npm run mcp:serve -- --root ../some-repo
-npx agent-workflow orchestrate --root ../some-repo --agent codex --stop-when-empty
-npm run run:execute -- T-001 --agent codex --root ../some-repo
-npx agent-workflow done T-001 "Scanner pass completed." --root ../some-repo
-npx agent-workflow done T-001 "Docs-only follow-up." --proof-path README.md --status draft --root ../some-repo
-npm run validate -- --root ../some-repo
-npm test
-```
-
-`npm run build` now emits `dist/` from `src/` and compiles `src/lib/fs-utils.ts` for the CommonJS bridge at `src/lib/fs-utils.js`. Re-run it after editing `.ts` files, or let `npm test` rebuild automatically via `pretest`.
-
-## Learn more
-
-- [Getting Started](docs/GETTING_STARTED.md) - the full npm-first onboarding flow
-- [Documentation Index](docs/README.md) - the map for all design and reference docs
-- [MCP Setup](docs/MCP_SETUP.md) - Codex, Claude Code, and Cursor auto-install plus manual configuration examples
-- [Release Notes 0.1.2](docs/RELEASE_NOTES_0.1.2.md) - the published release summary for the current npm version
-- [Architecture](docs/ARCHITECTURE.md) - how the scaffold, dashboard, adapters, and evidence model fit together
-- [Verification Design](docs/VERIFICATION_FRESHNESS_DESIGN.md) - verification gates, verification records, and freshness rules
-- [Executor Design](docs/RUN_EXECUTE_DESIGN.md) - local executor planning, preflight, and evidence capture
-- [Orchestrator](docs/ORCHESTRATOR.md) - daemon setup for queue-driven Claude Code, Codex, and custom agent sessions
-- [Adapters](docs/ADAPTERS.md) - built-in adapters and custom adapter scaffolding
-- [Changelog](CHANGELOG.md) - released changes plus current unreleased docs polish
-- [Roadmap](docs/ROADMAP.md) - the likely next build steps
-- [Publishing](docs/PUBLISHING.md) - npm release checklist
-
-## Contributing
-
-Read [CONTRIBUTING.md](CONTRIBUTING.md). Keep changes local-first, relocatable, and schema-aware. Run `npm run lint`, `npm run format:check`, `npm test`, and `npm run smoke` before opening a PR; `npm test` now rebuilds `dist/` first so repo-local TypeScript bridges stay current.
-
-GitHub Actions now also enforces the Node 18/20/22 matrix, uploads the Node 22 coverage run to Codecov, and uses tag-only publish automation for npm releases.
-
-## Community
-
-[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) defines how we collaborate. Issues and PRs should stay focused on strong prompts, evidence quality, checkpoints, and agent handoff durability.
-
-## Project history
-
-Built largely by Codex in a single session (default 258k context, repeatedly compacted and spanning more than 50 commits over 7 days), with Claude Code providing evaluation, suggestions, and code review. The project itself is managed by agent-workflow-studio — 24 tasks across 4 completed phases, each reviewed against a structured checklist. This is both the tool and the proof that structured agent workflows work.
+- Node.js 18+
+- Git repository
+- MCP-compatible agent (Claude Code, Codex) or CLI usage
 
 ## License
 
-Released under the MIT License. See [LICENSE](LICENSE).
+MIT
+
+## Contributing
+
+This is experimental. We're learning what works. If you have ideas or feedback, open an issue or PR.
+
+---
+
+**Agent Workflow Studio** — Where humans and agents build together.
