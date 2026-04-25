@@ -122,6 +122,28 @@ export function describeTaskReviewStatus(task) {
   return null;
 }
 
+export function describeTaskClaimStatus(task) {
+  const claimStatus = String((task && task.claimStatus) || "").trim().toLowerCase();
+  const claimedBy = String((task && task.claimedBy) || "").trim();
+  const claimOwner = String((task && task.claimOwner) || "").trim();
+
+  if (task && (task.claimExpired === true || claimStatus === "expired" || hasExpiredClaim(task))) {
+    return {
+      label: "claim expired",
+      warn: true,
+    };
+  }
+
+  if (claimedBy || claimStatus === "claimed") {
+    return {
+      label: `claimed by ${claimedBy || claimOwner || "agent"}`,
+      warn: false,
+    };
+  }
+
+  return null;
+}
+
 export function describeVerificationFreshnessLabel(currentVerifiedEvidenceCount, recordedVerifiedEvidenceCount) {
   if (currentVerifiedEvidenceCount > 0 && recordedVerifiedEvidenceCount > 0) {
     return "mixed";
@@ -227,4 +249,15 @@ function sanitizeVerificationSummary(summary) {
   }
 
   return /(strong proof|weak proof|planned check|compatibility-only|anchor-backed)/i.test(normalized) ? "" : normalized;
+}
+
+function hasExpiredClaim(task) {
+  const claimedBy = String((task && (task.claimedBy || task.claimOwner)) || "").trim();
+  const claimExpiry = String((task && task.claimExpiry) || "").trim();
+  if (!claimedBy || !claimExpiry) {
+    return false;
+  }
+
+  const expiryMs = Date.parse(claimExpiry);
+  return Number.isFinite(expiryMs) && expiryMs < Date.now();
 }

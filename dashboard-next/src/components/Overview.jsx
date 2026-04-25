@@ -48,6 +48,31 @@ function LoadingListItem() {
   );
 }
 
+function countTaskClaimStatuses(tasks) {
+  return (Array.isArray(tasks) ? tasks : []).reduce(
+    (counts, task) => {
+      const status = String((task && task.claimStatus) || "").trim().toLowerCase();
+      if (task && (task.claimExpired === true || status === "expired")) {
+        counts.expired += 1;
+        return counts;
+      }
+
+      if (status === "claimed" || (task && task.claimedBy)) {
+        counts.claimed += 1;
+        return counts;
+      }
+
+      counts.unclaimed += 1;
+      return counts;
+    },
+    {
+      claimed: 0,
+      expired: 0,
+      unclaimed: 0,
+    },
+  );
+}
+
 function buildTrustSubtitle(trustSummary) {
   if (!trustSummary) {
     return "Trust summary is loading.";
@@ -237,6 +262,7 @@ export default function Overview({ hidden }) {
   );
   const humanReviews = normalizeHumanReviewStats(stats.humanReviews || {});
   const humanReviewCount = countTasksWithHumanReview(humanReviews);
+  const claimStats = countTaskClaimStatuses(overview.tasks || []);
 
   return (
     <>
@@ -275,6 +301,11 @@ export default function Overview({ hidden }) {
           detail={`${humanReviews.approved} approved, ${humanReviews.rejected} rejected, ${humanReviews.pending} done task(s) waiting.`}
           title="Human Review"
           value={humanReviewCount}
+        />
+        <StatCard
+          detail={`${claimStats.unclaimed} unclaimed, ${claimStats.expired} expired claim(s).`}
+          title="Claims"
+          value={claimStats.claimed}
         />
         <TrustScore
           className="stat-card"

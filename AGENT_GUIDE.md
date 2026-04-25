@@ -16,9 +16,9 @@ workflow_quick({ title: "Add auth", mode: "lite" })
 workflow_done({ taskId: "T-001", summary: "Implemented JWT login", complete: true })
 ```
 
-Other useful tools: `workflow_task_list`, `workflow_overview`, `workflow_update_task`, `workflow_append_note`, `workflow_record_activity`, `workflow_handoff`, `workflow_pickup`, `workflow_undo`, `workflow_validate`.
+Other useful tools: `workflow_task_list`, `workflow_overview`, `workflow_claim_task`, `workflow_release_task`, `workflow_update_task`, `workflow_append_note`, `workflow_record_activity`, `workflow_handoff`, `workflow_pickup`, `workflow_undo`, `workflow_validate`.
 
-For cross-agent continuity, call `workflow_handoff` before ending a session, then the next agent calls `workflow_pickup` to claim the same task and load the latest checkpoint, handoff summary, and evidence chain.
+For autonomous task selection, read `workflow://queue`, then call `workflow_claim_task` before starting work. For cross-agent continuity, call `workflow_handoff` before ending a session, then the next agent calls `workflow_pickup` to claim the same task and load the latest checkpoint, handoff summary, and evidence chain.
 
 Install MCP once per client:
 
@@ -81,7 +81,7 @@ npx agent-workflow validate --root .
 
 ## Before starting any task
 
-1. Check existing tasks: `npx agent-workflow task:list --root .` (or `workflow_task_list` via MCP)
+1. Check existing tasks: `npx agent-workflow task:list --root .` (or `workflow_task_list` / `workflow://queue` via MCP)
 2. If no task exists for the current work, create one:
    - **Lite** (default for most work): `quick "title" --lite` — creates only `task.json` + `task.md`
    - **Full** (audit/compliance): `quick "title" --full` — creates all docs + prompt + checkpoint

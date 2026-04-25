@@ -1,6 +1,7 @@
 import { describeExecutorOutcome, formatTimestampLabel } from "../utils/execution.js";
 import {
   describeTaskVerificationSignal,
+  describeTaskClaimStatus,
   describeTaskReviewStatus,
   formatTaskVerificationFreshnessSummary,
   getTaskCardToneClass,
@@ -38,6 +39,7 @@ function KanbanCard({ activeTaskId, onSelectTask, task }) {
     task.latestExecutorSummary,
   );
   const reviewStatus = describeTaskReviewStatus(task);
+  const claimStatus = describeTaskClaimStatus(task);
   const freshnessSummary = formatTaskVerificationFreshnessSummary(task);
   const toneClass = getTaskCardToneClass(task);
   const activeClass = task.id === activeTaskId ? " active" : "";
@@ -80,6 +82,11 @@ function KanbanCard({ activeTaskId, onSelectTask, task }) {
         {reviewStatus ? (
           <span className={reviewStatus.warn ? "tag warn" : "tag"}>
             {reviewStatus.label}
+          </span>
+        ) : null}
+        {claimStatus ? (
+          <span className={claimStatus.warn ? "tag claim-badge warn" : "tag claim-badge"}>
+            {claimStatus.label}
           </span>
         ) : null}
       </span>

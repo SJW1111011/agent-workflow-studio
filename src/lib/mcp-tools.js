@@ -8,12 +8,15 @@ const { formatQuickTaskSummary, quickCreateTask } = require("./quick-task");
 const { validateWorkspace } = require("./schema-validator");
 const {
   appendTaskNote,
+  claimTask,
+  DEFAULT_CLAIM_DURATION_SECONDS,
   listRuns,
   listTasks,
   pickupTask,
   recordActivity,
   recordHandoff,
   recordRun,
+  releaseTask,
   updateTaskMeta,
 } = require("./task-service");
 const { formatUndoSummary, undoLastOperation } = require("./undo");
@@ -237,6 +240,51 @@ const TOOL_DEFINITIONS = Object.freeze([
       required: ["taskId", "agent"],
     },
   },
+  {
+    name: "workflow_claim_task",
+    description:
+      "Claim an available task for an agent with an expiry-backed lock. Expired claims are treated as available; active claims by another agent return task_already_claimed.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        taskId: {
+          type: "string",
+          description: "Task id such as T-001.",
+        },
+        agent: {
+          type: "string",
+          description: "Agent or adapter id claiming the task.",
+        },
+        claimDuration: {
+          type: "integer",
+          minimum: 1,
+          description: `Claim duration in seconds. Defaults to ${DEFAULT_CLAIM_DURATION_SECONDS}.`,
+        },
+      },
+      required: ["taskId", "agent"],
+    },
+  },
+  {
+    name: "workflow_release_task",
+    description:
+      "Release a task claim held by an agent. Releasing an unclaimed or expired task succeeds; active claims held by another agent return task_claimed_by_other_agent.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        taskId: {
+          type: "string",
+          description: "Task id such as T-001.",
+        },
+        agent: {
+          type: "string",
+          description: "Agent or adapter id releasing the task.",
+        },
+      },
+      required: ["taskId", "agent"],
+    },
+  },
 ]);
 
 function createMcpToolRuntime(workspaceRoot) {
@@ -279,6 +327,10 @@ function createMcpToolRuntime(workspaceRoot) {
           return runHandoffTool(workspaceRoot, args);
         case "workflow_pickup":
           return runPickupTool(workspaceRoot, args);
+        case "workflow_claim_task":
+          return runClaimTaskTool(workspaceRoot, args);
+        case "workflow_release_task":
+          return runReleaseTaskTool(workspaceRoot, args);
         default:
           throw badRequest(`Unknown MCP tool: ${toolName}`, "mcp_tool_not_found");
       }
@@ -490,6 +542,9 @@ function runTaskListTool(workspaceRoot, args) {
       priority: task.priority,
       status: task.status,
       claimedBy: task.claimedBy || null,
+      claimExpiry: task.claimExpiry || null,
+      claimStatus: task.claimStatus || "unclaimed",
+      claimExpired: task.claimExpired === true,
       recipeId: task.recipeId || "feature",
       runCount: task.runCount,
       latestRunStatus: latestRun ? latestRun.status : "none",
@@ -641,6 +696,7 @@ function runHandoffTool(workspaceRoot, args) {
     handoffPath: `.agent-workflow/tasks/${taskId}/runs/${handoffRecord.id}.json`,
     released: true,
     claimedBy: null,
+    claimExpiry: null,
     checkpoint,
     checkpointPath: `.agent-workflow/tasks/${taskId}/checkpoint.md`,
   };
@@ -661,8 +717,52 @@ function runPickupTool(workspaceRoot, args) {
     agent,
     ...pickup,
     claimedBy: pickup.task ? pickup.task.claimedBy || null : agent,
+    claimExpiry: pickup.task ? pickup.task.claimExpiry || null : null,
     checkpoint,
     checkpointPath: `.agent-workflow/tasks/${taskId}/checkpoint.md`,
+  };
+}
+
+function runClaimTaskTool(workspaceRoot, args) {
+  assertKnownKeys(args, ["agent", "claimDuration", "taskId"], "workflow_claim_task");
+
+  const taskId = requireNonEmptyString(args, "taskId", "workflow_claim_task");
+  const agent = normalizeAdapterId(requireNonEmptyString(args, "agent", "workflow_claim_task"));
+  const task = claimTask(workspaceRoot, taskId, agent, {
+    claimDuration: optionalPositiveInteger(args.claimDuration, "claimDuration"),
+  });
+
+  return {
+    ok: true,
+    tool: "workflow_claim_task",
+    workspaceRoot,
+    taskId,
+    agent,
+    claimedBy: task.claimedBy || null,
+    claimExpiry: task.claimExpiry || null,
+    claimStatus: task.claimStatus || "unclaimed",
+    task,
+  };
+}
+
+function runReleaseTaskTool(workspaceRoot, args) {
+  assertKnownKeys(args, ["agent", "taskId"], "workflow_release_task");
+
+  const taskId = requireNonEmptyString(args, "taskId", "workflow_release_task");
+  const agent = normalizeAdapterId(requireNonEmptyString(args, "agent", "workflow_release_task"));
+  const result = releaseTask(workspaceRoot, taskId, agent);
+
+  return {
+    ok: true,
+    tool: "workflow_release_task",
+    workspaceRoot,
+    taskId,
+    agent,
+    released: result.released === true,
+    claimedBy: result.task.claimedBy || null,
+    claimExpiry: result.task.claimExpiry || null,
+    claimStatus: result.task.claimStatus || "unclaimed",
+    task: result.task,
   };
 }
 
@@ -936,6 +1036,18 @@ function optionalBoolean(value, key) {
 
   if (typeof value !== "boolean") {
     throw badRequest(`"${key}" must be a boolean.`, "mcp_argument_invalid");
+  }
+
+  return value;
+}
+
+function optionalPositiveInteger(value, key) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!Number.isInteger(value) || value <= 0) {
+    throw badRequest(`"${key}" must be a positive integer.`, "mcp_argument_invalid");
   }
 
   return value;

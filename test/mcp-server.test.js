@@ -36,7 +36,7 @@ const tests = [
         const listedResources = await server.request("resources/list", {});
         assert.deepEqual(
           listedResources.resources.map((resource) => resource.uri).sort(),
-          ["workflow://overview", "workflow://tasks"]
+          ["workflow://overview", "workflow://queue", "workflow://tasks"]
         );
 
         const listedResourceTemplates = await server.request("resources/templates/list", {});
@@ -56,12 +56,14 @@ const tests = [
         assert.deepEqual(toolNames, [
           "workflow_append_note",
           "workflow_checkpoint",
+          "workflow_claim_task",
           "workflow_done",
           "workflow_handoff",
           "workflow_overview",
           "workflow_pickup",
           "workflow_quick",
           "workflow_record_activity",
+          "workflow_release_task",
           "workflow_run_add",
           "workflow_task_list",
           "workflow_undo",

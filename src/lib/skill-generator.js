@@ -32,6 +32,8 @@ Both systems work together. Use workflow_* tools for the project-level picture, 
 - Create project task: \`workflow_quick({ title: "...", mode: "lite" })\`
 - Finish project task: \`workflow_done({ taskId: "T-001", summary: "...", complete: true })\`
 - List project tasks: \`workflow_task_list({})\`
+- Find claimable work: read \`workflow://queue\`
+- Claim/release work: \`workflow_claim_task({ taskId: "T-001", agent: "codex" })\`, \`workflow_release_task({ taskId: "T-001", agent: "codex" })\`
 - Project health: \`workflow_overview({})\`
 - Resume context: use \`workflow-resume\` prompt with taskId
 

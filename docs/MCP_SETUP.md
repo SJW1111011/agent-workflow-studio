@@ -10,6 +10,7 @@ Resources:
 
 - `workflow://overview`
 - `workflow://tasks`
+- `workflow://queue`
 - `workflow://tasks/{taskId}`
 - `workflow://memory/{docName}` (`product`, `architecture`, `domain-rules`, `runbook`)
 
@@ -34,6 +35,8 @@ Tools:
 - `workflow_overview`
 - `workflow_handoff`
 - `workflow_pickup`
+- `workflow_claim_task`
+- `workflow_release_task`
 
 Resources and prompts are read-only. They let agents pull full workflow context, task state, and memory docs without relying on `prompt:compile` output files or ad hoc file reads.
 
@@ -53,10 +56,15 @@ Once MCP is configured, you don't need to use the terminal. Talk to your agent n
 
 **Checking status:**
 - "list my workflow tasks"
+- "show me the queue of unclaimed tasks"
 - "show me the workspace overview"
 - "validate the workflow"
 - "resume T-001 with full workflow context"
 - "show me what still needs verification for T-001"
+
+**Claiming work:**
+- "claim T-001 for codex"
+- "release T-001 for codex"
 
 **Mid-execution updates:**
 - "update T-001 priority to P0"
@@ -65,7 +73,7 @@ Once MCP is configured, you don't need to use the terminal. Talk to your agent n
 **Undoing mistakes:**
 - "undo the last workflow operation"
 
-The MCP tools map directly to CLI commands — `workflow_quick` = `quick`, `workflow_done` = `done`, etc. If MCP is unavailable, fall back to the CLI.
+Most MCP tools map directly to CLI commands: `workflow_quick` = `quick`, `workflow_done` = `done`, etc. Queue claim and release are MCP-only. If MCP is unavailable, fall back to the CLI for task listing and status updates.
 
 ## Quick install
 

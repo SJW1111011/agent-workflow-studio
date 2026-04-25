@@ -1,6 +1,6 @@
 const path = require("path");
 const { fileExists, readText, writeFile, writeJson } = require("./fs-utils");
-const { listHandoffRecords, listRuns } = require("./task-service");
+const { listHandoffRecords, listRuns, normalizeTaskClaimForRead } = require("./task-service");
 const { ensureTaskArtifacts } = require("./task-documents");
 const { appendUndoEntry, buildUndoFileList, captureTaskRestoreSnapshots } = require("./undo-log");
 const { buildTaskVerificationGate } = require("./verification-gates");
@@ -14,11 +14,12 @@ function buildCheckpoint(workspaceRoot, taskId, options = {}) {
         includeRunsDirectory: false,
       })
     : null;
-  const { files, taskMeta: task } = ensureTaskArtifacts(workspaceRoot, taskId, {
+  const { files, taskMeta } = ensureTaskArtifacts(workspaceRoot, taskId, {
     task: true,
     context: true,
     verification: true,
   });
+  const task = normalizeTaskClaimForRead(taskMeta);
   const runs = listRuns(workspaceRoot, taskId);
   const handoffRecords = listHandoffRecords(workspaceRoot, taskId);
   const latestRun = runs[runs.length - 1] || null;
@@ -61,6 +62,9 @@ function buildCheckpoint(workspaceRoot, taskId, options = {}) {
     latestRunStatus: latestRun ? latestRun.status : "none",
     runCount: runs.length,
     claimedBy: task.claimedBy || null,
+    claimExpiry: task.claimExpiry || null,
+    claimStatus: task.claimStatus || "unclaimed",
+    claimExpired: task.claimExpired === true,
     latestHandoff: latestHandoff
       ? {
           id: latestHandoff.id,
@@ -187,6 +191,7 @@ ${completedLines}
 - Priority: ${task.priority}
 - Status: ${task.status}
 - Claimed by: ${checkpoint.claimedBy || "unclaimed"}
+- Claim status: ${checkpoint.claimStatus || "unclaimed"}
 - Latest run status: ${checkpoint.latestRunStatus}
 - Total runs: ${checkpoint.runCount}
 

@@ -9,6 +9,7 @@ import {
 } from "../utils/execution.js";
 import {
   describeTaskVerificationSignal,
+  describeTaskClaimStatus,
   describeTaskReviewStatus,
   filterTasksByExecutorOutcome,
   formatTaskVerificationFreshnessSummary,
@@ -45,6 +46,7 @@ function TaskListGrid({ activeTaskId, onSelectTask, tasks }) {
           task.latestExecutorSummary,
         );
         const reviewStatus = describeTaskReviewStatus(task);
+        const claimStatus = describeTaskClaimStatus(task);
         const freshnessSummary = formatTaskVerificationFreshnessSummary(task);
         const toneClass = getTaskCardToneClass(task, task.latestExecutorOutcome);
         const activeClass = task.id === activeTaskId ? " active" : "";
@@ -86,6 +88,11 @@ function TaskListGrid({ activeTaskId, onSelectTask, tasks }) {
               {reviewStatus ? (
                 <span className={reviewStatus.warn ? "tag warn" : "tag"}>
                   {reviewStatus.label}
+                </span>
+              ) : null}
+              {claimStatus ? (
+                <span className={claimStatus.warn ? "tag claim-badge warn" : "tag claim-badge"}>
+                  {claimStatus.label}
                 </span>
               ) : null}
             </span>

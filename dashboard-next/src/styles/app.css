@@ -735,6 +735,18 @@ details.collapsible-panel {
   color: var(--risk);
 }
 
+.claim-badge {
+  border: 1px solid rgba(15, 108, 92, 0.22);
+  background: rgba(15, 108, 92, 0.12);
+  color: var(--accent-2);
+}
+
+.claim-badge.warn {
+  border-color: rgba(199, 130, 54, 0.28);
+  background: rgba(199, 130, 54, 0.16);
+  color: #9a5f1f;
+}
+
 .kanban-board {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

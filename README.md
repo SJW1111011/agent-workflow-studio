@@ -142,7 +142,7 @@ npx agent-workflow mcp:install --client codex --root .
 npx agent-workflow mcp:install --client claude --root .
 ```
 
-Then have the agent read `workflow://tasks/{taskId}` or use the `workflow-resume` prompt for a full handoff package.
+Then have the agent read `workflow://queue` to find available work, claim it with `workflow_claim_task`, or read `workflow://tasks/{taskId}` / use the `workflow-resume` prompt for a full handoff package.
 
 `skills:generate` is still available as a deprecated fallback when you specifically need repo-root `AGENTS.md` / `CLAUDE.md` files:
 
@@ -193,6 +193,7 @@ Resources:
 
 - `workflow://overview`
 - `workflow://tasks`
+- `workflow://queue`
 - `workflow://tasks/{taskId}`
 - `workflow://memory/{docName}`
 
@@ -217,8 +218,10 @@ Tools:
 - `workflow_overview`
 - `workflow_handoff`
 - `workflow_pickup`
+- `workflow_claim_task`
+- `workflow_release_task`
 
-That lets an MCP-connected agent pull full task, evidence, and memory context without writing compiled prompt files first, then use the existing `workflow_*` tools only for state-changing operations such as status updates, notes, runs, checkpoints, handoffs, pickup claims, and undo. For the auto-install flow, Codex TOML examples, and Claude Code or Cursor specifics, see [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
+That lets an MCP-connected agent pull full task, queue, evidence, and memory context without writing compiled prompt files first, then use the existing `workflow_*` tools only for state-changing operations such as status updates, notes, runs, checkpoints, handoffs, queue claims, releases, and undo. For the auto-install flow, Codex TOML examples, and Claude Code or Cursor specifics, see [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
 
 ## Architecture at a glance
 

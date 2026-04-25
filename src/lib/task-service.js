@@ -36,6 +36,7 @@ const TASK_STATUSES = new Set(["todo", "in_progress", "blocked", "done"]);
 const TASK_PRIORITIES = new Set(["P0", "P1", "P2", "P3"]);
 const TASK_SCAFFOLD_MODES = new Set(["full", "lite"]);
 const REVIEW_STATUSES = new Set(["approved", "rejected"]);
+const DEFAULT_CLAIM_DURATION_SECONDS = 3600;
 const RUN_RECORD_FILE_PREFIX = "run-";
 const ACTIVITY_RECORD_FILE_PREFIX = "activity-";
 const HANDOFF_RECORD_FILE_PREFIX = "handoff-";
@@ -77,6 +78,7 @@ function createTask(workspaceRoot, taskId, title, options = {}) {
         requiredDocs: [],
         verificationCommands: [],
         claimedBy: null,
+        claimExpiry: null,
       };
 
   if (!exists) {
@@ -107,12 +109,30 @@ function listTasks(workspaceRoot) {
       const meta = readJson(path.join(taskRoot(workspaceRoot, taskId), "task.json"), {});
       const runCount = listRuns(workspaceRoot, taskId).length;
 
-      return {
+      return normalizeTaskClaimForRead({
         ...meta,
         runCount,
-      };
+      });
     })
     .sort((left, right) => left.id.localeCompare(right.id));
+}
+
+function listQueueTasks(workspaceRoot) {
+  return listTasks(workspaceRoot)
+    .filter((task) => {
+      const status = String((task && task.status) || "").trim();
+      return (status === "todo" || status === "in_progress") && task.claimStatus !== "claimed";
+    })
+    .sort(compareQueueTasks)
+    .map((task) => ({
+      id: task.id,
+      title: task.title || "",
+      priority: task.priority || "P2",
+      status: task.status || "todo",
+      claimedBy: null,
+      createdAt: task.createdAt || null,
+      trustScore: normalizeQueueTrustScore(task.trustScore),
+    }));
 }
 
 function listRuns(workspaceRoot, taskId) {
@@ -133,7 +153,7 @@ function getTaskDetail(workspaceRoot, taskId) {
     return null;
   }
 
-  const meta = readJson(files.meta, {});
+  const meta = normalizeTaskClaimForRead(readJson(files.meta, {}));
   const recipe = getRecipe(workspaceRoot, meta.recipeId);
   const runs = listRuns(workspaceRoot, taskId);
   const activityRecords = listActivityRecords(workspaceRoot, taskId);
@@ -215,6 +235,80 @@ function updateTaskMeta(workspaceRoot, taskId, changes = {}) {
   syncManagedTaskDocs(files, nextMeta, recipe);
 
   return nextMeta;
+}
+
+function claimTask(workspaceRoot, taskId, agent, options = {}) {
+  const normalizedAgent = normalizeAgentName(agent, "claim_agent_required");
+  const files = taskFiles(workspaceRoot, taskId);
+  if (!fileExists(files.meta)) {
+    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
+  }
+
+  const meta = readJson(files.meta, {});
+  const claim = getTaskClaimState(meta);
+  if (claim.status === "claimed" && claim.claimedBy !== normalizedAgent) {
+    throw conflict(
+      `Task ${taskId} is already claimed by ${claim.claimedBy}.`,
+      "task_already_claimed"
+    );
+  }
+
+  const updatedAt = new Date().toISOString();
+  const nextMeta = {
+    ...meta,
+    claimedBy: normalizedAgent,
+    claimExpiry: buildClaimExpiry(options.claimDuration, updatedAt),
+    updatedAt,
+  };
+
+  if (options.advanceStatus !== false && nextMeta.status === "todo") {
+    nextMeta.status = "in_progress";
+  }
+
+  writeJson(files.meta, nextMeta);
+
+  if (nextMeta.status !== meta.status) {
+    syncManagedTaskDocs(files, nextMeta, getRecipe(workspaceRoot, nextMeta.recipeId));
+  }
+
+  return normalizeTaskClaimForRead(nextMeta);
+}
+
+function releaseTask(workspaceRoot, taskId, agent) {
+  const normalizedAgent = normalizeAgentName(agent, "release_agent_required");
+  const files = taskFiles(workspaceRoot, taskId);
+  if (!fileExists(files.meta)) {
+    throw notFound(`Task ${taskId} does not exist yet.`, "task_not_found");
+  }
+
+  const meta = readJson(files.meta, {});
+  const claim = getTaskClaimState(meta);
+  if (claim.status === "unclaimed") {
+    return {
+      released: false,
+      task: normalizeTaskClaimForRead(meta),
+    };
+  }
+
+  if (claim.status === "claimed" && claim.claimedBy !== normalizedAgent) {
+    throw conflict(
+      `Task ${taskId} is claimed by ${claim.claimedBy}.`,
+      "task_claimed_by_other_agent"
+    );
+  }
+
+  const nextMeta = {
+    ...meta,
+    claimedBy: null,
+    claimExpiry: null,
+    updatedAt: new Date().toISOString(),
+  };
+  writeJson(files.meta, nextMeta);
+
+  return {
+    released: true,
+    task: normalizeTaskClaimForRead(nextMeta),
+  };
 }
 
 function approveTask(workspaceRoot, taskId, options = {}) {
@@ -414,15 +508,9 @@ function pickupTask(workspaceRoot, taskId, agent) {
     checkpoint: true,
     runs: true,
   });
-  const meta = readJson(files.meta, {});
-  const updatedAt = new Date().toISOString();
-  const nextMeta = {
-    ...meta,
-    claimedBy: agent.trim(),
-    updatedAt,
-  };
-
-  writeJson(files.meta, nextMeta);
+  const nextMeta = claimTask(workspaceRoot, taskId, agent, {
+    advanceStatus: false,
+  });
 
   const detail = getTaskDetail(workspaceRoot, taskId);
   const handoffRecords = detail ? detail.handoffRecords : [];
@@ -452,17 +540,22 @@ function pickupTask(workspaceRoot, taskId, agent) {
 module.exports = {
   appendTaskNote,
   approveTask,
+  claimTask,
   createHandoffRecord,
   createRunRecord,
   createActivityRecord,
   createTask,
+  DEFAULT_CLAIM_DURATION_SECONDS,
   getRunLog,
   getTaskDetail,
+  getTaskClaimState,
   listHandoffRecords,
   listActivityRecords,
+  listQueueTasks,
   listRuns,
   listTasks,
   normalizeTaskScaffoldMode,
+  normalizeTaskClaimForRead,
   pickupTask,
   persistActivityRecord,
   persistHandoffRecord,
@@ -471,6 +564,7 @@ module.exports = {
   recordHandoff,
   recordRun,
   rejectTask,
+  releaseTask,
   updateTaskMeta,
 };
 
@@ -794,6 +888,7 @@ function persistHandoffRecord(workspaceRoot, taskId, handoffRecord) {
   writeJson(files.meta, {
     ...taskMeta,
     claimedBy: null,
+    claimExpiry: null,
     updatedAt,
   });
 
@@ -863,6 +958,113 @@ function normalizeTaskScaffoldMode(value) {
     throw badRequest(`Unsupported task scaffold mode: ${value}`, "unsupported_task_scaffold_mode");
   }
   return mode;
+}
+
+function normalizeTaskClaimForRead(meta, now = new Date()) {
+  const task = meta && typeof meta === "object" ? { ...meta } : {};
+  const claim = getTaskClaimState(task, now);
+
+  return {
+    ...task,
+    claimedBy: claim.status === "claimed" ? claim.claimedBy : null,
+    claimExpiry: claim.claimExpiry,
+    claimStatus: claim.status,
+    claimExpired: claim.status === "expired",
+    claimOwner: claim.claimedBy,
+  };
+}
+
+function getTaskClaimState(meta, now = new Date()) {
+  const claimedBy = isNonEmptyString(meta && meta.claimedBy) ? meta.claimedBy.trim() : null;
+  const claimExpiry = normalizeClaimExpiry(meta && meta.claimExpiry);
+
+  if (!claimedBy) {
+    return {
+      status: "unclaimed",
+      claimedBy: null,
+      claimExpiry,
+    };
+  }
+
+  if (claimExpiry && Date.parse(claimExpiry) < now.getTime()) {
+    return {
+      status: "expired",
+      claimedBy,
+      claimExpiry,
+    };
+  }
+
+  return {
+    status: "claimed",
+    claimedBy,
+    claimExpiry,
+  };
+}
+
+function normalizeAgentName(agent, errorCode) {
+  if (!isNonEmptyString(agent)) {
+    throw badRequest('Claim operations require a non-empty "agent" string.', errorCode);
+  }
+
+  return agent.trim();
+}
+
+function normalizeClaimExpiry(value) {
+  if (!isNonEmptyString(value)) {
+    return null;
+  }
+
+  const normalized = value.trim();
+  return Number.isFinite(Date.parse(normalized)) ? normalized : null;
+}
+
+function buildClaimExpiry(claimDuration, nowIso) {
+  const durationSeconds =
+    claimDuration === undefined ? DEFAULT_CLAIM_DURATION_SECONDS : claimDuration;
+
+  if (!Number.isInteger(durationSeconds) || durationSeconds <= 0) {
+    throw badRequest(
+      '"claimDuration" must be a positive integer number of seconds.',
+      "claim_duration_invalid"
+    );
+  }
+
+  return new Date(Date.parse(nowIso) + durationSeconds * 1000).toISOString();
+}
+
+function compareQueueTasks(left, right) {
+  const priorityResult = queuePriorityRank(left.priority) - queuePriorityRank(right.priority);
+  if (priorityResult !== 0) {
+    return priorityResult;
+  }
+
+  const createdAtResult = queueTimestampRank(left.createdAt) - queueTimestampRank(right.createdAt);
+  if (createdAtResult !== 0) {
+    return createdAtResult;
+  }
+
+  return String(left.id || "").localeCompare(String(right.id || ""));
+}
+
+function queuePriorityRank(value) {
+  const priority = String(value || "P2").trim().toUpperCase();
+  const priorities = ["P0", "P1", "P2", "P3"];
+  const index = priorities.indexOf(priority);
+  return index >= 0 ? index : priorities.indexOf("P2");
+}
+
+function queueTimestampRank(value) {
+  const timestamp = Date.parse(String(value || ""));
+  return Number.isFinite(timestamp) ? timestamp : Number.POSITIVE_INFINITY;
+}
+
+function normalizeQueueTrustScore(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric < 0) {
+    return 0;
+  }
+
+  return Math.round(numeric);
 }
 
 function assertTaskCanBeReviewed(meta, taskId) {

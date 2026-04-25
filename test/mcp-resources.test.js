@@ -55,12 +55,13 @@ const tests = [
       const templates = handlers.listResourceTemplates();
       const overview = JSON.parse(parseTextResource(handlers.readResource("workflow://overview")).text);
       const taskList = JSON.parse(parseTextResource(handlers.readResource("workflow://tasks")).text);
+      const queue = JSON.parse(parseTextResource(handlers.readResource("workflow://queue")).text);
       const taskDetail = JSON.parse(parseTextResource(handlers.readResource(`workflow://tasks/${taskId}`)).text);
       const productMemory = parseTextResource(handlers.readResource("workflow://memory/product"));
 
       assert.deepEqual(
         resources.map((resource) => resource.uri),
-        ["workflow://overview", "workflow://tasks"]
+        ["workflow://overview", "workflow://tasks", "workflow://queue"]
       );
       assert.deepEqual(
         templates.map((template) => template.uriTemplate),
@@ -74,6 +75,11 @@ const tests = [
       assert.equal(taskList.tasks[0].id, taskId);
       assert.equal(taskList.tasks[0].coveragePercent, 50);
       assert.equal(taskList.tasks[0].verificationSignalStatus, "verified");
+      assert.deepEqual(
+        queue.tasks.map((task) => task.id),
+        [taskId]
+      );
+      assert.equal(queue.tasks[0].claimedBy, null);
 
       assert.equal(taskDetail.task.id, taskId);
       assert.match(taskDetail.taskText, /# T-001 - Test task/);

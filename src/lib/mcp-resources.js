@@ -2,7 +2,7 @@ const path = require("path");
 const { fileExists, readText } = require("./fs-utils");
 const { badRequest, notFound } = require("./http-errors");
 const { buildOverview } = require("./overview");
-const { getTaskDetail } = require("./task-service");
+const { getTaskDetail, listQueueTasks } = require("./task-service");
 const { memoryRoot } = require("./workspace");
 
 const RESOURCE_DEFINITIONS = Object.freeze([
@@ -16,6 +16,12 @@ const RESOURCE_DEFINITIONS = Object.freeze([
     uri: "workflow://tasks",
     name: "Workflow tasks",
     description: "Task list with status, coverage, and verification signal summaries.",
+    mimeType: "application/json",
+  },
+  {
+    uri: "workflow://queue",
+    name: "Workflow task queue",
+    description: "Claimable todo and in-progress tasks sorted by priority and age.",
     mimeType: "application/json",
   },
 ]);
@@ -68,6 +74,10 @@ function readWorkflowResource(workspaceRoot, uri) {
     return buildJsonResource(uri, buildTaskListPayload(workspaceRoot));
   }
 
+  if (parsed.host === "queue" && parsed.segments.length === 0) {
+    return buildJsonResource(uri, buildTaskQueuePayload(workspaceRoot));
+  }
+
   if (parsed.host === "tasks" && parsed.segments.length === 1) {
     return buildJsonResource(uri, buildTaskResourcePayload(workspaceRoot, parsed.segments[0]));
   }
@@ -90,6 +100,9 @@ function buildTaskListPayload(workspaceRoot) {
       priority: task.priority,
       status: task.status,
       claimedBy: task.claimedBy || null,
+      claimExpiry: task.claimExpiry || null,
+      claimStatus: task.claimStatus || "unclaimed",
+      claimExpired: task.claimExpired === true,
       recipeId: task.recipeId || "feature",
       reviewStatus: task.reviewStatus || null,
       reviewedAt: task.reviewedAt || null,
@@ -103,6 +116,14 @@ function buildTaskListPayload(workspaceRoot) {
       verificationSignalSummary: task.verificationSignalSummary,
       updatedAt: task.updatedAt || null,
     })),
+  };
+}
+
+function buildTaskQueuePayload(workspaceRoot) {
+  const tasks = listQueueTasks(workspaceRoot);
+
+  return {
+    tasks,
   };
 }
 
@@ -120,6 +141,9 @@ function buildTaskResourcePayload(workspaceRoot, taskId) {
   return {
     task: detail.meta,
     claimedBy: detail.meta.claimedBy || null,
+    claimExpiry: detail.meta.claimExpiry || null,
+    claimStatus: detail.meta.claimStatus || "unclaimed",
+    claimExpired: detail.meta.claimExpired === true,
     recipe: detail.recipe,
     taskText: detail.taskText,
     contextText: detail.contextText,
