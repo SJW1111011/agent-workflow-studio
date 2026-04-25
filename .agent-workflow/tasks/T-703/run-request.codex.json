@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-703",
+  "adapterId": "codex",
+  "title": "Orchestrator Daemon",
+  "generatedAt": "2026-04-25T09:23:41.628Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-703",
+  "promptFile": ".agent-workflow/tasks/T-703/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-703/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

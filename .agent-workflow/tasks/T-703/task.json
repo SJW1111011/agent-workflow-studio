@@ -1,0 +1,16 @@
+{
+  "id": "T-703",
+  "title": "Orchestrator Daemon",
+  "recipeId": "feature",
+  "priority": "P0",
+  "status": "todo",
+  "createdAt": "2026-04-25T09:23:41.577Z",
+  "updatedAt": "2026-04-25T09:23:41.577Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": [],
+  "claimedBy": null,
+  "claimExpiry": null
+}
