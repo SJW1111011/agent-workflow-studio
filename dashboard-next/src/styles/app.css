@@ -960,11 +960,70 @@ details.collapsible-panel {
   background: #c78236;
 }
 
+.evidence-timeline-handoff .evidence-timeline-marker {
+  background: #4d6f8f;
+}
+
 .evidence-timeline-failed .evidence-timeline-marker,
 .evidence-timeline-draft .evidence-timeline-marker,
 .evidence-timeline-timed-out .evidence-timeline-marker,
 .evidence-timeline-interrupted .evidence-timeline-marker {
   background: var(--risk);
+}
+
+.handoff-history-card {
+  align-content: start;
+}
+
+.handoff-chain {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  align-items: center;
+}
+
+.handoff-chain-node {
+  position: relative;
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.handoff-chain-node:not(:last-child)::after {
+  content: "->";
+  position: absolute;
+  top: 50%;
+  right: -18px;
+  color: var(--muted);
+  font-weight: 700;
+  transform: translateY(-50%);
+}
+
+.handoff-record-card {
+  gap: 10px;
+}
+
+.handoff-remaining {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.handoff-remaining span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .editor-guidance-card,

@@ -16,7 +16,9 @@ workflow_quick({ title: "Add auth", mode: "lite" })
 workflow_done({ taskId: "T-001", summary: "Implemented JWT login", complete: true })
 ```
 
-Other useful tools: `workflow_task_list`, `workflow_overview`, `workflow_update_task`, `workflow_append_note`, `workflow_undo`, `workflow_validate`.
+Other useful tools: `workflow_task_list`, `workflow_overview`, `workflow_update_task`, `workflow_append_note`, `workflow_record_activity`, `workflow_handoff`, `workflow_pickup`, `workflow_undo`, `workflow_validate`.
+
+For cross-agent continuity, call `workflow_handoff` before ending a session, then the next agent calls `workflow_pickup` to claim the same task and load the latest checkpoint, handoff summary, and evidence chain.
 
 Install MCP once per client:
 

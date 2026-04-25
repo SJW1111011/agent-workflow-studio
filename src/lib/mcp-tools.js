@@ -10,7 +10,9 @@ const {
   appendTaskNote,
   listRuns,
   listTasks,
+  pickupTask,
   recordActivity,
+  recordHandoff,
   recordRun,
   updateTaskMeta,
 } = require("./task-service");
@@ -180,6 +182,61 @@ const TOOL_DEFINITIONS = Object.freeze([
     description: "Get the full project health snapshot: all tasks, evidence coverage, trust scores, risks, and memory freshness. This is the data behind the dashboard overview.",
     inputSchema: emptyInputSchema(),
   },
+  {
+    name: "workflow_handoff",
+    description:
+      "Record a cross-agent handoff checkpoint for a task. Writes an append-only handoff record, refreshes the checkpoint, and releases claimedBy so another agent can pick up the task.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        taskId: {
+          type: "string",
+          description: "Task id such as T-001.",
+        },
+        summary: {
+          type: "string",
+          description: "What was completed or learned before handoff.",
+        },
+        remaining: {
+          type: "string",
+          description: "What the next agent should do next.",
+        },
+        filesModified: {
+          type: "array",
+          description: "Optional repo-relative files changed during this agent session.",
+          items: {
+            type: "string",
+          },
+        },
+        agent: {
+          type: "string",
+          description: "Agent or adapter id handing off. Defaults to manual.",
+        },
+      },
+      required: ["taskId", "summary", "remaining"],
+    },
+  },
+  {
+    name: "workflow_pickup",
+    description:
+      "Claim a task for an agent and return the latest handoff, checkpoint, task docs, and evidence counts needed to continue from the checkpoint.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        taskId: {
+          type: "string",
+          description: "Task id such as T-001.",
+        },
+        agent: {
+          type: "string",
+          description: "Agent or adapter id picking up the task.",
+        },
+      },
+      required: ["taskId", "agent"],
+    },
+  },
 ]);
 
 function createMcpToolRuntime(workspaceRoot) {
@@ -218,6 +275,10 @@ function createMcpToolRuntime(workspaceRoot) {
           return runValidateTool(workspaceRoot, args);
         case "workflow_overview":
           return runOverviewTool(workspaceRoot, args);
+        case "workflow_handoff":
+          return runHandoffTool(workspaceRoot, args);
+        case "workflow_pickup":
+          return runPickupTool(workspaceRoot, args);
         default:
           throw badRequest(`Unknown MCP tool: ${toolName}`, "mcp_tool_not_found");
       }
@@ -428,6 +489,7 @@ function runTaskListTool(workspaceRoot, args) {
       title: task.title,
       priority: task.priority,
       status: task.status,
+      claimedBy: task.claimedBy || null,
       recipeId: task.recipeId || "feature",
       runCount: task.runCount,
       latestRunStatus: latestRun ? latestRun.status : "none",
@@ -553,6 +615,54 @@ function runOverviewTool(workspaceRoot, args) {
     ok: true,
     tool: "workflow_overview",
     ...buildOverview(workspaceRoot),
+  };
+}
+
+function runHandoffTool(workspaceRoot, args) {
+  assertKnownKeys(args, ["agent", "filesModified", "remaining", "summary", "taskId"], "workflow_handoff");
+
+  const taskId = requireNonEmptyString(args, "taskId", "workflow_handoff");
+  const summary = requireNonEmptyString(args, "summary", "workflow_handoff");
+  const remaining = requireNonEmptyString(args, "remaining", "workflow_handoff");
+  const agent = normalizeAdapterId(optionalTrimmedString(args.agent) || "manual");
+  const handoffRecord = recordHandoff(workspaceRoot, taskId, summary, {
+    agent,
+    filesModified: args.filesModified,
+    remaining,
+  });
+  const checkpoint = buildCheckpoint(workspaceRoot, taskId);
+
+  return {
+    ok: true,
+    tool: "workflow_handoff",
+    workspaceRoot,
+    taskId,
+    handoff: handoffRecord,
+    handoffPath: `.agent-workflow/tasks/${taskId}/runs/${handoffRecord.id}.json`,
+    released: true,
+    claimedBy: null,
+    checkpoint,
+    checkpointPath: `.agent-workflow/tasks/${taskId}/checkpoint.md`,
+  };
+}
+
+function runPickupTool(workspaceRoot, args) {
+  assertKnownKeys(args, ["agent", "taskId"], "workflow_pickup");
+
+  const taskId = requireNonEmptyString(args, "taskId", "workflow_pickup");
+  const agent = normalizeAdapterId(requireNonEmptyString(args, "agent", "workflow_pickup"));
+  const pickup = pickupTask(workspaceRoot, taskId, agent);
+  const checkpoint = buildCheckpoint(workspaceRoot, taskId);
+
+  return {
+    ok: true,
+    tool: "workflow_pickup",
+    workspaceRoot,
+    agent,
+    ...pickup,
+    claimedBy: pickup.task ? pickup.task.claimedBy || null : agent,
+    checkpoint,
+    checkpointPath: `.agent-workflow/tasks/${taskId}/checkpoint.md`,
   };
 }
 

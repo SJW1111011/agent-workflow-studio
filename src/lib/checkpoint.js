@@ -1,6 +1,6 @@
 const path = require("path");
 const { fileExists, readText, writeFile, writeJson } = require("./fs-utils");
-const { listRuns } = require("./task-service");
+const { listHandoffRecords, listRuns } = require("./task-service");
 const { ensureTaskArtifacts } = require("./task-documents");
 const { appendUndoEntry, buildUndoFileList, captureTaskRestoreSnapshots } = require("./undo-log");
 const { buildTaskVerificationGate } = require("./verification-gates");
@@ -20,7 +20,9 @@ function buildCheckpoint(workspaceRoot, taskId, options = {}) {
     verification: true,
   });
   const runs = listRuns(workspaceRoot, taskId);
+  const handoffRecords = listHandoffRecords(workspaceRoot, taskId);
   const latestRun = runs[runs.length - 1] || null;
+  const latestHandoff = handoffRecords[handoffRecords.length - 1] || null;
   const verificationGate = buildTaskVerificationGate(workspaceRoot, task, runs, null, null, {
     strict: strictVerification,
   });
@@ -33,6 +35,10 @@ function buildCheckpoint(workspaceRoot, taskId, options = {}) {
 
   if (runs.length > 0) {
     completed.push(`${runs.length} run(s) recorded`);
+  }
+
+  if (handoffRecords.length > 0) {
+    completed.push(`${handoffRecords.length} handoff(s) recorded`);
   }
 
   if (readText(files.context, "").trim()) {
@@ -54,6 +60,17 @@ function buildCheckpoint(workspaceRoot, taskId, options = {}) {
     generatedAt: new Date().toISOString(),
     latestRunStatus: latestRun ? latestRun.status : "none",
     runCount: runs.length,
+    claimedBy: task.claimedBy || null,
+    latestHandoff: latestHandoff
+      ? {
+          id: latestHandoff.id,
+          agent: latestHandoff.agent,
+          summary: latestHandoff.summary,
+          remaining: latestHandoff.remaining,
+          filesModified: latestHandoff.filesModified || [],
+          createdAt: latestHandoff.createdAt,
+        }
+      : null,
     risks,
     completed,
     verificationGate: {
@@ -141,6 +158,20 @@ function renderCheckpointMarkdown(task, checkpoint, latestRun, verificationGate)
     .map((item) => `- ${item.sourceType}:${item.sourceLabel} | paths=${item.paths.join(", ") || "none"} | checks=${item.checks.join("; ") || "none"} | artifacts=${item.artifacts.join(", ") || "none"}`)
     .join("\n") || "- None";
   const nextProofSteps = renderNextProofSteps(verificationGate);
+  const latestHandoff = checkpoint.latestHandoff;
+  const latestHandoffLines = latestHandoff
+    ? [
+        `- Agent: ${latestHandoff.agent}`,
+        `- Timestamp: ${latestHandoff.createdAt}`,
+        `- Summary: ${latestHandoff.summary}`,
+        `- Remaining: ${latestHandoff.remaining}`,
+        `- Files modified: ${
+          Array.isArray(latestHandoff.filesModified) && latestHandoff.filesModified.length > 0
+            ? latestHandoff.filesModified.join(", ")
+            : "None recorded"
+        }`,
+      ].join("\n")
+    : "- No handoff recorded yet";
 
   return `# ${task.id} Checkpoint
 
@@ -155,8 +186,13 @@ ${completedLines}
 - Title: ${task.title}
 - Priority: ${task.priority}
 - Status: ${task.status}
+- Claimed by: ${checkpoint.claimedBy || "unclaimed"}
 - Latest run status: ${checkpoint.latestRunStatus}
 - Total runs: ${checkpoint.runCount}
+
+## Latest handoff
+
+${latestHandoffLines}
 
 ## Verification gate
 

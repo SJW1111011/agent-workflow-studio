@@ -37,6 +37,21 @@ function buildActivityEvents(detail) {
   );
 }
 
+function buildHandoffEvents(detail) {
+  return (Array.isArray(detail.handoffRecords) ? detail.handoffRecords : []).map(
+    (record) => ({
+      id: `handoff:${record.id}`,
+      timestamp: record.createdAt,
+      title: "Handoff recorded",
+      summary: record.summary || "Agent handoff was recorded.",
+      tone: "handoff",
+      tags: ["handoff", record.agent || "manual"].filter(Boolean),
+      files: Array.isArray(record.filesModified) ? record.filesModified : [],
+      artifacts: [],
+    }),
+  );
+}
+
 function buildManualEvidenceEvents(detail) {
   const proofCoverage =
     detail.verificationGate && detail.verificationGate.proofCoverage
@@ -87,6 +102,7 @@ function buildEvidenceEvents(detail) {
   return []
     .concat(buildRunEvents(detail))
     .concat(buildActivityEvents(detail))
+    .concat(buildHandoffEvents(detail))
     .concat(buildManualEvidenceEvents(detail))
     .concat(buildVerificationUpdateEvent(detail))
     .filter((event) => Number.isFinite(new Date(event.timestamp).getTime()))

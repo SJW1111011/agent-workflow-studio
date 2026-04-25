@@ -24,7 +24,7 @@ const RESOURCE_TEMPLATE_DEFINITIONS = Object.freeze([
   {
     uriTemplate: "workflow://tasks/{taskId}",
     name: "Workflow task detail",
-    description: "Task detail JSON with task, context, verification, checkpoint, runs, and verification gate state.",
+    description: "Task detail JSON with task, context, verification, checkpoint, runs, handoff records, and verification gate state.",
     mimeType: "application/json",
   },
   {
@@ -89,6 +89,7 @@ function buildTaskListPayload(workspaceRoot) {
       title: task.title,
       priority: task.priority,
       status: task.status,
+      claimedBy: task.claimedBy || null,
       recipeId: task.recipeId || "feature",
       reviewStatus: task.reviewStatus || null,
       reviewedAt: task.reviewedAt || null,
@@ -118,12 +119,14 @@ function buildTaskResourcePayload(workspaceRoot, taskId) {
 
   return {
     task: detail.meta,
+    claimedBy: detail.meta.claimedBy || null,
     recipe: detail.recipe,
     taskText: detail.taskText,
     contextText: detail.contextText,
     verificationText: detail.verificationText,
     checkpointText: detail.checkpointText,
     runs: detail.runs,
+    handoffRecords: detail.handoffRecords,
     runCount: detail.runs.length,
     latestRun,
     latestRunSummary: latestRun

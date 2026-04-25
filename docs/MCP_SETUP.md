@@ -25,12 +25,15 @@ Tools:
 - `workflow_done`
 - `workflow_update_task`
 - `workflow_append_note`
+- `workflow_record_activity`
 - `workflow_task_list`
 - `workflow_run_add`
 - `workflow_checkpoint`
 - `workflow_undo`
 - `workflow_validate`
 - `workflow_overview`
+- `workflow_handoff`
+- `workflow_pickup`
 
 Resources and prompts are read-only. They let agents pull full workflow context, task state, and memory docs without relying on `prompt:compile` output files or ad hoc file reads.
 

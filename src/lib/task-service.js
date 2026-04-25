@@ -38,6 +38,7 @@ const TASK_SCAFFOLD_MODES = new Set(["full", "lite"]);
 const REVIEW_STATUSES = new Set(["approved", "rejected"]);
 const RUN_RECORD_FILE_PREFIX = "run-";
 const ACTIVITY_RECORD_FILE_PREFIX = "activity-";
+const HANDOFF_RECORD_FILE_PREFIX = "handoff-";
 const RECORD_FILE_EXTENSION = ".json";
 const EVIDENCE_CONTEXT_KEYS = new Set([
   "commandsRun",
@@ -75,6 +76,7 @@ function createTask(workspaceRoot, taskId, title, options = {}) {
         nonGoals: [],
         requiredDocs: [],
         verificationCommands: [],
+        claimedBy: null,
       };
 
   if (!exists) {
@@ -135,6 +137,7 @@ function getTaskDetail(workspaceRoot, taskId) {
   const recipe = getRecipe(workspaceRoot, meta.recipeId);
   const runs = listRuns(workspaceRoot, taskId);
   const activityRecords = listActivityRecords(workspaceRoot, taskId);
+  const handoffRecords = listHandoffRecords(workspaceRoot, taskId);
   const taskText = safeRead(files.task);
   const strictVerification = resolveStrictVerification(workspaceRoot);
   const repositorySnapshot = loadRepositorySnapshot(workspaceRoot, {
@@ -156,6 +159,7 @@ function getTaskDetail(workspaceRoot, taskId) {
     checkpointText: safeRead(files.checkpoint),
     runs,
     activityRecords,
+    handoffRecords,
     freshness: buildTaskFreshness(workspaceRoot, meta, runs),
     verificationGate: buildTaskVerificationGate(workspaceRoot, meta, runs, repositorySnapshot, taskText, {
       strict: strictVerification,
@@ -379,21 +383,92 @@ function recordActivity(workspaceRoot, taskId, activity, fields = {}) {
   return persistActivityRecord(workspaceRoot, taskId, record);
 }
 
+function listHandoffRecords(workspaceRoot, taskId) {
+  return listTaskRecords(workspaceRoot, taskId, HANDOFF_RECORD_FILE_PREFIX, (value, fileName) =>
+    normalizeHandoffRecordForRead(value, fileName)
+  );
+}
+
+function recordHandoff(workspaceRoot, taskId, summary, fields = {}) {
+  const record = createHandoffRecord(taskId, {
+    agent: fields && fields.agent,
+    createdAt: fields && fields.createdAt,
+    filesModified: fields && fields.filesModified,
+    id: fields && fields.id,
+    remaining: fields && fields.remaining,
+    summary,
+  });
+
+  return persistHandoffRecord(workspaceRoot, taskId, record);
+}
+
+function pickupTask(workspaceRoot, taskId, agent) {
+  if (!isNonEmptyString(agent)) {
+    throw badRequest('Pickup requires a non-empty "agent" string.', "pickup_agent_required");
+  }
+
+  const { files } = ensureTaskArtifacts(workspaceRoot, taskId, {
+    task: true,
+    context: true,
+    verification: true,
+    checkpoint: true,
+    runs: true,
+  });
+  const meta = readJson(files.meta, {});
+  const updatedAt = new Date().toISOString();
+  const nextMeta = {
+    ...meta,
+    claimedBy: agent.trim(),
+    updatedAt,
+  };
+
+  writeJson(files.meta, nextMeta);
+
+  const detail = getTaskDetail(workspaceRoot, taskId);
+  const handoffRecords = detail ? detail.handoffRecords : [];
+  const latestHandoff = handoffRecords[handoffRecords.length - 1] || null;
+  const checkpointJson = readJson(path.join(files.root, "checkpoint.json"), null);
+  const verificationGate = detail && detail.verificationGate ? detail.verificationGate : null;
+
+  return {
+    taskId,
+    task: detail ? detail.meta : nextMeta,
+    handoff: latestHandoff,
+    handoffRecords,
+    taskText: detail ? detail.taskText : safeRead(files.task),
+    contextText: detail ? detail.contextText : safeRead(files.context),
+    verificationText: detail ? detail.verificationText : safeRead(files.verification),
+    checkpointText: detail ? detail.checkpointText : safeRead(files.checkpoint),
+    checkpoint: checkpointJson,
+    evidenceSoFar: {
+      runs: detail && Array.isArray(detail.runs) ? detail.runs.length : 0,
+      activityRecords: detail && Array.isArray(detail.activityRecords) ? detail.activityRecords.length : 0,
+      handoffRecords: handoffRecords.length,
+      coveragePercent: verificationGate ? normalizeCoveragePercent(verificationGate.coveragePercent) : 0,
+    },
+  };
+}
+
 module.exports = {
   appendTaskNote,
   approveTask,
+  createHandoffRecord,
   createRunRecord,
   createActivityRecord,
   createTask,
   getRunLog,
   getTaskDetail,
+  listHandoffRecords,
   listActivityRecords,
   listRuns,
   listTasks,
   normalizeTaskScaffoldMode,
+  pickupTask,
   persistActivityRecord,
+  persistHandoffRecord,
   persistRunRecord,
   recordActivity,
+  recordHandoff,
   recordRun,
   rejectTask,
   updateTaskMeta,
@@ -567,6 +642,34 @@ function createActivityRecord(taskId, fields = {}) {
   });
 }
 
+function createHandoffRecord(taskId, fields = {}) {
+  const summary = isNonEmptyString(fields.summary) ? fields.summary.trim() : "";
+  const remaining = isNonEmptyString(fields.remaining) ? fields.remaining.trim() : "";
+
+  if (!summary) {
+    throw badRequest('Handoff record requires a non-empty "summary" string.', "handoff_summary_required");
+  }
+
+  if (!remaining) {
+    throw badRequest('Handoff record requires a non-empty "remaining" string.', "handoff_remaining_required");
+  }
+
+  const agent = isNonEmptyString(fields.agent) ? fields.agent.trim() : "manual";
+  const createdAt = isNonEmptyString(fields.createdAt) ? fields.createdAt.trim() : new Date().toISOString();
+  const filesModified = normalizeProofPathList(fields.filesModified, "filesModified");
+
+  return omitUndefined({
+    id: isNonEmptyString(fields.id) ? fields.id.trim() : `handoff-${Date.now()}`,
+    type: "handoff",
+    taskId,
+    agent,
+    summary,
+    remaining,
+    filesModified: filesModified.length > 0 ? filesModified : undefined,
+    createdAt,
+  });
+}
+
 function persistRunRecord(workspaceRoot, taskId, run, options = {}) {
   const { files, taskMeta: meta } = ensureTaskArtifacts(workspaceRoot, taskId, {
     task: true,
@@ -665,6 +768,32 @@ function persistActivityRecord(workspaceRoot, taskId, activityRecord) {
   const updatedAt = persistedRecord.createdAt || new Date().toISOString();
   writeJson(files.meta, {
     ...taskMeta,
+    updatedAt,
+  });
+
+  return persistedRecord;
+}
+
+function persistHandoffRecord(workspaceRoot, taskId, handoffRecord) {
+  const { files, taskMeta } = ensureTaskArtifacts(workspaceRoot, taskId, {
+    task: true,
+    context: true,
+    verification: true,
+    checkpoint: true,
+    runs: true,
+  });
+  const persistedRecord = {
+    ...createHandoffRecord(taskId, handoffRecord),
+  };
+
+  fs.mkdirSync(files.runs, { recursive: true });
+  persistedRecord.id = buildUniqueTaskRecordId(files.runs, persistedRecord.id, HANDOFF_RECORD_FILE_PREFIX);
+  writeJson(path.join(files.runs, `${persistedRecord.id}.json`), persistedRecord);
+
+  const updatedAt = persistedRecord.createdAt || new Date().toISOString();
+  writeJson(files.meta, {
+    ...taskMeta,
+    claimedBy: null,
     updatedAt,
   });
 
@@ -966,6 +1095,41 @@ function normalizeActivityRecordForRead(value, fileName = "") {
   }
 }
 
+function normalizeHandoffRecordForRead(value, fileName = "") {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  try {
+    const summary = isNonEmptyString(value.summary) ? value.summary.trim() : "";
+    const remaining = isNonEmptyString(value.remaining) ? value.remaining.trim() : "";
+    const taskId = isNonEmptyString(value.taskId) ? value.taskId.trim() : "";
+    const agent = isNonEmptyString(value.agent) ? value.agent.trim() : "";
+    const createdAt = isNonEmptyString(value.createdAt) ? value.createdAt.trim() : "";
+    const normalizedId =
+      isNonEmptyString(value.id) ? value.id.trim() : String(fileName || "").replace(/\.json$/i, "");
+
+    if (!summary || !remaining || !taskId || !agent || !createdAt || !normalizedId) {
+      return null;
+    }
+
+    const filesModified = normalizeProofPathList(value.filesModified, "filesModified");
+
+    return omitUndefined({
+      id: normalizedId,
+      type: "handoff",
+      taskId,
+      agent,
+      summary,
+      remaining,
+      filesModified: filesModified.length > 0 ? filesModified : undefined,
+      createdAt,
+    });
+  } catch (error) {
+    return null;
+  }
+}
+
 function normalizeEvidenceContext(value) {
   if (value === undefined) {
     return undefined;
@@ -1123,6 +1287,28 @@ function normalizeNonNegativeInteger(value, fieldPath) {
   }
 
   return value;
+}
+
+function normalizeCoveragePercent(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.min(100, Math.round(numeric)));
+}
+
+function buildUniqueTaskRecordId(recordsRoot, requestedId, fallbackPrefix) {
+  const baseId = isNonEmptyString(requestedId) ? requestedId.trim() : `${fallbackPrefix}${Date.now()}`;
+  let candidate = baseId;
+  let suffix = 1;
+
+  while (fileExists(path.join(recordsRoot, `${candidate}.json`))) {
+    candidate = `${baseId}-${suffix}`;
+    suffix += 1;
+  }
+
+  return candidate;
 }
 
 function getRunLog(workspaceRoot, taskId, runId, streamName, maxChars = 12000) {

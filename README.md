@@ -208,14 +208,17 @@ Tools:
 - `workflow_done`
 - `workflow_update_task`
 - `workflow_append_note`
+- `workflow_record_activity`
 - `workflow_task_list`
 - `workflow_run_add`
 - `workflow_checkpoint`
 - `workflow_undo`
 - `workflow_validate`
 - `workflow_overview`
+- `workflow_handoff`
+- `workflow_pickup`
 
-That lets an MCP-connected agent pull full task, evidence, and memory context without writing compiled prompt files first, then use the existing `workflow_*` tools only for state-changing operations such as status updates, notes, runs, checkpoints, and undo. For the auto-install flow, Codex TOML examples, and Claude Code or Cursor specifics, see [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
+That lets an MCP-connected agent pull full task, evidence, and memory context without writing compiled prompt files first, then use the existing `workflow_*` tools only for state-changing operations such as status updates, notes, runs, checkpoints, handoffs, pickup claims, and undo. For the auto-install flow, Codex TOML examples, and Claude Code or Cursor specifics, see [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
 
 ## Architecture at a glance
 

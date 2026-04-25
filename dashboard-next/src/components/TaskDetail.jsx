@@ -173,6 +173,80 @@ function ActivityRecordCard({ record }) {
   );
 }
 
+function buildHandoffChain(records, claimedBy) {
+  const agents = (Array.isArray(records) ? records : [])
+    .map((record) => record.agent)
+    .filter(Boolean);
+
+  if (claimedBy && agents[agents.length - 1] !== claimedBy) {
+    agents.push(claimedBy);
+  }
+
+  return agents;
+}
+
+function HandoffRecordCard({ nextAgent, record }) {
+  return (
+    <article className="list-item handoff-record-card">
+      <h3>{record.agent || "Unknown agent"}</h3>
+      <p className="subtle">
+        {record.createdAt
+          ? formatTimestampLabel(record.createdAt)
+          : "No timestamp recorded."}
+      </p>
+      <p>{record.summary || "No handoff summary recorded."}</p>
+      <div className="handoff-remaining">
+        <span>Remaining</span>
+        <p>{record.remaining || "No remaining work recorded."}</p>
+      </div>
+      <div className="tag-row">
+        <span className="tag">handoff</span>
+        {nextAgent ? <span className="tag">{`next: ${nextAgent}`}</span> : null}
+        {Array.isArray(record.filesModified) && record.filesModified.length > 0 ? (
+          <span className="tag">{record.filesModified.length} file(s)</span>
+        ) : null}
+      </div>
+      {Array.isArray(record.filesModified) && record.filesModified.length > 0 ? (
+        <p className="subtle">Files: {record.filesModified.join(", ")}</p>
+      ) : null}
+    </article>
+  );
+}
+
+function HandoffHistory({ detail }) {
+  const records = Array.isArray(detail.handoffRecords) ? detail.handoffRecords : [];
+  const claimedBy = detail.meta?.claimedBy || null;
+  const chain = buildHandoffChain(records, claimedBy);
+
+  return (
+    <article className="detail-card handoff-history-card">
+      <h3>Handoff History</h3>
+      {chain.length > 0 ? (
+        <div className="handoff-chain" aria-label="Handoff chain">
+          {chain.map((agent, index) => (
+            <span className="handoff-chain-node" key={`${agent}:${index}`}>
+              {agent}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      <div className="list">
+        <EvidenceList
+          emptyMessage="No handoff records tracked yet."
+          items={records}
+          renderItem={(record, index) => (
+            <HandoffRecordCard
+              key={record.id}
+              nextAgent={chain[index + 1] || null}
+              record={record}
+            />
+          )}
+        />
+      </div>
+    </article>
+  );
+}
+
 export default function TaskDetail({ hidden }) {
   const { state } = useDashboardContext();
   const detail = state.taskDetail.data;
@@ -205,6 +279,9 @@ export default function TaskDetail({ hidden }) {
               <span className="tag">{detail.recipe?.id || detail.meta.recipeId || "feature"}</span>
               <span className="tag">{detail.recipe?.name || "Unknown recipe"}</span>
               <span className="tag">{formatTimestampLabel(detail.meta.updatedAt)}</span>
+              {detail.meta.claimedBy ? (
+                <span className="tag">{`claimed by ${detail.meta.claimedBy}`}</span>
+              ) : null}
               {detail.meta.reviewStatus === "approved" ? (
                 <span className="tag">human verified</span>
               ) : null}
@@ -246,6 +323,8 @@ export default function TaskDetail({ hidden }) {
               />
             </div>
           </article>
+
+          <HandoffHistory detail={detail} />
 
           <article className="detail-card">
             <h3>Activity Log</h3>
