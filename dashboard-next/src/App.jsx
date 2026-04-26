@@ -1,5 +1,6 @@
 import Header from "./components/Header.jsx";
 import Layout from "./components/Layout.jsx";
+import LoadingSkeleton from "./components/LoadingSkeleton.jsx";
 import Overview from "./components/Overview.jsx";
 import TabBar from "./components/TabBar.jsx";
 import TaskDetail from "./components/TaskDetail.jsx";
@@ -141,6 +142,11 @@ function RunsPanel({ hidden }) {
 function DashboardShell() {
   const { requestState, setActiveTab, state } = useDashboardContext();
   const { resolvedTheme, setTheme, theme } = useTheme();
+
+  // Show loading skeleton while initial data is loading
+  if (state.overview.status === "loading") {
+    return <LoadingSkeleton />;
+  }
 
   return (
     <Layout

@@ -1284,3 +1284,63 @@ details.collapsible-panel {
     font-size: 12px;
   }
 }
+
+/* Loading Skeleton */
+.loading-skeleton {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.skeleton-header {
+  margin-bottom: 2rem;
+}
+
+.skeleton-bar {
+  height: 1rem;
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 0%,
+    var(--surface-3) 50%,
+    var(--surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.skeleton-title {
+  height: 2rem;
+  width: 40%;
+}
+
+.skeleton-subtitle {
+  height: 1rem;
+  width: 60%;
+}
+
+.skeleton-content {
+  display: grid;
+  gap: 1rem;
+}
+
+.skeleton-card {
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.skeleton-bar.short {
+  width: 30%;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
