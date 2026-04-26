@@ -7,11 +7,18 @@
   "keywords": [
     "agent",
     "workflow",
-    "codex",
-    "claude-code",
+    "collaboration",
+    "workbench",
+    "project-management",
+    "human-agent",
+    "autonomous-agents",
     "mcp",
+    "claude-code",
+    "codex",
     "local-first",
-    "git-native"
+    "git-native",
+    "orchestrator",
+    "evidence-tracking"
   ],
   "repository": {
     "type": "git",
@@ -27,6 +34,7 @@
     "dist",
     "src",
     "dashboard",
+    "dashboard-next/dist",
     "docs/*.md",
     "README.md",
     "CHANGELOG.md",
@@ -59,7 +67,6 @@
     "quick": "node src/cli.js quick",
     "task:new": "node src/cli.js task:new",
     "task:list": "node src/cli.js task:list",
-    "prompt:compile": "node src/cli.js prompt:compile",
     "run:prepare": "node src/cli.js run:prepare",
     "run:execute": "node src/cli.js run:execute",
     "checkpoint": "node src/cli.js checkpoint",
