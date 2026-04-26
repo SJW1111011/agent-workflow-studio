@@ -1,0 +1,54 @@
+{
+  "id": "run-1777192649274",
+  "taskId": "T-801",
+  "agent": "manual",
+  "status": "draft",
+  "summary": "添加 Loading Skeleton 改善初始加载体验",
+  "createdAt": "2026-04-26T08:37:29.273Z",
+  "scopeProofPaths": [
+    "dashboard-next/src/components/LoadingSkeleton.jsx",
+    "dashboard-next/src/App.jsx",
+    "dashboard-next/src/styles/app.css"
+  ],
+  "verificationChecks": [
+    {
+      "label": "构建成功，bundle 大小增加 < 1KB",
+      "status": "recorded",
+      "artifacts": []
+    },
+    {
+      "label": "添加骨架屏组件和动画",
+      "status": "recorded",
+      "artifacts": []
+    },
+    {
+      "label": "在数据加载时显示骨架屏而不是白屏",
+      "status": "recorded",
+      "artifacts": []
+    }
+  ],
+  "evidence": {
+    "proofPaths": [
+      "dashboard-next/src/components/LoadingSkeleton.jsx",
+      "dashboard-next/src/App.jsx",
+      "dashboard-next/src/styles/app.css"
+    ],
+    "checks": [
+      {
+        "label": "构建成功，bundle 大小增加 < 1KB",
+        "status": "recorded",
+        "artifacts": []
+      },
+      {
+        "label": "添加骨架屏组件和动画",
+        "status": "recorded",
+        "artifacts": []
+      },
+      {
+        "label": "在数据加载时显示骨架屏而不是白屏",
+        "status": "recorded",
+        "artifacts": []
+      }
+    ]
+  }
+}

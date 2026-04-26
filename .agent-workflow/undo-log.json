@@ -1,179 +1,5 @@
 [
   {
-    "type": "quick",
-    "taskId": "T-604",
-    "timestamp": "2026-04-21T18:24:04.160Z",
-    "files": [
-      ".agent-workflow/tasks/T-604",
-      ".agent-workflow/tasks/T-604/checkpoint.json",
-      ".agent-workflow/tasks/T-604/checkpoint.md",
-      ".agent-workflow/tasks/T-604/context.md",
-      ".agent-workflow/tasks/T-604/launch.codex.md",
-      ".agent-workflow/tasks/T-604/prompt.codex.md",
-      ".agent-workflow/tasks/T-604/run-request.codex.json",
-      ".agent-workflow/tasks/T-604/runs",
-      ".agent-workflow/tasks/T-604/task.json",
-      ".agent-workflow/tasks/T-604/task.md",
-      ".agent-workflow/tasks/T-604/verification.md"
-    ],
-    "metadata": {
-      "taskRoot": ".agent-workflow/tasks/T-604",
-      "mode": "full",
-      "agent": "codex",
-      "adapterId": "codex",
-      "restore": []
-    }
-  },
-  {
-    "type": "quick",
-    "taskId": "T-605",
-    "timestamp": "2026-04-21T18:59:21.084Z",
-    "files": [
-      ".agent-workflow/tasks/T-605",
-      ".agent-workflow/tasks/T-605/checkpoint.json",
-      ".agent-workflow/tasks/T-605/checkpoint.md",
-      ".agent-workflow/tasks/T-605/context.md",
-      ".agent-workflow/tasks/T-605/launch.codex.md",
-      ".agent-workflow/tasks/T-605/prompt.codex.md",
-      ".agent-workflow/tasks/T-605/run-request.codex.json",
-      ".agent-workflow/tasks/T-605/runs",
-      ".agent-workflow/tasks/T-605/task.json",
-      ".agent-workflow/tasks/T-605/task.md",
-      ".agent-workflow/tasks/T-605/verification.md"
-    ],
-    "metadata": {
-      "taskRoot": ".agent-workflow/tasks/T-605",
-      "mode": "full",
-      "agent": "codex",
-      "adapterId": "codex",
-      "restore": []
-    }
-  },
-  {
-    "type": "quick",
-    "taskId": "T-606",
-    "timestamp": "2026-04-22T05:52:13.556Z",
-    "files": [
-      ".agent-workflow/tasks/T-606",
-      ".agent-workflow/tasks/T-606/checkpoint.json",
-      ".agent-workflow/tasks/T-606/checkpoint.md",
-      ".agent-workflow/tasks/T-606/context.md",
-      ".agent-workflow/tasks/T-606/launch.codex.md",
-      ".agent-workflow/tasks/T-606/prompt.codex.md",
-      ".agent-workflow/tasks/T-606/run-request.codex.json",
-      ".agent-workflow/tasks/T-606/runs",
-      ".agent-workflow/tasks/T-606/task.json",
-      ".agent-workflow/tasks/T-606/task.md",
-      ".agent-workflow/tasks/T-606/verification.md"
-    ],
-    "metadata": {
-      "taskRoot": ".agent-workflow/tasks/T-606",
-      "mode": "full",
-      "agent": "codex",
-      "adapterId": "codex",
-      "restore": []
-    }
-  },
-  {
-    "type": "run:add",
-    "taskId": "T-602",
-    "timestamp": "2026-04-22T06:55:56.750Z",
-    "files": [
-      ".agent-workflow/tasks/T-602/checkpoint.json",
-      ".agent-workflow/tasks/T-602/checkpoint.md",
-      ".agent-workflow/tasks/T-602/context.md",
-      ".agent-workflow/tasks/T-602/runs",
-      ".agent-workflow/tasks/T-602/runs/run-1776840956496.json",
-      ".agent-workflow/tasks/T-602/task.json",
-      ".agent-workflow/tasks/T-602/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-602/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-602\",\n  \"title\": \"Smart Defaults v2: Multi-Collector Integration\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P1\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-21T17:56:30.618Z\",\n  \"updatedAt\": \"2026-04-21T17:56:30.618Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Context\n\n## Why now\n\nDescribe why this task matters.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- \n\n## Open questions\n\n- \n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Verification\n\n## Draft checks\n\n- automated:\n- manual:\n\n## Verification records\n\n### Record 1\n\n- Files:\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n-\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-602\",\n  \"generatedAt\": \"2026-04-21T17:56:30.851Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add repo-relative scope paths to make evidence coverage automatic.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Checkpoint\n\nGenerated at: 2026-04-21T17:56:30.851Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: Smart Defaults v2: Multi-Collector Integration\n- Priority: P1\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add repo-relative scope paths to make evidence coverage automatic.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/runs/run-1776840956496.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-602/runs/run-1776840956496.json",
-      "runId": "run-1776840956496"
-    }
-  },
-  {
-    "type": "checkpoint",
-    "taskId": "T-602",
-    "timestamp": "2026-04-22T06:56:42.206Z",
-    "files": [
-      ".agent-workflow/tasks/T-602/checkpoint.json",
-      ".agent-workflow/tasks/T-602/checkpoint.md",
-      ".agent-workflow/tasks/T-602/context.md",
-      ".agent-workflow/tasks/T-602/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-602/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Context\n\n## Why now\n\nPolyglot repositories can match more than one evidence collector, so the old \"first match wins\" path leaves verification incomplete even when users expect smart defaults to do the right thing. This task closes that gap while keeping an explicit skip path for fast manual evidence recording.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/smart-defaults.js` now exports `inferAllTestResults`, executes every matching collector in priority order, and keeps the older single-result helper as a compatibility wrapper.\n- `src/lib/task-service.js` now derives inferred run status from all collector outcomes, maps collector results into inferred verification checks, and persists additive collector metadata under `run.evidence.collectors[]`.\n- `src/lib/mcp-tools.js` now accepts `skipTest` as the preferred MCP flag while still honoring the legacy `skipInferTest` alias.\n- The CLI already exposed `--skip-test`, so the user-visible CLI change landed through the shared smart-default execution path instead of new argument parsing.\n- `test/smart-defaults-v2.test.js` now covers multi-collector execution order, additive collector evidence, `run:add --skip-test`, and `workflow_done` with `skipTest: true`.\n- Acceptance verification completed on 2026-04-22 with `npm test` and `npm run smoke`.\n\n## Open questions\n\n- None at handoff.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Verification\n\n## Draft checks\n\n- automated: `npm test`; `npm run smoke`; `npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`\n- manual: Reviewed `.agent-workflow/tasks/T-602/runs/run-1776840956496.json` to confirm the additive `evidence.collectors[]` shape does not replace existing top-level proof and check fields.\n\n## Verification records\n\n### Record 1\n\n- Files: `src/lib/smart-defaults.js`, `src/lib/task-service.js`, `src/lib/mcp-tools.js`, `test/smart-defaults-v2.test.js`\n- Check: `npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`; `npm test`; `npm run smoke`\n- Result: Passed on 2026-04-22. Focused coverage exercised multi-collector ordering, additive collector persistence, CLI `run:add --skip-test`, and MCP `workflow_done` with `skipTest: true`.\n- Artifact: `.agent-workflow/tasks/T-602/runs/run-1776840956496.json`\n\n## Blocking gaps\n\n- None identified after acceptance verification.\n\n## Evidence 2026-04-22T06:55:56.494Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/smart-defaults.js, src/lib/task-service.js, src/lib/mcp-tools.js, test/smart-defaults-v2.test.js\n- Verification artifacts: .agent-workflow/tasks/T-602/checkpoint.md\n- Proof artifacts: .agent-workflow/tasks/T-602/checkpoint.md\n- Summary: Implemented multi-collector smart defaults integration.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-602\",\n  \"generatedAt\": \"2026-04-22T06:55:56.991Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 100,\n    \"scopeHintCount\": 12,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 4,\n    \"coveredFileCount\": 4,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Checkpoint\n\nGenerated at: 2026-04-22T06:55:56.991Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Smart Defaults v2: Multi-Collector Integration\n- Priority: P1\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (4/4 scoped files)\n- Scope hints: 12\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- src/lib/mcp-tools.js\n- src/lib/smart-defaults.js\n- src/lib/task-service.js\n- test/smart-defaults-v2.test.js\n\n### Explicit evidence items\n\n- run:run-1776840956496 | paths=src/lib/smart-defaults.js, src/lib/task-service.js, src/lib/mcp-tools.js, test/smart-defaults-v2.test.js | checks=[passed] npm test; [passed] npm run smoke; [passed] npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js | artifacts=.agent-workflow/tasks/T-602/checkpoint.md\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Implemented multi-collector smart defaults integration.\n- Timestamp: 2026-04-22T06:55:56.494Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
-        }
-      ]
-    }
-  },
-  {
     "type": "checkpoint",
     "taskId": "T-602",
     "timestamp": "2026-04-22T06:57:15.430Z",
@@ -791,6 +617,235 @@
       "agent": "codex",
       "adapterId": "codex",
       "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-800",
+    "timestamp": "2026-04-26T07:43:40.090Z",
+    "files": [
+      ".agent-workflow/tasks/T-800",
+      ".agent-workflow/tasks/T-800/checkpoint.json",
+      ".agent-workflow/tasks/T-800/checkpoint.md",
+      ".agent-workflow/tasks/T-800/context.md",
+      ".agent-workflow/tasks/T-800/launch.codex.md",
+      ".agent-workflow/tasks/T-800/prompt.codex.md",
+      ".agent-workflow/tasks/T-800/run-request.codex.json",
+      ".agent-workflow/tasks/T-800/runs",
+      ".agent-workflow/tasks/T-800/task.json",
+      ".agent-workflow/tasks/T-800/task.md",
+      ".agent-workflow/tasks/T-800/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-800",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-801",
+    "timestamp": "2026-04-26T07:45:48.704Z",
+    "files": [
+      ".agent-workflow/tasks/T-801",
+      ".agent-workflow/tasks/T-801/checkpoint.json",
+      ".agent-workflow/tasks/T-801/checkpoint.md",
+      ".agent-workflow/tasks/T-801/context.md",
+      ".agent-workflow/tasks/T-801/launch.codex.md",
+      ".agent-workflow/tasks/T-801/prompt.codex.md",
+      ".agent-workflow/tasks/T-801/run-request.codex.json",
+      ".agent-workflow/tasks/T-801/runs",
+      ".agent-workflow/tasks/T-801/task.json",
+      ".agent-workflow/tasks/T-801/task.md",
+      ".agent-workflow/tasks/T-801/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-801",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "run:add",
+    "taskId": "T-801",
+    "timestamp": "2026-04-26T08:33:12.610Z",
+    "files": [
+      ".agent-workflow/tasks/T-801/checkpoint.json",
+      ".agent-workflow/tasks/T-801/checkpoint.md",
+      ".agent-workflow/tasks/T-801/context.md",
+      ".agent-workflow/tasks/T-801/runs",
+      ".agent-workflow/tasks/T-801/runs/run-1777192392351.json",
+      ".agent-workflow/tasks/T-801/task.json",
+      ".agent-workflow/tasks/T-801/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-801/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-801\",\n  \"title\": \"Dashboard 性能优化：解决加载慢和初始体验问题\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P0\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-26T07:45:48.457Z\",\n  \"updatedAt\": \"2026-04-26T07:45:48.457Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": [],\n  \"claimedBy\": null,\n  \"claimExpiry\": null\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-801/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-801 Context\n\n## Why now\n\nDescribe why this task matters.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- \n\n## Open questions\n\n- \n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-801/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-801 Verification\n\n## Draft checks\n\n- automated:\n- manual:\n\n## Verification records\n\n### Record 1\n\n- Files:\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n-\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-801/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-801\",\n  \"generatedAt\": \"2026-04-26T07:45:48.693Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"claimedBy\": null,\n  \"claimExpiry\": null,\n  \"claimStatus\": \"unclaimed\",\n  \"claimExpired\": false,\n  \"latestHandoff\": null,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add repo-relative scope paths to make evidence coverage automatic.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-801/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-801 Checkpoint\n\nGenerated at: 2026-04-26T07:45:48.693Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: Dashboard 性能优化：解决加载慢和初始体验问题\n- Priority: P0\n- Status: todo\n- Claimed by: unclaimed\n- Claim status: unclaimed\n- Latest run status: none\n- Total runs: 0\n\n## Latest handoff\n\n- No handoff recorded yet\n\n## Verification gate\n\n- Status: ready\n- Summary: Add repo-relative scope paths to make evidence coverage automatic.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-801/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-801/runs/run-1777192392351.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-801/runs/run-1777192392351.json",
+      "runId": "run-1777192392351"
+    }
+  },
+  {
+    "type": "done",
+    "taskId": "T-801",
+    "timestamp": "2026-04-26T08:37:29.639Z",
+    "files": [
+      ".agent-workflow/tasks/T-801/checkpoint.json",
+      ".agent-workflow/tasks/T-801/checkpoint.md",
+      ".agent-workflow/tasks/T-801/context.md",
+      ".agent-workflow/tasks/T-801/runs",
+      ".agent-workflow/tasks/T-801/runs/run-1777192649274.json",
+      ".agent-workflow/tasks/T-801/task.json",
+      ".agent-workflow/tasks/T-801/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-801/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-801\",\n  \"title\": \"Dashboard 性能优化：解决加载慢和初始体验问题\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P0\",\n  \"status\": \"in_progress\",\n  \"createdAt\": \"2026-04-26T07:45:48.457Z\",\n  \"updatedAt\": \"2026-04-26T08:33:12.350Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": [],\n  \"claimedBy\": null,\n  \"claimExpiry\": null\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-801/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-801 Context\n\n## Why now\n\nDescribe why this task matters.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- \n\n## Open questions\n\n-\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-801/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-801 Verification\n\n## Draft checks\n\n- automated:\n- manual:\n\n## Verification records\n\n### Record 1\n\n- Files:\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n-\n\n## Evidence 2026-04-26T08:33:12.350Z\n\n- Agent: manual\n- Status: draft\n- Scoped files covered: .agent-workflow/project-profile.json, .agent-workflow/project-profile.md, .agent-workflow/undo-log.json, .agent-workflow/tasks/T-800/checkpoint.json, .agent-workflow/tasks/T-800/checkpoint.md, .agent-workflow/tasks/T-800/context.md, .agent-workflow/tasks/T-800/launch.codex.md, .agent-workflow/tasks/T-800/prompt.codex.md, .agent-workflow/tasks/T-800/run-request.codex.json, .agent-workflow/tasks/T-800/task.json, .agent-workflow/tasks/T-800/task.md, .agent-workflow/tasks/T-800/verification.md, .agent-workflow/tasks/T-801/checkpoint.json, .agent-workflow/tasks/T-801/checkpoint.md, .agent-workflow/tasks/T-801/context.md, .agent-workflow/tasks/T-801/launch.codex.md, .agent-workflow/tasks/T-801/prompt.codex.md, .agent-workflow/tasks/T-801/run-request.codex.json, .agent-workflow/tasks/T-801/task.json, .agent-workflow/tasks/T-801/task.md, .agent-workflow/tasks/T-801/verification.md, test/agent-activity-evidence.test.js, test/smart-defaults-v2.test.js\n- Summary: 开始 Dashboard 性能优化工作\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-801/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-801\",\n  \"generatedAt\": \"2026-04-26T08:33:12.773Z\",\n  \"latestRunStatus\": \"draft\",\n  \"runCount\": 1,\n  \"claimedBy\": null,\n  \"claimExpiry\": null,\n  \"claimStatus\": \"unclaimed\",\n  \"claimExpired\": false,\n  \"latestHandoff\": null,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"No current workspace files match this task's declared scope.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 8,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-801/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-801 Checkpoint\n\nGenerated at: 2026-04-26T08:33:12.773Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n\n## Confirmed facts\n\n- Title: Dashboard 性能优化：解决加载慢和初始体验问题\n- Priority: P0\n- Status: in_progress\n- Claimed by: unclaimed\n- Claim status: unclaimed\n- Latest run status: draft\n- Total runs: 1\n\n## Latest handoff\n\n- No handoff recorded yet\n\n## Verification gate\n\n- Status: ready\n- Summary: No current workspace files match this task's declared scope.\n- Evidence coverage: no scoped files matched\n- Scope hints: 8\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: 开始 Dashboard 性能优化工作\n- Timestamp: 2026-04-26T08:33:12.350Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-801/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-801/runs/run-1777192649274.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-801/runs/run-1777192649274.json",
+      "runId": "run-1777192649274"
+    }
+  },
+  {
+    "type": "run:add",
+    "taskId": "T-802",
+    "timestamp": "2026-04-26T17:30:25.472Z",
+    "files": [
+      ".agent-workflow/tasks/T-802/checkpoint.json",
+      ".agent-workflow/tasks/T-802/checkpoint.md",
+      ".agent-workflow/tasks/T-802/context.md",
+      ".agent-workflow/tasks/T-802/runs",
+      ".agent-workflow/tasks/T-802/runs/run-1777224625314.json",
+      ".agent-workflow/tasks/T-802/task.json",
+      ".agent-workflow/tasks/T-802/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-802/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-802\",\n  \"title\": \"Correction: Dashboard 性能优化：解决加载慢和初始体验问题\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P0\",\n  \"status\": \"todo\",\n  \"createdAt\": \"2026-04-26T17:23:14.294Z\",\n  \"updatedAt\": \"2026-04-26T17:23:14.108Z\",\n  \"goal\": \"Correct rejected work from T-801.\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": [],\n  \"claimedBy\": null,\n  \"claimExpiry\": null,\n  \"parentTaskId\": \"T-801\",\n  \"rejectionFeedback\": \"骨架屏是好的开始，但没有解决根本问题。需要：\\n  1. 分析性能瓶颈（用 Chrome DevTools）\\n  2. 优化数据加载（只加载必要数据）\\n  3. 代码分割（路由级懒加载）\\n  4. 修复动画设计\\n  5. 测量改进效果\"\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-802/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-802 Context\n\n## Why now\n\nDescribe why this task matters.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- \n\n## Open questions\n\n-\n\n## Progress notes\n\n### 2026-04-26T17:23:14.108Z\n\nHuman rejected T-801 and requested correction.\n\nFeedback:\n骨架屏是好的开始，但没有解决根本问题。需要：\n  1. 分析性能瓶颈（用 Chrome DevTools）\n  2. 优化数据加载（只加载必要数据）\n  3. 代码分割（路由级懒加载）\n  4. 修复动画设计\n  5. 测量改进效果\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-802/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-802 Verification\n\n## Draft checks\n\n- automated:\n- manual:\n\n## Verification records\n\n### Record 1\n\n- Files:\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n-\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-802/checkpoint.json",
+          "kind": "file",
+          "existed": false
+        },
+        {
+          "path": ".agent-workflow/tasks/T-802/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-802 Checkpoint\n\n## Completed\n\n- Task created\n\n## Confirmed facts\n\n- Priority: P0\n- Status: todo\n\n## Remaining work\n\n- compile prompts\n- execute\n- record evidence\n\n## Resume instructions\n\n- start by reading task.md, context.md, and verification.md\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-802/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-802/runs/run-1777224625314.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-802/runs/run-1777224625314.json",
+      "runId": "run-1777224625314"
     }
   }
 ]

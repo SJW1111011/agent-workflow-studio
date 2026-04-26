@@ -1,0 +1,87 @@
+{
+  "taskId": "T-801",
+  "generatedAt": "2026-04-26T08:37:29.632Z",
+  "latestRunStatus": "draft",
+  "runCount": 2,
+  "claimedBy": null,
+  "claimExpiry": null,
+  "claimStatus": "unclaimed",
+  "claimExpired": false,
+  "latestHandoff": null,
+  "risks": [
+    "Scoped files still need verified evidence: dashboard-next/src/App.jsx, dashboard-next/src/styles/app.css, dashboard-next/src/components/LoadingSkeleton.jsx"
+  ],
+  "completed": [
+    "Prompt compiled",
+    "2 run(s) recorded",
+    "Task context captured"
+  ],
+  "verificationGate": {
+    "status": "action-required",
+    "message": "Scoped files are newer than the latest verified evidence linked to this task.",
+    "relevantChangeCount": 3,
+    "coveragePercent": 0,
+    "scopeHintCount": 8,
+    "ambiguousScopeCount": 0,
+    "scopedFileCount": 3,
+    "coveredFileCount": 0,
+    "relevantChangedFiles": [
+      {
+        "path": "dashboard-next/src/App.jsx",
+        "modifiedAt": "2026-04-26T08:36:14.127Z",
+        "changeType": "modified",
+        "gitState": "M",
+        "previousPath": null,
+        "matchedBy": [
+          {
+            "pattern": "dashboard-next/src/",
+            "source": "task.md"
+          },
+          {
+            "pattern": "dashboard-next/src/App.jsx",
+            "source": "task.md"
+          }
+        ],
+        "proofUpdatedAt": null,
+        "proofFreshnessSource": null,
+        "proofItems": []
+      },
+      {
+        "path": "dashboard-next/src/styles/app.css",
+        "modifiedAt": "2026-04-26T08:35:03.763Z",
+        "changeType": "modified",
+        "gitState": "M",
+        "previousPath": null,
+        "matchedBy": [
+          {
+            "pattern": "dashboard-next/src/",
+            "source": "task.md"
+          }
+        ],
+        "proofUpdatedAt": null,
+        "proofFreshnessSource": null,
+        "proofItems": []
+      },
+      {
+        "path": "dashboard-next/src/components/LoadingSkeleton.jsx",
+        "modifiedAt": "2026-04-26T08:33:37.031Z",
+        "changeType": "untracked",
+        "gitState": "??",
+        "previousPath": null,
+        "matchedBy": [
+          {
+            "pattern": "dashboard-next/src/",
+            "source": "task.md"
+          },
+          {
+            "pattern": "dashboard-next/src/components/",
+            "source": "task.md"
+          }
+        ],
+        "proofUpdatedAt": null,
+        "proofFreshnessSource": null,
+        "proofItems": []
+      }
+    ]
+  }
+}

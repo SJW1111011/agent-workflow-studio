@@ -40,7 +40,13 @@ export default function ApprovalPanel({ task }) {
   const [pendingAction, setPendingAction] = useState("");
   const meta = task && task.meta ? task.meta : {};
   const reviewStatus = normalizeReviewStatus(meta.reviewStatus);
-  const shouldRender = meta.status === "done" || reviewStatus;
+  const hasRuns = task && task.runs && task.runs.length > 0;
+
+  // Show approval panel if:
+  // 1. Task is done, OR
+  // 2. Task has runs (agent has done work), OR
+  // 3. Task already has a review status
+  const shouldRender = meta.status === "done" || hasRuns || reviewStatus;
 
   if (!shouldRender) {
     return null;

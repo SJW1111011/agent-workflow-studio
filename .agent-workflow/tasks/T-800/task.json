@@ -1,0 +1,16 @@
+{
+  "id": "T-800",
+  "title": "Dashboard 性能优化：解决加载慢和初始体验问题",
+  "recipeId": "feature",
+  "priority": "P0",
+  "status": "todo",
+  "createdAt": "2026-04-26T07:43:39.842Z",
+  "updatedAt": "2026-04-26T07:43:39.842Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": [],
+  "claimedBy": null,
+  "claimExpiry": null
+}

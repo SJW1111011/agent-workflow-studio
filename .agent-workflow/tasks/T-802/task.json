@@ -1,0 +1,18 @@
+{
+  "id": "T-802",
+  "title": "Correction: Dashboard 性能优化：解决加载慢和初始体验问题",
+  "recipeId": "feature",
+  "priority": "P0",
+  "status": "in_progress",
+  "createdAt": "2026-04-26T17:23:14.294Z",
+  "updatedAt": "2026-04-26T17:30:25.313Z",
+  "goal": "Correct rejected work from T-801.",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": [],
+  "claimedBy": null,
+  "claimExpiry": null,
+  "parentTaskId": "T-801",
+  "rejectionFeedback": "骨架屏是好的开始，但没有解决根本问题。需要：\n  1. 分析性能瓶颈（用 Chrome DevTools）\n  2. 优化数据加载（只加载必要数据）\n  3. 代码分割（路由级懒加载）\n  4. 修复动画设计\n  5. 测量改进效果"
+}

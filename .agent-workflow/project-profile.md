@@ -1,6 +1,6 @@
 # Project Profile
 
-Generated at: 2026-04-25T10:01:55.295Z
+Generated at: 2026-04-26T07:45:48.450Z
 
 ## Repository
 
@@ -24,12 +24,14 @@ Generated at: 2026-04-25T10:01:55.295Z
 - README.md
 - docs/ADAPTERS.md
 - docs/ARCHITECTURE.md
+- docs/CI_INTEGRATION.md
 - docs/GETTING_STARTED.md
 - docs/ISSUE_BACKLOG.md
 - docs/MCP_SETUP.md
 - docs/NEXT_AGENT_HANDOFF.md
 - docs/ORCHESTRATOR.md
 - docs/PRD.md
+- docs/PRODUCT_VISION.md
 - docs/PUBLISHING.md
 - docs/README.md
 - docs/RECIPES_AND_SCHEMA.md
@@ -61,7 +63,6 @@ Generated at: 2026-04-25T10:01:55.295Z
 - `quick`: `node src/cli.js quick`
 - `task:new`: `node src/cli.js task:new`
 - `task:list`: `node src/cli.js task:list`
-- `prompt:compile`: `node src/cli.js prompt:compile`
 - `run:prepare`: `node src/cli.js run:prepare`
 - `run:execute`: `node src/cli.js run:execute`
 - `checkpoint`: `node src/cli.js checkpoint`

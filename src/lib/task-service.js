@@ -331,7 +331,7 @@ function approveTask(workspaceRoot, taskId, options = {}) {
     throw conflict(`Task ${taskId} has already been rejected.`, "task_already_reviewed");
   }
 
-  assertTaskCanBeReviewed(meta, taskId);
+  assertTaskCanBeReviewed(workspaceRoot, meta, taskId);
 
   const reviewedAt = isNonEmptyString(options.reviewedAt)
     ? options.reviewedAt.trim()
@@ -368,7 +368,7 @@ function rejectTask(workspaceRoot, taskId, feedback, options = {}) {
     };
   }
 
-  assertTaskCanBeReviewed(meta, taskId);
+  assertTaskCanBeReviewed(workspaceRoot, meta, taskId);
 
   const rejectionFeedback = normalizeRejectionFeedback(feedback);
   const reviewedAt = isNonEmptyString(options.reviewedAt)
@@ -1070,9 +1070,29 @@ function normalizeQueueTrustScore(value) {
   return Math.round(numeric);
 }
 
-function assertTaskCanBeReviewed(meta, taskId) {
-  if (!meta || meta.status !== "done") {
-    throw conflict(`Task ${taskId} must be done before human review.`, "task_not_done");
+function assertTaskCanBeReviewed(workspaceRoot, meta, taskId) {
+  // Allow review if task is done OR if task has recorded runs (agent has done work)
+  // This enables review of in-progress work, which is important for iterative collaboration
+  const isDone = meta && meta.status === "done";
+
+  // Check if runs directory exists and has files
+  const files = taskFiles(workspaceRoot, taskId);
+  let hasWork = false;
+  if (fs.existsSync(files.runs)) {
+    const runFiles = fs.readdirSync(files.runs).filter(f => f.startsWith("run-") && f.endsWith(".json"));
+    hasWork = runFiles.length > 0;
+    console.log(`[DEBUG] Task ${taskId}: runs dir exists, found ${runFiles.length} run files`);
+  } else {
+    console.log(`[DEBUG] Task ${taskId}: runs dir does not exist at ${files.runs}`);
+  }
+
+  console.log(`[DEBUG] Task ${taskId}: isDone=${isDone}, hasWork=${hasWork}, status=${meta?.status}`);
+
+  if (!isDone && !hasWork) {
+    throw conflict(
+      `Task ${taskId} must have recorded work (runs > 0) or be marked done before human review.`,
+      "task_not_reviewable"
+    );
   }
 }
 
