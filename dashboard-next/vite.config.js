@@ -28,5 +28,16 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    // Code splitting optimization
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate vendor chunks for better caching
+          'preact-vendor': ['preact', 'preact/hooks'],
+        },
+      },
+    },
+    // Optimize chunk size
+    chunkSizeWarningLimit: 600,
   },
 });
