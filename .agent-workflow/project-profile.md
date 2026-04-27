@@ -1,6 +1,6 @@
 # Project Profile
 
-Generated at: 2026-04-27T01:43:32.617Z
+Generated at: 2026-04-27T07:33:55.892Z
 
 ## Repository
 
@@ -13,6 +13,7 @@ Generated at: 2026-04-27T01:43:32.617Z
 - .npm-cache-tmp
 - dashboard
 - dashboard-next
+- dashboard-v2
 - docs
 - scripts
 - src
@@ -25,6 +26,9 @@ Generated at: 2026-04-27T01:43:32.617Z
 - docs/ADAPTERS.md
 - docs/ARCHITECTURE.md
 - docs/CI_INTEGRATION.md
+- docs/DASHBOARD_CODE_REVIEW.md
+- docs/DASHBOARD_V2_REWRITE.md
+- docs/DOGFOODING_FINDINGS.md
 - docs/GETTING_STARTED.md
 - docs/ISSUE_BACKLOG.md
 - docs/MCP_SETUP.md

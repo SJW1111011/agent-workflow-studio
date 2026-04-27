@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-807",
+  "adapterId": "codex",
+  "title": "这是一个测试",
+  "generatedAt": "2026-04-27T07:33:55.950Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-807",
+  "promptFile": ".agent-workflow/tasks/T-807/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-807/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

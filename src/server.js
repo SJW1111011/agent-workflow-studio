@@ -649,13 +649,31 @@ function normalizeServerPort(value) {
 }
 
 function resolveDashboardAssets(options = {}) {
-  const legacyRoot = options.legacyDashboardRoot || path.join(__dirname, "..", "dashboard");
+  // Try dashboard-v2 first (new workbench)
+  const v2Root = path.join(__dirname, "..", "dashboard-v2", "dist");
+  if (!options.legacyDashboard && fs.existsSync(path.join(v2Root, "index.html"))) {
+    return {
+      mode: "v2",
+      root: v2Root,
+    };
+  }
+
+  // Then try dashboard-next (modern)
   const modernRoot = options.modernDashboardRoot || path.join(__dirname, "..", "dashboard-next", "dist");
   const useModern = !options.legacyDashboard && fs.existsSync(path.join(modernRoot, "index.html"));
 
+  if (useModern) {
+    return {
+      mode: "modern",
+      root: modernRoot,
+    };
+  }
+
+  // Fallback to legacy
+  const legacyRoot = options.legacyDashboardRoot || path.join(__dirname, "..", "dashboard");
   return {
-    mode: useModern ? "modern" : "legacy",
-    root: useModern ? modernRoot : legacyRoot,
+    mode: "legacy",
+    root: legacyRoot,
   };
 }
 

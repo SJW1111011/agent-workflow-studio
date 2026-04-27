@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-27T01:43:32.617Z",
+  "generatedAt": "2026-04-27T07:33:55.892Z",
   "repositoryName": "agent-workflow-studio",
   "topLevelDirectories": [
     ".claude",
@@ -7,6 +7,7 @@
     ".npm-cache-tmp",
     "dashboard",
     "dashboard-next",
+    "dashboard-v2",
     "docs",
     "scripts",
     "src",
@@ -18,6 +19,9 @@
     "docs/ADAPTERS.md",
     "docs/ARCHITECTURE.md",
     "docs/CI_INTEGRATION.md",
+    "docs/DASHBOARD_CODE_REVIEW.md",
+    "docs/DASHBOARD_V2_REWRITE.md",
+    "docs/DOGFOODING_FINDINGS.md",
     "docs/GETTING_STARTED.md",
     "docs/ISSUE_BACKLOG.md",
     "docs/MCP_SETUP.md",
