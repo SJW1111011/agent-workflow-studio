@@ -1,0 +1,90 @@
+{
+  "id": "run-1777271622081",
+  "taskId": "T-803",
+  "agent": "manual",
+  "status": "draft",
+  "summary": "重写 Dashboard v2：简单、清晰、可维护",
+  "createdAt": "2026-04-27T06:33:42.079Z",
+  "scopeProofPaths": [
+    "dashboard-v2/"
+  ],
+  "verificationChecks": [
+    {
+      "label": "从零开始重写 Dashboard",
+      "status": "recorded",
+      "artifacts": []
+    },
+    {
+      "label": "简单的架构：每个 hook/组件只做一件事",
+      "status": "recorded",
+      "artifacts": []
+    },
+    {
+      "label": "总代码 < 500 行 (vs 旧的 2000+ 行)",
+      "status": "recorded",
+      "artifacts": []
+    },
+    {
+      "label": "核心功能：查看、创建、详情、approve/reject",
+      "status": "recorded",
+      "artifacts": []
+    },
+    {
+      "label": "CSS Modules：模块化样式，不会冲突",
+      "status": "recorded",
+      "artifacts": []
+    },
+    {
+      "label": "Modal 正确实现：使用简单的方式，不卡死",
+      "status": "recorded",
+      "artifacts": []
+    },
+    {
+      "label": "运行在 http://localhost:5174",
+      "status": "recorded",
+      "artifacts": []
+    }
+  ],
+  "evidence": {
+    "proofPaths": [
+      "dashboard-v2/"
+    ],
+    "checks": [
+      {
+        "label": "从零开始重写 Dashboard",
+        "status": "recorded",
+        "artifacts": []
+      },
+      {
+        "label": "简单的架构：每个 hook/组件只做一件事",
+        "status": "recorded",
+        "artifacts": []
+      },
+      {
+        "label": "总代码 < 500 行 (vs 旧的 2000+ 行)",
+        "status": "recorded",
+        "artifacts": []
+      },
+      {
+        "label": "核心功能：查看、创建、详情、approve/reject",
+        "status": "recorded",
+        "artifacts": []
+      },
+      {
+        "label": "CSS Modules：模块化样式，不会冲突",
+        "status": "recorded",
+        "artifacts": []
+      },
+      {
+        "label": "Modal 正确实现：使用简单的方式，不卡死",
+        "status": "recorded",
+        "artifacts": []
+      },
+      {
+        "label": "运行在 http://localhost:5174",
+        "status": "recorded",
+        "artifacts": []
+      }
+    ]
+  }
+}

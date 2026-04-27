@@ -17,7 +17,7 @@ Describe why this task matters.
 
 ## Open questions
 
-- 
+-
 
 ## Constraints
 

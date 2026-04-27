@@ -12,6 +12,7 @@ export default function Header({
   actionStatus,
   activeTab,
   initialized,
+  onCreateTask,
   onThemeChange,
   pendingCount,
   resolvedTheme,
@@ -28,10 +29,17 @@ export default function Header({
         <p className="eyebrow">Local-first control plane</p>
         <h1>Agent Workflow Studio</h1>
         <p className="lede">
-          The Preact dashboard now reads the real workflow API, keeps task
-          selection in reducer-backed state, and preserves the legacy dashboard
-          as a truthful fallback.
+          A workbench for human-agent collaboration on projects.
         </p>
+        {onCreateTask && (
+          <button
+            className="button button-primary create-task-button"
+            onClick={onCreateTask}
+            type="button"
+          >
+            + Create Task
+          </button>
+        )}
       </div>
       <div className="hero-meta">
         <div className="theme-card">
