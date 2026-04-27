@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useState, useEffect } from 'preact/hooks';
 import { useTasks, useTaskDetail } from '../hooks/api';
 import Modal from '../components/Modal';
 import CreateTaskForm from '../components/CreateTaskForm';
@@ -9,6 +9,14 @@ export default function Dashboard() {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [view, setView] = useState('all'); // 'all', 'review', 'active', 'done'
+  const [autoRefresh, setAutoRefresh] = useState(true);
+
+  // Auto-refresh every 10 seconds
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const interval = setInterval(refresh, 10000);
+    return () => clearInterval(interval);
+  }, [autoRefresh, refresh]);
 
   function handleTaskCreated(result) {
     setShowCreateModal(false);
@@ -16,7 +24,7 @@ export default function Dashboard() {
     refresh();
   }
 
-  if (loading) {
+  if (loading && tasks.length === 0) {
     return <div className={styles.loading}>Loading...</div>;
   }
 
@@ -37,9 +45,27 @@ export default function Dashboard() {
           <h1>Agent Workflow Studio</h1>
           <p className={styles.subtitle}>Human-Agent Collaboration Workbench</p>
         </div>
-        <button className={styles.createButton} onClick={() => setShowCreateModal(true)}>
-          + Create Task
-        </button>
+        <div className={styles.headerActions}>
+          <button
+            className={styles.refreshButton}
+            onClick={refresh}
+            disabled={loading}
+            title="Refresh"
+          >
+            {loading ? '⟳' : '↻'}
+          </button>
+          <label className={styles.autoRefreshToggle}>
+            <input
+              type="checkbox"
+              checked={autoRefresh}
+              onChange={(e) => setAutoRefresh(e.target.checked)}
+            />
+            <span>Auto</span>
+          </label>
+          <button className={styles.createButton} onClick={() => setShowCreateModal(true)}>
+            + Create Task
+          </button>
+        </div>
       </header>
 
       <div className={styles.content}>
