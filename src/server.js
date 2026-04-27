@@ -124,6 +124,31 @@ function startDashboardServer(workspaceRoot, options = {}) {
           });
         }
 
+        if (requestUrl.pathname === "/api/tasks/generate" && request.method === "POST") {
+          const body = await readJsonBody(request);
+          if (!isNonEmptyString(body.title)) {
+            return sendJson(response, 400, { error: "title is required." });
+          }
+
+          // TODO: Call Claude API to generate task
+          // For now, return a structured response based on input
+          const generated = {
+            goal: `Implement ${body.title}. ${body.description || ''}`.trim(),
+            scope: [
+              "Implement core functionality",
+              "Add tests",
+              "Update documentation",
+            ],
+            deliverables: [
+              "Working implementation",
+              "Test coverage",
+              "Updated docs",
+            ],
+          };
+
+          return sendJson(response, 200, generated);
+        }
+
         if (requestUrl.pathname.startsWith("/api/tasks/") && request.method === "POST" && requestUrl.pathname.endsWith("/runs")) {
           const taskId = decodeURIComponent(
             requestUrl.pathname.slice("/api/tasks/".length, -"/runs".length)
