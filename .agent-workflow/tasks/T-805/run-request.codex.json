@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-805",
+  "adapterId": "codex",
+  "title": "任务创建流程：自然语言 → AI 生成",
+  "generatedAt": "2026-04-27T01:43:12.091Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-805",
+  "promptFile": ".agent-workflow/tasks/T-805/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-805/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

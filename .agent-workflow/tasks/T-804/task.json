@@ -1,0 +1,16 @@
+{
+  "id": "T-804",
+  "title": "简化 workflow_done：自动检测改动",
+  "recipeId": "feature",
+  "priority": "P0",
+  "status": "todo",
+  "createdAt": "2026-04-27T01:42:51.284Z",
+  "updatedAt": "2026-04-27T01:42:51.284Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": [],
+  "claimedBy": null,
+  "claimExpiry": null
+}

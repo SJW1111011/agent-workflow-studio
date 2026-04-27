@@ -1,0 +1,16 @@
+{
+  "id": "T-806",
+  "title": "真实 Agent 测试：用 Codex 验证工作流",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-27T01:43:32.623Z",
+  "updatedAt": "2026-04-27T01:43:32.623Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": [],
+  "claimedBy": null,
+  "claimExpiry": null
+}

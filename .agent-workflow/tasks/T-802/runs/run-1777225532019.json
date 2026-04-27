@@ -1,0 +1,72 @@
+{
+  "id": "run-1777225532019",
+  "taskId": "T-802",
+  "agent": "manual",
+  "status": "draft",
+  "summary": "优化 Dashboard 性能：代码分割和动画改进",
+  "createdAt": "2026-04-26T17:45:32.018Z",
+  "scopeProofPaths": [
+    "dashboard-next/vite.config.js",
+    "dashboard-next/src/styles/app.css"
+  ],
+  "verificationChecks": [
+    {
+      "label": "代码分割：preact-vendor 单独打包 (13.63 kB)",
+      "status": "recorded",
+      "artifacts": []
+    },
+    {
+      "label": "主 bundle 减小：138 kB → 125 kB",
+      "status": "recorded",
+      "artifacts": []
+    },
+    {
+      "label": "优化骨架屏动画：更流畅的 shimmer 效果",
+      "status": "recorded",
+      "artifacts": []
+    },
+    {
+      "label": "添加 fadeIn 动画和 reduced-motion 支持",
+      "status": "recorded",
+      "artifacts": []
+    },
+    {
+      "label": "构建时间：442ms",
+      "status": "recorded",
+      "artifacts": []
+    }
+  ],
+  "evidence": {
+    "proofPaths": [
+      "dashboard-next/vite.config.js",
+      "dashboard-next/src/styles/app.css"
+    ],
+    "checks": [
+      {
+        "label": "代码分割：preact-vendor 单独打包 (13.63 kB)",
+        "status": "recorded",
+        "artifacts": []
+      },
+      {
+        "label": "主 bundle 减小：138 kB → 125 kB",
+        "status": "recorded",
+        "artifacts": []
+      },
+      {
+        "label": "优化骨架屏动画：更流畅的 shimmer 效果",
+        "status": "recorded",
+        "artifacts": []
+      },
+      {
+        "label": "添加 fadeIn 动画和 reduced-motion 支持",
+        "status": "recorded",
+        "artifacts": []
+      },
+      {
+        "label": "构建时间：442ms",
+        "status": "recorded",
+        "artifacts": []
+      }
+    ]
+  }
+}

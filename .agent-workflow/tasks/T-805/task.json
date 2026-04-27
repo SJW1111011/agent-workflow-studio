@@ -1,0 +1,16 @@
+{
+  "id": "T-805",
+  "title": "任务创建流程：自然语言 → AI 生成",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-27T01:43:12.072Z",
+  "updatedAt": "2026-04-27T01:43:12.072Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": [],
+  "claimedBy": null,
+  "claimExpiry": null
+}

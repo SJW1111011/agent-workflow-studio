@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T-803",
+  "adapterId": "codex",
+  "title": "Dashboard 操作能力：让工作台真正可用",
+  "generatedAt": "2026-04-27T01:41:21.717Z",
+  "workspaceRoot": ".",
+  "taskRoot": ".agent-workflow/tasks/T-803",
+  "promptFile": ".agent-workflow/tasks/T-803/prompt.codex.md",
+  "launchPackFile": ".agent-workflow/tasks/T-803/launch.codex.md",
+  "expectedOutputs": [
+    "code changes or confirmed no-op",
+    "updated workflow docs",
+    "clear verification status",
+    "explicit unresolved risks"
+  ],
+  "runnerCommand": [
+    "cmd.exe",
+    "/d",
+    "/s",
+    "/c",
+    "codex"
+  ],
+  "commandMode": "exec",
+  "stdinMode": "promptFile",
+  "capabilities": {
+    "interactive": true,
+    "multiAgent": true,
+    "resumable": true
+  }
+}

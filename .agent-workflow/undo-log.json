@@ -1,242 +1,5 @@
 [
   {
-    "type": "checkpoint",
-    "taskId": "T-602",
-    "timestamp": "2026-04-22T06:57:15.430Z",
-    "files": [
-      ".agent-workflow/tasks/T-602/checkpoint.json",
-      ".agent-workflow/tasks/T-602/checkpoint.md",
-      ".agent-workflow/tasks/T-602/context.md",
-      ".agent-workflow/tasks/T-602/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-602/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Context\n\n## Why now\n\nPolyglot repositories can match more than one evidence collector, so the old \"first match wins\" path leaves verification incomplete even when users expect smart defaults to do the right thing. This task closes that gap while keeping an explicit skip path for fast manual evidence recording.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/smart-defaults.js` now exports `inferAllTestResults`, executes every matching collector in priority order, and keeps the older single-result helper as a compatibility wrapper.\n- `src/lib/task-service.js` now derives inferred run status from all collector outcomes, maps collector results into inferred verification checks, and persists additive collector metadata under `run.evidence.collectors[]`.\n- `src/lib/mcp-tools.js` now accepts `skipTest` as the preferred MCP flag while still honoring the legacy `skipInferTest` alias.\n- The CLI already exposed `--skip-test`, so the user-visible CLI change landed through the shared smart-default execution path instead of new argument parsing.\n- `test/smart-defaults-v2.test.js` now covers multi-collector execution order, additive collector evidence, `run:add --skip-test`, and `workflow_done` with `skipTest: true`.\n- Acceptance verification completed on 2026-04-22 with `npm test` and `npm run smoke`.\n\n## Open questions\n\n- None at handoff.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Verification\n\n## Draft checks\n\n- automated: `npm test`; `npm run smoke`; `npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`\n- manual: Reviewed `.agent-workflow/tasks/T-602/runs/run-1776840956496.json` to confirm the additive evidence envelope still retains top-level proof and check fields on the dogfood run; automated coverage in `test/smart-defaults-v2.test.js` covers `evidence.collectors[]` when collectors execute.\n\n## Verification records\n\n### Record 1\n\n- Files: `src/lib/smart-defaults.js`, `src/lib/task-service.js`, `src/lib/mcp-tools.js`, `test/smart-defaults-v2.test.js`\n- Check: `npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`; `npm test`; `npm run smoke`\n- Result: Passed on 2026-04-22. Focused coverage exercised multi-collector ordering, additive collector persistence, CLI `run:add --skip-test`, and MCP `workflow_done` with `skipTest: true`.\n- Artifact: `.agent-workflow/tasks/T-602/runs/run-1776840956496.json`\n\n## Blocking gaps\n\n- None identified after acceptance verification.\n\n## Evidence 2026-04-22T06:55:56.494Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/smart-defaults.js, src/lib/task-service.js, src/lib/mcp-tools.js, test/smart-defaults-v2.test.js\n- Verification artifacts: .agent-workflow/tasks/T-602/checkpoint.md\n- Proof artifacts: .agent-workflow/tasks/T-602/checkpoint.md\n- Summary: Implemented multi-collector smart defaults integration.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-602\",\n  \"generatedAt\": \"2026-04-22T06:56:42.190Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 100,\n    \"scopeHintCount\": 12,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 4,\n    \"coveredFileCount\": 4,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Checkpoint\n\nGenerated at: 2026-04-22T06:56:42.190Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Smart Defaults v2: Multi-Collector Integration\n- Priority: P1\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (4/4 scoped files)\n- Scope hints: 12\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- src/lib/mcp-tools.js\n- src/lib/smart-defaults.js\n- src/lib/task-service.js\n- test/smart-defaults-v2.test.js\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=src/lib/smart-defaults.js, src/lib/task-service.js, src/lib/mcp-tools.js, test/smart-defaults-v2.test.js | checks=`npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`; `npm test`; `npm run smoke` (result: Passed on 2026-04-22. Focused coverage exercised multi-collector ordering, additive collector persistence, CLI `run:add --skip-test`, and MCP `workflow_done` with `skipTest: true`.) | artifacts=.agent-workflow/tasks/T-602/runs/run-1776840956496.json\n- run:run-1776840956496 | paths=src/lib/smart-defaults.js, src/lib/task-service.js, src/lib/mcp-tools.js, test/smart-defaults-v2.test.js | checks=[passed] npm test; [passed] npm run smoke; [passed] npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js | artifacts=.agent-workflow/tasks/T-602/checkpoint.md\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Implemented multi-collector smart defaults integration.\n- Timestamp: 2026-04-22T06:55:56.494Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
-        }
-      ]
-    }
-  },
-  {
-    "type": "checkpoint",
-    "taskId": "T-602",
-    "timestamp": "2026-04-22T06:58:00.426Z",
-    "files": [
-      ".agent-workflow/tasks/T-602/checkpoint.json",
-      ".agent-workflow/tasks/T-602/checkpoint.md",
-      ".agent-workflow/tasks/T-602/context.md",
-      ".agent-workflow/tasks/T-602/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-602/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Context\n\n## Why now\n\nPolyglot repositories can match more than one evidence collector, so the old \"first match wins\" path leaves verification incomplete even when users expect smart defaults to do the right thing. This task closes that gap while keeping an explicit skip path for fast manual evidence recording.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/smart-defaults.js` now exports `inferAllTestResults`, executes every matching collector in priority order, and keeps the older single-result helper as a compatibility wrapper.\n- `src/lib/task-service.js` now derives inferred run status from all collector outcomes, maps collector results into inferred verification checks, and persists additive collector metadata under `run.evidence.collectors[]`.\n- `src/lib/mcp-tools.js` now accepts `skipTest` as the preferred MCP flag while still honoring the legacy `skipInferTest` alias.\n- The CLI already exposed `--skip-test`, so the user-visible CLI change landed through the shared smart-default execution path instead of new argument parsing.\n- `test/smart-defaults-v2.test.js` now covers multi-collector execution order, additive collector evidence, `run:add --skip-test`, and `workflow_done` with `skipTest: true`.\n- Acceptance verification completed on 2026-04-22 with `npm test` and `npm run smoke`.\n\n## Open questions\n\n- None at handoff.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Verification\n\n## Draft checks\n\n- automated: `npm test`; `npm run smoke`; `npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`\n- manual: Reviewed `.agent-workflow/tasks/T-602/runs/run-1776840956496.json` to confirm the additive evidence envelope still retains top-level proof and check fields on the dogfood run; automated coverage in `test/smart-defaults-v2.test.js` covers `evidence.collectors[]` when collectors execute.\n\n## Verification records\n\n### Record 1\n\n- Files: `src/lib/done.js`, `src/lib/smart-defaults.js`, `src/lib/task-service.js`, `src/lib/mcp-tools.js`, `test/smart-defaults-v2.test.js`\n- Check: `npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`; `npm test`; `npm run smoke`\n- Result: Passed on 2026-04-22. Focused coverage exercised multi-collector ordering, additive collector persistence, CLI `run:add --skip-test`, and MCP `workflow_done` with `skipTest: true`; the full `npm test` acceptance run also exercised the current `done` path.\n- Artifact: `.agent-workflow/tasks/T-602/runs/run-1776840956496.json`\n\n## Blocking gaps\n\n- None identified after acceptance verification.\n\n## Evidence 2026-04-22T06:55:56.494Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/smart-defaults.js, src/lib/task-service.js, src/lib/mcp-tools.js, test/smart-defaults-v2.test.js\n- Verification artifacts: .agent-workflow/tasks/T-602/checkpoint.md\n- Proof artifacts: .agent-workflow/tasks/T-602/checkpoint.md\n- Summary: Implemented multi-collector smart defaults integration.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-602\",\n  \"generatedAt\": \"2026-04-22T06:57:15.411Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [\n    \"Some scoped files still need verified evidence: src/lib/done.js\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Some scoped files are already linked to verified evidence\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"incomplete\",\n    \"message\": \"Some scoped files already have verified evidence, but newer scoped changes still need attention.\",\n    \"relevantChangeCount\": 1,\n    \"coveragePercent\": 80,\n    \"scopeHintCount\": 12,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 5,\n    \"coveredFileCount\": 4,\n    \"relevantChangedFiles\": [\n      {\n        \"path\": \"src/lib/done.js\",\n        \"modifiedAt\": \"2026-04-22T06:57:11.422Z\",\n        \"changeType\": \"modified\",\n        \"gitState\": \"M\",\n        \"previousPath\": null,\n        \"matchedBy\": [\n          {\n            \"pattern\": \"src/lib/done.js\",\n            \"source\": \"task.md\"\n          }\n        ],\n        \"proofUpdatedAt\": null,\n        \"proofFreshnessSource\": null,\n        \"proofItems\": []\n      }\n    ]\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Checkpoint\n\nGenerated at: 2026-04-22T06:57:15.411Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Some scoped files are already linked to verified evidence\n\n## Confirmed facts\n\n- Title: Smart Defaults v2: Multi-Collector Integration\n- Priority: P1\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: incomplete\n- Summary: Some scoped files already have verified evidence, but newer scoped changes still need attention.\n- Evidence coverage: 80% (4/5 scoped files)\n- Scope hints: 12\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 1\n\n### Scoped files awaiting proof\n\n- src/lib/done.js\n\n### Scoped files already linked to proof\n\n- src/lib/mcp-tools.js\n- src/lib/smart-defaults.js\n- src/lib/task-service.js\n- test/smart-defaults-v2.test.js\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=src/lib/smart-defaults.js, src/lib/task-service.js, src/lib/mcp-tools.js, test/smart-defaults-v2.test.js | checks=`npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`; `npm test`; `npm run smoke` (result: Passed on 2026-04-22. Focused coverage exercised multi-collector ordering, additive collector persistence, CLI `run:add --skip-test`, and MCP `workflow_done` with `skipTest: true`.) | artifacts=.agent-workflow/tasks/T-602/runs/run-1776840956496.json\n- run:run-1776840956496 | paths=src/lib/smart-defaults.js, src/lib/task-service.js, src/lib/mcp-tools.js, test/smart-defaults-v2.test.js | checks=[passed] npm test; [passed] npm run smoke; [passed] npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js | artifacts=.agent-workflow/tasks/T-602/checkpoint.md\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- Some scoped files still need verified evidence: src/lib/done.js\n\n## Latest evidence\n\n- Summary: Implemented multi-collector smart defaults integration.\n- Timestamp: 2026-04-22T06:55:56.494Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Keep the existing proof, then add explicit coverage for src/lib/done.js before handoff.\n4. Continue only after acknowledging the risks above.\n"
-        }
-      ]
-    }
-  },
-  {
-    "type": "run:add",
-    "taskId": "T-602",
-    "timestamp": "2026-04-22T06:58:27.626Z",
-    "files": [
-      ".agent-workflow/tasks/T-602/checkpoint.json",
-      ".agent-workflow/tasks/T-602/checkpoint.md",
-      ".agent-workflow/tasks/T-602/context.md",
-      ".agent-workflow/tasks/T-602/runs",
-      ".agent-workflow/tasks/T-602/runs/run-1776841107347.json",
-      ".agent-workflow/tasks/T-602/task.json",
-      ".agent-workflow/tasks/T-602/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-602/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-602\",\n  \"title\": \"Smart Defaults v2: Multi-Collector Integration\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P1\",\n  \"status\": \"in_progress\",\n  \"createdAt\": \"2026-04-21T17:56:30.618Z\",\n  \"updatedAt\": \"2026-04-22T06:55:56.494Z\",\n  \"goal\": \"\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": []\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Context\n\n## Why now\n\nPolyglot repositories can match more than one evidence collector, so the old \"first match wins\" path leaves verification incomplete even when users expect smart defaults to do the right thing. This task closes that gap while keeping an explicit skip path for fast manual evidence recording.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/smart-defaults.js` now exports `inferAllTestResults`, executes every matching collector in priority order, and keeps the older single-result helper as a compatibility wrapper.\n- `src/lib/task-service.js` now derives inferred run status from all collector outcomes, maps collector results into inferred verification checks, and persists additive collector metadata under `run.evidence.collectors[]`.\n- `src/lib/mcp-tools.js` now accepts `skipTest` as the preferred MCP flag while still honoring the legacy `skipInferTest` alias.\n- The CLI already exposed `--skip-test`, so the user-visible CLI change landed through the shared smart-default execution path instead of new argument parsing.\n- `test/smart-defaults-v2.test.js` now covers multi-collector execution order, additive collector evidence, `run:add --skip-test`, and `workflow_done` with `skipTest: true`.\n- Acceptance verification completed on 2026-04-22 with `npm test` and `npm run smoke`.\n\n## Open questions\n\n- None at handoff.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Verification\n\n## Draft checks\n\n- automated: `npm test`; `npm run smoke`; `npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`\n- manual: Reviewed `.agent-workflow/tasks/T-602/runs/run-1776840956496.json` to confirm the additive evidence envelope still retains top-level proof and check fields on the dogfood run; automated coverage in `test/smart-defaults-v2.test.js` covers `evidence.collectors[]` when collectors execute.\n\n## Verification records\n\n### Record 1\n\n- Files: `src/lib/done.js`, `src/lib/smart-defaults.js`, `src/lib/task-service.js`, `src/lib/mcp-tools.js`, `test/smart-defaults-v2.test.js`\n- Check: `npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`; `npm test`; `npm run smoke`\n- Result: Passed on 2026-04-22. Focused coverage exercised multi-collector ordering, additive collector persistence, CLI `run:add --skip-test`, and MCP `workflow_done` with `skipTest: true`; the full `npm test` acceptance run also exercised the current `done` path.\n- Artifact: `.agent-workflow/tasks/T-602/runs/run-1776840956496.json`\n\n## Blocking gaps\n\n- None identified after acceptance verification.\n\n## Evidence 2026-04-22T06:55:56.494Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/smart-defaults.js, src/lib/task-service.js, src/lib/mcp-tools.js, test/smart-defaults-v2.test.js\n- Verification artifacts: .agent-workflow/tasks/T-602/checkpoint.md\n- Proof artifacts: .agent-workflow/tasks/T-602/checkpoint.md\n- Summary: Implemented multi-collector smart defaults integration.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-602\",\n  \"generatedAt\": \"2026-04-22T06:58:00.408Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 1,\n  \"risks\": [\n    \"Some scoped files still need verified evidence: src/lib/mcp-tools.js\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"1 run(s) recorded\",\n    \"Task context captured\",\n    \"Some scoped files are already linked to verified evidence\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"incomplete\",\n    \"message\": \"Some scoped files already have verified evidence, but newer scoped changes still need attention.\",\n    \"relevantChangeCount\": 1,\n    \"coveragePercent\": 80,\n    \"scopeHintCount\": 12,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 5,\n    \"coveredFileCount\": 4,\n    \"relevantChangedFiles\": [\n      {\n        \"path\": \"src/lib/mcp-tools.js\",\n        \"modifiedAt\": \"2026-04-22T06:57:59.334Z\",\n        \"changeType\": \"modified\",\n        \"gitState\": \"M\",\n        \"previousPath\": null,\n        \"matchedBy\": [\n          {\n            \"pattern\": \"src/lib/mcp-tools.js\",\n            \"source\": \"task.md\"\n          }\n        ],\n        \"proofUpdatedAt\": \"2026-04-22T06:57:55.198Z\",\n        \"proofFreshnessSource\": null,\n        \"proofItems\": [\n          {\n            \"sourceType\": \"run\",\n            \"sourceLabel\": \"run-1776840956496\",\n            \"recordedAt\": \"2026-04-22T06:55:56.494Z\",\n            \"paths\": [\n              \"src/lib/smart-defaults.js\",\n              \"src/lib/task-service.js\",\n              \"src/lib/mcp-tools.js\",\n              \"test/smart-defaults-v2.test.js\"\n            ],\n            \"anchorCount\": 0,\n            \"checks\": [\n              \"[passed] npm test\",\n              \"[passed] npm run smoke\",\n              \"[passed] npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js\"\n            ],\n            \"artifacts\": [\n              \".agent-workflow/tasks/T-602/checkpoint.md\"\n            ],\n            \"verified\": true,\n            \"strong\": true\n          },\n          {\n            \"sourceType\": \"manual\",\n            \"sourceLabel\": \"verification.md#proof-1\",\n            \"recordedAt\": \"2026-04-22T06:57:55.198Z\",\n            \"paths\": [\n              \"src/lib/done.js\",\n              \"src/lib/smart-defaults.js\",\n              \"src/lib/task-service.js\",\n              \"src/lib/mcp-tools.js\",\n              \"test/smart-defaults-v2.test.js\"\n            ],\n            \"anchorCount\": 0,\n            \"checks\": [\n              \"`npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`; `npm test`; `npm run smoke` (result: Passed on 2026-04-22. Focused coverage exercised multi-collector ordering, additive collector persistence, CLI `run:add --skip-test`, and MCP `workflow_done` with `skipTest: true`; the full `npm test` acceptance run also exercised the current `done` path.)\"\n            ],\n            \"artifacts\": [\n              \".agent-workflow/tasks/T-602/runs/run-1776840956496.json\"\n            ],\n            \"verified\": true,\n            \"strong\": true\n          }\n        ]\n      }\n    ]\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Checkpoint\n\nGenerated at: 2026-04-22T06:58:00.408Z\n\n## Completed\n\n- Prompt compiled\n- 1 run(s) recorded\n- Task context captured\n- Some scoped files are already linked to verified evidence\n\n## Confirmed facts\n\n- Title: Smart Defaults v2: Multi-Collector Integration\n- Priority: P1\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 1\n\n## Verification gate\n\n- Status: incomplete\n- Summary: Some scoped files already have verified evidence, but newer scoped changes still need attention.\n- Evidence coverage: 80% (4/5 scoped files)\n- Scope hints: 12\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 1\n\n### Scoped files awaiting proof\n\n- src/lib/mcp-tools.js\n\n### Scoped files already linked to proof\n\n- src/lib/done.js\n- src/lib/smart-defaults.js\n- src/lib/task-service.js\n- test/smart-defaults-v2.test.js\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=src/lib/done.js, src/lib/smart-defaults.js, src/lib/task-service.js, src/lib/mcp-tools.js, test/smart-defaults-v2.test.js | checks=`npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`; `npm test`; `npm run smoke` (result: Passed on 2026-04-22. Focused coverage exercised multi-collector ordering, additive collector persistence, CLI `run:add --skip-test`, and MCP `workflow_done` with `skipTest: true`; the full `npm test` acceptance run also exercised the current `done` path.) | artifacts=.agent-workflow/tasks/T-602/runs/run-1776840956496.json\n- run:run-1776840956496 | paths=src/lib/smart-defaults.js, src/lib/task-service.js, src/lib/mcp-tools.js, test/smart-defaults-v2.test.js | checks=[passed] npm test; [passed] npm run smoke; [passed] npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js | artifacts=.agent-workflow/tasks/T-602/checkpoint.md\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- Some scoped files still need verified evidence: src/lib/mcp-tools.js\n\n## Latest evidence\n\n- Summary: Implemented multi-collector smart defaults integration.\n- Timestamp: 2026-04-22T06:55:56.494Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Keep the existing proof, then add explicit coverage for src/lib/mcp-tools.js before handoff.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/runs/run-1776841107347.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-602/runs/run-1776841107347.json",
-      "runId": "run-1776841107347"
-    }
-  },
-  {
-    "type": "checkpoint",
-    "taskId": "T-602",
-    "timestamp": "2026-04-22T06:58:54.380Z",
-    "files": [
-      ".agent-workflow/tasks/T-602/checkpoint.json",
-      ".agent-workflow/tasks/T-602/checkpoint.md",
-      ".agent-workflow/tasks/T-602/context.md",
-      ".agent-workflow/tasks/T-602/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-602/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Context\n\n## Why now\n\nPolyglot repositories can match more than one evidence collector, so the old \"first match wins\" path leaves verification incomplete even when users expect smart defaults to do the right thing. This task closes that gap while keeping an explicit skip path for fast manual evidence recording.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `src/lib/smart-defaults.js` now exports `inferAllTestResults`, executes every matching collector in priority order, and keeps the older single-result helper as a compatibility wrapper.\n- `src/lib/task-service.js` now derives inferred run status from all collector outcomes, maps collector results into inferred verification checks, and persists additive collector metadata under `run.evidence.collectors[]`.\n- `src/lib/mcp-tools.js` now accepts `skipTest` as the preferred MCP flag while still honoring the legacy `skipInferTest` alias.\n- The CLI already exposed `--skip-test`, so the user-visible CLI change landed through the shared smart-default execution path instead of new argument parsing.\n- `test/smart-defaults-v2.test.js` now covers multi-collector execution order, additive collector evidence, `run:add --skip-test`, and `workflow_done` with `skipTest: true`.\n- Acceptance verification completed on 2026-04-22 with `npm test` and `npm run smoke`.\n\n## Open questions\n\n- None at handoff.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Verification\n\n## Draft checks\n\n- automated: `npm test`; `npm run smoke`; `npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`\n- manual: Reviewed `.agent-workflow/tasks/T-602/runs/run-1776841107347.json` to confirm the additive evidence envelope still retains top-level proof and check fields on the latest all-paths dogfood run; automated coverage in `test/smart-defaults-v2.test.js` covers `evidence.collectors[]` when collectors execute.\n\n## Verification records\n\n### Record 1\n\n- Files: `src/lib/done.js`, `src/lib/smart-defaults.js`, `src/lib/task-service.js`, `src/lib/mcp-tools.js`, `test/smart-defaults-v2.test.js`\n- Check: `npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`; `npm test`; `npm run smoke`\n- Result: Passed on 2026-04-22. Focused coverage exercised multi-collector ordering, additive collector persistence, CLI `run:add --skip-test`, and MCP `workflow_done` with `skipTest: true`; the full `npm test` acceptance run also exercised the current `done` path.\n- Artifact: `.agent-workflow/tasks/T-602/runs/run-1776841107347.json`\n\n## Blocking gaps\n\n- None identified after acceptance verification.\n\n## Evidence 2026-04-22T06:55:56.494Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/smart-defaults.js, src/lib/task-service.js, src/lib/mcp-tools.js, test/smart-defaults-v2.test.js\n- Verification artifacts: .agent-workflow/tasks/T-602/checkpoint.md\n- Proof artifacts: .agent-workflow/tasks/T-602/checkpoint.md\n- Summary: Implemented multi-collector smart defaults integration.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js\n\n## Evidence 2026-04-22T06:58:27.345Z\n\n- Agent: manual\n- Status: passed\n- Scoped files covered: src/lib/done.js, src/lib/mcp-tools.js, src/lib/smart-defaults.js, src/lib/task-service.js, test/smart-defaults-v2.test.js\n- Verification artifacts: .agent-workflow/tasks/T-602/checkpoint.md\n- Proof artifacts: .agent-workflow/tasks/T-602/checkpoint.md\n- Summary: Refreshed proof coverage for all in-scope smart-default paths.\n- Verification check: [passed] npm test\n- Verification check: [passed] npm run smoke\n- Verification check: [passed] npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-602\",\n  \"generatedAt\": \"2026-04-22T06:58:27.857Z\",\n  \"latestRunStatus\": \"passed\",\n  \"runCount\": 2,\n  \"risks\": [],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"2 run(s) recorded\",\n    \"Task context captured\",\n    \"Scoped verification evidence looks current\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"covered\",\n    \"message\": \"Recorded verification covers the current scoped file set.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 100,\n    \"scopeHintCount\": 12,\n    \"ambiguousScopeCount\": 0,\n    \"scopedFileCount\": 5,\n    \"coveredFileCount\": 5,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-602/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-602 Checkpoint\n\nGenerated at: 2026-04-22T06:58:27.857Z\n\n## Completed\n\n- Prompt compiled\n- 2 run(s) recorded\n- Task context captured\n- Scoped verification evidence looks current\n\n## Confirmed facts\n\n- Title: Smart Defaults v2: Multi-Collector Integration\n- Priority: P1\n- Status: in_progress\n- Latest run status: passed\n- Total runs: 2\n\n## Verification gate\n\n- Status: covered\n- Summary: Recorded verification covers the current scoped file set.\n- Evidence coverage: 100% (5/5 scoped files)\n- Scope hints: 12\n- Ambiguous scope entries: 0\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- src/lib/done.js\n- src/lib/mcp-tools.js\n- src/lib/smart-defaults.js\n- src/lib/task-service.js\n- test/smart-defaults-v2.test.js\n\n### Explicit evidence items\n\n- manual:verification.md#proof-1 | paths=src/lib/done.js, src/lib/smart-defaults.js, src/lib/task-service.js, src/lib/mcp-tools.js, test/smart-defaults-v2.test.js | checks=`npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js`; `npm test`; `npm run smoke` (result: Passed on 2026-04-22. Focused coverage exercised multi-collector ordering, additive collector persistence, CLI `run:add --skip-test`, and MCP `workflow_done` with `skipTest: true`; the full `npm test` acceptance run also exercised the current `done` path.) | artifacts=.agent-workflow/tasks/T-602/runs/run-1776840956496.json\n- run:run-1776840956496 | paths=src/lib/smart-defaults.js, src/lib/task-service.js, src/lib/mcp-tools.js, test/smart-defaults-v2.test.js | checks=[passed] npm test; [passed] npm run smoke; [passed] npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js | artifacts=.agent-workflow/tasks/T-602/checkpoint.md\n- run:run-1776841107347 | paths=src/lib/done.js, src/lib/mcp-tools.js, src/lib/smart-defaults.js, src/lib/task-service.js, test/smart-defaults-v2.test.js | checks=[passed] npm test; [passed] npm run smoke; [passed] npm test -- test/smart-defaults-v2.test.js test/smart-defaults.test.js test/mcp-tools.test.js | artifacts=.agent-workflow/tasks/T-602/checkpoint.md\n\n### Scope entries that need tightening\n\n- None\n\n## Risks\n\n- No immediate risks detected\n\n## Latest evidence\n\n- Summary: Refreshed proof coverage for all in-scope smart-default paths.\n- Timestamp: 2026-04-22T06:58:27.345Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Refresh verification.md and checkpoint.md again if scoped files change.\n4. Continue only after acknowledging the risks above.\n"
-        }
-      ]
-    }
-  },
-  {
-    "type": "done",
-    "taskId": "T-603",
-    "timestamp": "2026-04-22T07:06:20.627Z",
-    "files": [
-      ".agent-workflow/tasks/T-603/checkpoint.json",
-      ".agent-workflow/tasks/T-603/checkpoint.md",
-      ".agent-workflow/tasks/T-603/context.md",
-      ".agent-workflow/tasks/T-603/runs",
-      ".agent-workflow/tasks/T-603/runs/run-1776841580111.json",
-      ".agent-workflow/tasks/T-603/task.json",
-      ".agent-workflow/tasks/T-603/verification.md"
-    ],
-    "metadata": {
-      "restore": [
-        {
-          "path": ".agent-workflow/tasks/T-603/task.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"id\": \"T-603\",\n  \"title\": \"Agent Activity Evidence\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P1\",\n  \"status\": \"in_progress\",\n  \"createdAt\": \"2026-04-21T18:16:15.370Z\",\n  \"updatedAt\": \"2026-04-22T15:05:00.000Z\",\n  \"goal\": \"Let agents record structured activity breadcrumbs and richer completion evidence so task handoffs and verification stay grounded in durable repo artifacts.\",\n  \"scope\": [\n    \"src/lib/mcp-tools.js\",\n    \"src/lib/task-service.js\",\n    \"src/lib/done.js\",\n    \"src/lib/schema-validator.js\",\n    \"src/server.js\",\n    \"test/agent-activity-evidence.test.js\",\n    \"test/mcp-server.test.js\"\n  ],\n  \"nonGoals\": [\n    \"dashboard-next/\"\n  ],\n  \"requiredDocs\": [\n    \".agent-workflow/project-profile.md\",\n    \".agent-workflow/memory/product.md\",\n    \".agent-workflow/memory/architecture.md\"\n  ],\n  \"verificationCommands\": [\n    \"npm test\"\n  ]\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-603/context.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-603 Context\n\n## Why now\n\nAgents can already finish a task with durable run evidence, but they still lack a lightweight way to leave incremental breadcrumbs or a structured summary of what happened during the session. This task closes that gap so future handoffs can see both mid-flight activity and richer final evidence without inventing a second workflow system.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- `workflow_done` already owns durable run recording and checkpoint refresh, so `evidenceContext` needed to extend that path instead of creating a parallel completion contract.\n- Activity breadcrumbs share the task `runs/` folder, which means run readers and validators must ignore `activity-*.json` files or they will treat breadcrumbs as malformed runs.\n- `GET /api/tasks/:taskId` already returns the spread `getTaskDetail()` payload, so exposing `activityRecords[]` only required enriching task detail data and keeping the run list clean.\n- Full automated coverage passed on 2026-04-22 with `npm test` (`39` files, `189` tests), including new backend tests for MCP tool listing, `workflow_done` evidence-context backfill, activity persistence, and task-detail API output.\n\n## Open questions\n\n- Should activity records eventually have a retention cap or cleanup flow when long-running tasks emit many breadcrumbs?\n\n## Progress notes\n\n### 2026-04-22T15:02:44.3104284+08:00\n\nRead the T-603 task bundle and project memory, then traced the current MCP tool surface, run persistence, and task-detail API so the new activity evidence could plug into the existing contracts instead of forking them.\n\n### 2026-04-22T15:05:00.000+08:00\n\nImplemented `workflow_record_activity`, added `evidenceContext` support to `workflow_done`, split activity breadcrumbs from normal run records in task-service and validation paths, and added regression coverage for the new MCP and API behavior.\n\n### 2026-04-22T15:05:30.000+08:00\n\nRan the focused activity-evidence tests, then reran the full `npm test` suite and captured the passing output in `.agent-workflow/tasks/T-603/runs/npm-test-20260422.log`.\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P1\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-603/verification.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-603 Verification\n\n## Draft checks\n\n- automated: `npm test -- test/agent-activity-evidence.test.js test/mcp-server.test.js`\n- automated: `npm test`\n- manual: No manual UI verification is required for this task because dashboard display work is explicitly out of scope and tracked by T-604.\n\n## Verification records\n\n### Record 1\n\n- Files: src/lib/mcp-tools.js, src/lib/task-service.js, src/lib/done.js, src/lib/schema-validator.js, src/server.js, test/agent-activity-evidence.test.js, test/mcp-server.test.js\n- Check: `npm test -- test/agent-activity-evidence.test.js test/mcp-server.test.js`; `npm test`\n- Result: Passed on 2026-04-22. The focused regression slice proved the new MCP tool surface and activity-evidence behavior, and the full suite stayed green at `39` files / `189` tests.\n- Artifact: `.agent-workflow/tasks/T-603/runs/npm-test-20260422.log`\n\n## Blocking gaps\n\n- Dashboard rendering of activity evidence is intentionally not covered here because T-604 owns the UI follow-up.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-603/checkpoint.json",
-          "kind": "file",
-          "existed": true,
-          "content": "{\n  \"taskId\": \"T-603\",\n  \"generatedAt\": \"2026-04-21T18:16:15.549Z\",\n  \"latestRunStatus\": \"none\",\n  \"runCount\": 0,\n  \"risks\": [\n    \"No execution evidence recorded yet.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"Prompt compiled\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"ready\",\n    \"message\": \"Add repo-relative scope paths to make evidence coverage automatic.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-603/checkpoint.md",
-          "kind": "file",
-          "existed": true,
-          "content": "# T-603 Checkpoint\n\nGenerated at: 2026-04-21T18:16:15.549Z\n\n## Completed\n\n- Prompt compiled\n- Task context captured\n\n## Confirmed facts\n\n- Title: Agent Activity Evidence\n- Priority: P1\n- Status: todo\n- Latest run status: none\n- Total runs: 0\n\n## Verification gate\n\n- Status: ready\n- Summary: Add repo-relative scope paths to make evidence coverage automatic.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No execution evidence recorded yet.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: No runs recorded\n- Timestamp: N/A\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Tighten any ambiguous scope entries into repo-relative paths before the next handoff.\n4. Continue only after acknowledging the risks above.\n"
-        },
-        {
-          "path": ".agent-workflow/tasks/T-603/runs",
-          "kind": "directory",
-          "existed": true
-        },
-        {
-          "path": ".agent-workflow/tasks/T-603/runs/run-1776841580111.json",
-          "kind": "file",
-          "existed": false
-        }
-      ],
-      "runFile": ".agent-workflow/tasks/T-603/runs/run-1776841580111.json",
-      "runId": "run-1776841580111"
-    }
-  },
-  {
     "type": "done",
     "taskId": "T-605",
     "timestamp": "2026-04-22T07:33:26.577Z",
@@ -846,6 +609,166 @@
       ],
       "runFile": ".agent-workflow/tasks/T-802/runs/run-1777224625314.json",
       "runId": "run-1777224625314"
+    }
+  },
+  {
+    "type": "done",
+    "taskId": "T-802",
+    "timestamp": "2026-04-26T17:45:32.280Z",
+    "files": [
+      ".agent-workflow/tasks/T-802/checkpoint.json",
+      ".agent-workflow/tasks/T-802/checkpoint.md",
+      ".agent-workflow/tasks/T-802/context.md",
+      ".agent-workflow/tasks/T-802/runs",
+      ".agent-workflow/tasks/T-802/runs/run-1777225532019.json",
+      ".agent-workflow/tasks/T-802/task.json",
+      ".agent-workflow/tasks/T-802/verification.md"
+    ],
+    "metadata": {
+      "restore": [
+        {
+          "path": ".agent-workflow/tasks/T-802/task.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"id\": \"T-802\",\n  \"title\": \"Correction: Dashboard 性能优化：解决加载慢和初始体验问题\",\n  \"recipeId\": \"feature\",\n  \"priority\": \"P0\",\n  \"status\": \"in_progress\",\n  \"createdAt\": \"2026-04-26T17:23:14.294Z\",\n  \"updatedAt\": \"2026-04-26T17:30:25.313Z\",\n  \"goal\": \"Correct rejected work from T-801.\",\n  \"scope\": [],\n  \"nonGoals\": [],\n  \"requiredDocs\": [],\n  \"verificationCommands\": [],\n  \"claimedBy\": null,\n  \"claimExpiry\": null,\n  \"parentTaskId\": \"T-801\",\n  \"rejectionFeedback\": \"骨架屏是好的开始，但没有解决根本问题。需要：\\n  1. 分析性能瓶颈（用 Chrome DevTools）\\n  2. 优化数据加载（只加载必要数据）\\n  3. 代码分割（路由级懒加载）\\n  4. 修复动画设计\\n  5. 测量改进效果\"\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-802/context.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-802 Context\n\n## Why now\n\nDescribe why this task matters.\n\n<!-- agent-workflow:managed:context-recipe-guidance:start -->\n## Recipe guidance\n\n- Recipe ID: feature\n- Recommended for: feature delivery, scoped implementation, incremental release\n<!-- agent-workflow:managed:context-recipe-guidance:end -->\n\n## Facts\n\n- \n\n## Open questions\n\n-\n\n## Progress notes\n\n### 2026-04-26T17:23:14.108Z\n\nHuman rejected T-801 and requested correction.\n\nFeedback:\n骨架屏是好的开始，但没有解决根本问题。需要：\n  1. 分析性能瓶颈（用 Chrome DevTools）\n  2. 优化数据加载（只加载必要数据）\n  3. 代码分割（路由级懒加载）\n  4. 修复动画设计\n  5. 测量改进效果\n\n## Constraints\n\n<!-- agent-workflow:managed:context-constraints-meta:start -->\n- Priority: P0\n- Keep the workflow docs current.\n<!-- agent-workflow:managed:context-constraints-meta:end -->\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-802/verification.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-802 Verification\n\n## Draft checks\n\n- automated:\n- manual:\n\n## Verification records\n\n### Record 1\n\n- Files:\n- Check:\n- Result:\n- Artifact:\n\n## Blocking gaps\n\n-\n\n## Evidence 2026-04-26T17:30:25.313Z\n\n- Agent: manual\n- Status: draft\n- Scoped files covered: .agent-workflow/project-profile.json, .agent-workflow/project-profile.md, .agent-workflow/undo-log.json, dashboard-next/src/components/ApprovalPanel.jsx, src/lib/task-service.js, .agent-workflow/tasks/T-800/checkpoint.json, .agent-workflow/tasks/T-800/checkpoint.md, .agent-workflow/tasks/T-800/context.md, .agent-workflow/tasks/T-800/launch.codex.md, .agent-workflow/tasks/T-800/prompt.codex.md, .agent-workflow/tasks/T-800/run-request.codex.json, .agent-workflow/tasks/T-800/task.json, .agent-workflow/tasks/T-800/task.md, .agent-workflow/tasks/T-800/verification.md, .agent-workflow/tasks/T-801/checkpoint.json, .agent-workflow/tasks/T-801/checkpoint.md, .agent-workflow/tasks/T-801/context.md, .agent-workflow/tasks/T-801/launch.codex.md, .agent-workflow/tasks/T-801/prompt.codex.md, .agent-workflow/tasks/T-801/run-request.codex.json, .agent-workflow/tasks/T-801/runs/run-1777192392351.json, .agent-workflow/tasks/T-801/runs/run-1777192649274.json, .agent-workflow/tasks/T-801/task.json, .agent-workflow/tasks/T-801/task.md, .agent-workflow/tasks/T-801/verification.md, .agent-workflow/tasks/T-802/checkpoint.md, .agent-workflow/tasks/T-802/context.md, .agent-workflow/tasks/T-802/task.json, .agent-workflow/tasks/T-802/task.md, .agent-workflow/tasks/T-802/verification.md, test/agent-activity-evidence.test.js, test/smart-defaults-v2.test.js\n- Summary: 开始根据反馈进行真正的性能优化\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-802/checkpoint.json",
+          "kind": "file",
+          "existed": true,
+          "content": "{\n  \"taskId\": \"T-802\",\n  \"generatedAt\": \"2026-04-26T17:30:25.602Z\",\n  \"latestRunStatus\": \"draft\",\n  \"runCount\": 1,\n  \"claimedBy\": null,\n  \"claimExpiry\": null,\n  \"claimStatus\": \"unclaimed\",\n  \"claimExpired\": false,\n  \"latestHandoff\": null,\n  \"risks\": [\n    \"No compiled prompt found for this task.\",\n    \"Task scope does not include clear repo-relative paths yet, so diff-aware verification is limited.\",\n    \"Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\"\n  ],\n  \"completed\": [\n    \"1 run(s) recorded\",\n    \"Task context captured\"\n  ],\n  \"verificationGate\": {\n    \"status\": \"unconfigured\",\n    \"message\": \"This task has no repo-relative scope yet, so changed work cannot be matched to recorded evidence.\",\n    \"relevantChangeCount\": 0,\n    \"coveragePercent\": 0,\n    \"scopeHintCount\": 0,\n    \"ambiguousScopeCount\": 1,\n    \"scopedFileCount\": 0,\n    \"coveredFileCount\": 0,\n    \"relevantChangedFiles\": []\n  }\n}\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-802/checkpoint.md",
+          "kind": "file",
+          "existed": true,
+          "content": "# T-802 Checkpoint\n\nGenerated at: 2026-04-26T17:30:25.602Z\n\n## Completed\n\n- 1 run(s) recorded\n- Task context captured\n\n## Confirmed facts\n\n- Title: Correction: Dashboard 性能优化：解决加载慢和初始体验问题\n- Priority: P0\n- Status: in_progress\n- Claimed by: unclaimed\n- Claim status: unclaimed\n- Latest run status: draft\n- Total runs: 1\n\n## Latest handoff\n\n- No handoff recorded yet\n\n## Verification gate\n\n- Status: unconfigured\n- Summary: This task has no repo-relative scope yet, so changed work cannot be matched to recorded evidence.\n- Evidence coverage: no scope defined\n- Scope hints: 0\n- Ambiguous scope entries: 1\n- Scoped files awaiting proof: 0\n\n### Scoped files awaiting proof\n\n- None\n\n### Scoped files already linked to proof\n\n- None\n\n### Explicit evidence items\n\n- None\n\n### Scope entries that need tightening\n\n- repo path: (task.md)\n\n## Risks\n\n- No compiled prompt found for this task.\n- Task scope does not include clear repo-relative paths yet, so diff-aware verification is limited.\n- Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths.\n\n## Latest evidence\n\n- Summary: 开始根据反馈进行真正的性能优化\n- Timestamp: 2026-04-26T17:30:25.313Z\n\n## Resume instructions\n\n1. Read task.md, context.md, and verification.md.\n2. Review the latest prompt and decide whether it still reflects scope.\n3. Add repo-relative scope paths in task.md or task.json before trusting the verification state.\n4. Continue only after acknowledging the risks above.\n"
+        },
+        {
+          "path": ".agent-workflow/tasks/T-802/runs",
+          "kind": "directory",
+          "existed": true
+        },
+        {
+          "path": ".agent-workflow/tasks/T-802/runs/run-1777225532019.json",
+          "kind": "file",
+          "existed": false
+        }
+      ],
+      "runFile": ".agent-workflow/tasks/T-802/runs/run-1777225532019.json",
+      "runId": "run-1777225532019"
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-803",
+    "timestamp": "2026-04-27T01:41:21.877Z",
+    "files": [
+      ".agent-workflow/tasks/T-803",
+      ".agent-workflow/tasks/T-803/checkpoint.json",
+      ".agent-workflow/tasks/T-803/checkpoint.md",
+      ".agent-workflow/tasks/T-803/context.md",
+      ".agent-workflow/tasks/T-803/launch.codex.md",
+      ".agent-workflow/tasks/T-803/prompt.codex.md",
+      ".agent-workflow/tasks/T-803/run-request.codex.json",
+      ".agent-workflow/tasks/T-803/runs",
+      ".agent-workflow/tasks/T-803/task.json",
+      ".agent-workflow/tasks/T-803/task.md",
+      ".agent-workflow/tasks/T-803/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-803",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-804",
+    "timestamp": "2026-04-27T01:42:51.456Z",
+    "files": [
+      ".agent-workflow/tasks/T-804",
+      ".agent-workflow/tasks/T-804/checkpoint.json",
+      ".agent-workflow/tasks/T-804/checkpoint.md",
+      ".agent-workflow/tasks/T-804/context.md",
+      ".agent-workflow/tasks/T-804/launch.codex.md",
+      ".agent-workflow/tasks/T-804/prompt.codex.md",
+      ".agent-workflow/tasks/T-804/run-request.codex.json",
+      ".agent-workflow/tasks/T-804/runs",
+      ".agent-workflow/tasks/T-804/task.json",
+      ".agent-workflow/tasks/T-804/task.md",
+      ".agent-workflow/tasks/T-804/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-804",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-805",
+    "timestamp": "2026-04-27T01:43:12.275Z",
+    "files": [
+      ".agent-workflow/tasks/T-805",
+      ".agent-workflow/tasks/T-805/checkpoint.json",
+      ".agent-workflow/tasks/T-805/checkpoint.md",
+      ".agent-workflow/tasks/T-805/context.md",
+      ".agent-workflow/tasks/T-805/launch.codex.md",
+      ".agent-workflow/tasks/T-805/prompt.codex.md",
+      ".agent-workflow/tasks/T-805/run-request.codex.json",
+      ".agent-workflow/tasks/T-805/runs",
+      ".agent-workflow/tasks/T-805/task.json",
+      ".agent-workflow/tasks/T-805/task.md",
+      ".agent-workflow/tasks/T-805/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-805",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
+    }
+  },
+  {
+    "type": "quick",
+    "taskId": "T-806",
+    "timestamp": "2026-04-27T01:43:32.813Z",
+    "files": [
+      ".agent-workflow/tasks/T-806",
+      ".agent-workflow/tasks/T-806/checkpoint.json",
+      ".agent-workflow/tasks/T-806/checkpoint.md",
+      ".agent-workflow/tasks/T-806/context.md",
+      ".agent-workflow/tasks/T-806/launch.codex.md",
+      ".agent-workflow/tasks/T-806/prompt.codex.md",
+      ".agent-workflow/tasks/T-806/run-request.codex.json",
+      ".agent-workflow/tasks/T-806/runs",
+      ".agent-workflow/tasks/T-806/task.json",
+      ".agent-workflow/tasks/T-806/task.md",
+      ".agent-workflow/tasks/T-806/verification.md"
+    ],
+    "metadata": {
+      "taskRoot": ".agent-workflow/tasks/T-806",
+      "mode": "full",
+      "agent": "codex",
+      "adapterId": "codex",
+      "restore": []
     }
   }
 ]

@@ -1,25 +1,24 @@
 {
-  "taskId": "T-802",
-  "generatedAt": "2026-04-26T17:45:32.274Z",
-  "latestRunStatus": "draft",
-  "runCount": 2,
+  "taskId": "T-804",
+  "generatedAt": "2026-04-27T01:42:51.447Z",
+  "latestRunStatus": "none",
+  "runCount": 0,
   "claimedBy": null,
   "claimExpiry": null,
   "claimStatus": "unclaimed",
   "claimExpired": false,
   "latestHandoff": null,
   "risks": [
-    "No compiled prompt found for this task.",
-    "Task scope does not include clear repo-relative paths yet, so diff-aware verification is limited.",
+    "No execution evidence recorded yet.",
     "Some scope entries are too ambiguous for automatic matching. Prefer repo-relative paths."
   ],
   "completed": [
-    "2 run(s) recorded",
+    "Prompt compiled",
     "Task context captured"
   ],
   "verificationGate": {
-    "status": "unconfigured",
-    "message": "This task has no repo-relative scope yet, so changed work cannot be matched to recorded evidence.",
+    "status": "ready",
+    "message": "Add repo-relative scope paths to make evidence coverage automatic.",
     "relevantChangeCount": 0,
     "coveragePercent": 0,
     "scopeHintCount": 0,
