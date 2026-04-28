@@ -8,6 +8,9 @@ export default function CreateTaskForm({ onClose, onSuccess }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  const [createdTask, setCreatedTask] = useState(null);
+  const [copied, setCopied] = useState(false);
+
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -26,18 +29,87 @@ export default function CreateTaskForm({ onClose, onSuccess }) {
       });
 
       setActionStatus(`Created task ${result.taskId}`, "success");
-      if (onSuccess) {
-        onSuccess(result);
-      }
-      if (onClose) {
-        onClose();
-      }
+      setCreatedTask(result);
     } catch (err) {
       setError(err.message || "Failed to create task");
       setActionStatus(err.message || "Failed to create task", "error");
-    } finally {
       setIsSubmitting(false);
     }
+  }
+
+  function copyCommand() {
+    if (!createdTask) return;
+    const command = `npx agent-workflow run ${createdTask.taskId}`;
+    navigator.clipboard.writeText(command);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleDone() {
+    if (onSuccess && createdTask) {
+      onSuccess(createdTask);
+    }
+    if (onClose) {
+      onClose();
+    }
+  }
+
+  if (createdTask) {
+    return (
+      <div className="create-task-form">
+        <div className="form-header">
+          <h2>✓ Task Created</h2>
+          {onClose && (
+            <button
+              type="button"
+              className="close-button"
+              onClick={handleDone}
+              aria-label="Close"
+            >
+              ×
+            </button>
+          )}
+        </div>
+
+        <div className="task-created-success">
+          <div className="task-created-info">
+            <span className="task-id-badge">{createdTask.taskId}</span>
+            <p className="task-title">{title}</p>
+          </div>
+
+          <div className="next-steps">
+            <h3>Next: Start the Agent</h3>
+            <p>Run this command in your terminal to start agent execution:</p>
+
+            <div className="command-box">
+              <code>{`npx agent-workflow run ${createdTask.taskId}`}</code>
+              <button
+                type="button"
+                className="copy-button"
+                onClick={copyCommand}
+                title="Copy command"
+              >
+                {copied ? "✓" : "📋"}
+              </button>
+            </div>
+
+            <p className="hint">
+              💡 The agent will read the task, execute it, and record results for your review.
+            </p>
+          </div>
+        </div>
+
+        <div className="form-actions">
+          <button
+            type="button"
+            className="button button-primary"
+            onClick={handleDone}
+          >
+            Got it
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
