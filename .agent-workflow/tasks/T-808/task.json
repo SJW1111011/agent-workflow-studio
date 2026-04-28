@@ -1,0 +1,16 @@
+{
+  "id": "T-808",
+  "title": "这是一个测试",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "todo",
+  "createdAt": "2026-04-28T04:04:20.441Z",
+  "updatedAt": "2026-04-28T04:04:20.441Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": [],
+  "claimedBy": null,
+  "claimExpiry": null
+}

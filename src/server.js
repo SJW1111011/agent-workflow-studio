@@ -649,16 +649,7 @@ function normalizeServerPort(value) {
 }
 
 function resolveDashboardAssets(options = {}) {
-  // Try dashboard-v2 first (new workbench)
-  const v2Root = path.join(__dirname, "..", "dashboard-v2", "dist");
-  if (!options.legacyDashboard && fs.existsSync(path.join(v2Root, "index.html"))) {
-    return {
-      mode: "v2",
-      root: v2Root,
-    };
-  }
-
-  // Then try dashboard-next (modern)
+  // Use dashboard-next (proven, stable)
   const modernRoot = options.modernDashboardRoot || path.join(__dirname, "..", "dashboard-next", "dist");
   const useModern = !options.legacyDashboard && fs.existsSync(path.join(modernRoot, "index.html"));
 
