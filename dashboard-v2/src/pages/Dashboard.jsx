@@ -2,12 +2,15 @@ import { useState, useEffect } from 'preact/hooks';
 import { useTasks, useTaskDetail } from '../hooks/api';
 import Modal from '../components/Modal';
 import CreateTaskForm from '../components/CreateTaskForm';
+import TaskCreatedModal from '../components/TaskCreatedModal';
 import styles from './Dashboard.module.css';
 
 export default function Dashboard() {
   const { tasks, loading, error, refresh } = useTasks();
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showTaskCreatedModal, setShowTaskCreatedModal] = useState(false);
+  const [createdTask, setCreatedTask] = useState(null);
   const [view, setView] = useState('all'); // 'all', 'review', 'active', 'done'
   const [autoRefresh, setAutoRefresh] = useState(true);
 
@@ -18,10 +21,53 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [autoRefresh, refresh]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    function handleKeyPress(e) {
+      // Ignore if typing in input/textarea
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      switch (e.key.toLowerCase()) {
+        case 'c':
+          setShowCreateModal(true);
+          break;
+        case 'r':
+          refresh();
+          break;
+        case 'escape':
+          setSelectedTaskId(null);
+          setShowCreateModal(false);
+          setShowTaskCreatedModal(false);
+          break;
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [refresh]);
+
   function handleTaskCreated(result) {
     setShowCreateModal(false);
-    setSelectedTaskId(result.taskId);
+    setCreatedTask(result);
+    setShowTaskCreatedModal(true);
     refresh();
+  }
+
+  async function handleStartAgent(taskId) {
+    // TODO: Implement agent start API
+    // For now, just close the modal
+    console.log('Starting agent for task:', taskId);
+    setShowTaskCreatedModal(false);
+    setSelectedTaskId(taskId);
+  }
+
+  function handleTaskCreatedClose() {
+    setShowTaskCreatedModal(false);
+    if (createdTask) {
+      setSelectedTaskId(createdTask.taskId);
+    }
   }
 
   if (loading && tasks.length === 0) {
@@ -43,14 +89,19 @@ export default function Dashboard() {
       <header className={styles.header}>
         <div>
           <h1>Agent Workflow Studio</h1>
-          <p className={styles.subtitle}>Human-Agent Collaboration Workbench</p>
+          <p className={styles.subtitle}>
+            Human-Agent Collaboration Workbench
+            <span className={styles.shortcuts}>
+              • Press <kbd>C</kbd> to create • <kbd>R</kbd> to refresh • <kbd>Esc</kbd> to close
+            </span>
+          </p>
         </div>
         <div className={styles.headerActions}>
           <button
             className={styles.refreshButton}
             onClick={refresh}
             disabled={loading}
-            title="Refresh"
+            title="Refresh (R)"
           >
             {loading ? '⟳' : '↻'}
           </button>
@@ -63,7 +114,7 @@ export default function Dashboard() {
             <span>Auto</span>
           </label>
           <button className={styles.createButton} onClick={() => setShowCreateModal(true)}>
-            + Create Task
+            + Create Task <kbd className={styles.kbd}>C</kbd>
           </button>
         </div>
       </header>
@@ -153,6 +204,16 @@ export default function Dashboard() {
           onSuccess={handleTaskCreated}
           onCancel={() => setShowCreateModal(false)}
         />
+      </Modal>
+
+      <Modal isOpen={showTaskCreatedModal} onClose={handleTaskCreatedClose}>
+        {createdTask && (
+          <TaskCreatedModal
+            task={createdTask}
+            onClose={handleTaskCreatedClose}
+            onStartAgent={handleStartAgent}
+          />
+        )}
       </Modal>
     </div>
   );
