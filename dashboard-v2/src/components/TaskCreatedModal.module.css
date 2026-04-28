@@ -1,194 +1,125 @@
 .modal {
   padding: 2rem;
-  max-width: 600px;
+  max-width: 500px;
 }
 
 .header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.icon {
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
 }
 
 .header h2 {
   margin: 0;
-  color: #10b981;
   font-size: 1.5rem;
 }
 
-.closeButton {
-  background: none;
-  border: none;
-  font-size: 2rem;
-  cursor: pointer;
-  color: #999;
-  line-height: 1;
-  padding: 0;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.closeButton:hover {
-  background: #f5f5f5;
-  color: #333;
-}
-
-.taskCard {
-  padding: 1.5rem;
-  background: #f9f9f9;
-  border: 2px solid #10b981;
-  border-radius: 8px;
+.content {
   margin-bottom: 2rem;
 }
 
-.taskHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
+.taskInfo {
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
 }
 
 .taskId {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #666;
   font-family: 'Monaco', 'Courier New', monospace;
-  font-weight: 600;
-  color: #666;
-  font-size: 0.9rem;
 }
 
-.priority {
-  padding: 0.25rem 0.75rem;
-  background: #ef6c33;
-  color: white;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.taskTitle {
-  margin: 0 0 1rem 0;
-  font-size: 1.25rem;
-  color: #1a1a1a;
-}
-
-.promptInfo {
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.promptInfo code {
-  display: block;
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 0.85rem;
-}
-
-.nextSteps h3 {
-  margin: 0 0 0.5rem 0;
+.taskInfo h3 {
+  margin: 0.5rem 0 0 0;
   font-size: 1.1rem;
 }
 
-.subtitle {
-  margin: 0 0 1.5rem 0;
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.options {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.optionPrimary,
-.optionSecondary,
-.optionTertiary {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.25rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: left;
-}
-
-.optionPrimary {
-  border-color: #ef6c33;
-  background: #fff5f0;
-}
-
-.optionPrimary:hover:not(:disabled) {
-  border-color: #d95a1f;
-  background: #ffe8dc;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 108, 51, 0.2);
-}
-
-.optionSecondary:hover {
-  border-color: #10b981;
-  background: #f0fdf4;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
-}
-
-.optionTertiary:hover {
-  border-color: #999;
-  background: #f9f9f9;
-  transform: translateY(-2px);
-}
-
-.optionPrimary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.optionIcon {
-  font-size: 2rem;
-  line-height: 1;
-}
-
-.optionContent {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.optionContent strong {
+.nextSteps h4 {
+  margin: 0 0 0.5rem 0;
   font-size: 1rem;
   color: #1a1a1a;
 }
 
-.optionContent span {
-  font-size: 0.875rem;
+.nextSteps p {
+  margin: 0 0 1rem 0;
   color: #666;
-}
-
-.command {
-  font-family: 'Monaco', 'Courier New', monospace;
-  font-size: 0.85rem;
-  color: #ef6c33;
-  font-weight: 600;
-}
-
-.tip {
-  margin-top: 2rem;
-  padding: 1rem;
-  background: #f0f9ff;
-  border-left: 4px solid #3b82f6;
-  border-radius: 4px;
   font-size: 0.9rem;
-  color: #1e40af;
 }
 
-.tip strong {
-  color: #1e3a8a;
+.commandBox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #1a1a1a;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.commandBox code {
+  flex: 1;
+  color: #10b981;
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 0.9rem;
+}
+
+.copyButton {
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: all 0.2s;
+}
+
+.copyButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.hint {
+  padding: 0.75rem 1rem;
+  background: #f0fdf4;
+  border-left: 3px solid #10b981;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: #065f46;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.primaryButton {
+  padding: 0.75rem 2rem;
+  background: #ef6c33;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.primaryButton:hover {
+  background: #d95a1f;
+  transform: translateY(-1px);
 }
