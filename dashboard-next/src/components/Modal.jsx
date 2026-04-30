@@ -11,6 +11,9 @@ export default function Modal({ children, isOpen, onClose }) {
       }
     }
 
+    // Scroll to top when modal opens
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     // Prevent body scroll when modal is open
     document.body.style.overflow = "hidden";
     document.addEventListener("keydown", handleEscape);
