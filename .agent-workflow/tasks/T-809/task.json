@@ -1,0 +1,16 @@
+{
+  "id": "T-809",
+  "title": "Test task",
+  "recipeId": "feature",
+  "priority": "P1",
+  "status": "in_progress",
+  "createdAt": "2026-04-29T06:43:16.932Z",
+  "updatedAt": "2026-04-29T07:20:43.260Z",
+  "goal": "",
+  "scope": [],
+  "nonGoals": [],
+  "requiredDocs": [],
+  "verificationCommands": [],
+  "claimedBy": null,
+  "claimExpiry": null
+}
