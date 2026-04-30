@@ -2,7 +2,7 @@ import { useState } from "preact/hooks";
 import { useDashboardContext } from "../context/DashboardContext.jsx";
 
 export default function CreateTaskForm({ onClose, onSuccess }) {
-  const { api, setActionStatus, updateSelectedExecutionState } = useDashboardContext();
+  const { api, setActionStatus } = useDashboardContext();
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("P1");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,15 +28,19 @@ export default function CreateTaskForm({ onClose, onSuccess }) {
 
       setActionStatus(`Created task ${result.taskId}`, "success");
 
-      // Automatically start execution
-      setActionStatus(`Starting agent execution for ${result.taskId}...`, "");
-      const executionState = await api.postJson(
-        `/api/tasks/${encodeURIComponent(result.taskId)}/execute`,
-        { agent: result.adapterId || "codex" }
-      );
-
-      updateSelectedExecutionState(result.taskId, executionState);
-      setActionStatus(`Agent is now working on ${result.taskId}`, "success");
+      // Try to start execution
+      try {
+        setActionStatus(`Starting agent execution...`, "");
+        await api.postJson(
+          `/api/tasks/${encodeURIComponent(result.taskId)}/execute`,
+          { agent: result.adapterId || "codex" }
+        );
+        setActionStatus(`Agent started for ${result.taskId}`, "success");
+      } catch (execErr) {
+        // Execution failed, but task was created
+        console.error("Failed to start execution:", execErr);
+        setActionStatus(`Task created but execution failed: ${execErr.message}`, "error");
+      }
 
       // Close modal and switch to task
       if (onSuccess) {
@@ -122,7 +126,7 @@ export default function CreateTaskForm({ onClose, onSuccess }) {
           className="button button-primary"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Creating & Starting..." : "Create & Start Agent"}
+          {isSubmitting ? "Creating..." : "Create & Start Agent"}
         </button>
       </div>
     </form>
