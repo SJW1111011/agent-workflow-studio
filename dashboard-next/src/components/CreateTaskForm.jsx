@@ -90,7 +90,6 @@ export default function CreateTaskForm({ onClose, onSuccess }) {
           onInput={(e) => setTitle(e.target.value)}
           placeholder="e.g., Fix login bug"
           disabled={isSubmitting}
-          autoFocus
           required
         />
       </div>
