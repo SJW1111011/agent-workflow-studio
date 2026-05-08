@@ -12,27 +12,21 @@ export default function Modal({ children, isOpen, onClose }) {
 
     document.addEventListener("keydown", handleEscape);
 
-    // Prevent body scroll
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
     return () => {
       document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = originalOverflow;
     };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  // Simplest possible implementation - inline styles, no portal, no CSS classes
   return (
     <div
       style={{
         position: 'fixed',
         top: 0,
         left: 0,
-        right: 0,
-        bottom: 0,
+        width: '100vw',
+        height: '100vh',
         background: 'rgba(0, 0, 0, 0.5)',
         display: 'flex',
         alignItems: 'center',
@@ -49,10 +43,9 @@ export default function Modal({ children, isOpen, onClose }) {
           borderRadius: '8px',
           maxWidth: '500px',
           width: '90%',
-          maxHeight: '90vh',
+          maxHeight: '80vh',
           overflow: 'auto',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-          position: 'relative',
         }}
         onClick={(e) => e.stopPropagation()}
       >
