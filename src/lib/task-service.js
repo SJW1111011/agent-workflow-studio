@@ -1081,12 +1081,9 @@ function assertTaskCanBeReviewed(workspaceRoot, meta, taskId) {
   if (fs.existsSync(files.runs)) {
     const runFiles = fs.readdirSync(files.runs).filter(f => f.startsWith("run-") && f.endsWith(".json"));
     hasWork = runFiles.length > 0;
-    console.log(`[DEBUG] Task ${taskId}: runs dir exists, found ${runFiles.length} run files`);
   } else {
-    console.log(`[DEBUG] Task ${taskId}: runs dir does not exist at ${files.runs}`);
   }
 
-  console.log(`[DEBUG] Task ${taskId}: isDone=${isDone}, hasWork=${hasWork}, status=${meta?.status}`);
 
   if (!isDone && !hasWork) {
     throw conflict(

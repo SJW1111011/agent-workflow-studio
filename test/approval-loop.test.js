@@ -212,7 +212,7 @@ const tests = [
           body: {},
         });
         assert.equal(approved.statusCode, 409);
-        assert.equal(approved.json.code, "task_not_done");
+        assert.equal(approved.json.code, "task_not_reviewable");
       } finally {
         await server.stop();
       }

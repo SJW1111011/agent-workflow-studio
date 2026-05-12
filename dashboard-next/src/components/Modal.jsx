@@ -11,10 +11,7 @@ export default function Modal({ children, isOpen, onClose }) {
     }
 
     document.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-    };
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -25,14 +22,13 @@ export default function Modal({ children, isOpen, onClose }) {
         position: 'fixed',
         top: 0,
         left: 0,
-        right: 0,
-        bottom: 0,
+        width: '100vw',
+        height: '100vh',
         background: 'rgba(0, 0, 0, 0.5)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 99999,
-        overflow: 'auto',
       }}
       onClick={onClose}
     >
