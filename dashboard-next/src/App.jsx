@@ -1,9 +1,6 @@
-import { useState } from "preact/hooks";
-import CreateTaskForm from "./components/CreateTaskForm.jsx";
 import Header from "./components/Header.jsx";
 import Layout from "./components/Layout.jsx";
 import LoadingSkeleton from "./components/LoadingSkeleton.jsx";
-import Modal from "./components/Modal.jsx";
 import Overview from "./components/Overview.jsx";
 import TabBar from "./components/TabBar.jsx";
 import TaskDetail from "./components/TaskDetail.jsx";
@@ -145,7 +142,6 @@ function RunsPanel({ hidden }) {
 function DashboardShell() {
   const { refreshDashboard, requestState, selectTask, setActiveTab, state } = useDashboardContext();
   const { resolvedTheme, setTheme, theme } = useTheme();
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Show loading skeleton while initial data is loading
   if (state.overview.status === "loading") {
@@ -153,25 +149,16 @@ function DashboardShell() {
   }
 
   function handleCreateTask() {
-    setIsCreateModalOpen(true);
-  }
-
-  function handleTaskCreated(task) {
-    setIsCreateModalOpen(false);
-    // Switch to tasks tab and select the new task
-    setActiveTab("tasks");
-    selectTask(task.taskId);
-    // Refresh dashboard to show the new task
-    refreshDashboard();
+    // Switch to Actions tab which has the Quick Create form
+    setActiveTab("actions");
   }
 
   return (
-    <>
-      <Layout
-        header={
-          <Header
-            actionStatus={state.actionStatus}
-            activeTab={state.activeTab}
+    <Layout
+      header={
+        <Header
+          actionStatus={state.actionStatus}
+          activeTab={state.activeTab}
             initialized={Boolean(state.overview.data?.initialized)}
             onCreateTask={handleCreateTask}
             onThemeChange={setTheme}
@@ -196,14 +183,6 @@ function DashboardShell() {
         <VerificationPanel hidden={state.activeTab !== "verification"} />
         <RunsPanel hidden={state.activeTab !== "runs"} />
       </Layout>
-
-      <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)}>
-        <CreateTaskForm
-          onClose={() => setIsCreateModalOpen(false)}
-          onSuccess={handleTaskCreated}
-        />
-      </Modal>
-    </>
   );
 }
 
