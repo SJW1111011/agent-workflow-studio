@@ -380,21 +380,12 @@ export default function useDashboardState() {
     dispatch({ type: "overview/loading" });
 
     try {
-      const [overview, trustSummaryResult] = await Promise.all([
-        loadOverview(),
-        loadTrustSummary()
-          .then((value) => ({ error: null, value }))
-          .catch((error) => ({ error: error.message, value: null })),
-      ]);
+      // Load overview first (fast) - don't wait for trust summary (slow)
+      const overview = await loadOverview();
 
-      const nextOverview = {
-        ...overview,
-        trustSummary: trustSummaryResult.value,
-        trustSummaryError: trustSummaryResult.error,
-      };
       const currentActiveTaskId = stateRef.current.activeTaskId;
       const nextActiveTaskId = resolveNextActiveTaskId(
-        nextOverview.tasks || [],
+        overview.tasks || [],
         requestedTaskId,
         currentActiveTaskId,
       );
@@ -403,7 +394,7 @@ export default function useDashboardState() {
         type: "overview/success",
         payload: {
           activeTaskId: nextActiveTaskId,
-          overview: nextOverview,
+          overview,
         },
       });
 
