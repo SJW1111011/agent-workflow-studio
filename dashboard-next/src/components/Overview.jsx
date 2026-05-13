@@ -264,14 +264,56 @@ export default function Overview({ hidden }) {
   const humanReviewCount = countTasksWithHumanReview(humanReviews);
   const claimStats = countTaskClaimStatuses(overview.tasks || []);
 
+  // Compute action items
+  const tasksNeedingReview = (overview.tasks || []).filter(
+    (t) => t.runCount > 0 && !t.reviewStatus && t.status !== "todo"
+  );
+  const tasksInProgress = (overview.tasks || []).filter(
+    (t) => t.status === "in_progress"
+  );
+  const tasksTodo = (overview.tasks || []).filter(
+    (t) => t.status === "todo"
+  );
+
   return (
     <>
+      {/* Action Area - What needs human attention */}
+      {tasksNeedingReview.length > 0 && (
+        <section
+          className={hidden ? "panel panel-wide tab-hidden" : "panel panel-wide"}
+          data-tab="overview"
+        >
+          <div className="panel-head">
+            <div>
+              <h2>Awaiting Your Review</h2>
+              <p>
+                {tasksNeedingReview.length} task(s) have agent work ready for your review.
+              </p>
+            </div>
+          </div>
+          <div className="list">
+            {tasksNeedingReview.slice(0, 5).map((task) => (
+              <article className="list-item" key={task.id}>
+                <h3>{task.id} - {task.title}</h3>
+                <p>{task.latestRunSummary || "Agent completed work on this task."}</p>
+                <div className="tag-row">
+                  <span className="tag">{task.priority || "P2"}</span>
+                  <span className="tag">{task.runCount} run(s)</span>
+                  <span className="tag">{task.coveragePercent || 0}% coverage</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Project Status */}
       <section
         className={hidden ? "stats tab-hidden" : "stats"}
         data-tab="overview"
       >
         <StatCard
-          detail={`${normalizeStatCount(stats.memoryDocs)} memory docs currently tracked.`}
+          detail={`${tasksTodo.length} todo, ${tasksInProgress.length} in progress, ${humanReviews.approved} approved.`}
           title="Tasks"
           value={normalizeStatCount(stats.tasks)}
         />
